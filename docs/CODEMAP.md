@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9142, frontend ids 2862, CSS sections 532, backend routes 764, backend modules 11755, test files 3102, tests 24218, plan headings 692, app scripts 30, boot scripts 39, script files 425.
+Counts: frontend functions 9142, frontend ids 2862, CSS sections 532, backend routes 764, backend modules 11756, test files 3102, tests 24218, plan headings 692, app scripts 30, boot scripts 39, script files 425.
 
 ## Frontend functions (9142)
 
@@ -8049,45 +8049,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `findSettings` | frontend/js/settings-find.js:224 |
-| `helpAlternation` | frontend/js/settings-find.js:775 |
-| `helpApplySearch` | frontend/js/settings-find.js:909 |
-| `helpEmphasis` | frontend/js/settings-find.js:781 |
-| `helpFill` | frontend/js/settings-find.js:802 |
-| `helpMarks` | frontend/js/settings-find.js:815 |
-| `helpMatches` | frontend/js/settings-find.js:893 |
-| `helpQueryTerms` | frontend/js/settings-find.js:885 |
-| `helpSearchBind` | frontend/js/settings-find.js:966 |
-| `helpTopicLink` | frontend/js/settings-find.js:742 |
-| `helpTopicPaint` | frontend/js/settings-find.js:829 |
-| `helpTopicRow` | frontend/js/settings-find.js:851 |
-| `helpTopicsDrop` | frontend/js/settings-find.js:733 |
-| `openSettingRow` | frontend/js/settings-find.js:295 |
-| `renderCredits` | frontend/js/settings-find.js:989 |
-| `renderHelpTopics` | frontend/js/settings-find.js:1037 |
-| `renderSettingResults` | frontend/js/settings-find.js:342 |
-| `settingNearAdd` | frontend/js/settings-find.js:359 |
-| `settingQueryAlts` | frontend/js/settings-find.js:205 |
-| `settingResultItem` | frontend/js/settings-find.js:325 |
-| `settingResultsKey` | frontend/js/settings-find.js:379 |
-| `settingRowIsTopic` | frontend/js/settings-find.js:220 |
+| `findSettings` | frontend/js/settings-find.js:220 |
+| `helpAlternation` | frontend/js/settings-find.js:771 |
+| `helpApplySearch` | frontend/js/settings-find.js:905 |
+| `helpEmphasis` | frontend/js/settings-find.js:777 |
+| `helpFill` | frontend/js/settings-find.js:798 |
+| `helpMarks` | frontend/js/settings-find.js:811 |
+| `helpMatches` | frontend/js/settings-find.js:889 |
+| `helpQueryTerms` | frontend/js/settings-find.js:881 |
+| `helpSearchBind` | frontend/js/settings-find.js:962 |
+| `helpTopicLink` | frontend/js/settings-find.js:738 |
+| `helpTopicPaint` | frontend/js/settings-find.js:825 |
+| `helpTopicRow` | frontend/js/settings-find.js:847 |
+| `helpTopicsDrop` | frontend/js/settings-find.js:729 |
+| `openSettingRow` | frontend/js/settings-find.js:291 |
+| `renderCredits` | frontend/js/settings-find.js:985 |
+| `renderHelpTopics` | frontend/js/settings-find.js:1033 |
+| `renderSettingResults` | frontend/js/settings-find.js:338 |
+| `settingNearAdd` | frontend/js/settings-find.js:355 |
+| `settingQueryAlts` | frontend/js/settings-find.js:201 |
+| `settingResultItem` | frontend/js/settings-find.js:321 |
+| `settingResultsKey` | frontend/js/settings-find.js:375 |
+| `settingRowIsTopic` | frontend/js/settings-find.js:216 |
 | `settingRowText` | frontend/js/settings-find.js:34 |
 | `settingRows` | frontend/js/settings-find.js:51 |
 | `settingRowsScan` | frontend/js/settings-find.js:67 |
 | `settingRowsWarm` | frontend/js/settings-find.js:135 |
-| `settingRowsWarmSoon` | frontend/js/settings-find.js:175 |
-| `settingVocab` | frontend/js/settings-find.js:191 |
-| `settingsIndexBuild` | frontend/js/settings-find.js:586 |
-| `settingsIndexClear` | frontend/js/settings-find.js:552 |
-| `settingsIndexGo` | frontend/js/settings-find.js:466 |
-| `settingsIndexHeads` | frontend/js/settings-find.js:427 |
-| `settingsIndexJump` | frontend/js/settings-find.js:561 |
-| `settingsIndexList` | frontend/js/settings-find.js:458 |
-| `settingsIndexMark` | frontend/js/settings-find.js:515 |
-| `settingsIndexOffset` | frontend/js/settings-find.js:452 |
-| `settingsIndexWatchSection` | frontend/js/settings-find.js:682 |
-| `settingsNavFollow` | frontend/js/settings-find.js:494 |
-| `settingsPaneTitleHead` | frontend/js/settings-find.js:444 |
+| `settingRowsWarmSoon` | frontend/js/settings-find.js:171 |
+| `settingVocab` | frontend/js/settings-find.js:187 |
+| `settingsIndexBuild` | frontend/js/settings-find.js:582 |
+| `settingsIndexClear` | frontend/js/settings-find.js:548 |
+| `settingsIndexGo` | frontend/js/settings-find.js:462 |
+| `settingsIndexHeads` | frontend/js/settings-find.js:423 |
+| `settingsIndexJump` | frontend/js/settings-find.js:557 |
+| `settingsIndexList` | frontend/js/settings-find.js:454 |
+| `settingsIndexMark` | frontend/js/settings-find.js:511 |
+| `settingsIndexOffset` | frontend/js/settings-find.js:448 |
+| `settingsIndexWatchSection` | frontend/js/settings-find.js:678 |
+| `settingsNavFollow` | frontend/js/settings-find.js:490 |
+| `settingsPaneTitleHead` | frontend/js/settings-find.js:440 |
 
 ### frontend/js/settings-health.js (4)
 
@@ -15514,7 +15514,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11755)
+## Backend modules (11756)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24297,7 +24297,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sample_notebook_state` | src/tessellate/api/routes_help.py:134 |
 | `topics` | src/tessellate/api/routes_help.py:63 |
 
-### src/tessellate/api/routes_import.py (15)
+### src/tessellate/api/routes_import.py (16)
 
 | Name | File:line |
 |---|---|
@@ -24313,6 +24313,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `add_to_batch` | src/tessellate/api/routes_import.py:124 |
 | `drop_batch` | src/tessellate/api/routes_import.py:146 |
 | `export_notebook_folder` | src/tessellate/api/routes_import.py:287 |
+| `folder_zip` | src/tessellate/api/routes_import.py:291 |
 | `import_app` | src/tessellate/api/routes_import.py:198 |
 | `import_report_page` | src/tessellate/api/routes_import.py:278 |
 | `open_batch` | src/tessellate/api/routes_import.py:109 |

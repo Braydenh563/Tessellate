@@ -133,8 +133,7 @@
   //: scratchpad/ui-sweeps/handlerlag.js). Focusing the box starts the same reading, one pane at a time; a pane that
   //: changes is dropped from the cache by `settingsSectionText`'s observer and read again as before.
   function settingRowsWarm() {
-    //: The topics are drawn here, in an idle slot, and not by the first query: that draw changed the Help pane
-    //: under the first key and the second key read it all again (14 of 83 ms at 4x CPU).
+    //: The topics are drawn here, not by the first query: that draw changed the Help pane under the first key (14 of 83 ms at 4x).
     const topics = document.getElementById("help-topics");
     if (topics && (!topics.firstElementChild || topics.dataset.dropping)) renderHelpTopics();
     //: A pane not yet in the page is built first, one a slot (L-world-class-355): `filterSettings` builds every pane on
@@ -157,17 +156,14 @@
     //: A pane with an entry in the scan map is warm; the observer in settings.js drops the entry when the pane changes.
     const pane = [...document.querySelectorAll("#settings-modal .settings-section")].find((p) => !settingRowsScan.panes.has(p));
     if (!pane) return;
-    //: A slice of a few ms, then the next slice in its own idle slot: Appearance (1,260 elements) read whole was
-    //: 118 ms at 4x CPU, landing on the arrow key that followed the pane's first visit (scratchpad/ui-sweeps/
-    //: handlerlag.js, L-world-class-621).
+    //: A slice of a few ms; the vocabulary and meanings are the next (`settingRowsWarm.words`). Appearance read whole
+    //: was 118 ms at 4x CPU, on the arrow key after the pane's first visit (ui-sweeps/handlerlag.js, L-world-class-621).
     const rows = settingRowsScan.pane(pane, performance.now() + 6);
-    //: The vocabulary and meanings are the next slice (`settingRowsWarm.words`), not this one.
     if (rows) {
       settingRowsScan.panes.set(pane, rows);
       settingRowsWarm.words = { pane, rows };
     }
-    if (window.requestIdleCallback) requestIdleCallback(settingRowsWarm, { timeout: 500 });
-    else setTimeout(settingRowsWarm, 50);
+    settingIdle(settingRowsWarm);
   }
   //: Started when Settings opens and when the box is focused, and again (`settingRowsWarmSoon`, called by the
   //: pane observer in settings.js) a moment after a pane changes, so a key after a visit to a pane finds the rows
