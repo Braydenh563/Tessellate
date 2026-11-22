@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9132, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11699, test files 3145, tests 24339, plan headings 700, app scripts 32, boot scripts 41, script files 415.
+Counts: frontend functions 9131, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11699, test files 3145, tests 24339, plan headings 700, app scripts 32, boot scripts 41, script files 415.
 
-## Frontend functions (9132)
+## Frontend functions (9131)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5586,12 +5586,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `searchHighlightTerms` | frontend/js/entry-card.js:1382 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
-### frontend/js/entry-menu.js (8)
+### frontend/js/entry-menu.js (7)
 
 | Name | File:line |
 |---|---|
 | `askAtlasAboutNote` | frontend/js/entry-menu.js:477 |
-| `askAtlasAboutNote` | frontend/js/entry-menu.js:594 |
 | `fillEntryMenu` | frontend/js/entry-menu.js:8 |
 | `generateEntryTitle` | frontend/js/entry-menu.js:525 |
 | `inlineActionIs` | frontend/js/entry-menu.js:565 |

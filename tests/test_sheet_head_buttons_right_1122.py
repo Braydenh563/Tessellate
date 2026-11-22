@@ -16,7 +16,7 @@ from tests._css_paths import css_glob_text, css_text
 
 def test_the_inbox_card_title_shrinks_only_beside_a_select():
     css = css_text()
-    rules = re.findall(r"([^{}]*\.inbox-card[^{}]*\.sheet-title[^{}]*)\{([^}]*)\}", css)
+    rules = re.findall(r"(?:(?<=[{}])|\A)([^{}]*\.inbox-card[^{}]*\.sheet-title[^{}]*)\{([^}]*)\}", css)
     shrinking = [sel.strip() for sel, body in rules if re.search(r"flex:\s*0 1 auto", body)]
     assert shrinking, "the shrink rule moved: find where the inbox-card title is sized"
     assert all(":has(> .select-shell)" in sel for sel in shrinking), shrinking
@@ -37,7 +37,7 @@ def test_no_popup_head_title_gives_up_its_room_unless_a_select_takes_it():
     the last control's right edge against the head's content edge, 0px at 390, 900 and 1440."""
     css = re.sub(r"/\*.*?\*/", "", css_glob_text(), flags=re.S)
     bad = []
-    for group, body in re.findall(r"([^{}]*)\{([^{}]*)\}", css):
+    for group, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]*)\{([^{}]*)\}", css):
         if not re.search(r"(?:^|;)\s*(?:flex:\s*(?:0|none)\b|flex-grow:\s*0\b)", body):
             continue
         for sel in group.split(","):
