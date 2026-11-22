@@ -2404,6 +2404,16 @@
   overscroll-behavior: none;
   touch-action: none;
 }
+/* The board gallery is the one part of this view that scrolls: the clip above
+   is for the canvas, and left a gallery taller than the window unreachable (a
+   board past the fold at 390 could not be scrolled to or opened, deepflows
+   2026-11-22). Its own scroller, so the canvas keeps `clip` and `none`. */
+#wb-boards-landing {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
 /* Full screen. Mirrors `.graph-fullscreen` deliberately: the graph and the
    board are the app's two canvases and a user who learns one should not
    have to learn the other. See `toggleWhiteboardFullscreen` in

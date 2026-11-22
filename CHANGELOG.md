@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Desktop companion: a prop act keeps its drawn prop layer instead of redrawing and resizing it on most ticks (L-general-72); act ticks at dpi 192 went from a 31 ms median to 9 ms. A load-order test checks every name documents.js calls at load is defined before it.
+- Boards: the board gallery scrolls on its own, so a board past the fold can be reached; the view around it clipped, and at 390 with forty boards everything below 712px was out of reach.
 - Mind map: Filter by marker, Gantt chart and What this map is made of move from View to the Board menu, beside Study the map, so the map's View menu is 431px at 1440 instead of 503 (L-mindmap-23).
 - Sweeps: noteobject reads every toast, since a stack now leads with its "+1 more" group.
 - Documents: the toolbar-state sweep reads what the caret is inside through `renderDocStatusBar.marksAt`, since the scroll and status file was wrapped and `docToolbarMarksAt` left the global scope.
