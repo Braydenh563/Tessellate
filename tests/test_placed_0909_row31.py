@@ -64,7 +64,7 @@ def test_the_vault_rekey_has_a_button():
     controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     assert '"/auth/rotate-vault-key"' in controls
     #: The password on the lock card's prompt, not a second password field.
-    assert "askPasswordPrompt({" in controls[controls.index('$("account-rekey")') :][:1200]
+    assert "askPasswordPrompt({" in controls[controls.index('wire("account-rekey"') :][:1200]
 
 
 def test_a_package_name_line_is_as_tall_as_its_buttons():

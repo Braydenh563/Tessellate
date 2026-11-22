@@ -485,6 +485,7 @@ def _screen_area(webview: Any, corner: tuple[int, int] | None = None) -> tuple[i
         screen = webview.screens[0]
         return 0, 0, int(screen.width), int(screen.height)
     except Exception:  # noqa: BLE001 - an older pywebview, or no screens
+        logger.debug("_screen_area: an older pywebview, or no screens", exc_info=True)
         return 0, 0, 1280, 720
 
 

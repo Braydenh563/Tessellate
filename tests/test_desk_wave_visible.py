@@ -7,6 +7,7 @@ script says so (`nmb-desk-wave`)."""
 from pathlib import Path
 
 import pytest
+from tests._css_paths import css08_text
 
 np = pytest.importorskip("numpy")
 Image = pytest.importorskip("PIL.Image")
@@ -40,5 +41,5 @@ def test_the_wave_frame_has_a_raised_hand_clear_of_the_head(look):
 def test_the_render_script_waves_the_arm_that_is_not_against_the_hair():
     js = (ROOT / "scripts" / "render_desk_frames.js").read_text(encoding="utf-8")
     assert '{ name: "wave", pose: "stand", classes: ["nmb-desk-wave"]' in js
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = css08_text()
     assert "#nm-buddy.nmb-desk-wave .atl-figure .nmb-arm-l { transform: rotate(" in css

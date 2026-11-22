@@ -1,432 +1,3 @@
-/* --- whiteboard objects: images and text boxes, neither tied to a note ---
-   Asked for directly: images pasted/dropped/uploaded straight onto the
-   canvas, and a real text box ("I want the whiteboard to basically be like
-   OneNote and Microsoft Whiteboard"). Sized by inline style (width/height
-   are per-object, unlike a card's fixed 250px), with eight resize handles, 
-   corners resize both axes, edges resize one. */
-.wb-object {
-  position: absolute;
-  box-sizing: border-box;
-  border-radius: var(--radius-sm);
-  cursor: grab;
-}
-.wb-object:active {
-  cursor: grabbing;
-}
-/* A picture fills its box and keeps its aspect (K16/K19): without this it drew
-   at its natural size, so a pasted image shrunk to the view overflowed a
-   smaller selection box and a resize changed the box but not the picture. */
-/* Crop on picture: a box and eight grips drawn in the picture's own (turned) frame; the dim outside is the
-   box's own shadow, so nothing needs a blur. */
-.wb-crop-frame {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  pointer-events: none;
-}
-.wb-crop-grip {
-  position: absolute;
-  inline-size: 12px;
-  block-size: 12px;
-  padding: 0;
-  background: var(--accent);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-sm);
-  pointer-events: auto;
-  touch-action: none;
-  transform: translate(-50%, -50%);
-}
-.wb-crop-grip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { cursor: ns-resize; }
-.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { cursor: ew-resize; }
-/* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
-   between, so the shapes on the drawing layer below the card layer show
-   through it. Its inside lets the pointer through to the board, so a press
-   inside a frame selects or draws as it would on bare board; the title and
-   a selected frame's handles take the pointer. */
-.wb-object-frame {
-  /* `--border` is a 10% hairline, drawn for a box that has a fill to stand
-     on; a frame is nothing but its edge, so the edge takes the muted ink. */
-  border: 1.5px solid color-mix(in srgb, var(--muted) 80%, transparent);
-  background: transparent;
-  pointer-events: none;
-}
-.wb-object-frame .wb-frame-title {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  max-width: 100%;
-  padding-bottom: var(--space-1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  cursor: grab;
-  user-select: none;
-  touch-action: none;
-}
-/* **The title's hit area never shrinks below a target** (harness-wb-1004
-   item 1). The title is board text, so at a phone's fitted zoom (k 0.24) it
-   was 7px tall and a press aimed at it landed on the board. Its box grows
-   upward from the frame's edge to `--target-min` on screen, the words kept
-   at its foot: a transparent top border makes up the difference (a border
-   is hit like the box; a pseudo-element is clipped by the title's own
-   overflow, and a flex box loses the ellipsis). At k 1 it is a few pixels. */
-.wb-object-frame .wb-frame-title {
-  min-width: min(100%, calc(var(--target-min) * var(--wb-inv-zoom)));
-  border-top: max(0px, calc(var(--target-min) * var(--wb-inv-zoom) - var(--text-sm) * 1.4 - var(--space-1))) solid transparent;
-}
-.wb-object-frame.wb-text-editing .wb-frame-title {
-  border-top-width: 0;
-}
-.wb-object-frame.wb-text-editing .wb-frame-title {
-  color: var(--text);
-  cursor: text;
-  user-select: text;
-  text-overflow: clip;
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-/* Presenting the frames (WHITEBOARD_PLAN decision 16): every control but
-   the presentation's own bar steps aside, and the board is a view. A
-   board's History (decision 33) is this mode with its own `.wb-present-bar`. */
-#library-view-whiteboard.wb-presenting .wb-topbar,
-#library-view-whiteboard.wb-presenting .whiteboard-floating-panel:not(.wb-present-bar),
-#library-view-whiteboard.wb-presenting .wb-context,
-#library-view-whiteboard.wb-presenting .wb-map-strip,
-#library-view-whiteboard.wb-presenting .wb-navigator,
-#library-view-whiteboard.wb-presenting .wb-tools-opener {
-  display: none;
-}
-.wb-present-bar {
-  left: 50%;
-  bottom: var(--space-5);
-  transform: translateX(-50%);
-  max-width: calc(100% - 2 * var(--space-4));
-}
-/* The typeable page number before the picker (value-field.js, INBOX 1694 b). */
-.wb-present-page {
-  flex: none;
-  display: inline-flex;
-  font-size: var(--text-sm);
-  color: var(--text);
-}
-.wb-present-count {
-  /* Fixed, so the arrows beside it never move between pages (INBOX K32). */
-  flex: none;
-  width: min(20rem, 50vw);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--text-sm);
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-/* The page picker (INBOX 1425): the count cell holds a kebabMenu whose opener
-   fills it, text centred between the arrows, the caret pinned right so it
-   does not pull the words off centre. The cell keeps its fixed width, so the
-   arrows keep their x; the menu escapes to the body and opens upward. */
-.wb-present-count.wb-present-pick-slot {
-  overflow: visible;
-}
-.wb-present-pick-slot > .menu-wrap {
-  display: block;
-  width: 100%;
-}
-.wb-present-pick {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  padding-inline: var(--space-7);
-  text-align: center;
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-}
-.wb-present-pick-title {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.wb-present-pick-caret {
-  position: absolute;
-  inset-inline-end: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-}
-.wb-present-pick-check {
-  margin-inline-start: auto;
-}
-.action-menu .menu-item.wb-present-pick-row {
-  font-weight: 600;
-}
-/* A study question the cell would cut takes a line above the buttons. */
-.wb-present-count.wb-present-pick-slot.is-wide {
-  flex: 1 0 100%;
-  order: -1;
-  width: auto;
-}
-.wb-present-pick-slot.is-wide .wb-present-pick-title {
-  white-space: normal;
-  max-height: 9em;
-  overflow-y: auto;
-}
-/* A locked item (WHITEBOARD_PLAN decision 15) lets the pointer through, all
-   of it: a sketch's hit path and a frame's title set their own
-   `pointer-events`, so the children are named too, and the id keeps this
-   above every per-part rule. The board's right-click menu unlocks. */
-#whiteboard-container .wb-locked,
-#whiteboard-container .wb-locked * {
-  pointer-events: none;
-}
-/* An item's comment count (WHITEBOARD_PLAN decision 17): a zero-size pin on
-   the item's top-right corner, scaled back to screen size like a grip
-   (`WB_INV_ZOOM_GRIPS`), holding an accent pill up and right of the corner so
-   the resize handle stays free. Lifted over every item by `zIndex` in JS. */
-
-/* The thread, in the help popover's shell: the comments, then a quiet "New
-   comment" that opens the box with its Post and Cancel (INBOX 570). */
-.help-popover.wb-comments {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-}
-.wb-object-text .wb-text-content {
-  width: 100%;
-  height: 100%;
-  outline: none;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  /* **A box you are not editing is a box, not a text field.** Reported:
-     text boxes were "basically unmovable", the editable body filled the
-     whole box and took every pointerdown, so only the grip could move it.
-     The JS half is in `wbBeginTextEdit`; this is the half that has to match
-     it, because an I-beam over something you can only drag is a promise the
-     box does not keep, and a live text selection would fight the drag for
-     the same gesture. Both come back under `.wb-text-editing` below. */
-  cursor: inherit;
-  user-select: none;
-}
-/* A guaranteed drag target for a text box, see the matching comment in
-   app.js's `objectEnter.each` for why `.wb-text-content` alone left only a
-   ~0.5rem padding strip to grab. Same glyph and cursor as `.wb-panel-grip`,
-   always visible (not hover-gated) since the whole point is not having to
-   go hunting for it. */
-/* Centred on the box's top edge, a tab on the border rather than a chip in
-   the text: at `top: -4px` its opaque ground covered the top 3px of the
-   first line (measured: 28 to 36 square px of the first glyph's box, the
-   ascender of "h" cut off; INBOX 445). */
-.wb-object-grip {
-  position: absolute;
-  top: 0;
-  transform: translateY(-50%);
-  left: 6px;
-  padding: 0 var(--space-1);
-  border-radius: var(--radius-sm);
-  /* Opaque in every look: `--card-bg` is a 55% glass in most, and on a
-     sticky's yellow the muted glyph over it measured 1.68:1 (Classic, dark)
-     (`wbgripink.js`). */
-  background: var(--modal-bg-opaque);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: 1.4;
-  cursor: grab;
-  z-index: 6;
-  touch-action: none;
-  user-select: none;
-}
-.wb-object-grip:active {
-  cursor: grabbing;
-}
-/* Editing text has to win over the box's own drag: a click that starts a
-   text selection must not also move the box out from under it. */
-.wb-resize-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: var(--accent);
-  border: 1px solid var(--card);
-  border-radius: var(--radius-sm);
-  z-index: 5;
-  opacity: 0;
-  /* **Absent at rest, not merely invisible** (INBOX 424 (a)). Every card and
-     text box carries nine of these, and each is scaled by `--wb-inv-zoom`
-     (below), which is a transform the compositor cannot fold into the layer
-     around it: at `opacity: 0` they were still nine paint chunks per card,
-     and they split the board into one layer per card. On a 250-object board
-     that was 256 layers and 1,680ms of `Layerize` in a 40-move pan at 4x;
-     with the grips out of the tree at rest, 138 layers and 388ms
-     (`scratchpad/ui-sweeps/wbpanlayers.js`). The reveal below puts them back,
-     and `@starting-style` keeps the fade in. */
-  display: none;
-  /* Real bug, found while testing link anchors (ROADMAP item 11): opacity 0
-     is not pointer-events: none: an invisible handle still wins the
-     hit-test over the card/object beneath it at every corner and edge,
-     for *any* tool, not only while selected. A drag meant to move the item
-     (or, for the whiteboard's link tool, start a link from that corner)
-     silently turned into a no-op resize attempt instead, very likely the
-     whole of "objects are difficult and annoying to move", since a small
-     object's clickable area is mostly covered by its own 8 handles. */
-  pointer-events: none;
-  transition:
-    opacity var(--motion-fast) var(--ease-out),
-    display var(--motion-fast) linear allow-discrete;
-}
-/* Too small on screen to hold its grips: none, so a press drags the box
-   (L-whiteboard-15; the cull pass sets `wb-tiny`). Two ids, so it outranks
-   every reveal rule below. */
-#whiteboard-container #wb-html-layer > .wb-tiny .wb-resize-handle {
-  display: none;
-}
-/* Interactive (and visible) only in the Select tool, `:hover` alone fires
-   for *any* tool the instant the cursor crosses the card, so without this
-   gate a link/pan drag started near a corner still lost to the handle
-   underneath even after the pointer-events fix above. `data-current-tool`
-   is kept in sync with `window.currentTool` by `updateWbCursor()`, the one
-   place a tool switch happens. */
-/* `:not(.wb-in-group)` above because the reveal now sets `display`, and at
-   this specificity it would beat the group rule that hides a member's own
-   grips (`.node-card.wb-in-group .wb-resize-handle`, INBOX 278), which only
-   ever had an `opacity` to disagree with before.
-   Where the fade in starts from, now that the grip was absent rather than
-   transparent: without it a `display` change skips the transition and the
-   grips would snap in. */
-@starting-style {
-  #whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-resize-handle,
-  #whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-resize-handle,
-  #whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-resize-handle,
-  #whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-resize-handle,
-  #whiteboard-container[data-current-tool="select"] .wb-object:hover:not(.wb-in-group) .wb-rotate-handle,
-  #whiteboard-container[data-current-tool="select"] .wb-object.wb-selected:not(.wb-in-group) .wb-rotate-handle,
-  #whiteboard-container[data-current-tool="select"] .node-card:hover:not(.wb-in-group) .wb-rotate-handle,
-  #whiteboard-container[data-current-tool="select"] .node-card.wb-selected:not(.wb-in-group) .wb-rotate-handle,
-  #whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
-  #whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-resize-handle,
-  #whiteboard-container[data-current-tool="select"] .wb-object:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle,
-  #whiteboard-container[data-current-tool="select"] .node-card:is(:focus-visible, :has(:focus-visible)):not(.wb-in-group) .wb-rotate-handle {
-    opacity: 0;
-  }
-}
-/* One handle above top-centre, asked for directly ("rotations"). A round
-   handle (vs. the square resize ones) so the two are never confused at a
-   glance, connected to the box with a thin stem the same way every other
-   drawing app's own rotate handle reads. */
-.wb-rotate-handle {
-  position: absolute;
-  top: -28px;
-  left: calc(50% - 6px);
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  border: 1px solid var(--card);
-  /* A curved-arrow rotate cursor, not a plain grab hand, asked for
-     directly ("cursor changing to the rotate icon when hovering over or
-     using the rotate nodes"). Same inline-SVG-as-cursor technique
-     `wbCursorUrl` uses for the drawing tools in app.js, just written as
-     static CSS here since this is a plain `:hover` pseudo-class on one
-     fixed element, not a per-tool cursor computed in JS. `grab`/`grabbing`
-     stay as the fallback for browsers that reject the custom cursor. */
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpath d='M17 6a7 7 0 1 0 1.6 7.3' fill='none' stroke='%23000' stroke-opacity='.6' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M14 3l3.6 2-1 4' fill='none' stroke='%23000' stroke-opacity='.6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 11 11, grab;
-  z-index: 5;
-  opacity: 0;
-  /* Absent at rest, for the reason on `.wb-resize-handle` above. */
-  display: none;
-  pointer-events: none;
-  /* see .wb-resize-handle's own comment above */
-  transition:
-    opacity var(--motion-fast) var(--ease-out),
-    display var(--motion-fast) linear allow-discrete;
-}
-.wb-rotate-handle::before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: calc(50% - 1px);
-  width: 2px;
-  height: 16px;
-  background: var(--accent);
-  opacity: 0.6;
-}
-.wb-rotate-handle:active {
-  cursor: grabbing;
-}
-/* A sketch's own rotate handle, asked for directly. Round like the
-   card/object handles' own `.wb-rotate-handle` (an HTML element; sketches
-   are SVG, hence a separate class here rather than sharing it), connected
-   to the shape with a thin stem the same way every other drawing app's
-   rotate handle reads. */
-.wb-rotate-handle-stem {
-  stroke: var(--accent);
-  stroke-width: 1px;
-  stroke-opacity: 0.7;
-  /* The stem is the line drawn between the box and the dot, and it is
-     decoration: the dot is the control. Without this it also swallows the
-     press meant for the "n" edge handle, which sits at the middle of the top
-     edge, exactly where the stem meets the box. Measured on a group
-     selection: `elementFromPoint` at the n handle's own centre returned the
-     stem, so that edge could not be dragged at all (INBOX 262). */
-  pointer-events: none;
-}
-/* A link's own two endpoints, round, not the square resize handles above,
-   so the two read as a different kind of control (reattach/detach an end,
-   not resize a shape). */
-.wb-link-endpoint-handle {
-  fill: var(--card);
-  stroke: var(--accent);
-  stroke-width: 2px;
-  cursor: crosshair;
-  /* The overlay SVG root is `pointer-events: none` (it must never block a
-     card underneath it): each handle opts back in individually. */
-  pointer-events: auto;
-}
-
-.wb-resize-handle[data-handle="nw"] {
-  top: -5px;
-  left: -5px;
-  cursor: nwse-resize;
-}
-.wb-resize-handle[data-handle="n"] {
-  top: -5px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-.wb-resize-handle[data-handle="ne"] {
-  top: -5px;
-  right: -5px;
-  cursor: nesw-resize;
-}
-.wb-resize-handle[data-handle="e"] {
-  top: calc(50% - 5px);
-  right: -5px;
-  cursor: ew-resize;
-}
-.wb-resize-handle[data-handle="se"] {
-  bottom: -5px;
-  right: -5px;
-  cursor: nwse-resize;
-}
-.wb-resize-handle[data-handle="s"] {
-  bottom: -5px;
-  left: calc(50% - 5px);
-  cursor: ns-resize;
-}
-.wb-resize-handle[data-handle="sw"] {
-  bottom: -5px;
-  left: -5px;
-  cursor: nesw-resize;
-}
-.wb-resize-handle[data-handle="w"] {
-  top: calc(50% - 5px);
-  left: -5px;
-  cursor: ew-resize;
-}
 /* ======================= SIDEBAR COLLAPSE & PEEK ======================= */
 .sidebar-collapse-toggle {
   position: absolute;
@@ -790,69 +361,6 @@
    in 00-tokens-shell.css. A row of chips that each rise 2px with a shadow was
    the other half of the "pills" tell (INBOX 394 h), and the cards above had
    already given up the lift for the reason their own comment gives. */
-/* ======================= SKILLS TAB ======================= */
-/* Columns dealt by script in reading order (library.js `renderSkillCards`,
-   INBOX 450), each a stack on the grid's own gap, so a card is as tall as
-   its own content and no taller: a grid row stretched a short card's row to
-   its tallest neighbour and left the gap under it. */
-.skills-grid {
-  display: flex;
-  gap: var(--space-5);
-  margin-top: var(--space-6);
-  /* Each column sizes to its own cards: opening one card's steps grows that
-     card and its column, never a neighbour (the reason the grid once had
-     `align-items: start`, which still left the row's height behind). */
-  align-items: flex-start;
-}
-.skill-card {
-  --skill-fact-h: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  background: var(--inner);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: transform var(--ui-slow) var(--ease-out), border-color var(--ui-fast) var(--ease-out);
-}
-@media (hover: hover) {
-  .skill-card:hover,
-  .skill-card:is(:focus-visible, :has(:focus-visible)) {
-    border-color: var(--accent);
-  }
-}
-.skill-card-header {
-  display: flex;
-  justify-content: space-between;
-}
-.skill-card-title {
-  margin: 0;
-  font-weight: 600;
-}
-/* Which kind of skill this is. "Yours" rather than "Custom": the distinction
-   that matters to a reader is whether they can edit it. */
-.skill-badge {
-  flex: 0 0 auto;
-}
-/* **What running this will actually do**, steps, tools, inputs. The card
-   used to carry a name and a description and nothing else, which is not
-   enough to decide whether to let something edit your notebook. */
-.skill-card-facts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-.skill-fact {
-  font-size: var(--text-xs);
-}
-/* Both margins were for a search box that sat on its own between two cards.
-   It is in the Skills dock now, where `.dock`'s own gaps place it and
-   `.dock input` zeroes the margin, so only the width behaviour is left to
-   say: search takes the leftover width, the same as every other dock's. */
-.skills-search {
-  margin: 0;
-}
 textarea.drag-over {
   border-color: var(--accent);
   background-color: var(--inner);
@@ -1442,22 +950,6 @@ body.has-agent-monitor #timeline-scroll {
   overflow-y: auto;
   font-size: var(--text-md);
 }
-/* --- the run list (AGENT_SKILLS_REFORM.md, Phase C) --------------------------
-   One row per run, collapsed. The rows themselves are the chat transcript's
-   own components: `.agent-step.step-plan` for a run, `.agent-step
-   .step-thinking` for a step, `.tool-chip` for a call: so almost nothing is
-   needed here: the container, the three-part summary line, and the marker for
-   the one state the chat did not have a colour for.
-   Same max-height as the log it replaces on screen, for the same reason: this
-   panel is a glance, and past eight rows it is a list to scroll. */
-.monitor-runs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  max-height: 12.5rem;
-  padding-top: var(--space-3);
-  overflow-y: auto;
-}
 /* **An empty line in a small panel** (DESIGN.md's recipe index, op4-1005):
    one sentence where a short list has nothing in it, in a glance panel, a
    Settings section or a sidebar group. `.empty-state` (a centred block with
@@ -1471,136 +963,6 @@ body.has-agent-monitor #timeline-scroll {
   color: var(--muted);
   font-size: var(--text-md);
   text-align: start;
-}
-/* **A run row is a grid of four columns** (owner report, 2026-09-23: "not
-   aligned and look unprofessional"): the fold marker, the run's icon, the
-   name, and the state pill. The second line (the detail or step count, and
-   the bar) starts in the name's column, so every line of every row begins
-   on one edge, and the pill is pinned to the last column's right edge, so
-   every row ends on one. Measured before: the name's text at 76px and the
-   detail under it at 43.6px, with the icon inside the name and the detail
-   sentence wrapping to three lines beside a bar centred on it.
-   The marker column is kept on a row with nothing to fold too (its marker
-   is `visibility: hidden`, below), because a row that closed the gap would
-   put its icon one column left of its neighbours'. */
-.monitor-runs .agent-run-row > .agent-run-summary {
-  display: grid;
-  grid-template-columns: var(--space-3) 1rem minmax(0, 1fr) auto;
-  column-gap: var(--space-2);
-  row-gap: var(--space-1);
-  align-items: center;
-}
-.monitor-runs .agent-run-row > .agent-run-summary::before {
-  grid-column: 1;
-  justify-self: center;
-}
-.agent-run-icon {
-  grid-column: 2;
-  font-size: var(--text-body);
-  line-height: 1;
-  color: var(--muted);
-}
-.agent-run-name {
-  grid-column: 3;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* The detail is one line: a background job's sentence is truncated here and
-   whole on the element's `title` (renderAgentRunSummary), because a sentence
-   wrapped to three lines beside a bar made the first row 96px against its
-   neighbours' 60. A step counter ("Step 2 of 3") never shrinks: it is a
-   label on the bar beside it. */
-.agent-run-meta {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.agent-run-meta.agent-run-count {
-  flex: 0 0 auto;
-}
-.agent-run-meta:empty {
-  display: none;
-}
-/* The state is a pill: tinted by what it says, in the last column. The word
-   stays `--ink` on every tint, so its contrast does not depend on which state
-   it is in; the glyph carries the state's own colour. */
-.monitor-runs .agent-run-state {
-  grid-column: 4;
-  justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-pill);
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  line-height: 1.6;
-  white-space: nowrap;
-}
-.monitor-runs .agent-run-state.plan-step-running {
-  background: var(--accent-soft);
-}
-.monitor-runs .agent-run-state.plan-step-running > i {
-  color: var(--accent-text);
-}
-.monitor-runs .agent-run-state.plan-step-done > i {
-  color: var(--ok);
-}
-.monitor-runs .agent-run-state.plan-step-failed {
-  background: var(--error-soft);
-}
-.monitor-runs .agent-run-state.plan-step-failed > i {
-  color: var(--error);
-}
-.monitor-runs .agent-run-state.plan-step-stalled,
-.monitor-runs .agent-run-state.plan-step-paused {
-  background: var(--warn-soft);
-}
-.monitor-runs .agent-run-state.plan-step-stalled > i,
-.monitor-runs .agent-run-state.plan-step-paused > i {
-  color: var(--warn);
-}
-.agent-run-meta {
-  font-weight: 400;
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-/* Nested one level in, so a step's tool calls read as belonging to the step
-   rather than to the run. `--space-5` is the same indent the plan card's own
-   ordered list uses for exactly this. */
-.agent-run-step {
-  margin-left: var(--space-5);
-}
-/* In the panel a step starts in the run's icon column, so the fold marker of
-   a step sits under the icon of the run it belongs to: the summary's own
-   inset plus the marker column and its gap. */
-.monitor-runs .agent-run-step {
-  margin-left: calc(var(--space-3) * 2 + var(--space-2));
-}
-/* A step's own text is content, not a heading: the same normal weight the
-   chat's plan card gives its `<li>`s. The summary rule it inherits from is
-   written for a one-line label and puts 600 on it, which over three lines of
-   wrapped step text reads as shouting. */
-.monitor-runs .agent-run-step > summary {
-  font-weight: 400;
-}
-.agent-run-tools {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding-top: var(--space-1);
-}
-/* A step with nothing under it must not pretend to be openable: an empty
-   disclosure that a reader clicks twice is a control that reports as broken.
-   `:not(.has-tools)` is set by the panel when a call is filed under it. */
-.agent-run-step:not(.has-tools) > summary::before {
-  visibility: hidden;
 }
 /* **The one state the chat's plan card never had a mark for.** Phase A
    re-prompts a step whose contract was not met, and the app now says so in
@@ -1649,53 +1011,6 @@ body.has-agent-monitor #timeline-scroll {
   font-style: normal;
   font-weight: normal;
   line-height: 1;
-}
-/* A run row's own state word borrows the same colours (`plan-step-*` is set on
-   it by `renderAgentRunSummary`), and the two that only a *run* can be need
-   their own: a run has no ✓/✕ suffix, because the word is already there. */
-.agent-run-state.plan-step-done::after,
-.agent-run-state.plan-step-failed::after,
-.agent-run-state.plan-step-stalled::after,
-.agent-run-state.plan-step-retrying::after,
-.agent-run-state.plan-step-replanned::after,
-.agent-run-state.plan-step-paging::after,
-.agent-run-state.plan-step-running::after {
-  content: none;
-}
-/* The second line spans the name's column to the end: `minmax(0, 1fr)` on
-   that column is what lets a long detail shrink rather than push the list
-   wider than the panel (measured once at 501px inside 300, 2026-09-09). */
-.agent-run-progress {
-  grid-column: 3 / -1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-.agent-run-row .task-progress {
-  flex: 1 1 auto;
-  height: var(--space-1);
-  margin: 0;
-}
-/* Beside a detail sentence the bar takes a fixed share, so the sentence and
-   the bar each keep a readable width rather than the sentence's own length
-   deciding the bar's. */
-.agent-run-meta:not(.agent-run-count):not(:empty) + .task-progress {
-  flex: 0 0 40%;
-}
-/* **A step's state has to beat the summary's own colour.** The step rows reuse
-   `.agent-step.step-thinking summary`, which paints every summary `--muted` at
-   (0,2,1): so a bare `.plan-step-retrying` (0,1,0) lost, and a retrying step
-   was the same grey as a running one. Measured: `rgb(76,85,99)`, which is
-   `--muted`, on a row that should have been `--warn`. Scoped through the
-   container so it wins on specificity rather than on file order. */
-.monitor-runs .agent-run-step > summary[data-state="retrying"],
-.monitor-runs .agent-run-step > summary[data-state="replanned"],
-.monitor-runs .agent-run-step > summary[data-state="stalled"] {
-  color: var(--warn);
-}
-.monitor-runs .agent-run-step > summary[data-state="failed"] {
-  color: var(--error);
 }
 /* Notes list header and the semantic-search toggle beside the search box.
    Asked for directly, twice: first "move the ui controls at the top of the
@@ -2183,10 +1498,11 @@ body.scroll-top-visible .skills-split > .tab-main {
   container: doc-sidebar / inline-size;
 }
 @container doc-sidebar (width < 14rem) {
-    /* At 192px even the whole width is 160px against the two tabs' 182: the
-     tabs-line's --space-5 of side room drops to --space-2 here only. */
+  /* At 192px even the whole width is 160px against the two tabs' 182: the
+     tabs-line's --space-5 of side room drops to --space-1 here only (at 820
+     the box is 158px and the pair, at --space-2, ran 5px past it). */
   .doc-sidebar-tabs > [role="tab"] {
-    padding-inline: var(--space-2);
+    padding-inline: var(--space-1);
   }
 }
 /* **The strip is square, the paint on it is not.** Reported as "square tab
@@ -5205,113 +4521,6 @@ body.library-media-selecting
   flex: 0 0 auto;
   white-space: nowrap;
 }
-/* --- the Connections dialog (REDESIGN.md §R7.3) ------------------------------- */
-/* Five groups of one-line rows, and the thing that makes it readable is that
-   a group heading and its rows are visibly one unit, a flat list of fifteen
-   rows with five grey labels loose among them is the "everything at equal
-   weight" failure this app has already measured once (§36B.3).
-   The rows are buttons because they navigate, and `.connection-row` overrides
-   `button.small`'s centring rather than adding a new button class: a row of
-   text that starts at a different x than the row above it is the single
-   thing that made this dialog's first draft read as noise. */
-#connections-card {
-  max-width: 44rem;
-  width: min(44rem, 92vw);
-}
-.connection-group+.connection-group {
-  margin-top: var(--space-6);
-}
-/* **The list recipe** (INBOX 784, the owner: "redesign Connections in both
-   forms ... rows with icon, title, a muted subline, hover background, no heavy
-   borders per row; section headers with counts; the stats as chips at the
-   top"). `connectionRowEl` (menus.js) draws every row, in the sheet and in the
-   Notes rail, so there is one set of rules. */
-#connections-status:empty {
-  display: none;
-}
-.connection-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-4);
-}
-.connection-heading {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-1);
-  padding-inline: var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-/* The group's count, a quiet number at the end of the heading. */
-.connection-count {
-  margin-inline-start: auto;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-.connection-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-/* A backlink's sentence and an unlinked mention's Link (GRAPH_PLAN KG1) sit
-   under their row, indented to its text, on the document panel's recipe. */
-.connection-rows > .doc-backlink-context,
-.connection-rows > .doc-backlink-foot {
-  padding-left: calc(var(--space-3) + 1.25rem + var(--space-3));
-}
-.connection-rows > .doc-backlink-foot {
-  margin-bottom: var(--space-2);
-}
-button.connection-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: var(--control-h-lg);
-  padding: var(--space-2) var(--space-3);
-  border: 0;
-  border-radius: var(--radius-md);
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink);
-  font-weight: 400;
-  text-align: left;
-}
-button.connection-row:is(:hover, :focus-visible) {
-  background: var(--hover-veil);
-}
-.connection-row-icon {
-  flex: 0 0 1.25rem;
-  font-size: var(--text-lg);
-  color: var(--muted);
-}
-.connection-row-text {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-/* A preview is a clip of another note's first line and can be long: it gives
-   way with an ellipsis rather than wrapping, so the left edge stays one line. */
-.connection-row-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* The subline: the kind, the category or day, the reason. Whole where it fits,
-   an ellipsis where it does not. */
-.connection-row-cue {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--text-xs);
-  color: var(--muted);
-}
 /* --- the document toolbar's two folds ------------------------------------- */
 /* `.doc-dock-menu` already carries the popup's own positioning and list
    styling (it is the document ⋯ menu's class); these three rules only make
@@ -5443,31 +4652,6 @@ button.connection-row:is(:hover, :focus-visible) {
   /* The file name is allowed to run out of room; the title is not. */
   flex: 1 1 auto;
 }
-/* **The header, in two rows.** Reported: "fix the ui of the top bar". Measured
-   before touching it: with nine controls in one flex row, `Read this page with
-   AI` rendered 42.8px tall around 41px of content, and `Copy all` and `Save as
-   note` the same: every wide label had broken across two lines inside a
-   button sized for one, which is what made the bar look like a pile rather
-   than a toolbar. Identity and the exit belong on top; the tools belong on
-   their own row, grouped by what they do. */
-.ocr-head {
-  /* **One height for the strip and everything in it.** Reported: "none of the
-     top elements in the ocr workspace are aligned and are different heights."
-     Measured, and exactly right, in one row there were five: the Regions
-     checkbox label at 32px, the Fit/100% segment's buttons at 27.2, every
-     `.ghost.small` at 28, the enhanced dropdown at 35.6 and the pages box
-     somewhere else again. Nothing was wrong with any of them individually;
-     the strip simply never declared a height, so each control's size fell out
-     of whichever class it happened to carry. Same fix and same token as
-     `.library-head`, for the same reason its comment gives: one card, one
-     control height. 2.25rem = 36px, a whole multiple at 125% and 150% display
-     scaling, which is what keeps a 1px border off a half pixel. */
-  --control-h: var(--control-h-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  min-width: 0;
-}
 /* The sizing itself. `align-items: center` on the rows above only centres
    boxes of different heights against each other, it cannot make them the
    same height, which is what was actually reported. */
@@ -5508,26 +4692,6 @@ button.connection-row:is(:hover, :focus-visible) {
   gap: var(--space-3);
   min-width: 0;
 }
-
-/* Which file you are reading. Four surfaces open this dialog, so a header that
-   only said "Text on the page" was a header you had to close to understand. */
-.ocr-file {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--muted);
-  font-size: var(--text-sm);
-}
-/* Where you are in the document, beside the two controls that change it. */
-
-.ocr-page-label {
-  min-width: 7.5rem;
-  text-align: center;
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
 /* Continuous mode: every page stacked, in the order they are in the file. */
 
 /* The reading's own actions, under the reading. `margin-top: auto` pins them
@@ -5538,255 +4702,12 @@ button.connection-row:is(:hover, :focus-visible) {
   padding-top: var(--space-2);
   border-top: 1px solid var(--border);
 }
-/* Delete sits apart from the three constructive actions beside it, a
-   destructive one does not belong in the middle of them, and `margin-left:
-   auto` is the same "push this one to the far end" rule the story-mode
-   button and the board panel's primary action already use elsewhere. */
-#ocr-delete-reading {
-  margin-left: auto;
-}
-/* Find, over the reading rather than over the picture, the one search this
-   workspace can answer that a text search over a transcription cannot, because
-   a hit here also dims every box it is not. */
-.ocr-find {
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--inner);
-  min-width: 0;
-}
-
-/* Same (0,1,1) rule as above, wanted this time, but spelled at the same
-   specificity so it cannot be read as accidental. */
-.ocr-find .ocr-find-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  background: none;
-  padding: 0;
-  /* **`border: none` measured as `3px solid rgb(240,242,245)`**, the bright
-     ring reported around this box ("fix the hard line around the find in what
-     was read textbox"). Same cause and same answer as `.ask-composer >
-     #question`, which documents it at length: the Appearance system sets
-     `border-style: var(--border-style) !important` on every input
-     (00-tokens-shell.css) so a user's chosen border style cannot be defeated
-     by a stray local rule, and forcing the style back to `solid` restores the
-     initial `medium` width, 3px, on a control every stylesheet involved
-     believes has no border. An `!important` can only be answered by another.
-     Right everywhere else; wrong here, where the input is the *interior* of
-     the `.ocr-find` field rather than a field of its own, so the ring drew
-     inside the wrapper's own border and read as a hard second box.
-     `box-shadow` goes with it: the recessed inset says "this is the field",
-     and the wrapper is already saying that. */
-  box-shadow: none;
-}
-/* **The id is load-bearing, and `!important` alone was not enough.** Two
-   `!important` declarations are settled by specificity, and the Appearance
-   rule's selector, `input` plus five `:not([type=…])`, is (0,5,1), which
-   beats `.ocr-find .ocr-find-input` at (0,2,0). Measured: `border: none
-   !important` at the class selector still computed as `3px solid
-   rgb(240,242,245)`. `#ocr-find` is (1,0,0) and wins outright, which is the
-   same reason `.ask-composer > #question` had to be written with its id.
-   This repo has now paid for the enumerated-`:not()`-chain specificity trap
-   three times; if a fourth borderless input appears, give it an id. */
-.ocr-find #ocr-find {
-  border: none !important;
-}
-.ocr-find-input:focus {
-  outline: none;
-}
-/* The focus ring belongs to the whole row, not to the bare input inside it, 
-   otherwise focusing the box lights up the interior and leaves the wrapper,
-   which is what the eye reads as the control, unchanged. Same treatment
-   `.ask-composer` uses for the same reason. */
-.ocr-find:focus-within {
-  border-color: var(--accent);
-}
-
-/* A row the filter kept, marked so the eye lands on it, not a colour change,
-   which would collide with `.is-active`'s own meaning (this is the region you
-   clicked), but a rule down the edge. */
-.ocr-region.is-found {
-  border-left: 3px solid var(--accent);
-}
-/* And its counterpart on the picture: a box whose row the filter dropped
-   fades rather than disappearing, because a page with half its boxes missing
-   reads as a failed read. */
-.ocr-box.is-dimmed {
-  opacity: 0.2;
-}
-.ocr-head h2 {
-  margin: 0;
-}
-.ocr-panes {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr) minmax(18rem, 26rem);
-  gap: var(--space-5);
-}
-/* One page per row, thumbnail first, the same rail shape the Library's own
-   rows view uses, so a page list is not a third thing to learn. Hidden
-   entirely for a single page: an index of one is furniture. */
-
-.ocr-page {
-  min-width: 0;
-  min-height: 0;
-  /* The containing block for the region offer (Phase 7.4). Absolute against
-     this rather than fixed against the viewport, so the offer scrolls with the
-     page it is anchored to, a fixed panel would stay put while the rectangle
-     it points at slid away underneath it. */
-  position: relative;
-  /* `hidden` in Fit (nothing overflows, so a scrollbar would be furniture),
-     `auto` at Actual size: set on the mode class below rather than here. */
-  overflow: auto;
-  display: flex;
-  align-items: flex-start;
-  /* **`safe center`, not `center`.** Reported twice, the second time as "the
-     pdf and file is still cut off to the left when generating ocr". A flex
-     item centred inside a scroll container that is narrower than the item
-     overflows *both* ways: and the left overflow is unreachable, because a
-     scroll container's origin is its left edge and there is no negative
-     scroll to get back to it. So at Actual size the left third of a wide page
-     was not merely off-screen, it could not be scrolled to at all.
-     `safe` means "centre while it fits, align to the start when it does not",
-     which is exactly the rule that was wanted and is why the keyword exists.
-     The earlier Fit-mode work made this rare rather than fixing it; Fit is a
-     mode, and Actual size is the one you switch to when you need the pixels. */
-  justify-content: safe center;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--chip-bg);
-}
-/* The overlay's containing block. `position: relative` on a box that shrinks
-   to the image is what makes a percentage box land on the pixels it names, 
-   put it on the scroller instead and every region drifts as the pane
-   resizes. */
-.ocr-stage {
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
-  /* A flex item shrinks by default, and this one is inside a centring flex
-     pane: at Actual size the stage was told to be 800px and rendered 757, 
-     the pane had shrunk it to fit, which is the one thing "actual size" must
-     not do. Measured before this line existed. */
-  flex: 0 0 auto;
-}
-.ocr-stage img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-.ocr-boxes {
-  position: absolute;
-  inset: 0;
-  /* **Transparent to the pointer, so the drag layer underneath can be
-     reached** (UI_MODERNISATION_PLAN Phase 7.4). This layer is `inset: 0` over
-     the whole page, so with the default `pointer-events: auto` it swallowed
-     every press on the page, including the ones meant to start a region
-     drag. The boxes themselves put it back (below), so clicking a region still
-     selects that region: the layer stops being a lid and becomes exactly the
-     boxes it draws. */
-  pointer-events: none;
-}
-.ocr-boxes.is-hidden {
-  display: none;
-}
-/* **Drag here to outline a region.** Asked as a question (Phase 7.4): "can
-   there be a way for the user to manually outline and single out regions on a
-   pdf or similar document and then the ai will read what is in those
-   regions??"
-   Its own layer rather than `#ocr-boxes`, because that one is `display: none`
-   whenever Regions is unticked, and a gesture that stops existing because of a
-   checkbox is a feature nobody finds twice. `crosshair` is the whole
-   affordance: nothing else on this stage says a drag will do something. */
-.ocr-select {
-  position: absolute;
-  inset: 0;
-  cursor: crosshair;
-  /* A drag is a drag, not a text selection or a picture drag, without this,
-     dragging across a page picks up the browser's own image-drag ghost. */
-  touch-action: none;
-  user-select: none;
-}
-/* A text file has no page raster to crop, so there is nothing here to outline
-   - and a crosshair over a wall of text promising a gesture that leads nowhere
-   is the affordance problem this workspace keeps fixing elsewhere. */
-.ocr-stage-text .ocr-select {
-  display: none;
-}
-/* A button, not a div: a region is clickable, and the thing that reads out
-   "region 3: Invoice total" to a screen reader has to be focusable. No
-   ground of its own, an opaque box over a scan hides the very thing it is
-   pointing at. */
-.ocr-box {
-  position: absolute;
-  /* Put back what `.ocr-boxes` gives up: the layer is transparent to the
-     pointer so a region drag can reach the layer beneath it, and the boxes are
-     the part that still has to be clickable. */
-  pointer-events: auto;
-  padding: 0;
-  border: 1.5px solid var(--accent);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  cursor: pointer;
-}
-.ocr-box:hover,
-.ocr-box:focus-visible {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-.ocr-box.is-active {
-  border-width: 2.5px;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
-}
-/* A heading reads differently, so it is drawn differently, the one place
-   the "kind" is more than a label. */
-
-.ocr-regions {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.ocr-region:hover {
-  border-color: var(--accent);
-}
-.ocr-region.is-active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
 /* A disabled control has to read as disabled, the `<input>` greys itself, and
    without this the words beside it stayed at full strength and the pair looked
    like a live control that had stopped responding. */
 .checkbox-label.is-disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.ocr-message:not(.hidden) {
-  margin: 0;
-}
-/* **The engine line** (INBOX 443 (3)), drawn by ocr-engine.js under the
-   toolbar and again, smaller, in the Packages row for Tesseract. A state chip
-   (`chip item-label`, `is-ok` for ready and `is-warn` for not), one muted sentence, and the one control that fits the state:
-   the language when it can read, Install when it cannot. It wraps rather than
-   scrolls: unlike the toolbar above it, this line is words. */
-
-.ocr-engine-line {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  min-width: 0;
-}
-.ocr-engine-detail {
-  flex: 1 1 14rem;
-  min-width: 0;
-  font-size: var(--text-sm);
-  overflow-wrap: anywhere;
 }
 /* In Settings the picker is also a <label> in `.settings-section`, whose rule
    top-aligns a wrapped caption; the second selector keeps this row's centre
@@ -5796,15 +4717,6 @@ button.connection-row:is(:hover, :focus-visible) {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-}
-
-.ocr-engine-note {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--muted);
-}
-.ocr-engine-note.is-error {
-  color: var(--error);
 }
 /* **On a phone the reading's actions are icons, and keep their words for a
    screen reader** (the `.toolbar-word` recipe, DESIGN.md: hidden, not
@@ -5832,22 +4744,6 @@ button.connection-row:is(:hover, :focus-visible) {
   margin-inline-end: 0;
   translate: none;
 }
-/* The reading as editable text, in place of the sections while it is open. */
-.ocr-edit-panel:not(.hidden) {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-/* **The picture's other stored reading** (INBOX 421 e), under the message:
-   the region row's own card (border, radius, padding) without its pointer,
-   because it is not a section of the page and does not select a box. Its
-   label is the lightbox byline's words, so the two name the same reader. */
-.ocr-other-readings:not(.hidden) {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
 /* **The offer, once a rectangle exists** (Phase 7.4). The app's floating-panel
    material: `--modal-bg` over the glass border and shadow, exactly what
    `.help-popover`, the action menus and the toolbar menus are made of, rather
@@ -5870,48 +4766,6 @@ button.connection-row:is(:hover, :focus-visible) {
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
-}
-.ocr-region-popover.hidden {
-  display: none;
-}
-/* What was outlined, in the page's own terms. Sits with the actions rather
-   than above them: it is the subject of the two buttons, not a heading. */
-
-/* Answers about outlined regions, above the page's own reading. Separated by
-   tone and a rule rather than by a border round each card, the reading pane
-   is already a list of bordered panels, and a second bordered list inside it
-   is the "borders inside borders" the modernisation plan is subtracting. */
-.ocr-region-results {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--divider);
-}
-.ocr-region-results.hidden {
-  display: none;
-}
-/* Under 1100px the rail is the first thing to go, which page you are on is
-   answerable from the title, where a line sits on the page is not.
-   **The column goes, not just the rail.** Hiding `.ocr-rail` alone left
-   `.ocr-rail-column` in the grid as an empty item, and a grid of three items
-   in two columns puts the third in an implicit *row*: measured at 1024, the
-   empty column took 593px, the page was squeezed into the 320px column
-   beside it, and the reading pane dropped to a second row under both. At 390
-   the arithmetic was worse: the 1fr column collapsed to 0, so the reading had
-   no width at all. Two panes, two columns. */
-@media (max-width: 1099.98px) {
-  .ocr-panes {
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
-  }
-  /* `> .ocr-rail-column`, not the bare class: the column's own
-     `display: flex` is declared further down this same stylesheet, so at
-     equal specificity it would win over a rule in a band above it and the
-     column would stay in the grid at every width. */
-  .ocr-panes > .ocr-rail-column {
-    display: none;
-  }
 }
 /* The selection toolbar (editor.js). Positioned in viewport coordinates
    against the caret, so it is `fixed`, an absolutely-positioned bar would be
@@ -6427,22 +5281,6 @@ button.connection-row:is(:hover, :focus-visible) {
   gap: var(--space-2);
   padding-top: var(--space-2);
   border-top: 1px solid var(--border);
-}
-/* --- the OCR rail's own switch --------------------------------------------
-   Reported: "I cant always switch between viewing files or images, and if I
-   open it from the lightbox when viewing an image, no other files or images
-   show." The rail used to be whatever list the caller passed in, and three of
-   the four call sites passed nothing, so the workspace was navigable only
-   when opened from the gallery grid. It loads its own siblings now, and this
-   is the control that says which list you are looking at.
-   A column, so the switch is pinned above a rail that scrolls under it: the
-   rail can be two hundred pages long, and a switch that scrolls away with it
-   is a switch you cannot reach from page 180. */
-.ocr-rail-column {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  gap: var(--space-2);
 }
 .ocr-rail-switch {
   display: flex;
@@ -7406,8 +6244,8 @@ button.connection-row:is(:hover, :focus-visible) {
      284px of demand, and the bar ran 75px past itself with the last two
      controls unreachable. Both of the two that go are already somewhere a
      finger can reach:
-     Full screen is View › Zoom › Full screen, and on a phone there is no
-     browser chrome for it to hide in the first place.
+     Full screen is the last button of the zoom pill (L-world-class-351), as
+     on the graph.
      Arrange is the twelve alignment, distribution and order actions, every
      one of which is on the **context bar** above a selection (WHITEBOARD_PLAN
      decision 3, INBOX 12), which is the only time any of them can do
@@ -7416,7 +6254,6 @@ button.connection-row:is(:hover, :focus-visible) {
      bar in front of it already.
      Insert, Edit and View stay, because each of those is the only way to
      what it holds; Board leaves below 600 (the rule after this block). */
-  .wb-topbar #wb-fullscreen,
   .wb-topbar .wb-board-menu-wrap:has([aria-controls="wb-arrange-menu"]) {
     display: none;
   }
@@ -7516,13 +6353,6 @@ button.connection-row:is(:hover, :focus-visible) {
   margin-left: 0;
   margin-right: auto;
 }
-.ocr-caption {
-  margin: 0 0 var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--inner);
-  font-size: var(--text-sm);
-}
 .wb-text-content.wb-text-md > :first-child {
   margin-top: 0;
 }
@@ -7575,13 +6405,6 @@ button.connection-row:is(:hover, :focus-visible) {
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
-}
-/* The sections belonging to the page on screen, in the reading panel beside
-   it. A tone, not a border: this marks *where you are*, and the panel already
-   has a selected state (`.is-found`) that a second outline would compete
-   with. See `ocrRevealRegionsForPage` in library.js. */
-.ocr-region.is-current-page {
-  background: var(--surface-3);
 }
 /* --- the tab strip is centred on the window, not on whatever is left of it --
    Reported: "the top nav bar with all the tabs isnt actuallly centred and is
@@ -8713,342 +7536,6 @@ input[type="file"] {
     grid-row: 3;
   }
 }
-/* --- the node radial (MINDMAP_PLAN.md §12.1 item 3) -------------------------
-   The actions for a topic, in a ring around it: Coggle's idiom and the point
-   of the whole section, the controls appear on the thing you picked.
-   **One ring, cut into sectors: a pie menu, not buttons on a band** (the
-   owner, 2026-09-24: "the radial buttons are still clearly separate, I want
-   them to be part of the radial, not just buttons sitting ontop of it"). The
-   ring used to be a band with six tiles laid on it, and a tile on a band
-   reads as a button on a tray however well it is fitted (INBOX 410 fitted
-   them: every tile inside the band, evenly spaced, and still six things).
-   Now each action *is* a sector of the ring: a button the size of the whole
-   ring, clipped to its own wedge by a `clip-path: path()` that
-   `wbFitMapRadialBand` writes from the ring's measured inner and outer
-   radius. Clipping also clips hit-testing, so a sector takes the pointer
-   exactly where it is drawn and the hole takes none. The band under them
-   (`::before`) shows through a 1.5px gap between neighbours and a 1px rim,
-   which is what draws the hairline dividers: one surface, cut. The ring's
-   own boundary is a stronger line round both rims (`--wb-radial-edge`),
-   because a hairline that quiet is not an edge a canvas can see.
-   **The hole shows the node.** The ring is centred on the topic and
-   `wbSizeMapRadial` sets its inner radius from the topic's own box (half its
-   diagonal plus a little), so the topic is inside the hole, whole, rather
-   than under a band that covered its ends (the band's hole was 56px on a
-   200px topic).
-   **Placed with `left`/`top`, never `translate`.** The app's press cue is
-   `translate` plus `scale` (01-forms-settings.css, pinned by
-   tests/test_ui_recipes.py). A sector is a square the size of the ring,
-   centred on it, so the cue's scale presses the sector a hair towards the
-   middle of the ring, which is the right feel for a pie; placing it with
-   `translate` would throw it back to the ring's centre on every press. */
-.wb-map-radial {
-  /* How thick the ring is: an icon over one line of word, with room. The two
-     edges below are the frame before `wbSizeMapRadial` writes the measured
-     ones (the link ring keeps them: it opens at the pointer, not round a
-     topic). */
-  --wb-radial-band: 4.5rem;
-  --wb-radial-inner: 2.75rem;
-  --wb-radial-outer: calc(var(--wb-radial-inner) + var(--wb-radial-band));
-  /* The ring's boundary, outer and inner: the line that says where the
-     control is, so it owes 3:1 against the canvas (WCAG 1.4.11), which the
-     dividers' 16% ground does not reach (1.39:1 light, 1.58:1 dark,
-     measured). The same ink-into-surface mix as that ground, one step to
-     where every palette clears 3:1 with room: across all eleven palettes,
-     55% measured 3.52 to 4.11:1 light and 5.12 to 5.68:1 dark, where 50%
-     fell to 3.07:1 on parchment. `--muted` would pass too, at 5.6 to 8.5:1,
-     which is a heavier line than a boundary needs. */
-  --wb-radial-edge: color-mix(in srgb, var(--ink) 55%, var(--modal-bg-opaque));
-  position: absolute;
-  z-index: 23;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-/* The ring's own ground, which is also the colour of every divider: an
-   annulus in one element (a thick border with a 50% radius, the hole exactly
-   where the node is), one step towards the ink from the sectors' surface so
-   the 1.5px gaps between them read as hairlines. Opaque, never `--card`
-   (measured, `--card` is 0.55 alpha: a band in it was two levels off the
-   canvas and no ground at all, INBOX 191). */
-.wb-map-radial::before {
-  content: "";
-  position: absolute;
-  box-sizing: border-box;
-  left: 50%;
-  top: 50%;
-  width: calc(var(--wb-radial-outer) * 2);
-  height: calc(var(--wb-radial-outer) * 2);
-  margin-left: calc(var(--wb-radial-outer) * -1);
-  margin-top: calc(var(--wb-radial-outer) * -1);
-  border: calc(var(--wb-radial-outer) - var(--wb-radial-inner)) solid
-    color-mix(in srgb, var(--ink) 16%, var(--modal-bg-opaque));
-  border-radius: 50%;
-  /* The edge is two 1px circles, drawn as shadows so the dividers keep the
-     band's quiet colour: the spread one just outside the outer rim, the
-     inset one just inside the hole (an inset shadow paints the padding box,
-     which on an annulus is the hole). The sectors are clipped to the band,
-     so neither line is ever under one. */
-  box-shadow:
-    0 0 0 1px var(--wb-radial-edge),
-    inset 0 0 0 1px var(--wb-radial-edge),
-    var(--shadow-md);
-  pointer-events: none;
-}
-/* **A sector.** The whole ring's square, centred on the ring, cut to its
-   wedge by the clip path `wbFitMapRadialBand` writes. Every property a
-   button recipe would otherwise bring (the tonal fill, the hairline, the
-   radius, the small button's height and padding) is set here, because the
-   slot is also `.ghost.small` and a sector with a pill's radius or a 32px
-   min-height is a different shape from the one it is clipped to. Written as
-   two classes so it outranks `.ghost.small`. */
-.wb-map-radial .wb-map-radial-slot {
-  /* The face's point before the fit writes the real one: the middle. */
-  --wb-sector-x: 50%;
-  --wb-sector-y: 50%;
-  position: absolute;
-  left: calc(var(--wb-radial-outer) * -1);
-  top: calc(var(--wb-radial-outer) * -1);
-  display: block;
-  width: calc(var(--wb-radial-outer) * 2);
-  height: calc(var(--wb-radial-outer) * 2);
-  min-width: 0;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: var(--modal-bg-opaque);
-  box-shadow: none;
-  color: var(--ink);
-  pointer-events: auto;
-  cursor: pointer;
-  transition: background var(--motion-base) var(--ease-out), color var(--motion-base) var(--ease-out);
-}
-/* The icon and the word, at the sector's middle: `--wb-sector-x` and
-   `--wb-sector-y` are that point in the sector's own square, written with
-   its clip path. A fixed box centred on it by half its own size, because the
-   point is the whole placement and a percentage of an auto box is not. */
-.wb-map-radial-face {
-  position: absolute;
-  left: calc(var(--wb-sector-x) - 2.625rem);
-  top: calc(var(--wb-sector-y) - 1.375rem);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 5.25rem;
-  height: 2.75rem;
-  pointer-events: none;
-}
-/* The pointer's sector, and the keyboard's, filled: the one this click or
-   this Enter will run. Opaque, mixed on the surface, so the band under it
-   cannot tint it. */
-@media (hover: hover) {
-  .wb-map-radial .wb-map-radial-slot:hover {
-    background: color-mix(in srgb, var(--accent) 16%, var(--modal-bg-opaque));
-    color: var(--accent-text);
-  }
-}
-.wb-map-radial .wb-map-radial-slot:focus-visible {
-  outline: none;
-  background: color-mix(in srgb, var(--accent) 22%, var(--modal-bg-opaque));
-  color: var(--accent-text);
-}
-/* A sector with nothing to do (Fold on a leaf) stays where it is, so the
-   ring is the same ring on every topic, and says so by fading its face and
-   flattening its ground. */
-.wb-map-radial .wb-map-radial-slot[disabled] {
-  pointer-events: none;
-  background: color-mix(in srgb, var(--ink) 4%, var(--modal-bg-opaque));
-}
-.wb-map-radial-slot[disabled] .wb-map-radial-face {
-  opacity: 0.38;
-}
-/* **The word, drawn, not hovered for** (MINDMAP_PLAN §12.5, INBOX 200). The
-   caption under the ring still carries the long sentence and the keys; this
-   is the name, at rest, in the sector. */
-.wb-map-radial-name {
-  max-width: 100%;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  line-height: 1.1;
-  text-align: center;
-  text-wrap: balance;
-  overflow: hidden;
-}
-.wb-map-radial-face i {
-  flex-shrink: 0;
-  font-size: var(--text-h3);
-}
-/* **The ring says what its sectors do** (INBOX 180). The sector under the
-   pointer or the focus, in one line under the ring, where it cannot cover
-   the node or the ring; at rest, the keys. `display: none` while empty,
-   which also keeps it out of the ring's measured overhang. */
-.wb-map-radial-caption {
-  position: absolute;
-  left: 50%;
-  /* The caption's *top* edge, a gap below the ring's outer edge (INBOX 410),
-     rather than its centre: it is one line or two depending on the sector,
-     and centring it on a fixed point put its top edge over the ring as soon
-     as it wrapped. */
-  top: calc(50% + var(--wb-radial-outer) + var(--space-2));
-  transform: translateX(-50%);
-  /* `max-content` first, then the cap. The ring is a zero-width point, so an
-     absolutely positioned child shrinks to fit *that* (measured: 60px wide,
-     one word per line); the intrinsic width has to be asked for. */
-  width: max-content;
-  max-width: min(20rem, 60vw);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  background: var(--modal-bg-opaque);
-  box-shadow: var(--shadow-sm);
-  color: var(--ink);
-  font-size: var(--text-sm);
-  line-height: 1.35;
-  text-align: center;
-  text-wrap: balance;
-  pointer-events: none;
-}
-.wb-map-radial-caption:empty {
-  display: none;
-}
-/* Alt held: the two add sectors are the two remove sectors, so they say so,
-   in the app's own danger colour on the sector itself: a gesture that
-   deletes a branch must not look like the one that grows it. */
-.wb-map-radial .wb-map-radial-slot.wb-map-radial-danger {
-  color: var(--error);
-  background: color-mix(in srgb, var(--error) 10%, var(--modal-bg-opaque));
-}
-@media (hover: hover) {
-  .wb-map-radial .wb-map-radial-slot.wb-map-radial-danger:hover,
-  .wb-map-radial .wb-map-radial-slot.wb-map-radial-danger:is(:focus-visible, :has(:focus-visible)) {
-    background: color-mix(in srgb, var(--error) 20%, var(--modal-bg-opaque));
-  }
-}
-/* What the line into a topic says (§12.1 items 3 and 4). Drawn in the edge
-   layer, which takes no pointer events, so the label is a caption rather than
-   a control: it is edited from the radial that put it there. Stroked in the
-   canvas colour under the fill (`paint-order`) so it stays readable where it
-   crosses its own line. */
-.wb-map-edge-label {
-  fill: var(--ink);
-  stroke: var(--card);
-  stroke-width: 3;
-  paint-order: stroke;
-  font-size: var(--text-xs);
-  text-anchor: middle;
-  pointer-events: none;
-}
-/* The chip, as on a board connector's label (`.wb-link-label-chip`). */
-.wb-map-edge-label.wb-map-edge-label-chip {
-  stroke-width: 12;
-  stroke-linejoin: round;
-}
-/* What the strip sets, drawn on the node. Weight and slant sit on the text
-   rather than on the node so a node's icon and its count badge keep their own
-   weight; alignment is the text's own, which is the only thing on the node
-   that can be anywhere but the leading edge. */
-.wb-map-node.wb-map-bold .wb-map-text {
-  font-weight: 700;
-}
-.wb-map-node.wb-map-italic .wb-map-text {
-  font-style: italic;
-}
-.wb-map-node[data-align="center"] .wb-map-text {
-  text-align: center;
-}
-.wb-map-node[data-align="right"] .wb-map-text {
-  text-align: right;
-}
-.wb-map-node[data-align="left"] .wb-map-text {
-  text-align: left;
-}
-/* The note itself, in the help popover's shell (`.help-popover`): one plain
-   text box the width of the popover, and one quiet line under it. */
-.help-popover.wb-map-note-peek {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-}
-
-/* On a core topic's full colour and on a filled topic's tint the muted ink
-   is not a quiet grey any more: measured, 4.39:1 on the blue branch's tint in
-   light. The label's own ink there, which the fill was chosen to keep legible;
-   the smaller size keeps it second to the name. */
-.wb-map-core .wb-map-number,
-.wb-map-filled .wb-map-number {
-  color: inherit;
-}
-.wb-map-progress.wb-map-progress-complete {
-  color: var(--ok);
-}
-/* On a core topic's colour and a filled topic's tint, the label's ink, for
-   the reason given for the number above: the muted grey there is the same
-   4.39:1 on the blue tint, and the success green is a second hue on a hue.
-   Complete still reads, from the count itself ("5/5"). */
-.wb-map-core .wb-map-progress,
-.wb-map-filled .wb-map-progress,
-.wb-map-core .wb-map-progress.wb-map-progress-complete,
-.wb-map-filled .wb-map-progress.wb-map-progress-complete {
-  color: inherit;
-}
-
-/* A pinned node keeps the place it was dragged to when the map is tidied
-   (`wbMapPinOnDrag`). Stated on the node, quietly, because "why did Tidy
-   move everything except this one" is otherwise unanswerable from the screen. */
-.wb-map-pinned {
-  border-style: dashed;
-}
-/* **The pin dashes the box, never the bar** (INBOX 569, the owner: "it says
-   the edge bar is solid even though it is dashed"). The rule above, one class
-   and later in the file, beat the bar's own `border-left: 4px solid`, so a
-   dragged topic's Solid bar was drawn dashed while the Shape menu said Solid
-   (measured: 44% of the bar's pixels were gaps). The bar's side keeps what
-   the Edge bar chooses; the hairline sides carry the pin's dash, including
-   the left edge on a downward map and on a mirrored topic, which the bar's
-   own rules set solid. `mmdoc1005-spinebar.js` checks every combination. */
-.wb-map-node.wb-map-pinned:not([data-spine]):not(.wb-map-node-mirrored) {
-  border-left-style: solid;
-}
-.wb-map-down .wb-map-node.wb-map-pinned:not([data-shape="none"]),
-.wb-map-node.wb-map-pinned.wb-map-node-mirrored:not([data-shape="none"]) {
-  border-left-style: dashed;
-}
-/* The arrowhead takes the branch's own colour: `context-stroke` is what
-   makes one marker serve every colour without a marker per branch. */
-#wb-map-arrow path {
-  fill: context-stroke;
-}
-/* The map line's waypoint grip (`.wb-map-edge-handle`, base and hover) moved to library-lazy.css beside its end grips, for the boot budget. */
-/* A cross-link is the edge `parent_id` cannot express: a connection between
-   two branches. Dashed, which is the systems-map convention every serious
-   mindmapper uses to say "related, but not part of the tree" (MINDMAP_PLAN.md
-   §5 item 9). The tree edges above stay solid so the difference is readable
-   without a legend.
-   **And it is the map's own ink, not the pen's** (MINDMAP_PLAN §13c, the
-   owner: "there are two types of connections"). A link sketch carries the
-   colour the rail's ink well held when it was drawn, which on a map is a
-   colour with no meaning: it is the *pen's* colour, and the branches around
-   it are coloured by the palette, so a cross-link drawn while the ink was red
-   read as a branch in red. Two kinds of line that can be given each other's
-   look are two kinds nobody can tell apart, which is exactly the report. The
-   attribute stays on the row (an ordinary board still draws it, and a map
-   turned back into a board gets it back); on a map this rule wins, because a
-   CSS declaration beats the presentation attribute the renderer writes. */
-/* **Superseded 2026-09-23 by the owner** (MINDMAP_PLAN decisions): "these
-   links I drew using the cross-link tools are different from the ones between
-   the other mind map nodes ... I want them to be the same". The half of the
-   above that stands is "the map's own ink, not the pen's": a cross-link now
-   takes the branch's colour, shape, weight and taper from the renderer
-   (`wbMapCrossLinkLook` in whiteboard.js), so this rule only has to stop
-   the stroke width and paint the attributes carry from being overridden,
-   and it no longer dashes or mutes the line. */
-.sketch-group.wb-map-crosslink .sketch-path {
-  opacity: 1;
-}
 /* --- the Library on a phone (BACKLOG §116.1 item 3) -------------------------
    Measured at 390px with the session's phone probes: the eight sub-tabs
    wrapped to four rows (161px), the Everything filter chips to five rows
@@ -10118,6 +8605,27 @@ header#top-bar {
    beside it. Seven icons at 45.7px is the better trade at that width, and 320 is
    the width the shell is held to rather than the width it is used at. */
 @media (max-width: 359.98px) {
+  /* At 320 the documents dock's actions grew to 136px and left the title
+     10px of a 40px row (overlap.js, L-world-class-132): the back and the
+     title take a row of their own, as a diagram's do. The :not() outranks
+     the boards bundle's nowrap under 600; one width query (test_breakpoints). */
+  #tab-documents:not(.doc-is-diagram) .doc-dock {
+    flex-wrap: wrap;
+  }
+  #tab-documents:not(.doc-is-diagram) .doc-dock > .doc-dock-identity {
+    flex: 1 0 100%;
+    order: 1;
+  }
+  /* INBOX 1859: the Dashboard caption reads "Home" below 480: 62.6px of
+     "Dashboard" in a 64px column at 320, 33.9px of "Home". CSS, so the text
+     other code reads stays "Dashboard". */
+  #tab-btn-dashboard .tab-label {
+    font-size: 0;
+  }
+  #tab-btn-dashboard .tab-label::after {
+    content: attr(data-short);
+    font-size: var(--text-xs);
+  }
   .tab-label {
     display: none;
   }
@@ -10145,6 +8653,16 @@ header#top-bar {
   }
 }
 @media (min-width: 360px) and (max-width: 479.98px) {
+  /* INBOX 1859: the Dashboard caption reads "Home" below 480: 62.6px of
+     "Dashboard" in a 64px column at 320, 33.9px of "Home". CSS, so the text
+     other code reads stays "Dashboard". */
+  #tab-btn-dashboard .tab-label {
+    font-size: 0;
+  }
+  #tab-btn-dashboard .tab-label::after {
+    content: attr(data-short);
+    font-size: var(--text-xs);
+  }
   #tab-bar button:not(.active) .tab-label {
     display: none;
   }

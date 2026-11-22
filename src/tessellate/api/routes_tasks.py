@@ -96,9 +96,9 @@ def _warmup_rows() -> list[dict]:
             "name": deps.get_model_manager().embedding_model(),
             "label": "Loading the embedding model",
             "detail": "The first run downloads it (~90 MB). Search falls "
-            "back to keywords until it's ready. This one can't be "
-            "stopped part-way: it is a single load with nothing to "
-            "interrupt between.",
+            "back to keywords until it's ready. Stop ends the "
+            "download after its file and skips what follows the load; the "
+            "load itself can't be stopped part-way.",
             "progress": None,
             "log": [],
         }
@@ -444,9 +444,11 @@ def _mark_cancellable(tasks: list[dict]) -> None:
             # A running pass that has a step to stop at (INBOX 713).
             or (task["kind"] == "job-pass" and not task.get("queued") and passes.kind_for_label(task.get("name", "")) in passes.STOPPABLE)
             or task["kind"] in FILING_KINDS
-            # A queued job the `jobs` table holds: cancelling its row is a
-            # real stop (`jobstore.cancel`). A running one is not offered.
-            or bool(task.get("queued") and task.get("job_id"))
+            # A job the `jobs` table holds: cancelling its row stops a queued
+            # one, and asks a running one to stop at its next safe step
+            # (`jobstore.cancel`); a one-step kind is not offered, and a
+            # running pass is offered only by its step rule above.
+            or bool(task.get("job_id") and task["kind"] != "job-file-entry" and (task["kind"] != "job-pass" or task.get("queued")))
         )
 
 
@@ -550,7 +552,7 @@ FILING_KINDS = frozenset({"job-file-entry", "filing-late"})
 
 
 def _stop_filing() -> tuple[bool, str]:
-    from tessellate.api.routes_entries import stop_all_filing
+    from tessellate.entry.service import stop_all_filing
 
     count = stop_all_filing("fallback")
     if not count:
@@ -752,7 +754,10 @@ def cancel_task(body: CancelTaskBody) -> dict:
         count = jobstore.cancel_queued(kind[len("job-"):], body.name.strip())
         if count:
             return {"status": "ok", "stopped": True, "detail": f"Stopped {count} waiting job{'' if count == 1 else 's'}."}
-        return {"status": "ok", "stopped": False, "detail": "It is already running and will finish."}
+        #: Not waiting: a running one is asked to stop at its next safe step
+        #: (`jobs.check_stop`), or told it has none (L-world-class-66).
+        stopped, detail = bgpool.stop_running(kind[len("job-"):], body.name.strip())
+        return {"status": "ok", "stopped": stopped, "detail": detail}
     if body.kind.strip() in FILING_KINDS:
         try:
             stopped, detail = _stop_filing()
@@ -1022,6 +1027,35 @@ def list_activity() -> dict:
     return {"jobs": activity_rows(), "finished": finished_rows(), "model": _model_state(), "now": time.time()}
 
 
+@router.get("/activity/history")
+def activity_history() -> dict:
+    """Every AI and background run the app remembers, newest first (L669):
+    what started it, what it was, when, how long it took, how it ended and
+    why. The runs in flight come first, then the stored history."""
+    rows = [
+        {
+            "run_id": run["id"], "kind": run["kind"], "label": run["label"], "title": run["title"],
+            "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""), "why": run.get("why", ""),
+            "outcome": "running", "result": run.get("detail", ""), "started": run["started"],
+            "finished": None, "duration_ms": None, "count": 1,
+        }
+        for run in reversed(jobruns.live())
+    ]
+    rows.extend(
+        {
+            "run_id": run["run_id"], "kind": run["kind"], "label": run["label"], "title": run["title"],
+            "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""), "why": run.get("why", ""),
+            "outcome": run.get("outcome", "completed"), "result": run.get("detail", ""),
+            "started": run.get("started"), "finished": run.get("ended"),
+            "duration_ms": run.get("duration_ms"), "count": run.get("count", 1),
+        }
+        for run in jobruns.history()
+    )
+    for row in rows:
+        row["label"] = jobruns.KINDS.get(row["kind"]) or row["label"]
+    return {"runs": rows}
+
+
 #: Finished runs the Running tab lists under what is running, newest first.
 FINISHED_ROWS = 20
 
@@ -1036,6 +1070,7 @@ def _finished_run_row(run: dict, report: dict | None) -> dict:
         "detail": run.get("detail", ""),
         "outcome": run.get("outcome", "completed"),
         "origin": jobruns.ORIGINS.get(run.get("origin", ""), ""),
+        "why": run.get("why", ""),
         "started": run.get("started"),
         "finished": run.get("ended") or 0.0,
         "duration_ms": run.get("duration_ms"),

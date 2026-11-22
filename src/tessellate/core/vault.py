@@ -10,6 +10,7 @@ open?" without importing the API layer.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Iterator
@@ -45,9 +46,9 @@ _granted: set[str] = set()
 #: FastAPI copies the context into the threadpool that runs sync routes and
 #: dependencies, and into a streaming body's iterator, so every read on a
 #: request's behalf sees it. `_OUTSIDE` is no request at all: a background
-#: thread, which is never handed a granted key once a grant exists, because
-#: nothing in the background has a reason to read a private note (the AI is
-#: kept away from them on purpose).
+#: thread, which is never handed a granted key once a grant exists: the AI is
+#: kept away from private notes on purpose. A job a session started on its
+#: own private space's files runs as that session instead (`acting_for`).
 _OUTSIDE = object()
 _request_token: ContextVar[object] = ContextVar("vault_request_token", default=_OUTSIDE)
 
@@ -108,20 +109,33 @@ def is_granted(token: str | None) -> bool:
     return bool(token) and _dek is not None and token in _granted
 
 
+#: Told which sessions ended (None: every one), so what a job was handed for
+#: a session goes with it (`docreader.forget_sessions`, SECURITY.md T28).
+ended_hooks: list[Callable[[list[str] | None], None]] = []
+
+
+def _ended(tokens: list[str] | None) -> None:
+    for hook in ended_hooks:
+        hook(tokens)
+
+
 def revoke(tokens) -> None:  # noqa: ANN001  # any iterable of tokens
     """These sessions are over. The key goes with the last one granted."""
     global _dek
     had = bool(_granted)
+    tokens = list(tokens)
     for token in tokens:
         _granted.discard(token)
     if had and not _granted:
         _dek = None
+    _ended(tokens)
 
 
 def revoke_all() -> None:
     """End every grant but keep the key: a password change or a re-key ends
     every other session and grants the new one straight after."""
     _granted.clear()
+    _ended(None)
 
 
 @contextmanager
@@ -134,11 +148,38 @@ def request_scope(token: str | None) -> Iterator[None]:
         _request_token.reset(reset)
 
 
+def requester() -> str | None:
+    """The granted session this request is served as, or None: what a route
+    hands the background job it starts, so the job reads a private space's
+    sealed files as that session (`acting_for`, SECURITY.md T28)."""
+    token = _request_token.get()
+    return token if isinstance(token, str) and token in _granted else None
+
+
+@contextmanager
+def acting_for(token: str | None) -> Iterator[None]:
+    """Run background work as the session `token` (from `requester`).
+
+    **The job borrows the session's grant, never the key** (L-world-class-381).
+    Nothing is copied: every `key()` inside the block asks again whether
+    `token` is still granted, so the key stops answering the moment that
+    session ends (lock, sign-out, expiry, a password change), whatever the
+    job is doing, and the token itself lives only in the job's memory. With
+    no token the block is plain background work, as before.
+    """
+    if token is None:
+        yield
+        return
+    with request_scope(token):
+        yield
+
+
 def close() -> None:
     """Forget the key and every grant. Called on lock and by tests."""
     global _dek
     _dek = None
     _granted.clear()
+    _ended(None)
 
 
 def _row(session: Session) -> Vault | None:

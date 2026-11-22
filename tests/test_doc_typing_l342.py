@@ -314,10 +314,12 @@ def test_the_document_card_is_not_a_has_subject_over_the_editor():
             break
     tags = re.findall(r"<details\b[^>]*>", main[:end])
     menus = [t for t in tags if "dock-menu" in (re.findall(r'class="([^"]*)"', t) or [""])[0].split()]
-    assert len(menus) == 1 and 'id="doc-view-menu"' in menus[0]
+    #: The View menu and the More menu (`#doc-dock-menu`, a dock-menu since the dock recipe) are the two.
+    assert len(menus) == 2 and 'id="doc-view-menu"' in menus[0] and 'id="doc-dock-menu"' in menus[1]
     docs = documents_text()
     assert not re.search(r"""["'\s]dock-menu["'\s]""", docs.replace("doc-dock-menu", ""))
-    assert 'viewMenu?.addEventListener("toggle", () => viewMenu.closest(".card")?.classList.toggle("doc-view-menu-open", viewMenu.open))' in docs
+    assert 'dockMenu?.addEventListener("toggle", () => {' in docs
+    assert 'classList.toggle("doc-view-menu-open", Boolean(card.querySelector("details.dock-menu[open]")))' in docs
 
 
 def test_the_grammar_worker_sends_spelling_lints_as_spans_only():

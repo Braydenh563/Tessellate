@@ -1052,7 +1052,7 @@
       }
       wbScheduleRender();
     } catch {
-      toast(voiceLine("failed", { what: "undo that" }), true);
+      toast(voiceLine("failed", { what: "undo that" }), true, { action: ["Try again", wbUndo] });
     }
   }
 
@@ -1071,7 +1071,7 @@
       toast("Redone: last change on this board", "info");
       wbScheduleRender();
     } catch {
-      toast(voiceLine("failed", { what: "redo that" }), true);
+      toast(voiceLine("failed", { what: "redo that" }), true, { action: ["Try again", wbRedo] });
     }
   }
 

@@ -54,8 +54,8 @@ def test_each_import_is_one_button_over_a_hidden_picker():
     for button, picker in PAIRS:
         tag = re.search(rf'<input id="{picker}"[^>]*>', INDEX, re.S)
         assert tag and 'type="file"' in tag.group(0) and 'class="hidden"' in tag.group(0), picker
-        assert re.search(rf'\$\("{button}"\)\.addEventListener\("click", \(\) => \$\("{picker}"\)\.click\(\)\)', WIRING), button
-        assert re.search(rf'\$\("{picker}"\)\.addEventListener\("change"', WIRING), picker
+        assert re.search(rf'wire\("{button}"\)\.addEventListener\("click", \(\) => \$\("{picker}"\)\.click\(\)\)', WIRING), button
+        assert re.search(rf'wire\("{picker}"\)\.addEventListener\("change"', WIRING), picker
 
 
 def test_the_import_offers_undo_with_the_ids():

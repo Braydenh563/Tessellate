@@ -79,25 +79,29 @@
     if (reply && reply.command) code.textContent = reply.command;
   }
 
-  $("capture-command-copy")?.addEventListener("click", async () => {
-    //: Through the shared helper, which falls back where the clipboard API
-    //: is not allowed (tests/test_log_console.py).
-    if (await copyToClipboard($("capture-command").textContent)) toast("Copied. Paste it as the command your shortcut runs.");
-    else toast("Couldn't copy here. Select the command and copy it.", "info");
-  });
+  //: Wired when Settings is built, never by asking for its ids here: this file is preloaded after boot, and
+  //: `$("usage-clear")` on the unbuilt surface built all of Settings (a 151 ms task at 4x CPU, bootlongtasks.js).
+  onSurface("settings", () => {
+    SURFACES.wire("capture-command-copy", "click", async () => {
+      //: Through the shared helper, which falls back where the clipboard API
+      //: is not allowed (tests/test_log_console.py).
+      if (await copyToClipboard($("capture-command").textContent)) toast("Copied. Paste it as the command your shortcut runs.");
+      else toast(voiceLine("failed", { what: "copy here", why: "select the command and copy it" }), "info");
+    });
 
-  $("pref-simple-mode")?.addEventListener("change", (event) => applySimpleMode(event.target.checked));
-  $("usage-clear")?.addEventListener("click", async () => {
-    try {
-      await apiJson("/usage", { method: "DELETE" });
-      //: And the palette's learned order, which is the same habit kept per
-      //: browser (app-palette.js `palettePick`, Brief 90).
-      prefs.remove("palette-picks");
-      toast("Every count is cleared.");
-    } catch (error) {
-      toast(error.message || "Couldn't clear the counts.", true);
-    }
-    renderUsage();
+    SURFACES.wire("pref-simple-mode", "change", (event) => applySimpleMode(event.target.checked));
+    SURFACES.wire("usage-clear", "click", async () => {
+      try {
+        await apiJson("/usage", { method: "DELETE" });
+        //: And the palette's learned order, which is the same habit kept per
+        //: browser (app-palette.js `palettePick`, Brief 90).
+        prefs.remove("palette-picks");
+        toast("Every count is cleared.");
+      } catch (error) {
+        toast(error.message || voiceLine("failed", { what: "clear the counts" }), true);
+      }
+      renderUsage();
+    });
   });
 
   //: **What fills the window, by part** (the owner, 2026-10-10: "i expect to see

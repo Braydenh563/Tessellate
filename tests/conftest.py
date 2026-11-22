@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 
 from tessellate.ai import model_manager, spelling
 from tessellate.core import deps, extras, jobs, taskhistory, vault
+from tests._surface_assets import inline_surfaces
 
 #: Loaded for what they register (the typed reader, the help topics), which a
 #: test that classifies a question without the chat route would otherwise miss.
@@ -161,6 +162,9 @@ def _read_text_once(self, encoding=None, errors=None):
             if text is None:
                 text = _real_read_text(self, encoding, errors)
                 if self.resolve() == _INDEX_HTML:
+                    # A surface fetched on demand (Settings' body, `data-src`) is
+                    # put back inside its script first (tests/_surface_assets.py).
+                    text = inline_surfaces(text)
                     # The page keeps each surface's markup as raw text in a
                     # `<script type="text/x-surface">` so the parser makes no
                     # nodes for it at boot (settings-body.js). The lints that
@@ -196,6 +200,14 @@ def _own_run_folder(tmp_path, monkeypatch):
     (core/run_records.py); it goes to the test's folder, never the
     developer's own per-user one."""
     monkeypatch.setenv("TESSELLATE_RUN_DIR", str(tmp_path / "_run"))
+
+
+@pytest.fixture(autouse=True)
+def _parse_in_place(monkeypatch):
+    """The app reads uploads in a child process (core/parse_guard.py); the
+    suite's fake parsers live in `sys.modules`, which a child cannot see, so
+    they run in place. tests/test_parse_guard.py clears this to test the child."""
+    monkeypatch.setenv("TESSELLATE_PARSE_INLINE", "1")
 
 
 #: The suite's fixed day (a Saturday, the same day `_frozen_clock.FIXED_NOW` uses).
@@ -574,11 +586,18 @@ def _reset_the_librarian():
     process), so a test that pressed Quit left them set for every test after
     it in the same process, in whatever order that run happened to have.
     Cleared on both sides, like `_forget_the_docker_probe` above. See
-    tests/test_autonomous_state_isolation.py."""
+    tests/test_autonomous_state_isolation.py.
+
+    Every test app starts the scheduler and `jobs.join_threads` skips it (it
+    names a stop), so it outlived its test: a pass it queued set `_working`,
+    and a later test's /tasks listed an "autonomous" row (CI leg 2, c3d48412).
+    Stopped and cleared here, as test_autonomous.py's own fixture does."""
     from tessellate.ai import autonomous
 
     autonomous.reset_state()
     yield
+    autonomous.stop()
+    autonomous._working.clear()
     autonomous.reset_state()
 
 

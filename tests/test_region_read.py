@@ -204,7 +204,8 @@ from pathlib import Path  # noqa: E402  (the lints below are a separate concern)
 
 LIBRARY = Path("frontend/js/library.js").read_text(encoding="utf-8")
 INDEX = Path("frontend/index.html").read_text(encoding="utf-8")
-CSS = Path("frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
+#: The OCR workspace's rules load with the Library bundle (L-world-class-71).
+CSS = Path("frontend/css/library-lazy.css").read_text(encoding="utf-8")
 
 
 def test_the_drag_layer_is_not_the_regions_layer():
@@ -232,7 +233,9 @@ def test_the_offer_uses_the_apps_floating_panel_shell():
     #: stylesheet (the export is a dialog, WHITEBOARD_PLAN decision 4), and an
     #: anchor on a dead name passes by accident right up to the day it stops
     #: finding anything at all.
-    shell = CSS.split(".wb-board-menu,")[-1].split("{")[0]
+    #: The shared shell stays at boot, in 07, with every surface it styles.
+    misc = Path("frontend/css/07-whiteboard-misc.css").read_text(encoding="utf-8")
+    shell = misc.split(".wb-board-menu,")[-1].split("{")[0]
     assert ".ocr-region-popover" in shell
     glass_off = Path("frontend/css/03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert ':root[data-glass="off"] .ocr-region-popover' in glass_off, (

@@ -11,7 +11,7 @@
 // no sense of "now" at all (user-reported).
 function tickClocks() {
   const now = new Date();
-  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
   const date = now.toLocaleDateString([], {
     weekday: "long",
     month: "long",
@@ -94,8 +94,13 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-startClockTicker();
-tickClocks();
+//: **The first paint is a task of its own** (L-world-class-354): it is the
+//: page's first Intl call, about 50 ms of ICU set-up at 4x CPU that no
+//: formatter choice avoids, and inside this file's eval it made one 94 ms
+//: task of the two. `startClockTicker` paints as it starts.
+setTimeout(function firstClockPaint() {
+  startClockTicker();
+}, 0);
 
 window.addEventListener("resize", () => {
   //: Guarded with `typeof` (88bfe5341 removed it, 87139afcf put it back, and
@@ -918,21 +923,21 @@ function notePreviewText(content) {
 
 let reminderFilter = "open"; // open | all | done
 
-// BACKLOG §77's pattern, extended to Reminders (§89 item 1): deliberately
-// narrower than Notes' own version. Applies only to the Done group; see the
-// note on #reminders-page-size in index.html for why Overdue/Today/Upcoming
-// are never paginated in any filter.
-let remindersPageSize = prefs.get("reminders-page-size", null) || "all";
-let remindersDonePage = 1;
+//: The Done section pages by cursor as the reader scrolls (L-world-class-68):
+//: the open set is read whole (the tab badge, status bar and due timer count
+//: it), the done rows a page at a time with `only_done`, so a notebook with
+//: thousands of ticked-off reminders no longer fetches and draws them all.
+const remindersDone = { page: 50, cursor: null, token: 0 };
+
+//: The tab badge and the due timer follow the reminders slice (store.js), so
+//: any read of it repaints them: a reminder just made or moved is the soonest
+//: one, and the due timer follows.
+appState.subscribe("reminders", (rows) => {
+  armReminderTimer(rows);
+  updateReminderBadge(rows);
+});
 
 async function loadReminders() {
-  //: Every reminder, not the first page. `/reminders` is ordered `due_at`
-  //: ascending, so the first page is the *oldest* rows with the ticked-off
-  //: ones among them: a notebook whose oldest two hundred are all done would
-  //: push everything upcoming off the list, which is exactly the silent loss
-  //: paging was added to prevent. Reading to the end keeps the grouping below
-  //: unchanged and loses nothing; a real pager is the better answer at
-  //: thousands and is written up in `archive/agent-remaining/list-paging.md`.
   //: A sentinel, not `[]`: "you have no reminders" and "the reminders could
   //: not be read" are different facts and only one of them is about the
   //: person. See `surfaceFailed`.
@@ -941,32 +946,30 @@ async function loadReminders() {
   //: empty list and every reload drew them into it). A reload keeps what is
   //: on screen until the answer replaces it.
   if (!loadReminders.loaded) showSkeletons($("reminder-groups"), 3);
-  const all = await apiPagedList("/reminders", 200).catch(() => null);
-  //: A reminder just made or moved is the soonest one: the due timer follows.
-  if (all) {
-    loadReminders.loaded = true;
-    armReminderTimer(all);
-  }
+  //: Open whole always (badge, status bar and timer read it, and it is
+  //: small); done one page (a single row when the Open filter hides them,
+  //: for the total that keeps "Clear completed" and the empty state honest).
+  const token = ++remindersDone.token;
+  const wantDone = reminderFilter !== "open";
+  const [openRows, donePage] = await Promise.all([
+    openReminders(0).catch(() => null),
+    api(`/reminders?only_done=true&limit=${wantDone ? remindersDone.page : 1}`)
+      .then(async (r) => ({ rows: await r.json(), total: Number(r.headers.get("X-Total-Count")) || 0, cursor: r.headers.get("X-Next-Cursor") }))
+      .catch(() => null),
+  ]);
+  if (token !== remindersDone.token) return;
   clearSkeletons($("reminder-groups"));
-  if (!all) {
-    surfaceFailed($("reminders-empty"), "your reminders", loadReminders);
-    return;
-  }
+  if (!openRows || !donePage) return surfaceFailed($("reminders-empty"), "your reminders", loadReminders);
+  loadReminders.loaded = true;
   surfaceRecovered($("reminders-empty"));
-  //: Anything that changes a reminder ends up here (setting, ticking off,
-  //: deleting, undoing), and every one of those changes a note card's
-  //: reminder chip (INBOX 309). Cleared rather than tracked per reminder:
-  //: this list is the whole table, so working out *which* note moved would
-  //: be a second model of the same data.
+  remindersDone.cursor = wantDone ? donePage.cursor : null;
   reminderCountsCache.clear();
   const groupsBox = $("reminder-groups");
   groupsBox.replaceChildren();
-
-  const reminders = all.filter((r) => reminderFilter === "all" || (reminderFilter === "done" ? r.done : !r.done));
-  $("reminders-empty").classList.toggle("hidden", all.length > 0);
-  $("reminder-clear-done").classList.toggle("hidden", !all.some((r) => r.done));
-  // Surface anything due on the tab itself, from wherever you are.
-  updateReminderBadge(all);
+  const reminders = [...(reminderFilter === "done" ? [] : openRows), ...(wantDone ? donePage.rows : [])];
+  const everything = openRows.length + donePage.total;
+  $("reminders-empty").classList.toggle("hidden", everything > 0);
+  $("reminder-clear-done").classList.toggle("hidden", !donePage.total);
 
   const now = new Date();
   const endOfToday = new Date(now);
@@ -981,7 +984,7 @@ async function loadReminders() {
   }
 
   // Nothing in this filter, but reminders do exist elsewhere.
-  if (all.length && !reminders.length) {
+  if (everything && !reminders.length) {
     const none = document.createElement("p");
     none.className = "muted";
     none.textContent =
@@ -991,7 +994,6 @@ async function loadReminders() {
     groupsBox.appendChild(none);
   }
 
-  const donePagination = $("reminders-done-pagination");
   for (const label of ["Overdue", "Today", "Upcoming", "Done"]) {
     const items = groups[label];
     if (!items.length) continue;
@@ -1001,7 +1003,8 @@ async function loadReminders() {
     text.textContent = label;
     const count = document.createElement("span");
     count.className = "group-count";
-    count.textContent = items.length;
+    //: Done counts the server's total, not the page on screen.
+    count.textContent = label === "Done" ? donePage.total : items.length;
     heading.append(text, count);
     if (label === "Overdue") {
       const triage = smallButton("ph:funnel Triage", "Keep, drop or reschedule each", () =>
@@ -1012,37 +1015,48 @@ async function loadReminders() {
     groupsBox.appendChild(heading);
     const ul = document.createElement("ul");
     ul.className = "entry-list";
-    // Done is the one group this app ever slices, see remindersPageSize's
-    // own comment. Every other group renders in full, always, regardless of
-    // this control's value.
-    const shown =
-      label === "Done" ? paginateDoneReminders(items) : items;
-    for (const reminder of shown) ul.appendChild(reminderItem(reminder, label));
+    for (const reminder of items) ul.appendChild(reminderItem(reminder, label));
     groupsBox.appendChild(ul);
+    if (label === "Done") remindersDone.watch(ul);
   }
-  // The bar only means something under a Done group that actually rendered
-  // one: paginateDoneReminders already hid/showed it for that case, but a
-  // filter with no Done items at all (Open) has to hide it too, since the
-  // loop above never reaches the branch that would.
-  if (!groups.Done.length) donePagination.classList.add("hidden");
 }
 
-function paginateDoneReminders(items) {
-  const bar = $("reminders-done-pagination");
-  if (remindersPageSize === "all") {
-    bar.classList.add("hidden");
-    return items;
+//: The next page of done reminders when the end of the list scrolls into view
+//: (a button too, for a keyboard and for a browser with no observer).
+remindersDone.watch = function (ul) {
+  const mine = remindersDone.token;
+  if (!remindersDone.cursor) return;
+  const more = document.createElement("button");
+  more.type = "button";
+  more.className = "ghost small reminders-done-more";
+  more.textContent = "Show more completed";
+  ul.after(more);
+  let busy = false;
+  const observer = "IntersectionObserver" in window
+    ? new IntersectionObserver((seen) => { if (seen.some((e) => e.isIntersecting)) next(); }, { rootMargin: "200px" })
+    : null;
+  async function next() {
+    if (busy || mine !== remindersDone.token || !remindersDone.cursor) return;
+    busy = true;
+    try {
+      const response = await api(`/reminders?only_done=true&limit=${remindersDone.page}&cursor=${encodeURIComponent(remindersDone.cursor)}`);
+      const rows = await response.json();
+      if (mine !== remindersDone.token) return;
+      remindersDone.cursor = response.headers.get("X-Next-Cursor");
+      for (const reminder of rows) ul.appendChild(reminderItem(reminder, "Done"));
+    } catch {
+      return;
+    } finally {
+      busy = false;
+    }
+    if (!remindersDone.cursor) {
+      observer?.disconnect();
+      more.remove();
+    }
   }
-  const pageSize = Number(remindersPageSize);
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-  remindersDonePage = Math.min(Math.max(1, remindersDonePage), totalPages);
-  const start = (remindersDonePage - 1) * pageSize;
-  bar.classList.remove("hidden");
-  $("reminders-done-page-status").textContent = `Page ${remindersDonePage} of ${totalPages}`;
-  $("reminders-done-page-prev").disabled = remindersDonePage <= 1;
-  $("reminders-done-page-next").disabled = remindersDonePage >= totalPages;
-  return items.slice(start, start + pageSize);
-}
+  more.addEventListener("click", next);
+  observer?.observe(more);
+};
 
 // A count of due-or-overdue reminders on the Reminders tab button, so you
 // notice them from any tab.
@@ -1174,7 +1188,7 @@ function reminderItem(reminder, label) {
   const due = document.createElement("span");
   due.className = "entry-date";
   //: The day and clock, then how far off (dog2 item 8).
-  due.textContent = `${parseServerTime(reminder.due_at)?.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })} · ${relativeWhen(reminder.due_at)}`;
+  due.textContent = `${parseServerTime(reminder.due_at)?.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", ...clockOptions() })} · ${relativeWhen(reminder.due_at)}`;
   row.appendChild(due);
 
   const actions = document.createElement("span");
@@ -1295,7 +1309,7 @@ async function openCalendarPage(id, provider) {
     else window.open(links[provider], "_blank", "noopener,noreferrer");
   } catch (error) {
     tab?.close();
-    toast(error.message || "Couldn't open the calendar page.", true);
+    toast(error.message || voiceLine("failed", { what: "open the calendar page" }), true);
   }
 }
 
@@ -1438,6 +1452,7 @@ function updateDueReadout() {
     month: "short",
     hour: "numeric",
     minute: "2-digit",
+    ...clockOptions(),
   });
   let relative;
   if (minutes < 0) relative = "in the past";

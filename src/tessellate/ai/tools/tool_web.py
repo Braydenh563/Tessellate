@@ -7,6 +7,7 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 
 from __future__ import annotations
 
+import logging
 from sqlalchemy.orm import Session
 from tessellate.ai.tools._common import ToolError, _clip
 from tessellate.core import deps
@@ -73,7 +74,7 @@ def prefetch_web(calls: list[tuple[str, dict]]) -> None:
             elif name == "web_search" and str(args.get("query") or "").strip():
                 websearch.search_web(str(args["query"]), limit=5, searxng_url=searxng_url or None, provider=provider)
         except Exception:  # noqa: BLE001  # the real call reports it
-            return
+            logging.getLogger(__name__).debug("one: the real call reports it", exc_info=True)
 
     with ThreadPoolExecutor(max_workers=min(PREFETCH_WORKERS, len(calls))) as pool:
         list(pool.map(one, calls))
@@ -103,7 +104,6 @@ def _read_url(session: Session, args: dict) -> dict:
         page = websearch.fetch_readable_cached(url)
     except websearch.WebSearchError as exc:
         raise ToolError(str(exc)) from exc
-
     text = page.get("text") or ""
     truncated = len(text) > READ_URL_MAX_CHARS
     return {

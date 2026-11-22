@@ -28,7 +28,7 @@ from typing import Any, Iterator
 from sqlalchemy import Text, select, type_coerce
 from sqlalchemy.orm import Session
 
-from tessellate.core import sync_state
+from tessellate.core import sealed_files, sync_state
 from tessellate.core.database import (
     Attachment,
     Document,
@@ -320,4 +320,5 @@ def file_bytes(session: Session, data_dir: Path, device: str, sid: str) -> tuple
         if att is None or _state(session, names, "file", att, data_dir / "uploads") is None:
             return None
         path = data_dir / "uploads" / att.stored_name
-        return (path.read_bytes(), att.mime) if path.is_file() else None
+        #: Sealed bytes stay home (L-world-class-52): a note private before it joined.
+        return (path.read_bytes(), att.mime) if sealed_files.plain_file(path) else None

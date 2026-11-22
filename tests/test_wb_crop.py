@@ -112,5 +112,6 @@ def test_a_picture_has_a_draggable_crop_box_that_writes_the_same_trim() -> None:
     # Eight grips, the numbers' own write path, a keyboard way, and Escape to end it.
     assert '["nw", "n", "ne", "e", "se", "s", "sw", "w"]' in box
     assert 'wbFmtApply("trim"' in box and "ArrowLeft" in box and "Escape" in box
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8") + (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")  # L308: the board rules moved with the Library bundle
+    #: The whiteboard blocks moved from 07-whiteboard-misc.css to library-lazy.css (L-world-class-350).
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert ".wb-crop-grip" in css and ".wb-crop-rect" in css

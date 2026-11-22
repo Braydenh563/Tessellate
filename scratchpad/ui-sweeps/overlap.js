@@ -52,6 +52,23 @@ async function measure(page, rootSel) {
         if (ox === 'auto' || ox === 'scroll') continue;
         if (s.textOverflow === 'ellipsis') continue;
         if (e.matches('input, textarea, select, .cm-content, .cm-scroller')) continue;
+        // Overhang that is drawn on purpose is not a clash (L606, the 4 px rows):
+        // a badge pinned with position: absolute past its button's corner
+        // (#notes-tidy), and a scroll row that bleeds 4 px each side by a
+        // negative margin so its focus rings are not cut (#timeline .timeline-body,
+        // .library-controls). Skip the box only when every child that passes its
+        // edge is one of those; a plain in-flow child past the edge still counts.
+        const eb = e.getBoundingClientRect();
+        const over = [...e.children].filter((k) => { const b = k.getBoundingClientRect(); return b.width > 0 && (b.right > eb.right + 1 || b.left < eb.left - 1); });
+        if (over.length && over.every((k) => { const ks = getComputedStyle(k); return ks.position === 'absolute' || parseFloat(ks.marginLeft) < 0 || parseFloat(ks.marginRight) < 0; })) continue;
+        // An invisible hit area: an empty, unpainted, absolutely placed pseudo
+        // that reaches past a small grip so a finger finds it (the board's
+        // resize and rotate grips, `inset: -6px`). Nothing is drawn there.
+        if (!over.length && ['::before', '::after'].some((which) => {
+          const ps = getComputedStyle(e, which);
+          return ps.content === '""' && ps.position === 'absolute' && ps.backgroundColor === 'rgba(0, 0, 0, 0)'
+            && ps.borderStyle === 'none' && ps.boxShadow === 'none' && parseFloat(ps.left) < 0;
+        })) continue;
         out.overflow.push({ sel: name(e), px: d, how: ox });
       }
       // docks and toolbars

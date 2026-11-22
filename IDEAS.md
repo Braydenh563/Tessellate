@@ -12,6 +12,7 @@ they live, because their wording is what a future session will search for.
 
 - [Built](#built)
 - [Partly built](#partly-built)
+- [Filed as LEDGER rows](#filed-as-ledger-rows)
 - [Where the rest stands](#where-the-rest-stands)
 - [From the audits](#from-the-audits)
 
@@ -105,6 +106,10 @@ they live, because their wording is what a future session will search for.
 - **Better agentic web search through chat.** `web_search` and `read_url` exist,
   with a SearXNG option. A research mode that plans several searches does not.
 
+## Filed as LEDGER rows
+
+These sixteen ideas are LEDGER rows L-world-class-172 to L-world-class-187
+(`docs/roadmap/LEDGER.md`), where they are sized and worked in order.
 ## Where the rest stands
 
 Checked against the app on 2026-11-14. Each idea is built, or has its place in

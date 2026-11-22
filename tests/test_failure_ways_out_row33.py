@@ -23,7 +23,7 @@ def test_a_custom_address_nothing_answers_is_named(client):
 def test_the_frontend_uses_the_hint_the_notice_and_the_size():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '<p id="embedding-error" class="notice notice-warn hidden"' in html
-    status = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+    status = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "status-settings.js").read_text(encoding="utf-8")
     assert "status.unreachable_hint ||" in status
     assert "setLabel(embeddingError, `ph:warning" in status
     updates = (ROOT / "frontend" / "js" / "update-dialogs.js").read_text(encoding="utf-8")

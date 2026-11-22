@@ -59,8 +59,8 @@
   const TIMELINE_CAL_MONTH = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
   const TIMELINE_CAL_LONG = new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const TIMELINE_CAL_SHORT = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" });
-  const TIMELINE_CAL_TIME = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
-  const TIMELINE_CAL_HOUR = new Intl.DateTimeFormat(undefined, { hour: "numeric" });
+  const TIMELINE_CAL_TIME = clockOptions.formatter({ hour: "numeric", minute: "2-digit" });
+  const TIMELINE_CAL_HOUR = clockOptions.formatter({ hour: "numeric" });
 
   //: The day keys after `fromKey` through `until` (both "YYYY-MM-DD"), capped
   //: at a year like the reader (timewords `_span`).

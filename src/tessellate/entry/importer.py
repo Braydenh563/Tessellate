@@ -12,6 +12,8 @@ import importlib.util
 import re
 from pathlib import Path
 
+from tessellate.core import parse_guard
+
 INSTALL_HINT = (
     "Importing documents needs an add-on that isn't installed yet. Install "
     "“Import documents” in Settings, Packages, then restart the app."
@@ -28,9 +30,12 @@ def markitdown_available() -> bool:
     return importlib.util.find_spec("markitdown") is not None
 
 
+@parse_guard.isolated("document", timeout=180)
 def convert_to_markdown(path: Path) -> str:
     """The file's text, as markdown. Raises RuntimeError with the install
-    hint when markitdown isn't available."""
+    hint when markitdown isn't available, and `parse_guard.ParseStopped`
+    when the file hung, crashed or overfilled the reader's child process
+    (L-world-class-321)."""
     if not markitdown_available():
         raise RuntimeError(INSTALL_HINT)
     from markitdown import MarkItDown  # imported only when present

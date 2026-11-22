@@ -40,7 +40,7 @@ def test_the_logs_menu_has_the_email_row_and_it_is_wired():
     wrapped the actions row to two lines at the settings width."""
     row = HTML[HTML.index('id="logs-email-bundle"') - 200 : HTML.index('id="logs-email-bundle"') + 60]
     assert 'class="doc-dock-menu-item"' in row
-    assert '$("logs-email-bundle").addEventListener("click"' in SETTINGS
+    assert 'wire("logs-email-bundle").addEventListener("click"' in SETTINGS
 
 
 def test_the_mail_door_saves_the_bundle_first_and_opens_mailto():

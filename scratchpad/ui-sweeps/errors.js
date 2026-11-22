@@ -21,7 +21,7 @@ const PW='testpassword123'; const BASE=process.env.BASE||'http://127.0.0.1:8781'
 // `[data-tab]` never opened them and a console error on the documents editor
 // could not fail this sweep. Same gap `contrast.js` had, found 2026-09-12.
 const TABS=['dashboard','notes','library','chat','graph','timeline','reminders','documents','whiteboard'];
-const SECTIONS=['account','privacy','learned','appearance','preferences','models','tools','skills','personas','templates','websearch','memory','tasks','data','logs','shortcuts','extras','help','about'];
+const SECTIONS=['general','searchindex','account','privacy','learned','appearance','preferences','models','tools','skills','personas','templates','websearch','memory','tasks','data','logs','shortcuts','extras','help','about'];
 const SUBTABS={notes:['browse','capture','writing-room','ask'],library:['docs','boards','images','files','skills','links','contents']};
 // FAULTS=1: the fault-injection pass instead (errors-faults.js, WORLD_CLASS_PLAN H9):
 // one route at a time answers 500, and no tab may go blank or throw.
@@ -114,7 +114,7 @@ async function runWidth(browser,width){
     await page.goto(BASE+'/',{waitUntil:'domcontentloaded',timeout:process.env.SLOW?120000:30000}); await page.waitForSelector('#lock-password',{state:'visible',timeout:process.env.SLOW?90000:20000});
     //: Wait for the unlock itself, not a fixed 2.5 s: on a loaded machine it took 5.8 s at 390, and the retry below then typed into a field mid-unlock and timed out (Brief 87).
     await page.fill('#lock-password',PW); await page.click('#lock-submit'); await page.waitForFunction(()=>!document.getElementById('lock-password')?.offsetParent,null,{timeout:20000}).catch(()=>{});
-    if(await page.$('#lock-password')&&await page.isVisible('#lock-password')){await page.fill('#lock-password',PW);await page.click('#lock-submit');await page.waitForTimeout(2500);}
+    if(await page.$('#lock-password')&&await page.isVisible('#lock-password')){await page.fill('#lock-password',PW);await page.click('#lock-submit');await page.waitForSelector('#lock-password',{state:'hidden',timeout:20000}).catch(()=>{});}
     await page.evaluate(()=>{const o=document.getElementById('onboarding-overlay');if(o)o.classList.add('hidden');}); await page.waitForTimeout(500);
     if(FONT) await page.evaluate((f)=>{try{localStorage.setItem('font',f);}catch(e){} document.documentElement.dataset.font=f;},FONT);
     const findings=[]; page_=page; findings_=findings;

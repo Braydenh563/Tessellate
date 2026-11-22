@@ -35,7 +35,7 @@ CSS = "".join(
 def test_the_dock_is_not_a_formatting_toolbar():
     """`.doc-toolbar button` is written for H1/B/I glyph buttons. The dock
     shared the class and inherited it."""
-    dock = HTML.split('class="row space-between doc-dock"')[1].split("</div>")[0]
+    dock = HTML.split('class="row space-between dock doc-dock"')[1].split("</div>")[0]
     assert "doc-toolbar" not in HTML.split("doc-dock")[0][-200:], "the dock kept the class"
     assert 'class="doc-toolbar" id="doc-toolbar"' in HTML, "the formatting bar keeps it"
     assert dock
@@ -103,7 +103,7 @@ def test_the_name_and_the_type_share_a_row():
     #: Cut at the next dock section, not the first `</span>`: the Back
     #: button's own label is a span inside the identity (the laptop pass,
     #: 2026-09-27), and the first close tag was that label's.
-    identity = HTML.split('class="doc-dock-identity"')[1].split('class="row doc-actions"')[0]
+    identity = HTML.split('class="dock-identity doc-dock-identity"')[1].split('class="row dock-actions doc-actions"')[0]
     assert 'id="doc-title"' in identity
     # INBOX 1482: the type left the dock for the foot (a button opening the
     # grouped picker, `docTypeMenu`), so the identity row is still the title

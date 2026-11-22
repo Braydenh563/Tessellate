@@ -9,11 +9,10 @@ import re
 from collections.abc import Iterator
 from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
-from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -27,6 +26,7 @@ from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.repo import categories as categories_repo
+from tessellate.repo import insights as insights_repo
 from tessellate.entry import manager, paths
 from tessellate.repo import tags as tags_repo
 
@@ -42,9 +42,10 @@ def stats(session: Session = Depends(get_session)) -> dict:
     # both out (a board is an Entry row, MINDMAP_PLAN §2), and the owner asked
     # "do I have 29, 30 or 31 notes?" when this said one number and the list
     # another. Measured again after boards: dashboard 75, list 40.
-    total = session.scalar(
-        select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-    )
+    #: The count and the oldest day in one statement (same filter): Ask's as-of
+    #: slider spans from the oldest note (L-world-class-352), inside the route's
+    #: statement budget (tests/test_perf_budget.py).
+    total, oldest = insights_repo.total_and_oldest(session)
     by_category = categories_repo.note_counts(
         session, Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False  # noqa: E712
     )
@@ -54,14 +55,7 @@ def stats(session: Session = Depends(get_session)) -> dict:
     #: The day is all this reads, so it asks for the day: loading each note
     #: whole (its text and every other column, as an object) was 204 ms on
     #: 5,000 recent notes and is nothing as a bare column.
-    recent = session.scalars(
-        select(Entry.created_at).where(
-            Entry.is_deleted == False,  # noqa: E712
-            Entry.is_draft == False,  # noqa: E712
-            Entry.is_board == False,  # noqa: E712
-            Entry.created_at >= start.replace(hour=0, minute=0, second=0),
-        )
-    )
+    recent = insights_repo.created_since(session, start.replace(hour=0, minute=0, second=0))
     per_day = [0] * ACTIVITY_DAYS
     today = utcnow().date()
     for created_at in recent:
@@ -71,6 +65,7 @@ def stats(session: Session = Depends(get_session)) -> dict:
 
     return {
         "total_entries": total or 0,
+        "oldest_day": oldest.date().isoformat() if oldest else None,
         "categories": [{"name": name, "count": count} for name, count in by_category],
         "per_day": per_day,
         "days": ACTIVITY_DAYS,
@@ -411,16 +406,9 @@ def heatmap(session: Session = Depends(get_session)) -> dict:
     counts = [0] * HEATMAP_DAYS
     #: Only the day, as a column (see `stats`): 208 ms became a few on 5,000
     #: notes created within the year.
-    rows = session.scalars(
-        select(Entry.created_at).where(
-            Entry.is_deleted == False,  # noqa: E712
-            # Notes only, the one count the rest of the app shows (boards
-            # and drafts are Entry rows too: the heatmap said 77 beside 40).
-            Entry.is_draft == False,  # noqa: E712
-            Entry.is_board == False,  # noqa: E712
-            Entry.created_at >= utcnow() - timedelta(days=HEATMAP_DAYS),
-        )
-    )
+    #: Notes only, the one count the rest of the app shows (boards and drafts
+    #: are Entry rows too: the heatmap said 77 beside 40).
+    rows = insights_repo.created_since(session, utcnow() - timedelta(days=HEATMAP_DAYS))
     for created_at in rows:
         offset = (created_at.date() - start).days
         if 0 <= offset < HEATMAP_DAYS:
@@ -494,18 +482,13 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     from tessellate.ai import composer_voice
     from tessellate.repo import voice
 
-    shown = voice.SHOWN
     rows = voice.recent(session)
     #: The 120 rows are the sample the line names notes from; how many were
     #: written today and yesterday is counted in SQL, so a bulk import is not
     #: capped at the sample's size (audit 1028 S8).
     today = user_now(deps.get_config()).date()
-    day = func.date(Entry.created_at)
     asked = [today.isoformat(), (today - timedelta(days=1)).isoformat()]
-    counts = {
-        date.fromisoformat(d): n
-        for d, n in session.execute(select(day, func.count()).where(*shown, day.in_(asked)).group_by(day)).all()
-    }
+    counts = voice.written_on(session, today, asked)
     notes = voice.as_notes(session, rows)
     line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)
     if not line:
@@ -703,20 +686,9 @@ def on_this_day(session: Session = Depends(get_session)) -> list[dict]:
     private note, not the private-note placeholder every other surface uses.
     """
     now = utcnow()
-    matched_entries = list(
-        session.scalars(
-            select(Entry).where(
-                Entry.is_deleted == False,  # noqa: E712
-                Entry.is_private == False,  # noqa: E712
-                Entry.created_at <= now - timedelta(days=28),
-                func.strftime("%d", Entry.created_at) == f"{now.day:02d}",
-            )
-            #: The five it answers with, read as five (ARCH-13): every match
-            #: was hydrated, about a thirtieth of the notebook, to keep five.
-            .order_by(Entry.id)
-            .limit(5)
-        )
-    )
+    #: The five it answers with, read as five (ARCH-13): every match was
+    #: hydrated, about a thirtieth of the notebook, to keep five.
+    matched_entries = insights_repo.on_this_day(session, now, limit=5)
     category_names = manager.bulk_category_names(session, matched_entries)
 
     matches = [
@@ -785,9 +757,10 @@ def digest_question(session: Session) -> str:
 
 
 def _digest_notes(session: Session) -> list[dict]:
-    #: The user's clock, as the review it gates (`review_digest.week`) reads:
-    #: on the server's own clock the two disagreed about which week it was,
-    #: and "Nothing was saved" stood in for a week that had notes.
+    # The user's clock, not `utcnow()`: the digest's other halves (the
+    # question's date, the composed week) read `user_now`, and a cutoff on a
+    # second clock disagreed with them (CI went red once the fixed test clock
+    # was more than 7 days behind the real one).
     now = user_now(deps.get_config())
     cutoff = (now.astimezone(timezone.utc) if now.tzinfo else now.replace(tzinfo=timezone.utc)) - timedelta(days=7)
     # `is_private == False`: this content is handed straight to the AI, and a
@@ -797,18 +770,7 @@ def _digest_notes(session: Session) -> list[dict]:
     # other surface that feeds the AI already excludes private notes;
     # `digest_structure_note` below does too for its own sentence, this was
     # the one place a private note's row still reached the model.
-    entries = list(
-        session.scalars(
-            select(Entry)
-            .where(
-                Entry.is_deleted == False,  # noqa: E712
-                Entry.is_private == False,  # noqa: E712
-                Entry.created_at >= cutoff,
-            )
-            .order_by(Entry.created_at)
-            .limit(30)
-        )
-    )
+    entries = insights_repo.shared_since(session, cutoff, limit=30)
     category_names = manager.bulk_category_names(session, entries)
     now = user_now(deps.get_config())
     zone = now.tzinfo
@@ -843,15 +805,7 @@ def digest_structure_note(session: Session) -> str:
     as anywhere.
     """
     cutoff = utcnow() - timedelta(days=7)
-    fresh = list(
-        session.scalars(
-            select(Entry).where(
-                Entry.is_deleted == False,  # noqa: E712
-                Entry.is_private == False,  # noqa: E712
-                Entry.created_at >= cutoff,
-            )
-        )
-    )
+    fresh = insights_repo.shared_since(session, cutoff)
     if not fresh:
         return ""
     index = paths.build(session, include_private=False)

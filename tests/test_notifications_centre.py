@@ -72,7 +72,9 @@ def test_the_panel_folds_in_what_is_overdue_on_the_server():
     """The one case an event log cannot cover: a reminder that came due while
     nothing was running to notice. The reminders table knows regardless."""
     opener = APP_JS.split("async function openNotifications(", 1)[1][:2000]
-    assert 'apiJson("/reminders"' in opener
+    # Through the store's one read of the open reminders (store.js, F12), which asks the server.
+    assert "openReminders()" in opener
+    assert '"/reminders?include_done=false"' in APP_JS.split("function openReminders(", 1)[1][:400]
 
 
 def test_the_save_waits_for_the_unlock():

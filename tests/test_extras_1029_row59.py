@@ -30,7 +30,7 @@ from tests._app_js import with_pieces
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
 CHAT_AGENT = with_pieces("chat-agent.js")
-STATUS = (JS / "status.js").read_text(encoding="utf-8")
+STATUS = (JS / "status.js").read_text(encoding="utf-8") + "\n" + (JS / "status-embedding.js").read_text(encoding="utf-8")
 DASHBOARD = (JS / "dashboard.js").read_text(encoding="utf-8")
 REMINDERS = (JS / "shell-reminders.js").read_text(encoding="utf-8")
 #: margin-reader.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.

@@ -36,9 +36,11 @@ def test_ctrl_h_opens_on_the_replace_field():
 
 
 def test_page_find_yields_to_an_editor_that_answered():
-    assert 'if (id === "find" && e.defaultPrevented) continue;' in JS
+    # The yield moved into settings-wiring.js's shortcut filter, which answers "skip" with `return true`.
+    assert 'if (id === "find" && e.defaultPrevented) return true;' in JS
 
 
 def test_the_panel_wears_the_document_restyle_in_a_note():
     for sel in (".cm-panels {", ".cm-search {", ".cm-search .cm-textfield {", ".cm-search .cm-button {"):
-        assert f".note-surface {sel[:-2]},\n.doc-editor {sel}" in LAZY_CSS, sel
+        # The one rule reaches both editors through :is() (the pair of selectors was folded, same rule).
+        assert f":is(.doc-editor, .note-surface) {sel}" in LAZY_CSS, sel

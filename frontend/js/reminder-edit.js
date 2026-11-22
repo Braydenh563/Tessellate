@@ -26,6 +26,7 @@
     textInput.type = "text";
     textInput.maxLength = 500;
     textInput.value = reminder.text;
+    textInput.dataset.autocorrect = "";
     const dueInput = document.createElement("input");
     dueInput.type = "datetime-local";
     dueInput.value = toLocalInputValue(reminder.due_at);
@@ -94,7 +95,7 @@
           //: A refusal (a new time already gone) says why and keeps the form.
           editingReminderId = reminder.id;
           if (error.isLockout) return;
-          toast(error.message || "Couldn't save that reminder.", true);
+          toast(error.message || voiceLine("failed", { what: "save that reminder" }), true);
           dueInput.setAttribute("aria-invalid", "true");
           dueInput.focus();
         }
@@ -122,8 +123,10 @@
         event.preventDefault();
         event.stopPropagation();
         row.querySelectorAll("button")[1]?.click();
-      } else if (event.key === "Enter" && event.target.tagName === "INPUT") {
+      } else if ((event.key === "Enter" && event.target.tagName === "INPUT") || (event.key.toLowerCase() === "s" && (event.ctrlKey || event.metaKey))) {
+        //: Ctrl+S saves the form too (L-world-class-102), before the global chord says "nothing here".
         event.preventDefault();
+        event.stopPropagation();
         row.querySelector("button")?.click();
       }
     });

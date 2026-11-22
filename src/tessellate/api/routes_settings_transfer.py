@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import csv
 import io
-import hashlib
 import json
 import logging
 import os
@@ -19,21 +18,23 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Qu
 from fastapi.responses import FileResponse, StreamingResponse
 
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import clock
 from tessellate import __version__
-from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, paths
+from tessellate.core import backup_bundle, deps, jobruns, jobs, logbuffer, parse_guard, paths
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
+from tessellate.repo import memberships
 from tessellate.entry import importer, manager
-from tessellate.entry import manager_wiki
-from tessellate.entry import manager_text
+from tessellate.entry import frontmatter_keys, manager_text, manager_wiki
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types, relations
 from tessellate.repo.content import walk as content_walk
 from tessellate.entry.cleantext import import_path
+from tessellate.entry.dir_import_parts import (  # noqa: F401  # the folder import's parts, by their old names
+    _import_roots, _under_root, _import_root_for, _inside, _PRIVATE, _text_hash, _already_imported, _directory_import_detail, _until_stopped,
+)
 from tessellate.api.this_computer import this_computer_only
 
 router = APIRouter(tags=["settings"])
@@ -88,6 +89,7 @@ def export_json(session: Session = Depends(get_session)) -> Response:
     }
 
     category_names = manager.bulk_category_names(session, entries)
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
 
     for e in entries:
         payload["entries"].append({
@@ -99,6 +101,9 @@ def export_json(session: Session = Depends(get_session)) -> Response:
             # search index either: `backup.strip_leftovers`.)
             "content": manager_text.readable_content(e),
             "category": category_names.get(e.category_id, manager.UNCATEGORISED),
+            #: Where a person also put it and the groups it is in (L-world-class-172, 173).
+            "also_in": also_in.get(e.id, []),
+            "groups": in_groups.get(e.id, []),
             "tags": manager.shown_tags(e),
             "ai_confidence": e.ai_confidence,
             # Said, so a note decrypted for the export is not mistaken for an
@@ -165,7 +170,8 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
         wanted = set(ids)
         entries = [entry for entry in entries if entry.id in wanted]
     category_names = manager.bulk_category_names(session, entries)
-    
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
+
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
         for entry in entries:
@@ -183,6 +189,10 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
             ]
             if tags:
                 front.append(f"tags: [{', '.join(tags)}]")
+            if also_in.get(entry.id):
+                front.append(f"also-in: [{', '.join(also_in[entry.id])}]")
+            if in_groups.get(entry.id):
+                front.append(f"note-groups: [{', '.join(in_groups[entry.id])}]")
             if entry.pinned:
                 front.append("pinned: true")
             readable = manager_text.readable_content(entry)
@@ -353,9 +363,6 @@ MAX_IMPORT_BYTES = 1024 * 1024  # a single markdown note, not a novel
 MAX_IMPORT_FILES = 500
 
 
-#: The keys the app reads into its own fields (and writes on export); every
-#: other key stays in the note's text as a property (GRAPH_PLAN KG4).
-_APP_KEYS = {"category", "tags", "created", "updated", "pinned"}
 
 
 def _exported_created(values: list[str] | None):
@@ -376,12 +383,8 @@ def _exported_created(values: list[str] | None):
 
 
 def _keep_exported_state(session: Session, entry, meta: dict) -> None:
-    """Put back the date and pin an exported note carried."""
-    if meta.get("created"):
-        entry.created_at = meta["created"]
-    if meta.get("pinned"):
-        entry.pinned = True
-    if meta.get("created") or meta.get("pinned"):
+    """Put back the date, pin, extra categories and groups an exported note carried."""
+    if frontmatter_keys.keep_exported_state(session, entry, meta):
         session.commit()
 
 
@@ -410,14 +413,8 @@ def _parse_frontmatter(text: str) -> tuple[dict, str]:
         meta["created"] = stamp
     if (found.get("pinned") or [""])[0].lower() == "true":
         meta["pinned"] = True
-    kept: list[str] = []
-    skipping = False
-    for line in text[:end].rstrip("\n").split("\n")[1:-1]:
-        head = line.partition(":")[0].strip().lower()
-        if line[:1] not in (" ", "\t", "-") and ":" in line:
-            skipping = head in _APP_KEYS
-        if not skipping:
-            kept.append(line)
+    meta.update(frontmatter_keys.exported_memberships(found))
+    kept = frontmatter_keys.unexported_lines(text[:end])
     body = body.lstrip("\n")
     if any(line.strip() for line in kept):
         return meta, "---\n" + "\n".join(kept) + "\n---\n" + body
@@ -472,75 +469,12 @@ def _validated_import_directory(path_value: str) -> Path:
     return p
 
 
-def _import_roots() -> list[str]:
-    """The folders a directory import may read from, as real paths."""
-    roots = []
-    for candidate in (Path.home(), deps.get_config().data_dir):
-        try:
-            roots.append(os.path.realpath(candidate))
-        except OSError:
-            continue
-    return roots
-
-
-def _under_root(real: str, root: str) -> bool:
-    """Is the real path `real` the folder `root` or somewhere inside it?"""
-    return real == root or real.startswith(root.rstrip(os.sep) + os.sep)
-
-
-def _import_root_for(real: str) -> str:
-    """The import root `real` lies in (separator-aware), or "" for none."""
-    for root in _import_roots():
-        if _under_root(real, root):
-            return root
-    return ""
-
-
-def _inside(root: Path, f: Path) -> bool:
-    """Does `f`, symlinks followed, still lie inside `root`?
-
-    The walk below reads every `.md` under the chosen folder, and a symlink
-    inside it can point anywhere: `innocent.md -> ~/.ssh/config.md`, or a
-    linked folder. The folder was checked; what it links to was not, so
-    each file is checked by where it resolves.
-    """
-    real = os.path.realpath(f)
-    return _under_root(real, os.path.realpath(root)) and os.path.isfile(real)
-
-
 def _run_directory_import(directory_path: str):
     """The background task: the import, recorded as the last "import" run
     (INBOX 438), because a 202 Accepted answers nobody about how it went."""
     with jobruns.job_run("import", origin="you") as run:
         _import_directory_files(directory_path, run)
-
-
-#: Stands for "this path is a private note": matched without its text.
-_PRIVATE = object()
-
-
-def _text_hash(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def _already_imported(session) -> dict:  # noqa: ANN001
-    """Every live note that came from a vault file: its path in the vault ->
-    the hashes of its text, or `_PRIVATE` when its text is encrypted."""
-
-    from tessellate.core.database import Entry
-
-    known: dict = {}
-    rows = session.execute(
-        select(Entry.source_path, Entry.content, Entry.is_private).where(
-            Entry.source_path != "", Entry.is_deleted.is_(False)
-        )
-    )
-    for path, content, private in rows:
-        if private:
-            known[path] = _PRIVATE
-        elif known.get(path) is not _PRIVATE:
-            known.setdefault(path, set()).add(_text_hash((content or "").strip()))
-    return known
+    jobs.check_stop()  # the row ends cancelled when Stop cut the walk short
 
 
 def _import_directory_files(directory_path: str, run: "jobruns.Run"):
@@ -556,7 +490,7 @@ def _import_directory_files(directory_path: str, run: "jobruns.Run"):
         already = 0
         made = []
         known = _already_imported(session)
-        for f in p.rglob("*.md"):
+        for f in _until_stopped(p.rglob("*.md")):
             if not _inside(p, f):
                 skipped += 1
                 continue
@@ -644,14 +578,7 @@ def _import_directory_files(directory_path: str, run: "jobruns.Run"):
         #: at all, imported stayed 0 and the whole run vanished silently.
         _link_imported(session, made)
         if imported > 0 or skipped > 0 or already > 0:
-            detail = f"markdown dir x{imported}"
-            if already:
-                detail += f", {already} already in"
-            if skipped:
-                detail += f", skipped {skipped}"
-                if skipped_oversize:
-                    limit_mb = MAX_IMPORT_BYTES // (1024 * 1024)
-                    detail += f" ({skipped_oversize} over {limit_mb} MB)"
+            detail = _directory_import_detail(imported, already, skipped, skipped_oversize, MAX_IMPORT_BYTES)
             manager.log_action(session, "imported", "data", detail=detail)
             session.commit()
             run.result = (
@@ -819,6 +746,17 @@ def import_document(file: UploadFile, session: Session = Depends(get_session)) -
         saved.flush()
         try:
             text = importer.convert_to_markdown(Path(saved.name))
+        except parse_guard.ParseStopped as exc:
+            #: The reader's child hung, crashed or ran out of memory (L-world-class-321; the log says which).
+            name = logbuffer.safe_value(file.filename or "that file", 80)
+            jobruns.note_finished(
+                "import", "failed", f"Couldn't read {name}. Reading it was stopped: it may be damaged."
+            )
+            raise HTTPException(
+                status_code=422,
+                detail="Reading that file was stopped because it took too long, needed too much "
+                "memory or broke the reader. It may be damaged.",
+            ) from exc
         except Exception as exc:  # a file markitdown can't parse must not 500
             #: Background jobs shows this row to a person, so it is a plain
             #: sentence with the file's name; the converter's own words (a
@@ -895,10 +833,11 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(
-        ["id", "content", "category", "tags", "ai_confidence", "created_at", "is_deleted"]
+        ["id", "content", "category", "tags", "ai_confidence", "created_at", "is_deleted", "also_in", "groups"]
     )
-    
+
     category_names = manager.bulk_category_names(session, entries)
+    also_in, in_groups = memberships.also_in_bulk(session, entries), memberships.groups_bulk(session, [e.id for e in entries])
     
     for e in entries:
         writer.writerow(
@@ -910,6 +849,8 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
                 e.ai_confidence,
                 e.created_at.isoformat(),
                 e.is_deleted,
+                "|".join(also_in.get(e.id, [])),
+                "|".join(in_groups.get(e.id, [])),
             ]
         )
     manager.log_action(session, "exported", "data", detail="csv")

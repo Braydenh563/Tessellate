@@ -175,6 +175,7 @@ def current(session: Session, backend_id: str) -> _Chunks | None:
     try:
         fingerprint = _fingerprint(session)
     except Exception:  # noqa: BLE001  # no table yet (an old database mid-upgrade)
+        logger.debug("current: no table yet (an old database mid-upgrade)", exc_info=True)
         return None
     key = _key(session, backend_id)
     with _lock:
@@ -399,6 +400,7 @@ def meaning_scorer(session: Session, embeddings):  # noqa: ANN001, ANN201
             return None
         backend = embeddings.backend_id()
     except Exception:  # noqa: BLE001  # no backend is a state, not an error
+        logger.debug("meaning_scorer: no backend is a state, not an error", exc_info=True)
         return None
     import numpy as np
 

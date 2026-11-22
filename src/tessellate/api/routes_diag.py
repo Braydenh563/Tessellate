@@ -14,15 +14,14 @@ import sys
 import time
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.core import deps, diagring, jobruns, lagwatch, maintenance
-from tessellate.core.database import Entry
 from tessellate.repo import documents as documents_repo, relations as relations_repo
 from tessellate.entry import manager
 from tessellate.core.deps import get_session
+from tessellate.repo import notes as notes_repo
 
 router = APIRouter(tags=["logs"])
 
@@ -40,9 +39,7 @@ def counts(session: Session) -> dict:
     if _counts["value"] and now - _counts["at"] < COUNTS_TTL_S:
         return _counts["value"]
     try:
-        boards = session.scalar(
-            select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.board_settings.is_not(None))  # noqa: E712
-        ) or 0
+        boards = notes_repo.board_count(session) or 0
         value = {
             "notes": manager.count_notes(session),
             "boards": boards,

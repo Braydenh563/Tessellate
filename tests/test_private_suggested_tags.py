@@ -120,7 +120,7 @@ def test_the_model_and_search_never_see_them(client, session):
 
 
 def test_filing_makes_no_suggestions_for_a_private_note(client, session):
-    from tessellate.api import routes_entries
+    from tessellate.entry import tag_suggestions
 
     #: A vocabulary tag the private note names, so a public note would be offered it.
     client.post("/entries", json={"content": "starter notes", "tags": ["sourdough"]})
@@ -130,10 +130,10 @@ def test_filing_makes_no_suggestions_for_a_private_note(client, session):
     session.commit()
     public = client.post("/entries", json={"content": "more sourdough and rye bread"}).json()
     public_row = session.get(Entry, public["id"])
-    routes_entries._keep_suggestions(session, public_row, None)
+    tag_suggestions.keep_suggestions(session, public_row, None)
     assert "sourdough" in json.loads(public_row.suggested_tags), "the probe offers nothing even to a public note"
     for locked in (False, True):
         if locked:
             vault.close()
-        routes_entries._keep_suggestions(session, row, None)
+        tag_suggestions.keep_suggestions(session, row, None)
         assert json.loads(row.suggested_tags) == []

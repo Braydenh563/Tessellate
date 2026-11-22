@@ -13,7 +13,6 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_entries
@@ -23,6 +22,7 @@ from tessellate.core import deps
 from tessellate.core.deps import get_session
 from tessellate.entry import manager_text
 from tessellate.entry import properties as note_properties
+from tessellate.repo import properties as properties_repo
 
 router = APIRouter(tags=["properties"])
 
@@ -137,7 +137,7 @@ def list_note_types(
     session: Session = Depends(get_session),
 ) -> list[dict]:
     note_properties.ensure_builtin_types(session, deps.get_config())
-    rows = [_type_row(r) for r in session.scalars(select(NoteType).order_by(NoteType.name))]
+    rows = [_type_row(r) for r in properties_repo.note_types(session)]
     response.headers["X-Total-Count"] = str(len(rows))
     return rows[:limit]
 
@@ -152,6 +152,8 @@ def create_note_type(body: NoteTypeIn, session: Session = Depends(get_session)) 
     row = NoteType(name=name, icon=body.icon, colour=body.colour, fields=_fields(body.fields) or None)
     if body.restore and body.id is not None and session.get(NoteType, body.id) is None:
         row.id = body.id
+    else:
+        row.id = note_properties.next_type_id(session, deps.get_config())
     session.add(row)
     session.commit()
     # Seeded now, after the person's own type (a hand-made "Book" stays as
@@ -198,4 +200,5 @@ def delete_note_type(type_id: int, session: Session = Depends(get_session)) -> d
     kept = _type_row(row)
     session.delete(row)
     session.commit()
+    note_properties.remember_deleted_type(type_id, deps.get_config())
     return {"deleted": type_id, "type": kept}

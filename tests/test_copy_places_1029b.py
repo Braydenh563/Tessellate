@@ -15,6 +15,8 @@ against the pane its button opens.
 
 from __future__ import annotations
 
+from tests._tool_sig import call
+
 from tests._help_text import help_more_text
 import html
 import re
@@ -56,19 +58,19 @@ def test_every_help_topic_path_into_settings_names_a_real_pane() -> None:
 
 def test_a_tool_that_is_off_is_refused_for_that_reason(ai_client) -> None:
     ai_client.put("/preferences", json={"disabled_tools": ["delete_category"]})
-    reply = ai_client.post("/chat/tools/execute", json={"name": "delete_category", "arguments": {"name": "x"}})
+    reply = ai_client.post("/chat/tools/execute", json=call("delete_category", {"name": "x"}))
     assert reply.status_code == 409
     assert reply.json()["detail"] == "That tool is turned off in Settings, Tools it can use."
     batch = ai_client.post(
         "/chat/tools/execute",
-        json={"name": "batch", "steps": [{"tool": "delete_category", "arguments": {"name": "x"}}]},
+        json=call("batch", None, [{"tool": "delete_category", "arguments": {"name": "x"}}]),
     )
     assert batch.status_code == 409
 
 
 def test_a_tool_that_is_on_still_fails_for_its_own_reason(ai_client) -> None:
     ai_client.put("/preferences", json={"disabled_tools": []})
-    reply = ai_client.post("/chat/tools/execute", json={"name": "delete_category", "arguments": {"name": "No such category"}})
+    reply = ai_client.post("/chat/tools/execute", json=call("delete_category", {"name": "No such category"}))
     assert reply.status_code == 400
     assert "may have changed" in reply.json()["detail"]
 

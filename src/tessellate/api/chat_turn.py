@@ -154,6 +154,7 @@ def _insight_level() -> str:
     try:
         value = deps.get_config().get_preference("insight_level", "one")
     except Exception:  # noqa: BLE001  # no preference is the default
+        logging.getLogger(__name__).debug("_insight_level: no preference is the default", exc_info=True)
         return "one"
     return value if value in composer_digest.INSIGHT_LEVELS else "one"
 
@@ -172,6 +173,7 @@ def _meaning_loading() -> bool:
             return False
         return bool(callable(cold) and cold()) or (embedding_service.warmup_running() and not embeddings.is_ready())
     except Exception:  # noqa: BLE001  # no backend is a state, not an error
+        logging.getLogger(__name__).debug("_meaning_loading: no backend is a state, not an error", exc_info=True)
         return False
 
 

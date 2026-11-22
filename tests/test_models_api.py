@@ -496,9 +496,9 @@ def test_a_launch_with_a_stand_in_note_retries_its_filing(client, monkeypatch):
 
     queued: list[str] = []
     monkeypatch.setattr(jobs, "enqueue", lambda kind, *a, **k: queued.append(kind))
-    from tessellate.api import routes_entries
+    from tessellate.entry import filing_background
 
-    monkeypatch.setattr(routes_entries, "stand_ins_waiting", lambda: 2)
+    monkeypatch.setattr(filing_background, "stand_ins_waiting", lambda: 2)
     monkeypatch.setattr(deps.get_ollama().__class__, "is_running", lambda self: True, raising=False)
     client.post("/models/warm-filing")
     assert queued == ["warm-filing", "file-entry"]
@@ -601,7 +601,14 @@ def test_a_start_up_choice_is_said_with_its_reason_until_one_is_picked(client, m
     assert response.status_code == 200
     assert client.get("/models/status").json()["chat_model_chosen_why"] == ""
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
-    assert "sayChatModelChosen(modelStatus);" in js and '"Change"' in js.split("function sayChatModelChosen", 1)[1][:900]
+    assert "sayChatModelChosen(modelStatus);" in js and 'ensureModule("modelChosen")' in js
+    #: L671: the one line names the background and picture models too, from
+    #: fields the status already carries, and is shown once per browser. It
+    #: lives in a lazy file so the boot scripts stay under the gzip ratchet.
+    lazy = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "model-chosen.js").read_text(encoding="utf-8")
+    assert '"Change"' in lazy and "utility_model_resolved" in lazy and "vision_model_resolved" in lazy
+    assert "prefs.get(key)" in lazy and "!" not in lazy.split("toastAction(")[1].split("`")[1].replace("${", "")
+    assert "utility_model_resolved" in client.get("/models/status").json()
 
 
 def test_suggested_shares_the_status_polls_model_list(client, monkeypatch, route_waits):
@@ -940,3 +947,21 @@ def test_a_failing_model_list_does_not_hold_a_finished_download(ai_client, fake_
     started = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
     assert started.status_code == 200
     _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success", timeout=4.0)
+
+
+def test_a_finished_download_reads_as_running_until_the_runner_lists_it(ai_client, fake_ollama, monkeypatch):
+    """The flake above, made certain: a runner whose list lags the pull. "Done" must mean "listed" in the
+    same poll, so until the list has the model the poll still reports the download running, all of it done."""
+    real = fake_ollama.list_models
+    hide = {"on": True}
+    monkeypatch.setattr(
+        fake_ollama, "list_models", lambda: [m for m in real() if not (hide["on"] and m["name"].startswith("nomic-embed-text"))]
+    )
+    _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
+    started = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert started.status_code == 200
+    body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("done", 0) > 0 and b["pulls"]["nomic-embed-text"]["done"] == b["pulls"]["nomic-embed-text"]["total"])
+    assert body["pulls"]["nomic-embed-text"]["status"] == "running"
+    hide["on"] = False
+    body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success")
+    assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"])

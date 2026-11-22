@@ -342,7 +342,7 @@ def test_attached_pdf_page_404s_for_a_non_pdf(client):
 def test_attached_pdf_page_returns_a_real_png(client):
     attachment_id = _attach(client, "notes.pdf", _ONE_PAGE_PDF)
     info = client.get(f"/files/{attachment_id}/pdf-info").json()
-    assert info == {"available": True, "pages": 1, "message": ""}
+    assert info == {"available": True, "pages": 1, "message": "", "locked": False, "outline": []}
     page = client.get(f"/files/{attachment_id}/pdf-page/0")
     assert page.status_code == 200
     assert page.headers["content-type"] == "image/png"

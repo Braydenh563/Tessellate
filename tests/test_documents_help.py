@@ -69,7 +69,7 @@ SECTIONS = {
         'id="doc-sidebar-outline"',
         ("Outline", "Comments", "Linked from", "Notes it draws on", "References", "Attach a bookmark", "Where are my documents kept?"),
     ),
-    "doc-dock-help": ('class="row space-between doc-dock"', VIEW_WORDS),
+    "doc-dock-help": ('class="row space-between dock doc-dock"', VIEW_WORDS),
     "doc-ai-verb-help": (
         'id="doc-ai-panel"',
         ("Edit", "Write", "Remove", "Suggest an edit", "Stop", "Replace with this", "Cancel", "History"),

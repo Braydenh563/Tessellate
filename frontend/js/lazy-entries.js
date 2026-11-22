@@ -3,6 +3,18 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: A background job starting and finishing, said out loud (status-tasks.js, out of status.js; L698). Nobody reads a return value.
+  statusTasks: ["/js/status-tasks.js"],
+  //: The Settings pane's model-status draw (status-settings.js, out of status.js; L-world-class-631). Nobody reads a return value.
+  statusSettings: ["/js/status-settings.js"],
+  //: The Notes view's Ask again chips and most-used list (status-quick.js, out of status.js; L698).
+  statusQuick: ["/js/status-quick.js"],
+  //: The once-per-problem notice for a broken search engine (status-embedding.js, out of status.js; L698).
+  statusEmbedding: ["/js/status-embedding.js"],
+  //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
+  webPanel: ["/js/web-panel.js"],
+  //: Tags, category and a property for the documents and files a Library selection holds (library-bulk.js).
+  libraryBulk: ["/js/library-bulk.js"],
   //: Boards and maps (audit D22): the `library` files, then d3 and the nine whiteboard files (820 KB gzipped) a first
   //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
   boards: [
@@ -19,6 +31,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-map-look.js", //: After whiteboard-map.js: topic fill, focus and look helpers; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-record.js", //: After whiteboard-map.js: the Undo-recorded map commands, bound through `wbRecorded` (defined there); wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
+    "/js/whiteboard-map-stamps.js", //: After whiteboard-map-more.js: joins its `wbMapLazy` table (stamps, stickers, affinity, boundary).
     "/js/whiteboard.js",
     "/js/whiteboard-boards.js", //: After whiteboard.js: the board list, loading, renaming and new boards; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-handles.js", //: After whiteboard.js: path transforms, end caps and the selection grips; wrapped, names whiteboard.js at run time only.
@@ -96,6 +109,8 @@ Object.assign(LAZY_MODULES, {
   studio: ["/js/studio.js"],
   //: Sync between computers through a folder, no server (sync-folder.js's header; WORLD_CLASS_PLAN row 36).
   syncFolder: ["/js/sync-folder.js"],
+  //: The start-up model choice, said once (model-chosen.js; L671).
+  modelChosen: ["/js/model-chosen.js"],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
@@ -113,7 +128,9 @@ Object.assign(LAZY_MODULES, {
   //: Every popup panel draggable by its head and resizable from its corner (INBOX 1427): see panel-movable.js.
   panelMovable: ["/css/panel-movable-lazy.css", "/js/panel-movable.js"],
   //: The activity panel and the run folds it shares with Settings, Tasks (task-steps.js).
-  activity: ["/js/task-steps.js", "/js/activity-panel.js"],
+  activity: ["/css/agent-runs-lazy.css", "/js/task-steps.js", "/js/activity-panel.js"],
+  //: The Connections sheet (connections.js) and the rows the Notes column shares; its own stylesheet rides with it.
+  connections: ["/css/connections-lazy.css", "/js/connections.js"],
   //: Settings, Tasks (chat-tasks.js), About's health block (settings-health.js), Personas (personas-pane.js).
   settingsPanes: ["/js/task-steps.js", "/js/chat-tasks.js", "/js/settings-health.js", "/js/personas-pane.js"],
   //: Improve (improve-panel.js) and a note's re-check and attach actions (lightbox-actions.js).
@@ -161,8 +178,16 @@ Object.assign(LAZY_MODULES, {
   entryCard: ["/js/entry-card.js"],
   //: The bar a table in a reply or a note wears (table-block.js): the table render (navigation.js) swaps it in when it arrives.
   tableBlock: ["/js/table-block.js"],
+  //: A `![[board]]` card's fill (board-embed.js): `boardEmbedElement` (markdown.js) waits for it.
+  boardEmbed: ["/js/board-embed.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
+  //: The list's keyboard walk, a shift-click range, the connections rail's listeners and the wiki-rename offer (notes-wire.js; L-world-class-631).
+  notesWire: ["/js/notes-wire.js"],
+  //: The poll for a change made on another device (notes-sync.js, out of notes-list.js; L698). Started where notes-list.js loads.
+  notesSync: ["/js/notes-sync.js"],
+  //: Quit, clear the caches, Reload the app (app-reset.js, out of phone-shell.js; L698).
+  appReset: ["/js/app-reset.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
   //: library is not here: it loads inside the hidden frame mermaid-draw.js creates.
   mermaid: ["/css/mermaid-lazy.css", "/js/mermaid-draw.js"],
@@ -174,7 +199,7 @@ Object.assign(LAZY_MODULES, {
   //: The failed-load state (load-failed.js's header).
   loadFailed: ["/js/load-failed.js"],
   //: The generated faces, the companion and Atlas (see "The characters" below).
-  characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
+  characters: ["/css/characters-lazy.css", "/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
   //: What a person does to the companion on purpose: the Settings controls, Show or
   //: hide, Call back, the Look repaint (companion-settings.js's header; audit AI23).
   companionSettings: ["/js/companion-settings.js"],
@@ -189,8 +214,27 @@ Object.assign(LAZY_MODULES, {
   //: The csv and tsv grid, fetched on the first press of Grid (documents-csvgrid.js).
   docCsvGrid: ["/css/doc-csv-grid-lazy.css", "/js/documents-csvgrid.js"],
 });
+//: The web panel's own door (web-panel.js, out of chat.js; L-world-class-571). Closing a panel that was never
+//: opened has nothing to do, so that call does not fetch the file; every other call to it does (the stand-in).
+window.toggleWebPanel = function toggleWebPanelStandIn(show, ...rest) {
+  if (show === false && !lazyFileLoads.has("/js/web-panel.js")) return undefined;
+  return ensureModule("webPanel").then(() => {
+    const real = window.toggleWebPanel;
+    if (typeof real !== "function" || real === toggleWebPanelStandIn) return lazyLoadFailed();
+    return real(show, ...rest);
+  });
+};
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
+  libraryBulk: ["libraryMeta"],
+  //: The web panel's doors: nobody reads a return value (the two synchronous readers stay in chat.js).
+  statusTasks: ["noticeTaskTransitions"],
+  statusSettings: ["renderSettings"],
+  statusQuick: ["loadRecentQuestions", "loadMostUsed"],
+  statusEmbedding: ["nudgeEmbeddingProblem"],
+  appReset: ["quitApp", "clearAppCache", "forceReloadApp", "toggleAutonomousPanel"],
+  notesWire: ["wireNotesRail", "initEntryListKeyboardNav", "selectNoteRange", "offerWikiRename"],
+  webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
   //: What the Library list, the documents and every surface that names a board call into the board code (D22).
   //: Nobody reads a return value: a function whose answer is read (`wbCommandsLive`, `wbEditorSurfaceById`)
   //: cannot be one, and its caller tests `typeof` instead, meaning "no board is open".
@@ -211,13 +255,13 @@ installStandIns({
   libraryPick: ["pickLibraryItemDialog", "pickMediaDialog"],
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu", "openModelOffer"],
   featureModelSheet: ["openFeatureModelSheet"],
-  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
+  dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine", "renderBackupsWidget"],
   dashArt: ["renderArtWidget"],
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation", "openKebabSheet"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation", "showAskAsOf", "openKebabSheet"],
   notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],
@@ -382,8 +426,12 @@ function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;
   const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library].filter((f) => f[1] > "c");
+  //: Calm is asked again in an idle slot, just before the file: a file's eval
+  //: is 50 to 200 ms at 4x CPU, and one that started as a pane opened landed
+  //: inside its first show (graph.js in Settings -> Data, L-world-class-355).
+  const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 0));
   const warmNext = () =>
-    Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600));
+    Date.now() < calmAt ? setTimeout(warmNext, 600) : idle(() => (Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600))));
   const warm = (event) => {
     //: Typing the password is not the person arriving: the lock screen is over
     //: the page until they are in.
@@ -391,7 +439,8 @@ function warmLibraryAfterInput() {
     calmAt || setTimeout(warmNext);
     calmAt = Date.now() + 2500;
   };
-  for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, warm, { capture: true, passive: true });
+  //: `click` too: a screen reader's activation is a click with no pointerdown.
+  for (const type of ["pointerdown", "keydown", "click"]) window.addEventListener(type, warm, { capture: true, passive: true });
 }
 warmLibraryAfterInput();
 

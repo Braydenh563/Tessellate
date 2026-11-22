@@ -37,9 +37,9 @@ def test_the_first_escape_in_a_dialog_closes_only_the_help():
 def test_the_dialogs_with_a_help_button_exist():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     dialogs = [
-        m.group(1)
-        for m in re.finditer(r'<dialog\b[^>]*id="([^"]+)"(.*?)</dialog>', html, re.S)
-        if "data-help-for" in m.group(2)
+        m.group(2)
+        for m in re.finditer(r'<(dialog|sheet-host)\b[^>]*id="([^"]+)"(.*?)</\1>', html, re.S)
+        if "data-help-for" in m.group(3)
     ]
     assert "quick-note" in dialogs
 

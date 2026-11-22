@@ -318,6 +318,20 @@ def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]
     return installed
 
 
+def _pulls_as_listed(pulls: dict[str, dict], installed: list[dict]) -> dict[str, dict]:
+    """A download the runner has finished but does not list yet still reads as running, all of it done:
+    "Downloaded" beside a list without the model was the flake on PR 212, 216 and 222. Only for
+    `PULL_LIST_RETRY_SECONDS`, so a model the runner never lists (a renamed tag) does not spin for ever."""
+    now = time.monotonic()
+    with _installed_lock:
+        waiting = {
+            n for n, job in pulls.items()
+            if job.get("status") == "success" and now - _pull_done_seen.get(n, now) < PULL_LIST_RETRY_SECONDS
+        }
+    waiting = {n for n in waiting if not _name_matches(n, installed)}
+    return {n: ({**job, "status": "running"} if n in waiting else job) for n, job in pulls.items()}
+
+
 def _name_matches(wanted: str, installed: list[dict]) -> bool:
     """'llama3.2' should match an installed 'llama3.2:latest'."""
     names = {m["name"] for m in installed}
@@ -409,7 +423,7 @@ def warm_filing() -> dict:
     warm-up on the cpu lane so a note saved meanwhile is not queued behind
     it, the retry on the model lane with the filing it belongs to."""
     from tessellate.ai import janitor
-    from tessellate.api import routes_entries
+    from tessellate.entry import filing_background
     from tessellate.core import jobs
 
     #: The graphics card is read by starting a program (up to 3s, cached five
@@ -435,24 +449,18 @@ def warm_filing() -> dict:
     #: Only when a note is waiting: queued unconditionally, a launch with no
     #: notes still showed "Filing a note" in Activity and in the bell (scan
     #: 2026-10-11, one more row per page load).
-    if routes_entries.stand_ins_waiting():
-        jobs.enqueue("file-entry", routes_entries.retry_stand_ins, dedupe_key="retry-stand-ins")
+    if filing_background.stand_ins_waiting():
+        jobs.enqueue("file-entry", filing_background.retry_stand_ins, dedupe_key="retry-stand-ins")
     return {"status": "ok"}
 
 def _embedding_coverage(session: Session) -> dict:
     """How many live notes search by meaning can find, out of how many there
     are: the "how well" half of INBOX 431 (3). Two counts on the poll that
     already runs; the space filter applies as it does to every query."""
-    from sqlalchemy import func, select
+    from tessellate.repo import graph_layers
 
-    from tessellate.core.database import EmbeddingRecord, Entry
-
-    live = (Entry.is_deleted == False) & (Entry.is_draft == False)  # noqa: E712
-    total = session.scalar(select(func.count(Entry.id)).where(live)) or 0
-    indexed = session.scalar(
-        select(func.count(EmbeddingRecord.id)).join(Entry, Entry.id == EmbeddingRecord.entry_id).where(live)
-    ) or 0
-    return {"indexed": int(indexed), "total": int(total)}
+    indexed, total = graph_layers.embedding_coverage(session)
+    return {"indexed": indexed, "total": total}
 
 
 def _tools_engine() -> str | None:
@@ -461,6 +469,7 @@ def _tools_engine() -> str | None:
     try:
         return "needle" if extras.download_ready("needle") is not None else None
     except Exception:  # noqa: BLE001  # an unreadable extras folder is "not installed"
+        logging.getLogger(__name__).debug("_tools_engine: an unreadable extras folder is 'not installed'", exc_info=True)
         return None
 
 
@@ -523,6 +532,8 @@ def _status_chat_fields(  # noqa: ANN001
     chat_model, is_local, privacy_note, local_only, utility_resolved, utility_reason, resolved_vision,
 ) -> dict:
     """The chat backend half of /status: reachability, privacy, and the models in use."""
+    ready = _model_ready(running, installed, provider, chat_model)
+    tools_engine = None if running else _tools_engine()
     return {
         # Named for Ollama because the whole UI is, and it means "the chat
         # backend is answering", which is the question the pill asks whoever
@@ -540,12 +551,17 @@ def _status_chat_fields(  # noqa: ANN001
         #: cannot write a reply. An OpenAI-dialect server answers with whatever
         #: it has loaded, so any listed model counts there. The Chat tab's
         #: Agent mode gates on this, not on `ollama_running`.
-        "model_ready": _model_ready(running, installed, provider, chat_model),
+        "model_ready": ready,
         #: What can still call tools with no model (INBOX 725): "needle" when
         #: its extra is on disk (`tool_fallback.for_tools`'s own test, a
         #: folder check, no import), so the Chat tab's Agent mode is greyed
         #: only when nothing could run it.
-        "tools_engine": None if running else _tools_engine(),
+        "tools_engine": tools_engine,
+        #: **The one "is the AI off" verdict** (L643): the runner did not
+        #: answer, or no model can write a reply and nothing (Needle) can call
+        #: tools. Every gated control reads this through `aiIsOff`, so the
+        #: clauses live here once instead of in 28 call sites.
+        "ai_off": running is False or (not ready and not tools_engine),
         "unreachable_hint": unreachable_hint,
         # Which dialect is actually in use (§6), so the UI can say so rather
         # than claiming Ollama when the answers came from LM Studio.
@@ -712,6 +728,7 @@ def status(session: Session = Depends(get_session)) -> dict:
     pulls = jobs.pull_statuses()
     if running:
         installed = _installed_after_pulls(ollama, installed, pulls)
+        pulls = _pulls_as_listed(pulls, installed)
     chat_model = manager.chat_model()
     utility_resolved, utility_reason = manager.utility_resolution()
     # Resolved once. It walks the installed models asking each whether it can

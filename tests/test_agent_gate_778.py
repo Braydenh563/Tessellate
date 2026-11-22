@@ -55,11 +55,29 @@ def test_the_chat_mode_gate_reads_model_ready_not_reachability():
 
 
 def test_ai_is_off_when_no_model_can_answer_not_only_when_the_server_is_down():
-    """Ledger 1521: `aiIsOff` follows `model_ready`, with the Needle engine keeping the gate open."""
+    """Ledger 1521, L643: the verdict is the server's one `ai_off` field (the
+    runner down, or no model ready and no Needle engine), and `aiIsOff` reads
+    only that, so 28 call sites cannot drift from a copied predicate. The
+    predicate moved server-side, so this asserts the reader, not its clauses."""
     from tests._app_js import app_js_text
 
     code = app_js_text()
     body = code[code.index("function aiIsOff() {"):]
     body = body[: body.index("\n}\n")]
-    assert "ollama_running === false" in body
-    assert "model_ready === false" in body and "tools_engine" in body
+    assert "ai_off === true" in body
+    assert "model_ready" not in body and "ollama_running" not in body and "tools_engine" not in body
+
+
+def test_ai_off_when_the_runner_is_down_needle_or_not(client, monkeypatch):
+    """L643: down is off first, as `ollama_running === false` was in the page."""
+    from tessellate.api import routes_models
+
+    assert _status(client)["ai_off"] is True
+    monkeypatch.setattr(routes_models, "_tools_engine", lambda: "needle")
+    assert _status(client)["ai_off"] is True
+
+
+def test_ai_off_follows_whether_a_model_can_answer(ai_client, fake_ollama):
+    assert _status(ai_client)["ai_off"] is False  # the chosen model is there
+    fake_ollama.installed = []
+    assert _status(ai_client)["ai_off"] is True  # up, nothing to answer with

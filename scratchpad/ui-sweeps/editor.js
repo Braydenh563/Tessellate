@@ -1018,7 +1018,7 @@ function ok(name, condition, detail) {
     const made = await r.json();
     showNotesSection("browse");
     await loadEntries();
-    editingId = made.id;
+    setEditingNote(made.id);
     renderEntries();
     await new Promise((wait) => setTimeout(wait, 600));
     applyDocGutter();

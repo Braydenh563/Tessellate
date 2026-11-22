@@ -373,7 +373,9 @@
     const line = document.createElement("span");
     line.className = `doc-finding-line doc-finding-line-${variant}`;
     const dot = document.createElement("span");
-    dot.className = `doc-finding-dot doc-finding-dot-${docFindingKind(finding)}`;
+    dot.className = "doc-finding-dot";
+    //: The kind is a data attribute, so the dot is built here alone and its colours are named in CSS.
+    dot.dataset.kind = docFindingKind(finding);
     dot.setAttribute("aria-hidden", "true");
     const words = document.createElement("span");
     words.className = "doc-finding-words";

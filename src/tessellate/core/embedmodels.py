@@ -27,6 +27,8 @@ happen. Every deletion is checked to be inside the cache root as well.
 
 from __future__ import annotations
 
+import contextlib
+import hashlib
 import importlib.util
 import json
 import logging
@@ -73,13 +75,19 @@ class OnnxBuild:
     `Qdrant/...`, for most of the catalogue); `model_file` and `extra_files`
     are what a snapshot must hold besides its tokenizer and config. `pooling`
     is empty for a model fastembed knows by name, else how the loader
-    registers it ("CLS", "MEAN"), with `dim` its width."""
+    registers it ("CLS", "MEAN"), with `dim` its width.
+
+    `revision` and `sha256` pin a catalogue build (L-world-class-320, T23):
+    the commit it is fetched at and each weight file's sha256 (the Hub's LFS
+    oid, read 2026-11-21). A typed repo has neither: it is fetched at `main`."""
 
     source: str
     model_file: str = "onnx/model.onnx"
     extra_files: tuple[str, ...] = ()
     pooling: str = ""
     dim: int = 0
+    revision: str = ""
+    sha256: tuple[tuple[str, str], ...] = ()
 
 
 #: The small files every snapshot is fetched with: fastembed reads the
@@ -146,7 +154,12 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         context="256 tokens",
         licence="Apache-2.0",
         best_for="An old or small machine: the fastest here, a little less precise.",
-        onnx=OnnxBuild("Qdrant/all-MiniLM-L6-v2-onnx", "model.onnx"),
+        onnx=OnnxBuild(
+            "Qdrant/all-MiniLM-L6-v2-onnx",
+            "model.onnx",
+            revision="d13954661f83248295ba75c1ed411eef3b7b936e",
+            sha256=(("model.onnx", "bbd7b466f6d58e646fdc2bd5fd67b2f5e93c0b687011bd4548c420f7bd46f0c5"),),
+        ),
     ),
     EmbedModel(
         id="bge-small",
@@ -159,7 +172,12 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         params="33M",
         licence="MIT",
         best_for="Most notebooks in English: quick on any laptop, good matches.",
-        onnx=OnnxBuild("Qdrant/bge-small-en-v1.5-onnx-Q", "model_optimized.onnx"),
+        onnx=OnnxBuild(
+            "Qdrant/bge-small-en-v1.5-onnx-Q",
+            "model_optimized.onnx",
+            revision="aa8f8b060edb00e03bfdd08813a2949946c8ba55",
+            sha256=(("model_optimized.onnx", "51f1bd0addd6e859e42c2c8021a5e5461385bb676a649f4b269aa445449f2431"),),
+        ),
     ),
     EmbedModel(
         id="me5-small",
@@ -173,7 +191,13 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         licence="MIT",
         best_for="Notes in more than one language on an ordinary laptop.",
         prefix="query: ",
-        onnx=OnnxBuild("intfloat/multilingual-e5-small", pooling="MEAN", dim=384),
+        onnx=OnnxBuild(
+            "intfloat/multilingual-e5-small",
+            pooling="MEAN",
+            dim=384,
+            revision="614241f622f53c4eeff9890bdc4f31cfecc418b3",
+            sha256=(("onnx/model.onnx", "ca456c06b3a9505ddfd9131408916dd79290368331e7d76bb621f1cba6bc8665"),),
+        ),
     ),
     EmbedModel(
         id="bge-base",
@@ -185,7 +209,12 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         params="110M",
         licence="MIT",
         best_for="English notes when better matches are worth a slower save.",
-        onnx=OnnxBuild("Qdrant/bge-base-en-v1.5-onnx-Q", "model_optimized.onnx"),
+        onnx=OnnxBuild(
+            "Qdrant/bge-base-en-v1.5-onnx-Q",
+            "model_optimized.onnx",
+            revision="199291fdd1aa89faf9c20b722dc72ad5e17aa0d0",
+            sha256=(("model_optimized.onnx", "4e556722bc4f65716c544c8a931f1e90fb3f866e5741fd93a96f051d673339c7"),),
+        ),
     ),
     EmbedModel(
         id="nomic-v1.5",
@@ -202,7 +231,11 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         terms_url="https://huggingface.co/nomic-ai/nomic-embed-text-v1.5",
         why_not="Not offered built in yet. The same model is nomic-embed-text in Ollama.",
         prefix="search_query: ",
-        onnx=OnnxBuild("nomic-ai/nomic-embed-text-v1.5"),
+        onnx=OnnxBuild(
+            "nomic-ai/nomic-embed-text-v1.5",
+            revision="e9b6763023c676ca8431644204f50c2b100d9aab",
+            sha256=(("onnx/model.onnx", "147d5aa88c2101237358e17796cf3a227cead1ec304ec34b465bb08e9d952965"),),
+        ),
     ),
     EmbedModel(
         id="qwen3-0.6b",
@@ -216,7 +249,15 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         context="32,768 tokens",
         licence="Apache-2.0",
         best_for="The best matches, with 8 GB of memory or more to spare.",
-        onnx=OnnxBuild("Qdrant/Qwen3-Embedding-0.6B-onnx", extra_files=("onnx/model.onnx_data",)),
+        onnx=OnnxBuild(
+            "Qdrant/Qwen3-Embedding-0.6B-onnx",
+            extra_files=("onnx/model.onnx_data",),
+            revision="af95f2c416ffe9379369ad64f9113e865db6112c",
+            sha256=(
+                ("onnx/model.onnx", "754d6ba1c7a323d7b3af0d85b8268f8b716b0cd362ce73295e0f71d3dd831639"),
+                ("onnx/model.onnx_data", "15d02a315e3b95296700c73d72a436e79facf4e17d919345bed730e98433bcb4"),
+            ),
+        ),
     ),
     EmbedModel(
         id="bge-m3",
@@ -230,7 +271,16 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         licence="MIT",
         best_for="Long notes in many languages on a well-equipped machine.",
         onnx=OnnxBuild(
-            "BAAI/bge-m3", extra_files=("onnx/model.onnx_data", "onnx/Constant_7_attr__value"), pooling="CLS", dim=1024
+            "BAAI/bge-m3",
+            extra_files=("onnx/model.onnx_data", "onnx/Constant_7_attr__value"),
+            pooling="CLS",
+            dim=1024,
+            revision="5617a9f61b028005a4858fdac845db406aefb181",
+            sha256=(
+                ("onnx/model.onnx", "f84251230831afb359ab26d9fd37d5936d4d9bb5d1d5410e66442f630f24435b"),
+                ("onnx/model.onnx_data", "1eebfb28493f67bba03ce0ef64bfdc7fc5a3bd9d7493f818bb1d78cd798416b4"),
+                ("onnx/Constant_7_attr__value", "cdf16f72c5d07b36484056e601ed9687f78477e5d85cee85a34f2406b7fb5906"),
+            ),
         ),
     ),
     EmbedModel(
@@ -246,10 +296,16 @@ EMBED_MODELS: tuple[EmbedModel, ...] = (
         best_for="Multilingual notes, once you have accepted Google's terms.",
         one_press=False,
         terms_url="https://ai.google.dev/gemma/terms",
-        why_not="Under Google's Gemma terms rather than an open licence, and "
-        "gated on the Hub: read and accept them first, then it is "
-        "embeddinggemma in Ollama.",
-        onnx=OnnxBuild("onnx-community/embeddinggemma-300m-ONNX", extra_files=("onnx/model.onnx_data",)),
+        why_not="Under Google's Gemma terms, not an open licence: accept them on the Hub first, then use embeddinggemma in Ollama.",
+        onnx=OnnxBuild(
+            "onnx-community/embeddinggemma-300m-ONNX",
+            extra_files=("onnx/model.onnx_data",),
+            revision="5090578d9565bb06545b4552f76e6bc2c93e4a66",
+            sha256=(
+                ("onnx/model.onnx", "ea91fd315a7c152d427d231746f0f811a1ac93beaba656abfdf2b24e091265e4"),
+                ("onnx/model.onnx_data", "ef835ae565d8695236652475903078e8ed794c7c35faf1164d78ec3238e8a88d"),
+            ),
+        ),
     ),
 )
 
@@ -307,8 +363,7 @@ OLLAMA_EMBED_MODELS: tuple[OllamaEmbedModel, ...] = (
         "Gemma terms", "Multilingual notes, once you have accepted Google's terms.",
         one_press=False,
         terms_url="https://ai.google.dev/gemma/terms",
-        why_not="Under Google's Gemma terms rather than an open licence: read "
-        "them, then pull it in Ollama yourself and pick it below.",
+        why_not="Under Google's Gemma terms, not an open licence: read them, then pull it in Ollama and pick it below.",
     ),
 )
 
@@ -705,7 +760,10 @@ def snapshot_path(repo: str) -> Path | None:
     if cache_health(repo)["state"] != "complete":
         return None
     floor = _weights_floor(repo)
-    return next((snap for snap in _snapshots(build.source) if not _snapshot_missing(snap, build, floor)), None)
+    #: The pinned commit's snapshot first (L-world-class-320): one fetched
+    #: from `main` before the pin stays usable until the verified one is there.
+    snapshots = sorted(_snapshots(build.source), key=lambda snap: snap.name != build.revision)
+    return next((snap for snap in snapshots if not _snapshot_missing(snap, build, floor)), None)
 
 
 def _read_json(path: Path) -> dict:
@@ -753,7 +811,39 @@ def fetch(repo: str, build: OnnxBuild | None = None) -> None:
             repo_id=build.source,
             allow_patterns=[build.model_file, *build.extra_files, *CONFIG_FILES],
             cache_dir=str(cache_root()),
+            revision=build.revision or None,
         )
+
+
+def _sha256_of(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def weights_differ(build: OnnxBuild) -> bool:
+    """Whether a pinned build's snapshot holds weights other than the pinned
+    ones; each such file is removed (its link and the blob behind it) so the
+    next download fetches it again rather than resuming from it."""
+    if not build.sha256:
+        return False
+    snapshot = _folder_for(build.source) / "snapshots" / build.revision
+    differ = False
+    for name, expected in build.sha256:
+        path = snapshot / name
+        try:
+            if _sha256_of(path) == expected:
+                continue
+        except OSError:
+            pass  # absent or unreadable: not the pinned file either
+        differ = True
+        logger.warning("%s's %s does not match its pinned sha256: removed", build.source, name)
+        for doomed in {path.resolve(), path}:
+            with contextlib.suppress(OSError):
+                doomed.unlink()
+    return differ
 
 
 def _dir_size(path: Path) -> int:
@@ -899,6 +989,23 @@ def _looks_like_a_dropped_connection(exc: Exception) -> bool:
     return any(word in str(exc).lower() for word in _CONNECTION_WORDS)
 
 
+def _arrival_problem(model: EmbedModel) -> str:
+    """Why a finished download cannot be used, in one sentence, or "".
+    Verified, not assumed (INBOX 700, "Reinstall re-downloads and verifies"):
+    the weights must be in the snapshot, and a pinned build's must hash to
+    its pins (L-world-class-320)."""
+    arrived = cache_health(model.repo)
+    if arrived["state"] != "complete":
+        gaps = ", ".join(arrived["missing"][:3]) or "its files"
+        return f"{model.label} arrived without {gaps}. Reinstall fetches it again."
+    if weights_differ(model.onnx):
+        return (
+            f"{model.label} arrived with weights that differ from the ones this app was checked "
+            "with, so they were removed. Download again, or report it if it keeps happening."
+        )
+    return ""
+
+
 def _run_download(model: EmbedModel) -> None:
     try:
         last: Exception | None = None
@@ -918,13 +1025,10 @@ def _run_download(model: EmbedModel) -> None:
                     _state.outcome = "cancelled"
                     _state.step = "Stopped just as it finished, the files are on disk."
                     return
-                #: Verified, not assumed (INBOX 700, "Reinstall re-downloads
-                #: and verifies"): the weights must be in the snapshot.
-                arrived = cache_health(model.repo)
-                if arrived["state"] != "complete":
+                problem = _arrival_problem(model)
+                if problem:
                     _state.outcome = "failed"
-                    gaps = ", ".join(arrived["missing"][:3]) or "its files"
-                    _state.step = f"{model.label} arrived without {gaps}. Reinstall fetches it again."
+                    _state.step = problem
                     return
                 _state.outcome = "completed"
                 _state.step = (
@@ -1031,7 +1135,9 @@ def _begin_download(model: EmbedModel, repair: bool = False) -> tuple[bool, str]
 
 
 def _spawn_download(model: EmbedModel) -> None:
-    threading.Thread(target=_run_download, args=(model,), daemon=True).start()
+    from tessellate.core import jobs
+
+    jobs.thread("embedding-model-download", lambda: _run_download(model))
 
 
 def repair_title(label: str) -> str:
@@ -1272,6 +1378,7 @@ def _in_use(repo: str) -> bool:
     try:
         return bool(_in_use_check(repo))
     except Exception:  # noqa: BLE001  # no app (a script): nothing is in use
+        logger.debug("_in_use: no app (a script): nothing is in use", exc_info=True)
         return False
 
 

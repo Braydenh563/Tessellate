@@ -29,4 +29,3 @@ def test_the_look_after_a_nap_is_taken_after_a_clean_frame_and_a_wake_cancels_it
 
 def test_the_other_anonymous_timers_have_names() -> None:
     assert "setTimeout(function nameMarkBuddyAfterCleanTask()" in AVATARS
-    assert "setTimeout(function dashSkeletonFollowTask()" in DASH

@@ -35,6 +35,8 @@ from urllib3.connection import HTTPConnection, HTTPSConnection
 from urllib3.connectionpool import HTTPConnectionPool, HTTPSConnectionPool
 from requests import ConnectionError as RefusedError
 
+from tessellate.core import egress
+
 __all__ = [
     "Cancelled", "ConnectTimeout", "HTTPError", "OffHostRedirect", "ReadTimeout", "RefusedError", "RequestException", "Response",
     "delete", "get", "post",
@@ -172,6 +174,7 @@ def _stop_events() -> list:
     return [event for event in (activity.current_stop_event(), deadline.current()) if event is not None]
 
 
+@egress.labelled("Talking to your model server (the address set in Settings)")
 def _send(method: str, url: str, kwargs: dict) -> Response:
     kwargs = _guarded(kwargs)
     events = _stop_events()

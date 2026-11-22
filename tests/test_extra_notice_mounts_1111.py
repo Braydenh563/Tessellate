@@ -34,7 +34,7 @@ def test_every_remaining_feature_mounts_its_notice() -> None:
         "searxng": "settings-prefs.js",
     }
     for ident, name in where.items():
-        text = _read(name)
+        text = _read(name) + (_read("status-settings.js") if name == "status.js" else "")
         assert re.search(r'extraNoticeMount\([^;]*["`]' + ident + r'["`]', text) or (
             ident in ("needle", "localllm") and "extraNoticeMount($(`xn-${id}`), id)" in text
         ), (ident, name)

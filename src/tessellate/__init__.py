@@ -22,3 +22,18 @@ def _adopt_old_environment() -> None:
 
 
 _adopt_old_environment()
+
+
+def _single_thread_blas() -> None:
+    #: The search matrix products are 5,000 x 384 (0.7 ms on one thread). OpenBLAS's
+    #: default pool of one thread per core spins for longer than the product takes:
+    #: measured on 4 vCPUs, `matrix @ query` 15.5 ms with four threads, 0.7 ms with one,
+    #: and engine.search at 5,000 notes p50 50 ms (L635). Set before numpy loads;
+    #: a person's own value still wins (`setdefault`).
+    import os
+
+    for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS"):
+        os.environ.setdefault(name, "1")
+
+
+_single_thread_blas()

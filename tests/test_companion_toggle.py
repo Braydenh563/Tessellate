@@ -86,3 +86,12 @@ def test_the_hide_toast_names_the_chord_as_it_is_bound() -> None:
     #: INBOX 743: the way back is the toast's button, not a Settings path in
     #: prose ("the show companion notification button was poorly shown").
     assert "Ctrl+" not in bare["said"][0] and bare["said"][0].endswith("[Show it]")
+
+
+def test_the_toggle_mounts_the_companion_without_the_settings_listener() -> None:
+    # The Appearance select's change listener is wired only when Settings
+    # opens (settings-controls.js); the select can exist before that, so a
+    # dispatched change mounted nothing (E2E shell.spec.js, Ctrl+Shift+Y).
+    toggle = _fn("nameMarkBuddyToggle")
+    assert "dispatchEvent" not in toggle
+    assert "syncNameMarkBuddy();" in toggle and "mountBuddyCustom();" in toggle

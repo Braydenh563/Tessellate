@@ -5,6 +5,8 @@ Undo posts back the call the result carried."""
 
 from __future__ import annotations
 
+from tests._tool_sig import call
+
 from tessellate.ai import tools
 
 
@@ -20,7 +22,7 @@ def _category_of(client, note_id, workspace=None):
 
 
 def _run(client, arguments):
-    reply = client.post("/chat/tools/execute", json={"name": "move_notes", "arguments": arguments})
+    reply = client.post("/chat/tools/execute", json=call("move_notes", arguments))
     assert reply.status_code == 200, reply.text
     return reply.json()
 
@@ -48,7 +50,7 @@ def test_the_undo_is_the_same_tool_so_it_is_one_door(client):
     a = _note(client, "Beans", "Garden")
     done = _run(client, {"ids": [a["id"]], "category": "Plans"})
     assert done["undo"]["tool"] == "move_notes"
-    reply = client.post("/chat/tools/execute", json={"name": "move_notes", "arguments": done["undo"]["arguments"]})
+    reply = client.post("/chat/tools/execute", json={"name": "move_notes", "arguments": done["undo"]["arguments"], "sig": done["undo"]["sig"]})
     assert reply.status_code == 200 and reply.json()["label"].endswith("Put 1 note back")
     assert _category_of(client, a["id"]) == "Garden"
 

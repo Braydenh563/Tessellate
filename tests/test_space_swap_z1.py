@@ -262,11 +262,11 @@ const ctx = {
   spacesCache: [{ id: "alpha", name: "Alpha" }, { id: "beta", name: "Beta" }],
   // the data the swap forgets
   allEntries: [{ id: 1 }], entriesEverLoaded: true, entriesComplete: true, activeCategory: "Cooking", draftsOnly: true, favouritesOnly: true,
-  editingId: 4, inlineAction: {}, linkSource: 2, noteSearch: "q", noteSearchCorrection: {}, notesCurrentPage: 3,
+  inlineAction: {}, linkSource: 2, noteSearch: "q", noteSearchCorrection: {}, notesCurrentPage: 3,
   noteSearchWhy: new Map([[1, 1]]), attachmentMetaCache: new Map([[1, 1]]), categoryMeta: new Map([["a", 1]]), notesRailCache: new Map([[1, 1]]),
   referenceCountsCache: new Map([[1, 1]]), reminderCountsCache: new Map([[1, 1]]), noteTopicsCache: new Map([[1, 1]]), thumbUrlCache: new Map([[1, 1]]),
   mapBoardIndexCache: {}, objOrderCache: new Map([[1, 1]]),
-  dashStatsInflight: {}, dashGraphInflight: {}, dashRemindersInflight: {}, dashStatsAt: 5, dashGraphAt: 5, dashRemindersAt: 5,
+  dashStatsInflight: {}, dashGraphInflight: {}, dashStatsAt: 5, dashGraphAt: 5,
   attachedNoteIds: [1], attachedImages: [1], attachedDocuments: [1], attachedBoards: [1], attachedFiles: [1],
   renderAttachments() {}, renderImageAttachments() {}, renderDocumentAttachments() {}, renderBoardAttachments() {}, renderFileAttachments() {},
   captureDocumentList: [1], captureDocumentTitles: new Map([[1, 1]]), captureDocuments: new Set([1]),
@@ -299,6 +299,7 @@ const ctx = {
 };
 ctx.window = ctx;
 vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(process.argv[1].replace("space-swap.js", "store.js"), "utf8") + "\nsetEditingNote(4); remindersRead.inflight = {};", ctx, { filename: "store.js" });
 vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), ctx, { filename: "space-swap.js" });
 ctx.__out = (value) => process.stdout.write(JSON.stringify(value));
 vm.runInContext("(async () => {" + process.argv[2] + "})()", ctx).catch((e) => { console.error(e); process.exit(1); });
@@ -321,8 +322,11 @@ def test_a_switch_forgets_every_cache_reloads_and_keeps_undo_and_tray() -> None:
     store.spaceId = "alpha";
     await swapSpace("beta");
     const names = ["allEntries", "entriesEverLoaded", "activeCategory", "noteSearch", "attachedNoteIds", "timelineRows", "libraryItems",
-      "docs", "graphStructure", "finderHits", "dashRemindersInflight", "mapBoardIndexCache", "captureDocumentList"];
+      "docs", "graphStructure", "finderHits", "mapBoardIndexCache", "captureDocumentList"];
     const left = names.filter((n) => { const v = globalThis[n]; return Array.isArray(v) ? v.length : v; });
+    // The open reminders read moved from the dashboard into the store (F12): still a cache the switch forgets.
+    if (appState.get("note") !== null) left.push("note slice");
+    if (remindersRead.inflight) left.push("remindersRead.inflight");
     const maps = ["noteSearchWhy", "attachmentMetaCache", "referenceCountsCache", "thumbUrlCache", "objOrderCache", "librarySelection", "docHistories", "gcTopicSummaries"]
       .filter((n) => globalThis[n].size);
     __out({ left, maps, undo: globalThis.undoStack.length, tray: globalThis.objTray.length, box: globalThis.__box.value, space: store.spaceId, log, chat: globalThis.chatConv.id });
@@ -416,7 +420,9 @@ const ctx = {
   noteServerUp() {}, noteServerDown() {}, showLockScreen() {}, recordBrowserLog() {}, plainHttpError: () => "bad",
   kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
   //: `api` tells the page of a note write (`tessellate:note-saved`, review of PR 222).
-  document: { dispatchEvent() {} }, CustomEvent: class {},
+  document: { dispatchEvent() {} }, CustomEvent: class {}, Event: class {},
+  //: The server-down refusal (22.1 item 6) reads these; the server is up in this harness.
+  serverUnreachable: false, retryServerNow() {}, showServerDownBanner: () => "",
   toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),
   //: A fetch that answers when the test says so, with the kind of body it is told.
   fetch: () => new Promise((resolve) => { release = (type) => resolve({ ok: true, status: 200, headers: { get: () => type }, json: async () => ({}) }); }),
@@ -485,6 +491,7 @@ let here = "alpha";
 const ctx = {
   Date, Promise, log, noticeLive: new Map(), undoStack: [], NOTICE_UNDO_MS: 1000,
   recordNotification: () => 1, activeSpaceId: () => here, toast: (m, e) => log.push(["toast", m, e]),
+  voiceLine: (key, slots) => `Couldn't ${slots.what}.`,
   spaceEnterFor: async (a) => { log.push(["enter", a.space]); return a.space !== "gone"; },
 };
 vm.createContext(ctx);

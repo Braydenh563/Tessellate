@@ -26,6 +26,8 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from tessellate.core import sealed_files
+
 #: Where a `%%…%%` is not a comment: inside a fence or inline code it is an
 #: example of the syntax, and in frontmatter it is a property's value. Same
 #: three as `DOC_COMMENT_SKIP` in documents.js.
@@ -154,6 +156,32 @@ def comments_to_footnotes(text: str, prefix: str = "c") -> str:
     return f"{out}{tail}\n" + "\n".join(notes) + "\n"
 
 
+_CITE_DEFINITION = re.compile(r"^\[@([^\]\s]{1,40})\]:", re.MULTILINE)
+_CITE_USE = re.compile(r"\[@([^\]\s]{1,40})\]")
+
+
+def citations_to_footnotes(text: str) -> str:
+    """`[@key]` and its `[@key]: source` line as footnotes, as the Read view draws them.
+
+    Port of `docPairInput.citeFootnotes` (documents-prose.js): only a key with a
+    definition changes, and fenced code is left alone. Without it an exported
+    file would carry the editor's own sigil, which no other reader knows.
+    """
+    body = text or ""
+    keys = set(_CITE_DEFINITION.findall(body))
+    if not keys:
+        return body
+    fenced = False
+    lines = []
+    for line in body.split("\n"):
+        if re.match(r"\s*(```|~~~)", line):
+            fenced = not fenced
+        if not fenced:
+            line = _CITE_USE.sub(lambda m: f"[^{m.group(1)}]" if m.group(1) in keys else m.group(0), line)
+        lines.append(line)
+    return "\n".join(lines)
+
+
 #: Where an image goes inside the bundle. A folder rather than the root so the
 #: markdown file is the first thing a person sees when they open the zip, and
 #: a name that says what is in it without being clever about it.
@@ -217,11 +245,11 @@ def bundle(title: str, text: str, media_dir: Path, names: set[str]) -> tuple[byt
         if not inside or not path.is_file():
             continue
         try:
-            files.append((name, path.read_bytes()))
-        except OSError:
+            files.append((name, sealed_files.read(path)))
+        except (OSError, sealed_files.SealedError):
             continue
         carried.append(name)
-    body = with_title(comments_to_footnotes(text or ""), title)
+    body = with_title(citations_to_footnotes(comments_to_footnotes(text or "")), title)
     body = rewrite_media_links(body, set(carried))
     buffer = io.BytesIO()
     #: Deflate, and one archive written in memory: a document with its images

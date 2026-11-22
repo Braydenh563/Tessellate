@@ -537,7 +537,9 @@ def install_source(data_dir: Path, on_ready=None) -> None:
                 exc_info=True,
             )
 
-    threading.Thread(target=work, name="searxng-install", daemon=True).start()
+    from tessellate.core import jobs
+
+    jobs.thread("searxng-install", work)
 
 
 def _drop_readonly(func, path, _exc) -> None:

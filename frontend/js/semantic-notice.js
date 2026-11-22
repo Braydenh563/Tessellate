@@ -98,7 +98,7 @@
     no.addEventListener("click", () => answer(false));
     const close = toastCloseButton(note, null);
     //: Closing is a no, the answer that touches nothing (as the update question).
-    close.addEventListener("click", () => semanticSetAutoInstall(false).catch((error) => toast(error.message || "Couldn't save that choice. Settings, Search and index has the switch.", true)));
+    close.addEventListener("click", () => semanticSetAutoInstall(false).catch((error) => toast(error.message || voiceLine("failed", { what: "save that choice", why: "Settings, Search and index has the switch" }), true)));
     note.append(text, toastActions(yes, no), close);
     const host = toastHost();
     toastStack(host, () => host.appendChild(note));

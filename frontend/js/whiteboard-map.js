@@ -1591,18 +1591,18 @@ function wbBuildMapNode(el, d) {
       //: (the canvas's own Enter and Shift+Enter, MINDMAP_PLAN 3), and
       //: Escape, a press elsewhere or Ctrl+S's blur keep the name.
       const id = Number(this.closest(".wb-object")?.dataset.id);
-      if (event.key === "Escape") {
+      //: **Ctrl+Z on a topic just added, its name untouched, takes the topic
+      //: away** (L-world-class-672): the editor holds focus and keeps the
+      //: chord for its own history, which has nothing to undo yet, so the
+      //: press did nothing. Once a letter is typed it is the field's again.
+      const fresh = (wbState.objects || []).find((o) => o.id === id);
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "z" && fresh?._fresh && wbEditedText(this).replace(/\s+$/, "") === fresh.data.content) {
         event.preventDefault();
         this.blur();
-      } else if (event.key === "Tab" && !event.shiftKey && !event.ctrlKey && !event.altKey) {
-        event.preventDefault();
-        this.blur();
-        if (id) wbMapAddChild(id);
-      } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey || event.shiftKey)) {
-        event.preventDefault();
-        this.blur();
-        if (id) wbMapAddSibling(id, { above: event.shiftKey && !event.ctrlKey && !event.metaKey });
+        Promise.resolve(fresh._creating).then(() => wbUndo());
+        return;
       }
+      wbBuildMapNode.keys.call(this, event, id);
     });
     text.on("pointerdown", function (event) {
       if (this.isContentEditable) event.stopPropagation();
@@ -1656,6 +1656,22 @@ function wbBuildMapNode(el, d) {
     })
     .append("i").attr("class", "ph ph-link-simple").attr("aria-hidden", "true");
 }
+
+//: A topic's branch keys while typing (Escape, Tab, Enter gestures), split from `wbBuildMapNode`; run with the text as `this`.
+wbBuildMapNode.keys = function (event, id) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    this.blur();
+  } else if (event.key === "Tab" && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+    event.preventDefault();
+    this.blur();
+    if (id) wbMapAddChild(id);
+  } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey || event.shiftKey)) {
+    event.preventDefault();
+    this.blur();
+    if (id) wbMapAddSibling(id, { above: event.shiftKey && !event.ctrlKey && !event.metaKey });
+  }
+};
 
 //: **The ink a core node's label takes on its own fill** (INBOX 201: "I want
 //: more and better ways to differentiate core idea nodes in the mindmap", and
@@ -6311,7 +6327,7 @@ function wbMapDueWords(due, start = null, time = null) {
   const [h, m] = time.split(":").map(Number);
   const at = new Date(end.day);
   at.setHours(h, m);
-  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`, past: at < now };
+  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })}`, past: at < now };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it

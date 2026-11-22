@@ -30,7 +30,7 @@ function askOpenContext() {
     return out;
   }
   const notesShowing = !$("tab-notes")?.classList.contains("hidden");
-  const note = editingId || (notesShowing && activeCategory ? null : lastOpenedEntryId);
+  const note = appState.get("note") || (notesShowing && activeCategory ? null : lastOpenedEntryId);
   if (note) out.open_note_id = note;
   if (activeCategory) out.open_category = activeCategory;
   return out;
@@ -460,12 +460,24 @@ function numberMatchingRecords(target, numberFor) {
     li.insertBefore(mark, li.firstChild);
   }
   //: In number order, the uncited after them (INBOX 1524: the search ranked
-  //: source 2 between 11 and 12, so "2" read as missing).
-  const rows = [...list.querySelectorAll(":scope > li[data-id]")];
+  //: source 2 between 11 and 12, so "2" read as missing); within each month
+  //: when an as-of answer grouped them (`askAsOf.monthGroups`), so a row never
+  //: leaves its month's head.
+  const runs = [[]];
+  for (const li of list.children) {
+    if (li.classList.contains("as-of-month")) runs.push([]);
+    else if (li.dataset.id) runs[runs.length - 1].push(li);
+  }
+  runs.forEach(numberMatchingRecords.sortRun);
+}
+
+//: One run of rows into number order (a property, not a new shared name).
+numberMatchingRecords.sortRun = (rows) => {
+  if (!rows.length) return;
   const at = (li) => Number(li.querySelector(":scope > .record-index")?.textContent) || Infinity;
   const sorted = rows.map((li, i) => [at(li), i, li]).sort((x, y) => x[0] - y[0] || x[1] - y[1]);
   if (sorted.some(([, i], k) => i !== k)) rows[0].before(...sorted.map(([, , li]) => li));
-}
+};
 
 //: How much of an answer the notebook backed, said out loud (CHAT_PLAN
 //: Phase 1, Brief 12): under half the sentences supported, the app says so,
@@ -501,8 +513,8 @@ function renderAnswerSupport(answerEl, support) {
 
 function notePictures(entry) {
   const seen = new Map();
-  for (const m of String(entry?.content || "").matchAll(/!\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\s]{1,500})\)/g)) {
-    if (!seen.has(m[2])) seen.set(m[2], { url: m[2], alt: m[1] });
+  for (const [, bang, alt, url] of ownFileLinks(entry?.content)) {
+    if (bang && !seen.has(url)) seen.set(url, { url, alt });
   }
   for (const file of entry?.attachments || []) {
     const url = `/files/${file.id}`;
@@ -752,12 +764,28 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       if (facts.length) card.append(evidenceSpan("library-file-meta answer-evidence-meta", facts.join(" · ")));
       card.setAttribute("aria-label", `Open source ${number}: ${title}`);
       card.addEventListener("click", () => openNoteAtPassage(g.note_id, passage));
-      sources.append(card);
+      //: I7: the card and its verdict pair side by side, never a button in a button.
+      const holder = evidenceSpan("answer-evidence-item", "", "div");
+      holder.append(card);
+      if (g.kind !== "document") evidenceCardVerdict(holder, g, content, row.sentence);
+      sources.append(holder);
     }
     item.append(evidenceSpan("answer-evidence-sentence", plainText(row.sentence), "p"), sources);
     list.append(item);
   }
   view.replaceChildren(list);
+}
+
+//: **Wrong on an evidence card** (WORLD_CLASS I7): the verdict pair a cited
+//: line's peek carries (`citationVerdictRow`), on the passage the card shows.
+//: Not right is a correction the next answer and the next filing leave out;
+//: Confirm pins it; each is a row in What the notebook learned, whose Delete
+//: is the toast's Undo.
+function evidenceCardVerdict(holder, g, content, line) {
+  ensureModule("askCompose").then(() => {
+    const verdicts = citationVerdictRow({ ...g, noteId: g.note_id, line: plainText(line) }, content);
+    if (verdicts) holder.append(verdicts);
+  }).catch(() => {});
 }
 
 function answerFigure(entry, n, k, alts, sizes) {
@@ -1113,6 +1141,8 @@ async function streamChatEvents({
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
   ensureModule("replyKit").catch(() => {});
   const body = { question, history: history || [], locale: navigator.language };
+  //: One id per send, so a repeated POST of this same send (a dropped connection retried) is answered once (E70, `turn_once`).
+  body.turn_id = crypto.randomUUID ? crypto.randomUUID() : `t${Date.now()}${Math.random().toString(36).slice(2, 12)}`;
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;
   if (isPrivate) body.private = true;
@@ -1162,31 +1192,7 @@ async function streamChatEvents({
   // Running a skill sends its name, not its prompt: the server owns what a
   // skill is, the steps, the values, the tools it may use, so the two
   // definitions can't drift apart.
-  if (skill) {
-    body.skill = skill;
-    if (skillInputs && Object.keys(skillInputs).length) body.skill_inputs = skillInputs;
-    // Resuming: the steps before this one ran in an earlier attempt and are
-    // not repeated. Sent as an index rather than as a list of what to skip,
-    // so the server stays the one place that knows what the steps are.
-    if (skillFromStep) body.skill_from_step = skillFromStep;
-    //: Re-running one step, optionally reworded (AGENT_SKILLS_REFORM.md Phase
-    //: D). `!= null` rather than truthiness: step 0 is a step.
-    if (skillOnlyStep != null) body.skill_only_step = skillOnlyStep;
-    if (skillStepText) body.skill_step_text = skillStepText;
-  }
-  // A plan the model just made. Carries its own steps because nothing saved
-  // it: that is the only way it differs from a skill run, here and on the
-  // server.
-  const hasPlan = plan && plan.steps && plan.steps.length;
-  if (hasPlan) body.plan = plan;
-  // Manual (step-through) mode: a pause after every completed step. Applies
-  // equally to a saved skill or a plan the model just drew, both run
-  // through the same step-by-step runner server-side. Sent on every call for
-  // this run, resume included, since a run started manual stays manual.
-  if (skill || hasPlan) {
-    if (skillManual) body.skill_manual = true;
-    if (skillManualNote) body.skill_manual_note = skillManualNote;
-  }
+  streamChatEvents.skillBody(body, { skill, skillInputs, skillFromStep, skillOnlyStep, skillStepText, plan, skillManual, skillManualNote });
   // NDJSON over a plain POST, deliberately, not a WebSocket. A WebSocket was
   // tried here and reverted: it needed the session on a second thread (a
   // SQLAlchemy Session is not thread-safe), it had to be mounted outside the
@@ -1333,6 +1339,34 @@ async function streamChatEvents({
     }
   }
 }
+//: The skill and plan fields of the request, split from `streamChatEvents`.
+streamChatEvents.skillBody = (body, { skill, skillInputs, skillFromStep, skillOnlyStep, skillStepText, plan, skillManual, skillManualNote }) => {
+  if (skill) {
+    body.skill = skill;
+    if (skillInputs && Object.keys(skillInputs).length) body.skill_inputs = skillInputs;
+    // Resuming: the steps before this one ran in an earlier attempt and are
+    // not repeated. Sent as an index rather than as a list of what to skip,
+    // so the server stays the one place that knows what the steps are.
+    if (skillFromStep) body.skill_from_step = skillFromStep;
+    //: Re-running one step, optionally reworded (AGENT_SKILLS_REFORM.md Phase
+    //: D). `!= null` rather than truthiness: step 0 is a step.
+    if (skillOnlyStep != null) body.skill_only_step = skillOnlyStep;
+    if (skillStepText) body.skill_step_text = skillStepText;
+  }
+  // A plan the model just made. Carries its own steps because nothing saved
+  // it: that is the only way it differs from a skill run, here and on the
+  // server.
+  const hasPlan = plan && plan.steps && plan.steps.length;
+  if (hasPlan) body.plan = plan;
+  // Manual (step-through) mode: a pause after every completed step. Applies
+  // equally to a saved skill or a plan the model just drew, both run
+  // through the same step-by-step runner server-side. Sent on every call for
+  // this run, resume included, since a run started manual stays manual.
+  if (skill || hasPlan) {
+    if (skillManual) body.skill_manual = true;
+    if (skillManualNote) body.skill_manual_note = skillManualNote;
+  }
+};
 
 //: The id of the note offer the last composed answer ended with, while its button is unpressed.
 chatHistoryToSend.heldOffer = ""; // a property, not a global: one name fewer in the shared scope (ratchet)
@@ -1899,9 +1933,9 @@ function pushAgentChangeUndo(change, call) {
   const key = JSON.stringify(change.undo);
   agentUndoActions.set(key, pushUndo(
     (change.label || change.tool).replace(/^ph:[\w-]+\s*/, ""),
-    () => exec({ name: inverse.tool, arguments: inverse.arguments, steps: inverse.steps }).then(refreshAfterToolChanges),
+    () => exec({ name: inverse.tool, arguments: inverse.arguments, steps: inverse.steps, sig: inverse.sig }).then(refreshAfterToolChanges),
     async () => {
-      const again = await exec({ name: call.name, arguments: call.arguments });
+      const again = await exec({ name: call.name, arguments: call.arguments, sig: change.redo_sig });
       inverse = again.undo || inverse;
       refreshAfterToolChanges();
     }
@@ -2137,7 +2171,7 @@ function toolChip(label, ok = true, event = null) {
         again.replaceWith(Object.assign(document.createElement("span"), { className: "muted", textContent: "Fetched again." }));
       } catch (error) {
         again.disabled = false;
-        toast(error.message || "Couldn't fetch that page.", "info");
+        toast(error.message || voiceLine("failed", { what: "fetch that page" }), "info");
       }
     });
     wrap.append(chip, again);
@@ -2531,7 +2565,7 @@ function chatSourcesPanel(input) {
               const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
               show(fresh.ages[url] || new Date().toISOString());
             } catch (error) {
-              toast(error.message || "Couldn't fetch that page.", "info");
+              toast(error.message || voiceLine("failed", { what: "fetch that page" }), "info");
             }
             again.disabled = false;
           });

@@ -9,6 +9,8 @@ against the scripted fake model; these hold the wiring and the server half.
 
 from __future__ import annotations
 
+from tests._tool_sig import call
+
 import json
 import re
 from pathlib import Path
@@ -60,9 +62,9 @@ def test_the_last_write_undone_restores_the_note_byte_equal(ai_client, fake_olla
     #: An edit to existing text parks for a Confirm card (audit 1029 H2); the
     #: click runs it through /chat/tools/execute, whose result carries the undo.
     park = next(e for e in events if e.get("type") == "confirm")
-    ran = ai_client.post("/chat/tools/execute", json={"name": park["name"], "arguments": park["arguments"]}).json()
+    ran = ai_client.post("/chat/tools/execute", json=call(park["name"], park["arguments"])).json()
     assert ai_client.get(f"/entries/{note['id']}").json()["content"] != before["content"]
     undo = ran["undo"]
-    ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "arguments": undo["arguments"]})
+    ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "arguments": undo["arguments"], "sig": undo["sig"]})
     after = ai_client.get(f"/entries/{note['id']}").json()
     assert (after["content"], after["tags"], after.get("pinned")) == (before["content"], before["tags"], before.get("pinned"))

@@ -28,7 +28,7 @@ from tessellate.ai import captioning, composer_digest_sentences, composer_talk, 
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
 from tessellate.api.schemas import EntryOut, TurnFrame
-from tessellate.core import activity, deps
+from tessellate.core import activity, deps, sealed_files
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import categories as categories_repo
 from tessellate.search import query as search_query
@@ -304,6 +304,9 @@ class ChatRequest(BaseModel):
     #: Ask box's "From your notes" under an AI answer): read-only, so it is
     #: not saved as a second turn in Ask history, and always the composed one.
     peek: bool = False
+    #: One id per send (E70, L682): a repeated POST with the same id gets the first turn's
+    #: result back instead of a second run (`ai/turn_once.py`). A "Try again" is a new send, so a new id.
+    turn_id: str | None = Field(default=None, min_length=8, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")
     #: "Try again" on the same question (CHAT_PLAN decision 34): the how-many-
     #: th retry, so an answer composed from the notes is worded anew rather
     #: than repeated word for word. 0 for a first ask.
@@ -598,8 +601,8 @@ def _resolve_chat_images(session: Session, media_ids: list[int]) -> list[tuple[M
         if upload is None:
             continue
         try:
-            data = (media_dir / upload.filename).read_bytes()
-        except OSError:
+            data = sealed_files.read(media_dir / upload.filename)
+        except (OSError, sealed_files.SealedError):
             continue
         if len(data) > MAX_CHAT_IMAGE_BYTES:
             continue
@@ -622,6 +625,16 @@ def _chat_model_sees_images(model_manager, ollama) -> bool:
     if not callable(supports):
         return False
     return supports(model_manager.chat_model(), "vision") is True
+
+
+def _caption_of(upload, media_dir) -> str | None:  # noqa: ANN001
+    """A picture's caption, read from a plain copy when it is sealed; none
+    when its space is locked or the file is damaged."""
+    try:
+        with sealed_files.readable(media_dir / upload.filename) as plain:
+            return captioning.caption_and_store(upload.id, plain)
+    except sealed_files.SealedError:
+        return None
 
 
 def _image_caption_context(
@@ -650,9 +663,7 @@ def _image_caption_context(
     media_dir = deps.get_config().data_dir / "media"
     lines = []
     for upload, _uri in images:
-        caption = upload.caption or captioning.caption_and_store(
-            upload.id, media_dir / upload.filename
-        )
+        caption = upload.caption or _caption_of(upload, media_dir)
         if caption:
             lines.append(f"- {caption}")
     if not lines:
@@ -878,6 +889,7 @@ def _meta_event(req: _StreamRequest, prepared: dict, t: _Turn) -> dict:
         "when_phrase": prepared["when_phrase"],
         "as_of": prepared.get("as_of"),
         "as_of_revisions": prepared.get("as_of_revisions") or {},
+        "as_of_written": prepared.get("as_of_written") or {},
         "answered_by": answered_by,
         "ollama_running": t.ollama_running,
         #: The Ask box labels the answer "Composed from your notes, no AI".
@@ -934,3 +946,6 @@ class ToolExecuteBody(BaseModel):
     #: Posted as name "batch" it used to answer 404, so such a change had an
     #: Undo button that could never undo.
     steps: list[dict] = Field(default_factory=list, max_length=bounds.BATCH_STEPS_MAX)
+    #: The server's tag on an Undo or redo it handed out (`consent_store.sign_call`): sent back
+    #: unchanged, and a call whose name, arguments or steps no longer match it is refused (L566).
+    sig: str | None = Field(default=None, max_length=80)

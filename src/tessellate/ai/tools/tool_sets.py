@@ -269,10 +269,10 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
         ),
     ),
     (
-        ("search_chat_history",),
+        ("search_chat_history", "pin_note"),
         (
-            "we talked", "we discussed", "you said", "earlier", "last time",
-            "previous", "conversation", "chat about", "mentioned before",
+            "we talked", "we discussed", "you said", "earlier", "last time", "previous", "conversation", "chat about",
+            "mentioned before", "my chats", "saved chats", "chat list", "sort chats", "group chats", "pin chat", "pin this chat",
         ),
     ),
     (

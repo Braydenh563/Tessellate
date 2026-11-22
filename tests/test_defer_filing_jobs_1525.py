@@ -11,13 +11,13 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.api import routes_entries
+from tessellate.entry import filing_background
 
 
 @pytest.fixture
 def queued(monkeypatch):
     ids: list[int] = []
-    monkeypatch.setattr(routes_entries, "_queue_filing", lambda entry: ids.append(entry.id))
+    monkeypatch.setattr(filing_background, "_queue_filing", lambda entry: ids.append(entry.id))
     return ids
 
 

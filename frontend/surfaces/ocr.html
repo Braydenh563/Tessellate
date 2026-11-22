@@ -1,0 +1,352 @@
+
+    <div class="card modal-card ocr-card">
+      <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
+           The head says what you are reading and where you are in it; the
+           tools are one `.dock` under it. Before this the tools came in three
+           rows (the head, a 36px tool row of ten controls, a 32px engine line
+           with a filled badge, "Reads in" and Manage), and the owner: "they
+           also go onto two rows. the whole ocr workspace is just a bit iffy
+           to use and interact with". -->
+      <div class="ocr-head">
+        <div class="row space-between ocr-head-top dialog-head">
+          <div class="ocr-headline">
+            <!-- Renamed from "Text on the page". Asked for directly: *"make it
+                 not just reading text on the page but truly make it an all
+                 encompassing text and image ocr workspace, dont limit the
+                 feature."* -->
+            <h2 class="dialog-head-title"><i class="ph ph-scan pop-glyph" aria-hidden="true"></i>OCR workspace</h2>
+            <!-- Which file. The workspace can be reached from four places and
+                 opened on a document you last touched an hour ago. -->
+            <span id="ocr-file" class="ocr-file" hidden></span>
+            <span id="ocr-source" class="chip ocr-source" hidden></span>
+          </div>
+          <div class="row ocr-head-right">
+            <!-- Page navigation belongs beside the page, not inside the tool
+                 row: it is *where you are*, not something you are doing. -->
+            <span class="row ocr-pager" id="ocr-pager" hidden>
+              <button type="button" id="ocr-prev-page" class="ghost small icon-only"
+                title="Previous page (Left arrow)" aria-label="Previous page" aria-keyshortcuts="ArrowLeft"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+              <span id="ocr-page-label" class="ocr-page-label" role="status">Page 1</span>
+              <button type="button" id="ocr-next-page" class="ghost small icon-only"
+                title="Next page (Right arrow)" aria-label="Next page" aria-keyshortcuts="ArrowRight"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+            </span>
+            <button id="ocr-close" class="icon-only ghost small dialog-head-btn" type="button" aria-label="Close" title="Close (Esc)"><i class="ph ph-x" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <div class="help-body hidden" id="ocr-help" role="dialog" aria-label="How the OCR workspace works">
+          <p>Press Read to turn the page into text; its menu reads every page or a range.</p>
+          <p>Drag on the page to read or describe one part, or across its words to copy them.</p>
+          <p>The reader button picks the engine and its language; its dot says whether it can read.</p>
+          <p>Keys: Left and Right turn pages, + and - zoom (or pinch), 0 fits, Ctrl+F finds, Ctrl+Z undoes.</p>
+        </div>
+        <!-- **One row, grouped by task, on the dock grammar** (INBOX 717):
+             View (regions, zoom, page layout), then Read (the reader and its
+             state, the menu, and the one filled action, Read, last). It never
+             scrolls sideways and never wraps: `ocrFitDock` measures the row
+             and folds the lowest-priority controls (`data-fold`, 1 first)
+             into the ⋯ menu, which offers them as rows while they are folded.
+             The old row scrolled 409px of tools sideways at 390. -->
+        <div id="ocr-dock" class="dock ocr-toolbar ocr-dock" data-dock-name="ocr" role="toolbar" aria-label="Reading tools">
+          <div class="dock-arrange dock-group ocr-view-group" role="group" aria-label="View">
+            <!-- Regions: a toggle button rather than a switch, because a
+                 switch in a dock is a setting (the grammar's rule) and this is
+                 a view of the page, like Bold is a view of a word. Disabled,
+                 with the reason in its title, when the reading has no boxes. -->
+            <button type="button" id="ocr-regions" class="ghost ocr-regions-toggle" data-fold="3"
+              aria-pressed="true" title="Draw a box around each block the reader found"><i class="ph ph-bounding-box ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Regions</span></button>
+            <!-- **Zoom, one control.** Fit and 100% were a two-word segment
+                 and the zoom pair stood beside it with a readout between: four
+                 things for one question. Now one strip, the graph zoom's
+                 recipe (`.graph-zoom`: a button-cornered strip padded by one
+                 step): out, the level (press it for 100%), in, and Fit, which
+                 is pressed while the page is fitted. 100% means the page at its
+                 own size on paper, whatever scale it was rasterised at
+                 (`RENDER_SCALE = 2.0`, see `ocrNaturalScale`). -->
+            <div id="ocr-zoom" class="ocr-zoom" role="group" aria-label="Zoom" data-fold="2">
+              <button type="button" id="ocr-zoom-out" class="ghost small icon-only"
+                title="Zoom out (-)" aria-label="Zoom out" aria-keyshortcuts="-"><i class="ph ph-minus" aria-hidden="true"></i></button>
+              <button type="button" id="ocr-zoom-level" class="ghost small ocr-zoom-level"
+                title="Show the page at 100%, its own size on paper" aria-label="Zoom level: Fit. Press for 100%">Fit</button>
+              <button type="button" id="ocr-zoom-in" class="ghost small icon-only"
+                title="Zoom in (+)" aria-label="Zoom in" aria-keyshortcuts="+"><i class="ph ph-plus" aria-hidden="true"></i></button>
+              <button type="button" id="ocr-zoom-fit" class="ghost small icon-only" aria-pressed="true"
+                title="Fit the whole page (0)" aria-label="Fit the whole page" aria-keyshortcuts="0"><i class="ph ph-arrows-in" aria-hidden="true"></i></button>
+            </div>
+            <!-- Asked for directly: "allow scrolling in documents between
+                 pages as well". PDFs only: a photograph has one page and a
+                 mode switch for it would be furniture. -->
+            <div class="seg seg-compact ocr-view-modes hidden" id="ocr-view" role="group" aria-label="How pages are laid out" data-fold="1">
+              <button type="button" data-ocr-view="page" class="active" aria-pressed="true"
+                title="One page at a time"><i class="ph ph-file ph-lead" aria-hidden="true"></i> <span class="toolbar-word">One page</span></button>
+              <button type="button" data-ocr-view="scroll" aria-pressed="false"
+                title="Scroll through every page"><i class="ph ph-scroll ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Scroll</span></button>
+            </div>
+          </div>
+          <div class="dock-actions ocr-read-group" role="group" aria-label="Read">
+            <!-- **The reader, its state and its language, behind one button**
+                 (INBOX 717). The dot is the engine's state (green: it can
+                 read; amber: it cannot, and the popover says why and offers
+                 Install), the word is the reader, and the popover holds the
+                 choice and, for Tesseract, the language: the line that used to
+                 be a row of its own under the tools. Two readers because the
+                 app was told both "never depend on Tesseract" and "make sure
+                 tesseract exists as an alternative": the picker lists only
+                 what this machine can do (`GET /ocr-readers`). -->
+            <details id="ocr-reader-menu" class="doc-dock-menu dock-menu ocr-reader-menu">
+              <summary class="ghost small ocr-reader-summary" title="Which reader transcribes the page">
+                <span id="ocr-engine-dot" class="ocr-engine-dot" aria-hidden="true"></span>
+                <span id="ocr-reader-name" class="toolbar-word ocr-reader-name">Reader</span>
+                <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i>
+              </summary>
+              <div class="doc-dock-menu-list dock-menu-list ocr-reader-list" role="group" aria-label="Reader and language">
+                <div class="dock-menu-section">
+                  <label class="dock-menu-label" for="ocr-reader">Reader</label>
+                  <!-- Three, because "the AI" was two different models wearing
+                       one label: see `ocrLoadReaders`. -->
+                  <select id="ocr-reader" class="ocr-reader">
+                    <option value="vision">AI document reader</option>
+                    <option value="ocr" hidden>AI vision model</option>
+                    <option value="tesseract">Tesseract</option>
+                    <!-- RapidOCR by name (INBOX 717: "does the ocr worspace
+                         give rapidocr as an alternative??"): it used to read
+                         only as Tesseract's silent stand-in. -->
+                    <option value="rapidocr">RapidOCR</option>
+                  </select>
+                  <!-- Not installed: one way to get it, the Packages row that
+                       owns its install (`revealFeature("extra-row")`). -->
+                  <p id="ocr-rapidocr-missing" class="ocr-rapidocr-missing hidden">
+                    <span class="muted">RapidOCR, not installed.</span>
+                    <button type="button" id="ocr-rapidocr-install" class="ghost small"
+                      title="Open Settings, Packages at RapidOCR's row"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i> Install</button>
+                  </p>
+                </div>
+                <!-- **The engine, said once** (INBOX 443 (3)): whether
+                     Tesseract can read, in which language, and when it cannot
+                     the one Install button with its progress. Drawn by
+                     ocr-engine.js (lazy, `popover: true`) from the same status
+                     Settings, Packages reads. -->
+                <div id="ocr-engine" class="ocr-engine dock-menu-section" role="status" aria-live="polite" hidden></div>
+              </div>
+            </details>
+            <!-- The one '?' (INBOX 717): four lines, the first thing to do and
+                 the three things people did not find. In the dock, before the
+                 ⋯, because every dock's '?' is a utility of its last zone
+                 (DESIGN.md, the dock grammar). -->
+            <button type="button" id="ocr-help-toggle" class="icon-only ghost small graph-help-toggle"
+              data-help-for="ocr-help" aria-controls="ocr-help" aria-expanded="false"
+              title="How the OCR workspace works" aria-label="How the OCR workspace works">
+              <i class="ph ph-question" aria-hidden="true"></i>
+            </button>
+            <!-- The dock's ⋯ (kebabMenu, filled by `ocrSyncToolsMenu`): Manage
+                 the readers in Settings, and whatever the row has folded. -->
+            <span id="ocr-tools-more" class="dock-more ocr-tools-more"></span>
+            <!-- **Read, one filled split button** (INBOX 717). The default
+                 press reads what you are looking at; the caret holds this
+                 page, every page and a range, which replaces the bare "all"
+                 box that sat in the row with no label. "Read this page" over a
+                 reading becomes "Read again": it replaces the stored reading
+                 (`PageRead`: "re-reading a page replaces its row"). -->
+            <div id="ocr-read-split" class="split-button ocr-read-split">
+              <button id="ocr-read-page" class="small split-button-main" type="button"
+                title="Transcribe what you are looking at"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> <span id="ocr-read-page-label" class="ocr-read-label">Read this page</span></button>
+              <!-- The caret: kebabMenu's own opener, dressed as this half
+                   (`ocrSyncReadMenu`), so the menu keeps the recipe's
+                   placement, escape and keys. Shown for a PDF only. -->
+              <span id="ocr-read-menu-slot" class="split-button-slot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ocr-panes">
+        <div class="ocr-rail-column">
+          <!-- Reported: "I cant always switch between viewing files or images,
+               and if I open it from the lightbox when viewing an image, no
+               other files or images show." The rail used to be whatever list
+               the *caller* happened to pass in, and three of its four call
+               sites passed an empty array, so opened from the lightbox, from
+               a reopen toast or from a still-running read, there was nothing
+               in it and no way to reach anything else. It loads its own now,
+               and this switch is what says which list you are looking at. -->
+          <div id="ocr-rail-switch" class="ocr-rail-switch" role="tablist"
+            aria-label="What the rail lists"></div>
+          <nav id="ocr-rail" class="ocr-rail" aria-label="Pages"></nav>
+        </div>
+        <div class="ocr-page" id="ocr-page-pane">
+          <div id="ocr-stage" class="ocr-stage">
+            <img id="ocr-image" alt="">
+            <!-- **Drag to outline a region, then read or describe just that.**
+                 Asked as a question, UI_MODERNISATION_PLAN Phase 7.4: "can
+                 there be a way for the user to manually outline and single out
+                 regions on a pdf or similar document and then the ai will read
+                 what is in those regions?? like maybe the user can outline a
+                 graph or diagram on a pdf slide and then the user cna get the
+                 image or ocr model to analyse and caption that thing."
+
+                 Its own layer rather than `#ocr-boxes`: that one is hidden
+                 outright when Regions is off (`.ocr-boxes.is-hidden`), and a
+                 drag gesture that stops working because a checkbox was
+                 unticked is a feature nobody would find twice. First in the
+                 stack so the reader's boxes paint over the marquee; the boxes
+                 layer passes pointer events through to this one (see the CSS)
+                 so a drag on empty page still lands here while a click on a
+                 box still selects that box. -->
+            <div id="ocr-select" class="ocr-select"></div>
+            <div id="ocr-boxes" class="ocr-boxes"></div>
+            <!-- Live Text (WORLD_CLASS_PLAN 28.4 row 7): the words over the
+                 picture, selectable in place (`ocrPaintLiveText`). -->
+            <div id="ocr-live-text" class="ocr-live-text hidden" aria-label="Text on this page"></div>
+          </div>
+          <!-- The offer, once a rectangle exists. The app's floating-panel
+               shell (see the `.action-menu, .doc-dock-menu-list, …` rule at
+               the end of 07-whiteboard-misc.css) rather than a fourth kind of
+               popup: capped height, scrolls down and never sideways, and its
+               wheel does not scroll the page the rectangle is drawn on. -->
+          <div id="ocr-region-popover" class="ocr-region-popover hidden" role="group"
+            aria-label="What to do with the region you outlined">
+            <span id="ocr-region-size" class="muted text-xs ocr-region-size"></span>
+            <button type="button" id="ocr-region-read" class="ghost small"
+              title="Transcribe the text inside the rectangle"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> Read text</button>
+            <button type="button" id="ocr-region-describe" class="ghost small"
+              title="Describe the figure, chart or diagram inside the rectangle"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Describe</button>
+            <button type="button" id="ocr-region-cancel" class="ghost small icon-only"
+              title="Clear the rectangle (Escape)" aria-label="Clear the rectangle"><i class="ph ph-x" aria-hidden="true"></i></button>
+          </div>
+          <!-- Continuous mode's pages. Empty and `hidden` in one-page mode so
+               nothing is rendered or requested until it is asked for, a
+               200-page scan must not fetch 200 PNGs because the dialog opened. -->
+          <div id="ocr-scroll" class="ocr-scroll hidden"></div>
+        </div>
+        <div class="ocr-regions">
+          <!-- Find, over the reading rather than over the picture: the whole
+               point of transcribing a page is that its words become
+               searchable, and until now the reading was a list you scrolled. -->
+          <div class="row ocr-find">
+            <i class="ph ph-magnifying-glass ocr-find-icon" aria-hidden="true"></i>
+            <label class="visually-hidden" for="ocr-find">Find in what was read</label>
+            <input id="ocr-find" type="search" class="ocr-find-input"
+              placeholder="Find in what was read" autocomplete="off">
+            <span id="ocr-find-count" class="muted text-sm ocr-find-count" role="status"></span>
+            <button id="ocr-find-prev" type="button" class="ghost small icon-only hidden" title="Previous match" aria-label="Previous match"><i class="ph ph-caret-up" aria-hidden="true"></i></button>
+            <button id="ocr-find-next" type="button" class="ghost small icon-only hidden" title="Next match (Enter)" aria-label="Next match"><i class="ph ph-caret-down" aria-hidden="true"></i></button>
+          </div>
+          <p id="ocr-caption" class="ocr-caption hidden"></p>
+          <p id="ocr-message" class="muted ocr-message" role="status"></p>
+          <!-- The picture's other stored reading, named by its reader, with its
+               own delete (INBOX 421 e: the lightbox showed a reading this
+               panel did not). Filled by ocrRenderOtherReadings in library.js. -->
+          <div id="ocr-other-readings" class="ocr-other-readings hidden"></div>
+          <!-- Asked for directly: "also let the user be able to stop the
+               readings." Hidden unless something is actually running
+               (ocrSyncStopButton): a Stop that is always on screen and
+               inert most of the time is the affordance problem this app
+               keeps fixing elsewhere. -->
+          <button type="button" id="ocr-stop-read" class="ghost small hidden">
+            <i class="ph ph-stop-circle ph-lead" aria-hidden="true"></i> Stop reading
+          </button>
+          <!-- **Answers about a rectangle somebody drew** (Phase 7.4). Above
+               the page's own reading, not mixed into it: these are replies to
+               a question the reader asked about one part of the page, they are
+               not stored, and filing them among the transcription's sections
+               would make them look like part of what the page says. Each one
+               is focusable and says which page and which rectangle it came
+               from. -->
+          <div id="ocr-region-results" class="ocr-region-results hidden"
+            aria-label="Answers about regions you outlined"></div>
+          <!-- The reading, as text you can change (INBOX 443 (3)). A wrong
+               word on a scan is fixed here, not by reading it again. -->
+          <div id="ocr-edit-panel" class="ocr-edit-panel hidden">
+            <label class="visually-hidden" for="ocr-edit-box">Edit the text that was read</label>
+            <textarea id="ocr-edit-box" class="ocr-edit-box" rows="12" spellcheck="false"></textarea>
+            <div class="row ocr-edit-actions">
+              <button id="ocr-edit-save" class="ghost small" type="button">Save changes</button>
+              <button id="ocr-edit-cancel" class="ghost small" type="button">Cancel</button>
+              <span class="muted text-sm">Your text replaces the sections below.</span>
+            </div>
+          </div>
+          <!-- What to do first, while nothing has been read (INBOX 717):
+               filled by `ocrPaintEmpty`. -->
+          <div id="ocr-empty" class="ocr-empty hidden"></div>
+          <ol id="ocr-region-list" class="ocr-region-list" aria-label="What was read, section by section"></ol>
+          <!-- **The reading's own actions belong under the reading.**
+               Measured: with these three in the header the tool row needed
+               1743px of a 1350px bar, so ~400px of it, including "Save as
+               note", was only reachable by scrolling the toolbar sideways.
+               They are also simply in the wrong place: copying, asking about
+               and keeping *the text* are things you do to the pane on the
+               right, not to the picture in the middle. -->
+          <div class="row ocr-regions-foot">
+            <!-- Destructive, so it sits with the text it destroys and looks like
+                 what it is: one trash icon at the head of the reading's own
+                 actions, not a red sentence in the middle of the read controls.
+                 Reported: "the button is also ugly and not good where it is." -->
+            <button id="ocr-delete-reading" class="ghost small icon-only danger hidden ocr-in-menu" type="button"
+              title="Delete this reading (you can read it again any time)" aria-label="Delete this reading"><i class="ph ph-trash" aria-hidden="true"></i></button>
+            <!-- A stored reading with a degenerate loop in it ("Test, Test,
+                 Test, ...") stays looped forever otherwise: nothing re-reads
+                 a reading that is already on the row (INBOX 423f). Runs the
+                 same cut_reading_loops a fresh reading is passed through,
+                 in place. -->
+            <button id="ocr-clean-loops" class="ghost small icon-only hidden ocr-in-menu" type="button"
+              title="Clean up repeated lines in this reading" aria-label="Clean up repeated lines"><i class="ph ph-broom" aria-hidden="true"></i></button>
+            <!-- The caption half of what the app knows about what is on the
+                 stage, written by the same vision model Settings chose, kept
+                 beside the reading half so the two are managed in one place.
+
+                 **Documents too, a page at a time** (UI_MODERNISATION_PLAN
+                 Phase 7.3). This used to be images-only, which is why a slide
+                 deck full of charts could not be described at all: the
+                 file-level caption route refuses a PDF, and the one surface
+                 built for reading documents hid the button. For a PDF the
+                 label becomes "Describe this page" and it calls the per-page
+                 route, whose prompt asks about figures rather than "what does
+                 this image show". -->
+            <button id="ocr-describe" class="ghost small hidden ocr-in-menu" type="button"
+              title="Describe this image with the vision model (writes its caption)"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> <span id="ocr-describe-label" class="toolbar-word">Describe</span></button>
+            <!-- Named, not just drawn. The control existed and the owner
+                 still asked for it (2026-09-21, "there should be a way to copy
+                 all extracted text in the ocr workspace and files subtab"): an
+                 icon-only button among labelled ones is a button nobody reads.
+                 Describe beside it carries its own word for the same reason. -->
+            <button id="ocr-copy-all" class="ghost small" type="button"
+              title="Copy everything read, in reading order"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Copy all</span></button>
+            <!-- The reading is only worth having if it can leave this window.
+                 A transcription you have to re-read in a dialog is a dead end;
+                 the two things anyone does with one are ask about it and keep
+                 it, so both are one press from where it was read. -->
+            <!-- Edit the text, Add to an existing note: a ⋯ menu (kebabMenu,
+                 filled by ocrSyncMoreMenu) rather than two more icons, because
+                 the phone's thumb bar already held every button it could. -->
+            <!-- **Ask, with its word** (INBOX 717: "I pressed the comment
+                 button on the ocr workspace and idk what just happened"). A
+                 speech bubble alone read as "comment"; it asks the chat about
+                 this page, and the page goes as a chip, not as text in the box. -->
+            <button id="ocr-to-chat" class="ghost small" type="button"
+              title="Ask the chat about this page: its text goes with your next message as a chip" aria-label="Ask about this page in chat"><i class="ph ph-chat-circle-text ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Ask</span></button>
+            <!-- **One row** (INBOX 717): measured at 1440 the foot wrapped, Ask
+                 and Save as note on a second line under Describe this page,
+                 Copy all and the ⋯, in a 415px pane. Describe, Clean up and
+                 Delete (`.ocr-in-menu`, kept in the markup for their state and
+                 handlers) are rows of this ⋯ now, beside Edit and Add to a
+                 note; Copy all, Ask and Save as note stay one press away. -->
+            <span id="ocr-more" class="ocr-more"></span>
+            <button id="ocr-to-note" class="ghost small" type="button"
+              title="Save everything read here as a new note"><i class="ph ph-note ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Save as note</span></button>
+            <!-- **Delete, not just redo.** Reported directly: "there's also no
+                 way to delete or redo ocr text extractions in the ocr
+                 workspace." Redo already existed and was just unlabelled, 
+                 "Read this page" always re-reads and replaces the stored
+                 answer (`PageRead`'s own docstring: "re-reading a page
+                 replaces its row rather than appending"). Delete genuinely did
+                 not: there was no way to remove a wrong reading without either
+                 covering it with a fresh one (which still needs a working
+                 reader) or leaving it there. `margin-left: auto`, a
+                 destructive action does not belong in the middle of three
+                 constructive ones. Hidden until there is something to remove
+                 (`ocrSyncDeleteButton`), the same "a control that cannot act
+                 must not sit there looking live" rule the Stop-reading button
+                 above already follows. -->
+          </div>
+        </div>
+      </div>
+    </div>
+    

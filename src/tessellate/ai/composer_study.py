@@ -25,6 +25,7 @@ from itertools import zip_longest
 
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import composer_frame, filed_name, note_rank, realise, recognise, study
+from tessellate.core.lazyre import lazy_compile
 
 QUIZ_LENGTH = 6
 MAX_QUIZ = 12
@@ -34,7 +35,7 @@ CARDS_SHOWN = 4
 
 _LEAD = r"(?:(?:please|pls|plz|can you|could you|can we|would you|lets|let's|let us|i want you to|i want to|i'd like you to|i'd like to|i would like to|go on|ok|okay|hey)[, ]+)*"
 _FROM = r"(?:on|about|from|over|of|for|in|covering|using|out of|around)"
-_THIS = re.compile(r"^(?:this|that|the|my|current|open|opened|latest|newest|last)?\s*(?:note|one|page|lecture|doc|document|file)?s?$|^(?:it|this note|that note|this one|the open note|here)$", re.I)
+_THIS = lazy_compile(r"^(?:this|that|the|my|current|open|opened|latest|newest|last)?\s*(?:note|one|page|lecture|doc|document|file)?s?$|^(?:it|this note|that note|this one|the open note|here)$", re.I)
 
 _QUIZ = (
     re.compile(rf"^{_LEAD}(?:quiz|test|question|drill|grill|examine|check)\s+(?:me|us)\b\s*(?:{_FROM}\s+)?(?P<t>.*)$", re.I),
@@ -54,14 +55,14 @@ _TERMS = (
         rf"(?:key|main|important|core|central|essential|major|new|technical|useful)?\s*(?:terms|vocab(?:ulary)?|keywords?|key words|concepts|terminology|definitions)\b\s*(?:{_FROM}\s+)?(?P<t>.*)$", re.I),
     re.compile(rf"^{_LEAD}(?:glossary|vocab(?:ulary)?|key terms|keywords?)\s*(?:{_FROM}\s+)?(?P<t>.*)$", re.I),
 )
-_SUMMARY = re.compile(
+_SUMMARY = lazy_compile(
     rf"^{_LEAD}(?P<brief>briefly\s+|quickly\s+)?(?:summari[sz]e|sum up|boil down|condense|recap|run through|run me through|go over|give me (?:a |an |the )?(?:quick |short |brief |rough )?(?:summary|recap|overview|rundown|run-?down|tl;?dr|gist)(?:\s+{_FROM})?|tl;?dr(?:\s+{_FROM})?|"
     rf"what (?:did|have|do|was|were) (?:we|i|you) (?:cover|covered|learn|learnt|learned|study|studied|go over|discuss)(?:\s+(?:in|on|during|at|about))?|what(?:['’]?s| is| was) (?:covered|inside)(?:\s+(?:in|on))?|"
     rf"what(?:['’]?s| is) the (?:gist|summary|point|main idea)\s+{_FROM})\s*(?P<t>.*)$", re.I)
 
-_WHOLE_NOTEBOOK = re.compile(r"^(?:all |every |each )?(?:of )?(?:my |the )?(?:notes|notebook|everything|stuff)$", re.I)
-_ASKED_ON = re.compile(r"\b(?:in|using)\s+(?:\d+|a few|some)\s+(?:bullet points?|bullets|sentences|lines|points)\.?$", re.I)
-_FILLER = re.compile(r"\b(?:please|pls|thanks|thank you|for me|now)\b|[?.!]+$", re.I)
+_WHOLE_NOTEBOOK = lazy_compile(r"^(?:all |every |each )?(?:of )?(?:my |the )?(?:notes|notebook|everything|stuff)$", re.I)
+_ASKED_ON = lazy_compile(r"\b(?:in|using)\s+(?:\d+|a few|some)\s+(?:bullet points?|bullets|sentences|lines|points)\.?$", re.I)
+_FILLER = lazy_compile(r"\b(?:please|pls|thanks|thank you|for me|now)\b|[?.!]+$", re.I)
 
 
 @dataclass
@@ -109,7 +110,7 @@ def pick(seed: str, key: str, options: tuple | list) -> str:
 
 # --- finding the note ---------------------------------------------------------------
 
-_TOPIC_NOISE = re.compile(r"\b(?:my|the|notes?|about|on|of|for|in|from|and|a|an|all|everything|please|stuff|material|topic|chapter notes)\b", re.I)
+_TOPIC_NOISE = lazy_compile(r"\b(?:my|the|notes?|about|on|of|for|in|from|and|a|an|all|everything|please|stuff|material|topic|chapter notes)\b", re.I)
 
 
 def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
@@ -288,7 +289,7 @@ def _target(ctx: Ctx, topic: str, verb: str, what: str, *, strict: bool) -> tupl
     return None, _nothing_named(ctx, topic, verb)
 
 
-_EMPHASIS = re.compile(r"\*\*(.+?)\*\*|(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)")
+_EMPHASIS = lazy_compile(r"\*\*(.+?)\*\*|(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)")
 
 
 def _stopped(sentences: list[str]) -> str:
@@ -495,7 +496,7 @@ def _flashcards(ctx: Ctx, topic: str) -> Reply:
 
 # --- the quiz ----------------------------------------------------------------------
 
-_HEADER = re.compile(r"\*\*Quiz on (?P<topic>.+?)\*\* · question (?P<n>\d+) of (?P<total>\d+)(?: · score (?P<score>\d+) of (?P<done>\d+))?(?: · round (?P<round>\d+))?")
+_HEADER = lazy_compile(r"\*\*Quiz on (?P<topic>.+?)\*\* · question (?P<n>\d+) of (?P<total>\d+)(?: · score (?P<score>\d+) of (?P<done>\d+))?(?: · round (?P<round>\d+))?")
 
 
 def _deck(topic: str, ctx: Ctx, total: int, rounds: int = 1) -> tuple[dict | None, list[study.Card]]:
@@ -545,10 +546,10 @@ def _start_quiz(ctx: Ctx, topic: str, count: int | None) -> Reply:
     return Reply(f"{opener}\n\n{_header(name, 1, len(deck), 0, 0, rounds)}\n\n{deck[0].q}\n\n{tip}", asks=QUIZ_CHIPS)
 
 
-_STOP = re.compile(r"^(?:stop|quit|end|exit|finish|enough|done|cancel|that'?s enough|i'?m done|no more|stop the quiz|end quiz|end the quiz|that will do)\W*$", re.I)
-_SKIP = re.compile(r"^(?:skip|pass|next|i (?:don'?t|do not) know|idk|no idea|dunno|don'?t know|not sure|give up|show me|show answer|answer|what is it|what'?s the answer|tell me|reveal)\W*$", re.I)
-_HINT = re.compile(r"^(?:hint|a hint|clue|a clue|give me a hint|help|help me|i need a hint|any hints?)\W*$", re.I)
-_AGAIN = re.compile(r"^(?:repeat|again|say that again|what was the question|what was that|repeat the question|pardon)\W*$", re.I)
+_STOP = lazy_compile(r"^(?:stop|quit|end|exit|finish|enough|done|cancel|that'?s enough|i'?m done|no more|stop the quiz|end quiz|end the quiz|that will do)\W*$", re.I)
+_SKIP = lazy_compile(r"^(?:skip|pass|next|i (?:don'?t|do not) know|idk|no idea|dunno|don'?t know|not sure|give up|show me|show answer|answer|what is it|what'?s the answer|tell me|reveal)\W*$", re.I)
+_HINT = lazy_compile(r"^(?:hint|a hint|clue|a clue|give me a hint|help|help me|i need a hint|any hints?)\W*$", re.I)
+_AGAIN = lazy_compile(r"^(?:repeat|again|say that again|what was the question|what was that|repeat the question|pardon)\W*$", re.I)
 
 
 def _last_header(answer: str) -> re.Match | None:
@@ -587,7 +588,7 @@ def _quiz_command(ctx: Ctx, reply: str, place: tuple) -> Reply | None:
     return None
 
 
-_REQUESTISH = re.compile(
+_REQUESTISH = lazy_compile(
     r"^(?:ok(?:ay)?[, ]+|so[, ]+|and[, ]+|please[, ]+|thanks?(?: you)?[, ]+)*(?:what|how|why|when|where|who|which|tell|show|open|list|find|search|remind|add|create|make|write|give|can|could|would|will|please|"
     r"thanks?|thank|hello|hi|hey|summari[sz]e|plan|quiz|flash|outline|compare|delete|set|turn|start|go|do you|are you|is there|i want|i need|i'd like|let'?s)\b", re.I)
 
@@ -648,15 +649,15 @@ def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int
     return Reply("\n".join(lines), asks=[f"Quiz me on {topic}", f"Make flashcards from {topic}"])
 
 
-_OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?P<verb>open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
+_OPEN = lazy_compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?P<verb>open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
 #: "the Sara note", "my Dentist note": a note said by its title and nothing more.
-_BARE_NOTE = re.compile(r"^(?:the|my)\s+(?P<t>[\w'’ -]{1,60}?)\s+note\W*$", re.I)
-_OPEN_NOT = re.compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
+_BARE_NOTE = lazy_compile(r"^(?:the|my)\s+(?P<t>[\w'’ -]{1,60}?)\s+note\W*$", re.I)
+_OPEN_NOT = lazy_compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
 
 
 #: "Show notes from October": the notes of a time, not a note called that
 #: (audit 1030 Z28); the listing reader answers it.
-_LISTING = re.compile(r"^(?:all |my |the )*(?:notes|entries)\b", re.I)
+_LISTING = lazy_compile(r"^(?:all |my |the )*(?:notes|entries)\b", re.I)
 
 
 def _lists_a_time(topic: str) -> bool:

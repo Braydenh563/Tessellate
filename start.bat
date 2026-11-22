@@ -106,6 +106,7 @@ set "MM_NO_UPDATE=0"
 set "MM_REINSTALL=0"
 set "MM_ACTION="
 set "MM_BAD_FLAG="
+set "MM_RESTART_ARG="
 
 :parse_args
 if "%~1"=="" goto :parse_done
@@ -179,6 +180,15 @@ if /i "%~1"=="--help" (
 )
 if /i "%~1"=="-h" (
   set "MM_ACTION=help"
+  shift
+  goto :parse_args
+)
+REM  Internal: Settings' Restart passes the pid of the copy it replaces, and the
+REM  app waits for it to go (restart_app in __main__.py). Restart now goes
+REM  through this script like any other start, so it repairs and updates too.
+if /i "%~1"=="--restart-after" (
+  set "MM_RESTART_ARG=--restart-after %~2"
+  shift
   shift
   goto :parse_args
 )
@@ -853,7 +863,7 @@ if defined MM_DESKTOP (
   echo  !ESC![1;38;5;73mYour notes:!ESC![0m   !MM_DATA_DIR!
   echo  !ESC![1;38;5;73mNext time:!ESC![0m    open a terminal there and run start-desktop.bat again
   echo.
-  "%VENV_PY%" -m tessellate --desktop
+  "%VENV_PY%" -m tessellate --desktop !MM_RESTART_ARG!
   REM  Exit code 42 (RELAUNCHED_HIDDEN_EXIT_CODE, __main__.py) means "User
   REM  view" handed off to a separate, console-less pythonw.exe process and
   REM  this one exited on purpose - its job here is done. Falling through to
@@ -900,7 +910,7 @@ if defined MM_DESKTOP (
   REM  No second window is coming in browser mode - the tab is the app - so
   REM  the splash closes here rather than being handed on.
   if defined MM_SPLASH_FILE del /q "!MM_SPLASH_FILE!" >nul 2>nul
-  "%VENV_PY%" -m tessellate
+  "%VENV_PY%" -m tessellate !MM_RESTART_ARG!
 )
 
 echo.

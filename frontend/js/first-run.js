@@ -108,7 +108,7 @@ function firstStepName(host) {
       return;
     }
     try {
-      prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ display_name: name }) });
+      prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ display_name: name }) });
     } catch (err) {
       toast(`Your name could not be saved: ${err.message}`, true);
       return;

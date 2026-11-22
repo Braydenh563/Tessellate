@@ -35,10 +35,13 @@ function repaintOwnFace() { }
 //: beside this folder.
 const ROOT = location.protocol === "file:" ? "../frontend/" : "/";
 (function load() {
-  const css = document.createElement("link");
-  css.rel = "stylesheet";
-  css.href = `${ROOT}css/08-consistency.css`;
-  document.head.appendChild(css);
+  //: The Atlas and companion rules live in characters-lazy.css, after 08 (L-world-class-364).
+  for (const sheet of ["08-consistency.css", "characters-lazy.css"]) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = `${ROOT}css/${sheet}`;
+    document.head.appendChild(css);
+  }
   const script = (src) => new Promise((ok, no) => {
     const el = document.createElement("script");
     el.src = ROOT + src;

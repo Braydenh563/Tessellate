@@ -57,7 +57,8 @@ def test_the_switch_is_wired_everywhere():
     assert "Show the update bar" in html
     rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
     assert '{ key: "show_update_bar", id: "pref-update-bar" }' in rows
-    assert "show_update_bar" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    #: The switch is filled by About's refresh, in settings-controls.js since the panes became surfaces (L675).
+    assert '$("pref-update-bar").checked = prefsCache?.show_update_bar !== false;' in (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
     assert "show_update_bar" in unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
 
 

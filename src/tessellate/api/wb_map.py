@@ -383,6 +383,29 @@ def _first_cycle(parents: dict[int, int | None], changed: set[int]) -> int | Non
     return None
 
 
+def _unique_move_ids(moves) -> set[int]:
+    """The ids a batch moves, refused when one is in it twice."""
+    seen_ids: set[int] = set()
+    for move in moves:
+        if move.id in seen_ids:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Node {move.id} is in this batch twice; each node moves once.",
+            )
+        seen_ids.add(move.id)
+    return seen_ids
+
+
+def _check_new_parent(move, parents: dict) -> None:
+    """A new parent is another node on this board (None is the root)."""
+    if move.parent_id is None:
+        return
+    if move.parent_id == move.id:
+        raise HTTPException(status_code=422, detail="A node can't be its own parent.")
+    if move.parent_id not in parents:
+        raise HTTPException(status_code=404, detail="That node is not on this board.")
+
+
 @router.put("/boards/{board_id}/nodes/move-many", response_model=list[WhiteboardObjectOut])
 @events.writes("whiteboard_object", "edited")
 def move_map_nodes(
@@ -406,14 +429,7 @@ def move_map_nodes(
     _require_board(db, board_id)
     if not body.moves:
         return []
-    seen_ids: set[int] = set()
-    for move in body.moves:
-        if move.id in seen_ids:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Node {move.id} is in this batch twice; each node moves once.",
-            )
-        seen_ids.add(move.id)
+    seen_ids = _unique_move_ids(body.moves)
 
     nodes = {
         node.id: node
@@ -435,17 +451,7 @@ def move_map_nodes(
     for move in body.moves:
         if not move.reparent:
             continue
-        if move.parent_id is not None:
-            if move.parent_id == move.id:
-                raise HTTPException(
-                    status_code=422,
-                    detail="A node can't be its own parent.",
-                )
-            if move.parent_id not in parents:
-                raise HTTPException(
-                    status_code=404,
-                    detail="That node is not on this board.",
-                )
+        _check_new_parent(move, parents)
         parents[move.id] = move.parent_id
         reparented.add(move.id)
 

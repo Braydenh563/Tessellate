@@ -16,6 +16,7 @@ from tessellate.api import paging
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.core import activity
 from tessellate.core import deps, jobs, webclip
 from tessellate.core.deps import get_session
 from tessellate.repo import bookmarks, bookmarks_html
@@ -128,9 +129,10 @@ def import_bookmarks(body: BookmarksImport, session: Session = Depends(get_sessi
 
     The ids come back so the caller's Undo can take exactly these away.
     """
-    rows, skipped = bookmarks_html.parse(body.html)
-    made, twins = bookmarks.import_rows(session, rows)
-    session.commit()
+    with activity.track("import", "Importing bookmarks", stoppable=False):
+        rows, skipped = bookmarks_html.parse(body.html)
+        made, twins = bookmarks.import_rows(session, rows)
+        session.commit()
     return {"added": len(made), "ids": [b.id for b in made], "duplicates": twins, "skipped": skipped, "found": len(rows)}
 
 

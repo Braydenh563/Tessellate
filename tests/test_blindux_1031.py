@@ -156,5 +156,5 @@ def test_i8_a_greeting_made_for_an_empty_notebook_is_not_kept_once_notes_exist()
 def test_i9_the_tidy_button_says_what_its_number_counts_and_most_used_says_what_x4_is():
     tidy = (JS / "tidy.js").read_text(encoding="utf-8")
     assert '${count.textContent} ${body.total === 1 ? "thing" : "things"} to look at' in tidy
-    status = (JS / "status.js").read_text(encoding="utf-8")
+    status = (JS / "status-quick.js").read_text(encoding="utf-8")
     assert "Opened or asked about" in status and "count.title" in status

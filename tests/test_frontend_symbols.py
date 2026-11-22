@@ -70,7 +70,7 @@ KNOWN_GLOBALS = frozenset(
     SpeechSynthesisUtterance String Symbol SyntaxError TextDecoder TextEncoder
     TypeError URIError URL URLSearchParams Uint8Array Uint32Array WeakMap
     WeakRef WeakSet Worker XMLHttpRequest XMLSerializer AbortController
-    AbortSignal
+    AbortSignal AudioWorkletNode registerProcessor
     alert atob getSelection btoa clearInterval clearTimeout confirm createImageBitmap
     decodeURI decodeURIComponent encodeURI encodeURIComponent fetch
     getComputedStyle importScripts isFinite isNaN matchMedia parseFloat
@@ -329,7 +329,7 @@ def test_every_function_the_browser_calls_exists():
 #: The files that share the page's one global scope. `graph-worker.js` runs
 #: in a `Worker`, which has a scope of its own, so a name it declares cannot
 #: collide with the page's.
-WORKER_FILES = frozenset({"graph-worker.js", "harper-worker.js", "translate-worker.js", "sw.js"})
+WORKER_FILES = frozenset({"graph-worker.js", "harper-worker.js", "translate-worker.js", "caption-tap-worker.js", "sw.js"})
 
 #: A top-level declaration, which is what the global scope actually holds.
 #: Not the nested ones `DECLARATIONS` collects: a `const` inside a function

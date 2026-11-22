@@ -91,6 +91,9 @@ SCRIPTS = (
     "first-run.js",
     #: The manual (Find anything and the palette open it after `lazyScript`).
     "manual.js",
+    #: Private spaces (INBOX 1727), lazy behind `LAZY_MODULES.privateSpaces`: the Rename space
+    #: reveal target calls `privateSpaces`, the one name private-spaces.js puts in the shared scope.
+    "private-spaces.js",
     #: Copy diagnostics (INBOX 1430): the palette loads `diagnostics`, then calls diagCopy.
     "diag-report.js",
     #: The Appearance panel (INBOX 1435), lazy behind `LAZY_MODULES.appearancePanel`.

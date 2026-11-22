@@ -78,10 +78,10 @@ const { boot, openBoardsTab } = require('./lib.js');
       // A text box overflows when its text is wider than it and it is not
       // clipped with an ellipsis (an ellipsis is the clip, not an overflow).
       const spills = (el) => el.scrollWidth > el.clientWidth + 1 && !(getComputedStyle(el).textOverflow === 'ellipsis' && getComputedStyle(el).overflow.includes('hidden'));
-      const seg = card.querySelector(':scope > .seg');
+      const seg = card.querySelector('.picker-kinds');
       const segs = seg ? [...seg.children] : [];
       const active = seg && seg.querySelector('.active');
-      const glide = seg && getComputedStyle(seg, '::before');
+      // INBOX 715: a tab strip; the chosen tab is the one in ink (the others muted), so 'filled' is a colour difference.
       const clear = (c) => !c || c === 'transparent' || c === 'rgba(0, 0, 0, 0)';
       const field = card.querySelector('.search-field');
       const fs = field && getComputedStyle(field);
@@ -123,7 +123,7 @@ const { boot, openBoardsTab } = require('./lib.js');
           widths: segs.map((b) => b.getBoundingClientRect().width),
           clipped: segs.filter((b) => [...b.children].some((c) => c.scrollWidth > c.clientWidth + 1) || b.scrollWidth > b.clientWidth + 1).length,
           counts: segs.map((b) => b.querySelector('.seg-count')?.textContent || ''),
-          filled: !!active && (!clear(getComputedStyle(active).backgroundColor) || (!clear(glide.backgroundColor) && glide.content !== 'none')),
+          filled: !!active && segs.filter((b) => b !== active).every((b) => getComputedStyle(b).color !== getComputedStyle(active).color),
           active: active?.dataset.pickKind,
         },
         state: list?.querySelector('.empty-state') ? {
@@ -146,8 +146,8 @@ const { boot, openBoardsTab } = require('./lib.js');
     check(`${w} ${theme} library picker: head, field, X last, inside`, m && m.titleSize === '16px' && m.lastIsClose && m.field && m.inside && m.pageOverflow === 0, m);
     check(`${w} ${theme} library picker: the field's ring is the one 2px ring (1px outline on the accent edge)`, m && m.ring === '1px 1px', m && m.ring);
     check(`${w} ${theme} library picker: a full list (25 notes), one row height, no tile over another row, tiles centred, no text spilling`, m && m.rows >= 25 && m.tiles[0] === 32 && m.abouts === m.rows && rowsOk(m), m);
-    check(`${w} ${theme} library picker: the sources span the card, equal segments of one height, the chosen one filled, counted, none clipped`,
-      m && m.seg && m.seg.span && m.seg.heights.length === 1 && Math.max(...m.seg.widths) - Math.min(...m.seg.widths) <= 1 && m.seg.filled && m.seg.clipped === 0 && m.seg.counts.every((c) => /^\d+$/.test(c)), m && m.seg);
+    check(`${w} ${theme} library picker: the sources span the card, tabs of one height, the chosen one filled, counted, none clipped`,
+      m && m.seg && m.seg.span && m.seg.heights.length === 1 && m.seg.filled && m.seg.clipped === 0 && m.seg.counts.every((c) => /^\d+$/.test(c)), m && m.seg);
     check(`${w} ${theme} library picker: the list scrolls on the thin scrollbar`, m && m.scrollbar === 'auto' && (!process.env.SCROLLBARS || m.gutter === 10), { scrollbar: m && m.scrollbar, gutter: m && m.gutter });
     await page.screenshot({ path: `${OUT}/picker-library-${w}-${theme}.png` });
     const cardHs = [m.cardH];
@@ -243,7 +243,7 @@ const { boot, openBoardsTab } = require('./lib.js');
     m = await measure();
     check(`${w} ${theme} media picker: the same shell, its state on the recipe`, m && m.titleSize === '16px' && m.lastIsClose && m.field && m.inside && (m.state === null || m.state.icon), m);
     await page.screenshot({ path: `${OUT}/picker-media-${w}-${theme}.png` });
-    await page.click('.entry-pick-card .dialog-head-actions button');
+    await page.click('.entry-pick-card .dialog-head-actions button[aria-label="Close"]');
     await page.waitForTimeout(200);
     check(`${w} ${theme} media picker: the X closes`, await page.evaluate(() => window.__pick === null && !document.querySelector('.entry-pick-card')), null);
     await browser.close();

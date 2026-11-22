@@ -56,7 +56,7 @@ TOPIC_LEADS: dict[str, str] = {
     "templates": "Start a note or document from a ready outline, or save outlines of your own.",
     "write-with-atlas": "Turn rough thoughts into a finished note, with your notes as sources if you like.",
     "translate": "Translate text in the Writing room and keep its facts, names and formatting.",
-    "translate-offline": "Translate a selected passage from English to Spanish on this computer, with no model.",
+    "translate-offline": "Translate a selected passage to or from English on this computer, with no model.",
     "extract-notes": "Break a long block of pasted text into several linked notes.",
     "voice": "Dictate notes, record meetings and lectures, and hear answers read aloud.",
     "live-captions": "See what the microphone hears written out live, on this computer only.",
@@ -69,6 +69,7 @@ TOPIC_LEADS: dict[str, str] = {
     "filing-settings": "Ask me when filing is not sure, the search model at launch and the filing style.",
     "suggested-tags": "Add or turn down the tags Atlas suggested when it filed a note.",
     "tag-manager": "Rename, merge or remove tags across all your notes at once.",
+    "note-groups": "Gather notes by hand into a group, or file one note under more than one category.",
     "manage-categories": "Make, rename, merge, split or delete categories without losing notes.",
     "tidy": "Reviews that find loose ends in your notes and help you fix them, with no AI.",
     # Asking Atlas

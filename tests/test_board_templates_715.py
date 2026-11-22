@@ -201,8 +201,8 @@ def test_one_title_size_per_board_picture_inside_its_frame():
 
 def test_the_dialog_chooses_its_kind_with_a_tab_strip_and_groups_its_rows():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    dialog = html[html.index('<dialog id="wb-template-dialog"') :]
-    dialog = dialog[: dialog.index("</dialog>")]
+    dialog = html[html.index('<sheet-host id="wb-template-dialog"') :]
+    dialog = dialog[: dialog.index("</sheet-host>")]
     assert 'class="seg' not in dialog
     strip = re.search(r'<div class="tabs-line popup-kinds[^"]*" id="wb-template-kind" role="tablist"', dialog)
     assert strip, "the kind is a .tabs-line tab strip"

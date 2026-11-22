@@ -60,7 +60,7 @@
     if (job.stoppable || job.report) {
       const actions = document.createElement("span");
       actions.className = "entry-actions";
-      if (job.stoppable) actions.appendChild(smallButton("ph:stop-circle Stop", `Stop ${job.label.toLowerCase()} at its next step`, () => stopActivityJob(job.id)));
+      if (job.stoppable) actions.appendChild(smallButton("ph:stop-circle Stop", `Stop ${job.label.toLowerCase()} at its next step`, () => stopActivityJob(job.id, job.kind)));
       //: A finished job with a page (an import's report, WORLD_CLASS 25b).
       if (job.report) actions.appendChild(smallButton("ph:file-text Report", `Open the report of ${job.label.toLowerCase()}`, () => openActivityReport(job.report)));
       row.appendChild(actions);
@@ -101,7 +101,7 @@
   function activityEnding(job) {
     const took = activityDuration(job.duration_ms);
     const verb = ACTIVITY_ENDINGS[job.outcome] || (took ? "Finished in" : "Finished");
-    const at = new Date(job.finished * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const at = new Date(job.finished * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
     const times = job.count > 1 ? `, ${job.count} times` : "";
     return `${verb}${took ? ` ${took}` : ""} at ${at}${times}`;
   }
@@ -124,17 +124,62 @@
     $("activity-count-running").textContent = String(jobs.length);
   }
 
+  //: The History tab (L669): every run, newest first, from `GET /activity/history`.
+  //: Read once per opening and on a click of the tab, not polled: it is a record.
+  const HISTORY_OUTCOMES = { running: "Running", completed: "Done", failed: "Failed", cancelled: "Stopped" };
+
+  function historyRow(run) {
+    const li = document.createElement("li");
+    li.dataset.runId = run.run_id;
+    const head = document.createElement("div");
+    head.className = "entry-meta";
+    const name = document.createElement("strong");
+    name.textContent = run.title || run.label;
+    head.appendChild(name);
+    const state = document.createElement("span");
+    state.className = `muted task-elapsed history-outcome is-${run.outcome}`;
+    const took = activityDuration(run.duration_ms);
+    state.textContent = `${HISTORY_OUTCOMES[run.outcome] || run.outcome}${took ? ` in ${took}` : ""}${run.count > 1 ? `, ${run.count} times` : ""}`;
+    head.appendChild(state);
+    li.appendChild(head);
+    const when = new Date(run.started * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", ...clockOptions() });
+    const origin = run.origin ? `${run.origin[0].toUpperCase()}${run.origin.slice(1)}` : "";
+    const facts = document.createElement("p");
+    facts.className = "muted task-detail history-facts";
+    facts.textContent = [run.label, when, origin].filter(Boolean).join(" · ");
+    li.appendChild(facts);
+    for (const text of [run.why, run.result]) {
+      if (!text) continue;
+      const line = document.createElement("p");
+      line.className = "muted task-detail";
+      line.textContent = text[0].toUpperCase() + text.slice(1);
+      li.appendChild(line);
+    }
+    return li;
+  }
+
+  async function renderActivityHistory() {
+    const body = await apiJson("/activity/history", { silent: true }).catch(() => null);
+    if (!body) return;
+    const runs = body.runs || [];
+    $("activity-history-list").replaceChildren(...runs.map(historyRow));
+    $("activity-history-empty").classList.toggle("hidden", runs.length > 0);
+    $("activity-count-history").textContent = String(runs.length);
+  }
+
   //: The report sheet lives with the importers (app-import.js, lazy).
   async function openActivityReport(id) {
     if (await ensureModule("appImport")) openImportReport(id);
   }
 
-  async function stopActivityJob(id) {
+  async function stopActivityJob(id, kind) {
     try {
       const result = await apiJson(`/activity/${encodeURIComponent(id)}/stop`, { method: "POST" });
       toast(result.detail || (result.stopped ? "Stopping." : "It had already finished."), "info");
+      //: A view that shows this job's work (the OCR workspace's partial pages) repaints now.
+      if (result.stopped) window.dispatchEvent(new CustomEvent("activity-stopped", { detail: { id, kind } }));
     } catch (e) {
-      toastAction(`Couldn't stop that job: ${e.message}`, "Try again", () => stopActivityJob(id));
+      toastAction(voiceLine("failed", { what: "stop that job", why: e.message }), "Try again", () => stopActivityJob(id, kind));
     }
     renderActivity();
   }
@@ -144,7 +189,7 @@
       const result = await apiJson("/activity/model/stop", { method: "POST" });
       toast(result.detail, "info");
     } catch (e) {
-      toastAction(`Couldn't stop the model: ${e.message}`, "Try again", stopActivityModel);
+      toastAction(voiceLine("failed", { what: "stop the model", why: e.message }), "Try again", stopActivityModel);
     }
     renderActivity();
   }
@@ -186,10 +231,12 @@
     }
     $("activity-running").classList.toggle("hidden", name !== "running");
     $("activity-runs").classList.toggle("hidden", name !== "runs");
+    $("activity-history").classList.toggle("hidden", name !== "history");
     //: The broom and the log are the runs' own controls.
     $("agent-monitor-clear")?.classList.toggle("hidden", name !== "runs");
     $("agent-monitor-log-toggle")?.classList.toggle("hidden", name !== "runs");
     if (name === "running") renderActivity();
+    if (name === "history") renderActivityHistory();
   }
   window.setActivityTab = setActivityTab;
 
@@ -197,7 +244,9 @@
     tab.addEventListener("click", () => setActivityTab(tab.dataset.value));
     tab.addEventListener("keydown", (event) => {
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-      const next = tab.dataset.value === "running" ? "runs" : "running";
+      const names = [...document.querySelectorAll("#activity-tabs [role=tab]")].map((t) => t.dataset.value);
+      const step = event.key === "ArrowRight" ? 1 : -1;
+      const next = names[(names.indexOf(tab.dataset.value) + step + names.length) % names.length];
       setActivityTab(next);
       document.querySelector(`#activity-tabs [data-value="${next}"]`)?.focus();
     });

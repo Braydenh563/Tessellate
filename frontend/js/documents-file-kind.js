@@ -315,8 +315,13 @@
     if (proxy) setTimeout(() => (document.getElementById(proxy) || document.querySelector(proxy))?.click());
   });
   //: The card's `.card:has(details.dock-menu[open])`, as a class (07-whiteboard-misc.css says why).
-  const viewMenu = document.getElementById("doc-view-menu");
-  viewMenu?.addEventListener("toggle", () => viewMenu.closest(".card")?.classList.toggle("doc-view-menu-open", viewMenu.open));
+  //: Both of the dock's menus (View, More): one opening as the other closes leaves the class on.
+  for (const dockMenu of [document.getElementById("doc-view-menu"), document.getElementById("doc-dock-menu")]) {
+    dockMenu?.addEventListener("toggle", () => {
+      const card = dockMenu.closest(".card");
+      card?.classList.toggle("doc-view-menu-open", Boolean(card.querySelector("details.dock-menu[open]")));
+    });
+  }
   document.addEventListener("click", (event) => {
     const menu = document.getElementById("doc-dock-menu");
     if (!menu?.open) return;

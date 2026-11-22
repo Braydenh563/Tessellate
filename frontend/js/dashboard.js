@@ -62,6 +62,8 @@ const DASH_WIDGETS = {
   activity: { title: "ph:pulse Recent activity", description: "What changed in your notebook lately, and whether you, Atlas or a skill changed it.", render: renderActivityWidget },
   //: WORLD_CLASS_PLAN I1's morning card over `GET /night/latest`.
   night: { title: "ph:moon-stars While you were away", description: "What Atlas worked out reading your notes on its own, with each finding to open or dismiss.", render: renderNightWidget },
+  //: L591: the backup schedule and its last success, off by default like the other status cards (dash-day.js).
+  backups: { title: "ph:shield-check Backups", description: "When the last backup was taken, whether the daily one worked, and when the next is due.", render: renderBackupsWidget },
   "most-used": { title: "ph:flame Most used", description: "The notes you open and ask about most often.", render: renderMostUsedWidget },
   //: WORLD_CLASS_PLAN section 17 rows 5 and 1: the owner's "most-accessed
   //: information" for this month (`GET /most-opened`, a day-by-day open log),
@@ -121,7 +123,7 @@ const DASH_WIDGETS = {
   //: isn't in this object.)
   //: Brief 89 (statistics row 2): Screen Time's weekly report, drawn by
   //: statistics.js, which also holds the page it opens.
-  week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week.", render: (body) => renderWeekWidget(body) },
+  week: { title: "ph:calendar-dots This week", description: "Notes made, words written and reminders done this week, against last week, and one feature you have not used lately.", render: (body) => renderWeekWidget(body) },
   pace: { title: "ph:chart-line-up Writing pace", description: "How many words you have written each day this fortnight.", render: renderPaceWidget },
 };
 
@@ -160,7 +162,7 @@ const DASH_DEFAULT_SHOWN = [
 //: offered in the picker rather than appended to every existing dashboard.
 //: Applied only while a saved layout has never seen the widget: once anybody
 //: adds it, or saves a layout with it hidden, the saved layout decides.
-const DASH_OPT_IN = ["activity", "night", "week"];
+const DASH_OPT_IN = ["activity", "night", "week", "backups"];
 
 //: **The popup tools as widgets** (INBOX 1558, the owner: "cant add the timer,
 //: calculator, converter, stopwatch etc"). A widget draws the tool itself, not
@@ -217,10 +219,20 @@ function dashLayout() {
 }
 
 async function saveDashLayout(layout) {
+  const before = prefsCache?.dashboard_layout || { order: [], hidden: [], wide: [], sizes: {} };
+  const was = prefsCache;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
+    noHistory: true,
     body: JSON.stringify({ dashboard_layout: layout }),
   }).catch(() => prefsCache);
+  //: The dashboard's layout is a step on the stack (L696): Ctrl+Z puts it back.
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(layout)) {
+    pushRequestUndo("Dashboard layout", "/preferences", "PUT", { dashboard_layout: before }, { dashboard_layout: layout }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderDashboard();
+    });
+  }
 }
 
 // Add/remove and wide/narrow, factored out of the inline "Edit layout" grid
@@ -398,6 +410,7 @@ function paintDashClock() {
   timeEl.textContent = now.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
+    ...clockOptions(),
   });
   dateEl.textContent = now.toLocaleDateString([], {
     weekday: "long",
@@ -459,23 +472,6 @@ function fetchDashGraph() {
   return dashGraphInflight;
 }
 
-//: **One reminder walk per moment.** Three places on this tab want every
-//: reminder (the greeting line's due count, the stat tile, and the reminders
-//: widget), and all three render in the same pass, so a cold start walked
-//: `/reminders` three times over (WORLD_CLASS_PLAN A2). To the end of the
-//: list, not the first page: `/reminders` is `due_at` ascending, so a first
-//: page of old, ticked-off rows would hide everything upcoming
-//: (`archive/agent-remaining/list-paging.md`).
-let dashRemindersInflight = null;
-let dashRemindersAt = 0;
-function dashReminders() {
-  const now = Date.now();
-  if (dashRemindersInflight && now - dashRemindersAt < 2000) return dashRemindersInflight;
-  dashRemindersAt = now;
-  dashRemindersInflight = apiPagedList("/reminders", 200);
-  return dashRemindersInflight;
-}
-
 //: The notebook, for the four widgets that want the whole of it.
 //:
 //: `entriesEverLoaded`, not `allEntries.length`: an empty list is an answer,
@@ -491,7 +487,7 @@ function dashReminders() {
 async function dashEntries() {
   if (entriesEverLoaded) return allEntries;
   const notes = await appState.when("notes", 8000);
-  return notes || apiJson("/entries", { cacheMs: 4000 });
+  return notes || apiJson("/entries?preview=300", { cacheMs: 4000 });
 }
 
 //: **The sub line is composed and rotates** (INBOX 1300, the owner: "Maybe the
@@ -512,9 +508,9 @@ async function renderDashSubmessage() {
     fetchDashStats().catch(() => null),
     // To the end: `/reminders` is `due_at` ascending, so a first page of
     // old, ticked-off rows would hide everything upcoming from this count
-    // (`archive/agent-remaining/list-paging.md`); `dashReminders` shares
-    // the one fetch across the widgets that need it.
-    dashReminders().catch(() => []),
+    // (`archive/agent-remaining/list-paging.md`); `openReminders` (store.js)
+    // shares the one fetch across the widgets that need it.
+    openReminders().catch(() => []),
     //: The Patterns line (CHAT_PLAN decision 32), its short form here and
     //: the measured sentence on hover; Tidy shows it whole.
     apiJson("/insights/patterns", { silent: true }).catch(() => null),
@@ -603,14 +599,14 @@ function renderDashboardGreeting() {
 //: Always four, in one order, each with a calm state: tiles that come and go
 //: with the day's data would move under the pointer and leave the empty
 //: middle back on a quiet day. Every number is a read the dashboard already
-//: makes (`dashReminders`, `fetchDashStats`, `dashEntries`, all shared with
+//: makes (`openReminders`, `fetchDashStats`, `dashEntries`, all shared with
 //: the widgets), so the glance costs no request and no model.
 //:
 //: Pure, so the arithmetic runs in node (tests/test_inbox_675_hero.py); `go`
 //: is a token `renderDashGlance` turns into the press, not a closure.
 function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new Date() } = {}) {
   const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const time = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const time = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", ...clockOptions() });
   const byDue = (a, b) => new Date(a.due_at) - new Date(b.due_at);
   const open = (reminders || []).filter((r) => r && !r.done).sort(byDue);
   const today = open.filter((r) => new Date(r.due_at) < endOfDay);
@@ -737,7 +733,7 @@ async function renderDashGlance() {
     }
   }
   const [reminders, stats, entries] = await Promise.all([
-    dashReminders().catch(() => []),
+    openReminders().catch(() => []),
     fetchDashStats().catch(() => null),
     dashEntries().catch(() => []),
   ]);
@@ -860,7 +856,11 @@ function sizeDashWidgets() {
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
   //: reads go before any write.
-  const heights = cards.map((card) => card.getBoundingClientRect().height);
+  //: A height the grid's observer has already reported is used as it is (L-world-class-620): the rect read here
+  //: laid the page out whole, 49 to 307 ms at 4x on 500 notes, because the fills had dirtied it. A card the
+  //: observer has not reported yet is read.
+  const known = sizeDashWidgets.heights;
+  const heights = cards.map((card) => known.get(card) ?? card.getBoundingClientRect().height);
   if (!heights.some(Boolean)) return;
   const styles = getComputedStyle(grid);
   const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
@@ -872,6 +872,8 @@ function sizeDashWidgets() {
   grid.classList.add("spans-ready");
 }
 
+sizeDashWidgets.heights = new WeakMap();
+
 // Widget bodies fill in asynchronously, so re-measure whenever one changes
 // size rather than only once at render time.
 function watchDashWidgets() {
@@ -881,16 +883,15 @@ function watchDashWidgets() {
     return;
   }
   dashResizeObserver?.disconnect();
-  let queued = false;
-  dashResizeObserver = new ResizeObserver(() => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
-      //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
-      if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
-    });
+  dashResizeObserver = new ResizeObserver((entries) => {
+    //: The sizes arrive with the entries, after the frame's layout, so sizing here reads nothing back (L-world-class-620).
+    for (const entry of entries) {
+      if (entry.target.classList.contains("dash-widget")) sizeDashWidgets.heights.set(entry.target, entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height);
+    }
+    dashResizeObserver.follow?.();
+    //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
+    //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
+    if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
   });
   //: Observing fires once for every card, so the first sizing is the observer's, a frame on,
   //: with the widgets drawn rather than empty: sizing here as well was a whole-page layout
@@ -1396,7 +1397,15 @@ function quickLinkButton(link, tint = "") {
 }
 
 async function saveQuickAccess(ids) {
-  prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
+  const before = Array.isArray(prefsCache?.dashboard_quick_access) ? prefsCache.dashboard_quick_access : [];
+  const was = prefsCache;
+  prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(ids)) {
+    pushRequestUndo("Quick access", "/preferences", "PUT", { dashboard_quick_access: before }, { dashboard_quick_access: ids }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderQuickLinks();
+    });
+  }
 }
 
 function quickTints() {
@@ -1405,7 +1414,15 @@ function quickTints() {
 }
 
 async function saveQuickTints(tints) {
-  prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_tints: tints }) }).catch(() => prefsCache);
+  const before = quickTints();
+  const was = prefsCache;
+  prefsCache = await apiJson("/preferences", { method: "PUT", noHistory: true, body: JSON.stringify({ dashboard_quick_tints: tints }) }).catch(() => prefsCache);
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(tints)) {
+    pushRequestUndo("Quick access colours", "/preferences", "PUT", { dashboard_quick_tints: before }, { dashboard_quick_tints: tints }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderQuickLinks();
+    });
+  }
 }
 
 //: True while the row is being arranged: the editing view and its picker are
@@ -1709,6 +1726,7 @@ function renderFirstStepsLazy() {
 //: synchronous renderer cannot break the dashboard loop.
 const WIDGET_STALL_MS = 20000;
 
+
 function mountWidgetBody(widget, body) {
   const failed = (message) => {
     if (!body.isConnected) return;
@@ -1745,7 +1763,9 @@ function mountWidgetBody(widget, body) {
     clearTimeout(stall);
     unskeleton();
   };
-  const drawn = Promise.resolve()
+  //: Each widget's fill starts in its own task (L701): behind a microtask, every render queued in a loop slice ran
+  //: in that slice's continuation (56 ms at 4x on 500 notes).
+  const drawn = mountWidgetBody.yield()
     .then(() => widget.render(body))
     .then(done)
     .catch(() => { done(); failed("Couldn't load this widget."); });
@@ -1757,6 +1777,10 @@ function mountWidgetBody(widget, body) {
   }, WIDGET_STALL_MS);
   return drawn;
 }
+
+//: A task boundary: `scheduler.yield` where the browser has it (the continuation runs ahead of other queued
+//: tasks), else a 0 ms timer. A property, not a global, to hold the shared-scope name count (the grid loop uses it too).
+mountWidgetBody.yield = () => (globalThis.scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
 
 //: **Back on the dashboard, the last picture stays** (INBOX 602, the owner:
 //: "every time I go off the dashboard and go back on it, it is empty for a
@@ -1805,11 +1829,22 @@ async function renderDashboard({ refresh = false } = {}) {
   //: The catalogue (app-features.js) loads beside the preferences, for Quick access.
   lazyScript("/js/app-features.js");
   await loadPreferences().catch(() => null);
+  const dashYield = mountWidgetBody.yield;
   renderDashboardGreeting();
+  //: Three tasks, not one (L-world-class-354): the greeting, the menus and
+  //: the grid were 74 ms of one 119 ms boot microtask at 4x CPU. The grid
+  //: below is rebuilt without a pause from `replaceChildren` on, so two
+  //: renders that overlap here still leave one set of cards.
+  await dashYield();
+  //: Each of the four is 14 to 17 ms at 4x CPU, so a task each (L-world-class-363: together 56 ms).
   renderQuickLinks();
+  await dashYield();
   renderDashMore();
+  await dashYield();
   wireDashDensity();
+  await dashYield();
   renderFirstStepsLazy();
+  await dashYield();
   const grid = $("dash-grid");
   const layout = dashLayout();
   const shape = dashGridShape(layout);
@@ -1819,6 +1854,8 @@ async function renderDashboard({ refresh = false } = {}) {
     return;
   }
   grid.dataset.shape = shape;
+  //: The render that last emptied the grid owns it: an older one that wakes from a yield in the widget loop stops there.
+  const gen = (renderDashboard.gen = (renderDashboard.gen || 0) + 1);
   grid.replaceChildren();
   //: Unseen while its widgets draw and their spans settle, then faded in
   //: whole (`dashSettled` below; `.dash-filling`, 08-consistency.css).
@@ -1838,10 +1875,18 @@ async function renderDashboard({ refresh = false } = {}) {
   //: 349px of nothing under the steps, and Quick capture is the first thing to do.
   const bare = entriesEverLoaded && !allEntries.length && !dashEditMode;
 
+  //: A task boundary every DASH_SLICE_MS of widgets (L-world-class-363: the loop was one 85 ms task at 4x CPU).
+  const DASH_SLICE_MS = 12;
+  let sliceStart = performance.now();
   for (const name of layout.order) {
     const hidden = layout.hidden.includes(name);
     if (hidden && !dashEditMode) continue;
     if (bare && name !== "capture") continue;
+    if (performance.now() - sliceStart > DASH_SLICE_MS) {
+      await dashYield();
+      if (gen !== renderDashboard.gen) return;
+      sliceStart = performance.now();
+    }
 
     const widget = DASH_WIDGETS[name];
     const isWide = layout.wide.includes(name);
@@ -1850,80 +1895,7 @@ async function renderDashboard({ refresh = false } = {}) {
       "card dash-widget" + (hidden ? " dash-hidden" : "") + (isWide ? " wide" : "");
     card.dataset.widget = name;
 
-    const header = document.createElement("div");
-    header.className = "row space-between";
-    const title = document.createElement("h2");
-    setLabel(title, widget.title);
-    header.appendChild(title);
-    if (dashEditMode) {
-      const controls = document.createElement("span");
-      //: **One line, whatever the zoom** (owner, 2026-11-11: "make sure the
-      //: wrapping and ui issues arent an issue anywhere else from zoom or
-      //: resolution"). Remove, Wide, Move earlier, Move later and Drag sat
-      //: side by side at 293px, so 34 of 35 heads wrapped at 1366 (32px head
-      //: became 66) and the row ran 5px past the card. The row-actions
-      //: recipe (DESIGN.md): the first action stays, the rest fold into the
-      //: head's ⋯, and Remove and the grip are their glyphs (with the words
-      //: "Remove", 10 of 35 titles were cut at 1366), so the title gives way
-      //: with an ellipsis only when long (`.dash-edit-actions`,
-      //: 01-forms-settings.css).
-      controls.className = "entry-actions dash-edit-actions";
-      title.title = title.textContent.trim();
-      // There used to be two width buttons here, side by side: one writing
-      // to `wide` and one to the legacy `sizes` map. dashLayout() only falls
-      // back to `sizes` when `wide` is empty, so the legacy button appeared to
-      // work exactly once and then silently stopped. One control, one place
-      // it's stored.
-      controls.appendChild(
-        smallButton(hidden ? "ph:plus" : "ph:x", hidden ? "Add this widget to the dashboard" : "Remove this widget from the dashboard", async () => {
-          await toggleDashWidgetHidden(name);
-          renderDashboard();
-        })
-      );
-      //: **Reordering without a mouse.** HTML5 drag-and-drop is unreachable
-      //: by keyboard, unusable with a screen reader and awkward on a
-      //: trackpad, so Move earlier and Move later do the same job from the
-      //: head's ⋯, and are the faster way to move one widget three places up.
-      if (!hidden) {
-        const at = layout.order.indexOf(name);
-        const move = (delta) => async () => {
-          const order = [...layout.order];
-          const to = at + delta;
-          if (to < 0 || to >= order.length) return;
-          order.splice(to, 0, ...order.splice(at, 1));
-          await saveDashLayout({ ...dashLayout(), order });
-          renderDashboard();
-          //: Focus follows the widget, so a second press moves the same card
-          //: again rather than whatever landed under the pointer.
-          setTimeout(() => {
-            document.querySelector(`[data-widget="${name}"] .dash-edit-actions .kebab-opener`)?.focus();
-          }, 60);
-        };
-        const items = [
-          {
-            label: isWide ? "ph:rows Narrow" : "ph:arrows-out-line-horizontal Wide",
-            title: isWide ? "Show in one column" : "Span two columns",
-            run: async () => {
-              await toggleDashWidgetWide(name);
-              renderDashboard();
-            },
-          },
-        ];
-        if (at > 0) items.push({ label: "ph:arrow-up Move earlier", title: "Move this widget earlier", run: move(-1) });
-        if (at < layout.order.length - 1) items.push({ label: "ph:arrow-down Move later", title: "Move this widget later", run: move(1) });
-        controls.appendChild(kebabMenu(items, "Widget layout options"));
-      }
-      const handle = document.createElement("span");
-      handle.className = "drag-handle";
-      handle.title = "Drag to move";
-      const grip = document.createElement("i");
-      grip.className = "ph ph-dots-six-vertical";
-      grip.setAttribute("aria-hidden", "true");
-      handle.append(grip);
-      controls.appendChild(handle);
-      header.appendChild(controls);
-    }
-    card.appendChild(header);
+    renderDashboard.head(card, widget, { name, hidden, layout, isWide });
 
     const body = document.createElement("div");
     body.className = "dash-body";
@@ -1987,6 +1959,83 @@ async function renderDashboard({ refresh = false } = {}) {
     dashFillingSkeletonDone(outline);
   }));
 }
+//: One widget card's head: the title and, while editing, the layout controls (kebab, remove, drag handle); split from `renderDashboard`.
+renderDashboard.head = (card, widget, { name, hidden, layout, isWide }) => {
+  const header = document.createElement("div");
+  header.className = "row space-between";
+  const title = document.createElement("h2");
+  setLabel(title, widget.title);
+  header.appendChild(title);
+  if (dashEditMode) {
+    const controls = document.createElement("span");
+    //: **One line, whatever the zoom** (owner, 2026-11-11: "make sure the
+    //: wrapping and ui issues arent an issue anywhere else from zoom or
+    //: resolution"). Remove, Wide, Move earlier, Move later and Drag sat
+    //: side by side at 293px, so 34 of 35 heads wrapped at 1366 (32px head
+    //: became 66) and the row ran 5px past the card. The row-actions
+    //: recipe (DESIGN.md): the first action stays, the rest fold into the
+    //: head's ⋯, and Remove and the grip are their glyphs (with the words
+    //: "Remove", 10 of 35 titles were cut at 1366), so the title gives way
+    //: with an ellipsis only when long (`.dash-edit-actions`,
+    //: 01-forms-settings.css).
+    controls.className = "entry-actions dash-edit-actions";
+    title.title = title.textContent.trim();
+    // There used to be two width buttons here, side by side: one writing
+    // to `wide` and one to the legacy `sizes` map. dashLayout() only falls
+    // back to `sizes` when `wide` is empty, so the legacy button appeared to
+    // work exactly once and then silently stopped. One control, one place
+    // it's stored.
+    controls.appendChild(
+      smallButton(hidden ? "ph:plus" : "ph:x", hidden ? "Add this widget to the dashboard" : "Remove this widget from the dashboard", async () => {
+        await toggleDashWidgetHidden(name);
+        renderDashboard();
+      })
+    );
+    //: **Reordering without a mouse.** HTML5 drag-and-drop is unreachable
+    //: by keyboard, unusable with a screen reader and awkward on a
+    //: trackpad, so Move earlier and Move later do the same job from the
+    //: head's ⋯, and are the faster way to move one widget three places up.
+    if (!hidden) {
+      const at = layout.order.indexOf(name);
+      const move = (delta) => async () => {
+        const order = [...layout.order];
+        const to = at + delta;
+        if (to < 0 || to >= order.length) return;
+        order.splice(to, 0, ...order.splice(at, 1));
+        await saveDashLayout({ ...dashLayout(), order });
+        renderDashboard();
+        //: Focus follows the widget, so a second press moves the same card
+        //: again rather than whatever landed under the pointer.
+        setTimeout(() => {
+          document.querySelector(`[data-widget="${name}"] .dash-edit-actions .kebab-opener`)?.focus();
+        }, 60);
+      };
+      const items = [
+        {
+          label: isWide ? "ph:rows Narrow" : "ph:arrows-out-line-horizontal Wide",
+          title: isWide ? "Show in one column" : "Span two columns",
+          run: async () => {
+            await toggleDashWidgetWide(name);
+            renderDashboard();
+          },
+        },
+      ];
+      if (at > 0) items.push({ label: "ph:arrow-up Move earlier", title: "Move this widget earlier", run: move(-1) });
+      if (at < layout.order.length - 1) items.push({ label: "ph:arrow-down Move later", title: "Move this widget later", run: move(1) });
+      controls.appendChild(kebabMenu(items, "Widget layout options"));
+    }
+    const handle = document.createElement("span");
+    handle.className = "drag-handle";
+    handle.title = "Drag to move";
+    const grip = document.createElement("i");
+    grip.className = "ph ph-dots-six-vertical";
+    grip.setAttribute("aria-hidden", "true");
+    handle.append(grip);
+    controls.appendChild(handle);
+    header.appendChild(controls);
+  }
+  card.appendChild(header);
+};
 
 //: `fn` once `count` animation frames have passed: the first has painted what
 //: was just changed. The one frame loop for "after it has drawn" in this file
@@ -2036,22 +2085,31 @@ function dashFillingSkeleton(grid, count) {
   //: 2026-10-12). Cheap: two reads and two writes a frame for a second.
   //: By `translate`, which the compositor moves without a layout: writing
   //: `top` here counted as 0.077 of layout shift at boot.
-  //: Read after a paint (INBOX 1419): in a timer it landed while the widgets
-  //: filling in had left the layout dirty, and each read laid the page out.
-  const follow = () => {
-    if (!outline.isConnected) return;
-    afterFrames(() => setTimeout(function dashSkeletonFollowTask() {
-      if (!outline.isConnected) return;
+  //: Followed by the grid's own ResizeObserver (`watchDashWidgets`, which also watches what sits above the grid
+  //: while the outline is up; L701): its callback runs after the frame's layout, so reading `grid.offsetTop` there
+  //: forces nothing. The 80 ms timer read it while the widgets filling in had dirtied the layout, 36 to 44 ms a
+  //: read at 4x CPU on 500 notes (INBOX 1419 moved it after a paint; not enough).
+  //: The skeleton's follow hangs off the observer (`follow`, and `above` for what it watches), so a new grid drops it.
+  const ro = dashResizeObserver;
+  if (ro) {
+    ro.follow = () => {
+      if (!outline.isConnected) return void (ro.follow = null);
       outline.style.translate = `0 ${grid.offsetTop - top0}px`;
-      setTimeout(follow, 80);
-    }, 0), 1);
-  };
-  setTimeout(follow, 80);
+    };
+    ro.above = [];
+    for (let el = grid.previousElementSibling; el; el = el.previousElementSibling) ro.above.push(el);
+    for (const el of ro.above) ro.observe(el);
+  }
   return outline;
 }
 
 function dashFillingSkeletonDone(outline) {
   if (!outline) return;
+  if (dashResizeObserver) {
+    dashResizeObserver.follow = null;
+    for (const el of dashResizeObserver.above || []) dashResizeObserver.unobserve(el);
+    dashResizeObserver.above = [];
+  }
   outline.style.opacity = "0";
   setTimeout(() => outline.remove(), 260);
 }
@@ -2882,7 +2940,7 @@ async function renderRemindersWidget(body) {
   // To the end before filtering: taking four open ones out of a first page
   // that happens to be all done would show "no open reminders" to someone who
   // has plenty.
-  const reminders = (await dashReminders()).filter((r) => !r.done).slice(0, 4);
+  const reminders = (await openReminders()).filter((r) => !r.done).slice(0, 4);
   if (!reminders.length) {
     dashEmpty(body, "No open reminders.", { label: "ph:plus Add a reminder", run: "reminder", tab: "reminders" });
     return;
@@ -2895,7 +2953,7 @@ async function renderRemindersWidget(body) {
     //: The day and the time a person would say, never a machine timestamp
     //: with seconds ("9/24/2026, 1:22:17 PM", measured); the relative phrase
     //: ("in 23 hours") is the tooltip.
-    const when = due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+    const when = due.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", ...clockOptions() });
     //: The thing to do, then when, on a line of its own in the muted rank:
     //: "Submit IT assignment: Thu, Sep 24, 1:22 PM" as one run-on line made
     //: the time read as part of the sentence.
@@ -3208,6 +3266,8 @@ function paintFadedNotes(body, items) {
     list.appendChild(card);
   }
   body.appendChild(list);
+  //: I9: what Rediscover was told to hide, and why, is in What it learned.
+  body.appendChild(openSettingsModal.learnedLink(""));
 }
 
 async function renderRandomShuffle(body) {
@@ -3348,7 +3408,7 @@ async function renderTagCloudWidget(body) {
 // kept per day in this browser.
 //: `unsaved`: seconds focused since the last save to today's count, written
 //: on every pause and end rather than every second.
-let focusTimer = { remaining: 0, total: 25 * 60, running: false, handle: null, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
+let focusTimer = { remaining: 0, total: 25 * 60, running: false, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
 const FOCUS_PRESETS = [5, 15, 25, 50, 60];
 const FOCUS_BREAK_MIN = 5;
 const FOCUS_SVG = "http://www.w3.org/2000/svg";
@@ -3487,14 +3547,13 @@ function startFocusTimer() {
   if (focusTimer.remaining <= 0) focusTimer.remaining = focusTimer.total;
   focusTimer.running = true;
   askNotificationPermission();
-  focusTimer.handle = setInterval(focusTimerTick, 1000);
+  secondTick.add(focusTimerTick);
   paintFocusTimer();
 }
 
 function stopFocusTimer() {
   focusTimer.running = false;
-  if (focusTimer.handle) clearInterval(focusTimer.handle);
-  focusTimer.handle = null;
+  secondTick.remove(focusTimerTick);
   if (focusTimer.unsaved) {
     focusTodaySeconds(focusTimer.unsaved);
     focusTimer.unsaved = 0;
@@ -3780,6 +3839,9 @@ const NIGHT_KIND_WORDS = {
   question: ["open question", "open questions"],
   tension: ["claim that disagrees with another", "claims that disagree with others"],
   answered: ["question answered later", "questions answered later"],
+  date: ["date it names", "dates it names"],
+  entity: ["name it mentions", "names it mentions"],
+  duplicate: ["note that repeats another", "notes that repeat others"],
 };
 const NIGHT_PAIR_LEAD = { tension: "Disagrees with", answered: "Answers" };
 const NIGHT_PAGE = 5;
@@ -3877,7 +3939,7 @@ async function renderActivityWidget(body) {
     ul.appendChild(li);
   }
   body.appendChild(ul);
-  const undo = activityUndoControl(items, byId, () => {
+  const undo = activityActorRow(items, byId, () => {
     //: The undo wrote a `restored` event per note; the feed reads it on the
     //: next render through its cursor, so a fresh read shows it at once.
     body.replaceChildren();
@@ -3900,7 +3962,7 @@ function activityActorName(actor) {
   return historyActorLabel(actor) || actor;
 }
 
-function activityUndoPlanText(plan, byId, name) {
+function activityPlanText(plan, byId, name) {
   const undo = plan.items.filter((item) => item.status === "undo");
   const titled = undo.slice(0, 3).map((item) => {
     const entry = byId.get(item.entity_id);
@@ -3924,7 +3986,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
   try {
     plan = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ actor, since }) });
   } catch (error) {
-    toast(error.message || "Couldn't read what would be undone.", true);
+    toast(error.message || voiceLine("failed", { what: "read what would be undone" }), true);
     return;
   }
   const undoable = plan.items.filter((item) => item.status === "undo").length;
@@ -3934,20 +3996,38 @@ async function undoActorFrom(actor, since, byId, rerender) {
     return;
   }
   const ok = await confirmDialog(
-    `Undo what ${name} changed?\n\n${activityUndoPlanText(plan, byId, name)}`,
+    `Undo what ${name} changed?\n\n${activityPlanText(plan, byId, name)}`,
     { confirmLabel: "Undo", danger: false }
   );
   if (!ok) return;
   try {
-    const done = await apiJson("/events/undo", {
-      method: "POST",
-      body: JSON.stringify({ actor, since, dry_run: false }),
-    });
+    const body = JSON.stringify({ actor, since, dry_run: false });
+    const done = await apiJson("/events/undo", { method: "POST", body });
+    //: The server's redo (L805): Redo re-applies the reversed events, and the
+    //: next Undo reverses them again, so this joins the normal stack.
+    //: Only the notes the undo touched are re-read (test_refresh_entries).
+    const ids = (done.items || []).filter((item) => item.entity_type === "entry").map((item) => item.entity_id);
+    const settle = async () => {
+      await refreshEntries(ids).catch(() => {});
+      rerender();
+    };
+    if (done.restored?.length) {
+      pushUndo(
+        `Undid what ${name} changed`,
+        async () => {
+          await apiJson("/events/redo", { method: "POST", body: JSON.stringify({ restored: done.restored }) });
+          await settle();
+        },
+        async () => {
+          done.restored = (await apiJson("/events/undo", { method: "POST", body })).restored;
+          await settle();
+        }
+      );
+    }
     toast(`Put back ${nounCount(done.undone, "note")}.`);
-    await loadEntries().catch(() => {});
-    rerender();
+    await settle();
   } catch (error) {
-    toast(error.message || `Couldn't undo what ${name} changed.`, true);
+    toast(error.message || voiceLine("failed", { what: `undo what ${name} changed` }), true);
   }
 }
 
@@ -3956,10 +4036,12 @@ async function undoActorFrom(actor, since, byId, rerender) {
 //: did in the list goes back. A `restored` event in the feed names the events
 //: it reversed (`undid`), and those are skipped, so the row goes once an undo
 //: has put everything back instead of staying to say "Already undone".
-function activityUndoStarts(items) {
+function activityActorStarts(items) {
   const undone = new Set();
+  //: A redo names the undo it took back (`redid`): that undo no longer counts.
+  const redone = new Set(items.flatMap((item) => (item.action === "redone" && Array.isArray(item.redid) ? item.redid : [])));
   for (const item of items) {
-    if (item.action === "restored" && Array.isArray(item.undid)) item.undid.forEach((id) => undone.add(id));
+    if (item.action === "restored" && !redone.has(item.id) && Array.isArray(item.undid)) item.undid.forEach((id) => undone.add(id));
   }
   const from = new Map();
   for (const item of items) {
@@ -3971,8 +4053,8 @@ function activityUndoStarts(items) {
   return from;
 }
 
-function activityUndoControl(items, byId, rerender) {
-  const from = activityUndoStarts(items);
+function activityActorRow(items, byId, rerender) {
+  const from = activityActorStarts(items);
   if (!from.size) return null;
   const row = document.createElement("div");
   row.className = "row activity-undo";
@@ -4215,7 +4297,7 @@ function dashTensionRow(tension, onGone) {
       onGone();
     } catch (error) {
       pressed.disabled = false;
-      toast(error.message || "Couldn't save that decision.", true);
+      toast(error.message || voiceLine("failed", { what: "save that decision" }), true);
     }
   };
   actions.append(

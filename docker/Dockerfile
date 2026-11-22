@@ -1,6 +1,6 @@
-# Not built in the sandbox (no Docker daemon); tests/test_docker_files.py reads
-# these files as text. The sizes in ANALYSIS.md come
-# from a venv measured with pip. Build from the repo root:
+# Built and run 2026-11-14 (L924): the default image is 560 MB, runs as mm,
+# answers / and /health on 8000 and writes the notebook to /data.
+# tests/test_docker_files.py reads these files as text. Build from the repo root:
 #   docker build -f docker/Dockerfile -t memorymap .
 #
 # Two variants from one file: the default has no built-in search model (the

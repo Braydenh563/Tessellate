@@ -205,7 +205,8 @@ def test_first_run_surfaces_go_in_a_fixed_order():
     key, console question, update question, one at a time; no overlap but the
     tour's own Settings step."""
     onboarding = frontend_text("onboarding.js")
-    assert 'const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "updates"];' in onboarding
+    #: First run gained the second backup folder slot (L-world-class-101); the order is still fixed.
+    assert 'const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "backup", "updates"];' in onboarding
     assert 'firstRunTurn(showOnboardingTurn, "welcome")' in onboarding
     console_intro = onboarding.split("async function maybeShowConsoleViewIntro()")[1].split("\n}\n")[0]
     assert "await firstRunTurn(() => confirmDialog(" in console_intro and '"console")' in console_intro
@@ -221,3 +222,16 @@ def test_the_welcome_atlas_keeps_its_painted_parts_inside_its_box():
     reaches 4 px past its svg at 390, so its holder pads it by a token."""
     js = frontend_text("onboarding.js")
     assert 'face.style.padding = "var(--space-1)"' in js
+
+
+def test_a_first_run_asks_only_the_welcome_and_the_recovery_offer():
+    """L-world-class-118: the first run queued five surfaces (welcome, recovery
+    key, console, second backup folder, update question) before the dashboard.
+    The three desktop and update questions wait for the next start, where each
+    is asked once as before (their answers are unstored until then)."""
+    onboarding = frontend_text("onboarding.js")
+    assert 'fresh: !prefs.get("onboardingDone", null)' in onboarding
+    console_intro = onboarding.split("async function maybeShowConsoleViewIntro()")[1].split("\n}\n")[0]
+    assert "firstRun.fresh" in console_intro.split("firstRunTurn(")[0]
+    update = frontend_text("update-dialogs.js").split("async function askUpdateChoiceOnce()")[1].split("\n}\n")[0]
+    assert "firstRun.fresh" in update.split('firstRunTurn(ask, "updates")')[0]
