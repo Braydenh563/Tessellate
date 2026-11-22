@@ -274,7 +274,7 @@ Captured from the app in the dark theme at 1440 by 900.
 </p>
 
 <details>
-<summary><b>Nineteen more</b>: Chat with no model connected, the Library and its Activity view, Timeline, Reminders, Documents and focus mode, the page reader, a board, a mind map, the command palette, Tools and features, Settings, Your look, the popup agent, the corner companion, Atlas, light and dark side by side, and a phone</summary>
+<summary><b>Twenty more</b>: Chat with no model connected, the Library and its Activity view, Timeline, Reminders, Documents and focus mode, the page reader, the OCR workspace, a board, a mind map, the command palette, Tools and features, Settings, Your look, the popup agent, the corner companion, Atlas, light and dark side by side, and a phone</summary>
 <br>
 
 <p align="center">
@@ -315,6 +315,11 @@ Captured from the app in the dark theme at 1440 by 900.
 <p align="center">
   <img src="docs/screenshots/reader.png" alt="The page reader open on a three-page scanned PDF: the page images in a rail, page one with the regions Tesseract found outlined, and its reading beside it with a confidence for each region" width="850">
   <br><sub><b>Page reader</b>: a scanned PDF, page by page, with the text read from each page beside it</sub>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ocr.png" alt="The OCR workspace on a scanned invoice: each block of text outlined on the picture, and the recognised text beside it in five numbered regions with a confidence each, Read again, Copy all and Save as note below" width="850">
+  <br><sub><b>OCR workspace</b>: the text Tesseract read from a picture, region by region, ready to correct, copy or save as a note</sub>
 </p>
 
 <p align="center">
