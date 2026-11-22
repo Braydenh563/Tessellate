@@ -472,6 +472,7 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "categories-panel.js:manageCountButton": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "categories-panel.js:manageRecent": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
     "categories-panel.js:manageSorted": "the panel's opener awaits ensureModule(\"tagManager\") (line 29) before it renders a row",
+    "chat-turn.js:commitStagedDocuments": "stand-in installed by lazy-entries.js (installStandIns) for the chatDocs bundle; the call is awaited",
     "chat-turn.js:docSurfaceById": "typeof-guarded with a designed fallback (the textarea's own text) when documents.js has never loaded",
     "chat-turn.js:setAtlasMood": "typeof-guarded cue: a mood is stale a moment later, and there is no face to move before the characters arrive",
     "doc-agent-review.js:currentDoc": "documents.js defines it; tool-consent.js fetches doc-agent-review.js only when an edit_document card names currentDoc, the document documents.js has open, so documents.js has run",

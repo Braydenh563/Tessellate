@@ -1231,6 +1231,9 @@ chatSendTurn.stage = {
         return { done: true };
       }
     }
+    //: Staged files become documents only now, on send (the owner, 2026-11-22). The guard keeps the
+    //: lazy chat-docs bundle unfetched for a message with none.
+    if (!opts.documentIds && attachedDocuments.some((d) => d.file)) await commitStagedDocuments();
 
     // Snapshot the attachments for this message. A regenerate re-uses the same
     // ones; a fresh send clears them, so they don't silently ride along on

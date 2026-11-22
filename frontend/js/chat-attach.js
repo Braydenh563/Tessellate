@@ -175,10 +175,9 @@ async function attachChatFiles(files) {
 //: regenerate: because a person attaching a photo and a spreadsheet in one
 //: go should not find the app treating them as two different kinds of act.
 //:
-//: Unlike an image, removing one of these does *not* delete the document:
-//: `/documents/import` created a real document in the Documents tab and the
-//: toast said so, so deleting it out from under that promise would be the
-//: app taking back something it already told the user it had done.
+//: A file chosen here is staged (`file` set, no `id`) until the message is
+//: sent (`commitStagedDocuments`, chat-docs.js); one attached from the
+//: Documents tab already exists, and removing its chip never deletes it.
 let attachedDocuments = [];
 let lastChatDocumentAttachments = [];
 
@@ -316,15 +315,19 @@ function renderDocumentAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
+    const remove = {
+      removeTitle: `Don't send “${document_.name}” with this message`,
+      onRemove: () => {
+        //: A staged file was never sent to the server (`importChatDocuments`), so dropping it here leaves nothing behind.
+        attachedDocuments = attachedDocuments.filter((d) => d !== document_);
+        renderDocumentAttachments();
+        announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
+      },
+    };
     box.appendChild(
-      notebookCard({ kind: document_.kind || "document", id: document_.id, name: document_.name }, {
-        removeTitle: `Don't send “${document_.name}” with this message`,
-        onRemove: () => {
-          attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
-          renderDocumentAttachments();
-          announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
-        },
-      }),
+      document_.file
+        ? attachmentChip({ name: document_.name, size: document_.file.size, title: `${document_.name}: held here until you send, nothing is saved before that`, ...remove })
+        : notebookCard({ kind: document_.kind || "document", id: document_.id, name: document_.name }, remove),
     );
   }
 }

@@ -354,4 +354,4 @@ warmOnFirst("pointerover", "[type=range]", "vf");
 warmOnFirst("focusin", "[type=range]", "vf");
 //: The gallery and the miniature drawer are fetched when the pointer or focus first reaches the Boards & maps sub-tab, so the press finds them in (INBOX 1772). Not the board code: running 2.3 MB just before the press would delay the first card.
 for (const type of ["pointerover", "focusin"]) for (const bundle of ["boardsGallery", "mapPreview"]) warmOnFirst(type, '#library-subtabs [data-target="library-view-whiteboard"]', bundle);
-installStandIns({ chatDocs: ["importChatDocuments", "keepUnreadableChatFile"] });
+installStandIns({ chatDocs: ["importChatDocuments", "keepUnreadableChatFile", "commitStagedDocuments"] });
