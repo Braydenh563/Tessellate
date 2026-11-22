@@ -32,6 +32,22 @@ const FLOOR = Number(process.env.FLOOR || (WIDTH < 820 ? 44 : 28));
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 140)));
   await page.waitForTimeout(1800);
 
+  // A board of its own when the notebook has none (a fresh CI data dir), as wbtopbar does: the one a fresh
+  // notebook lists is the empty default board (id null), which the gallery keeps off (libraryListsBoard). The
+  // gallery keeps the list it loaded, so the page loads again to have the new one from the start.
+  const made = await page.evaluate(async () => {
+    const list = (await (await api('/whiteboard/boards')).json()).filter((b) => b.id !== null);
+    if (list.length) return false;
+    await api('/whiteboard/boards', { method: 'POST', body: JSON.stringify({ name: 'Topbar 820 sweep' }) });
+    return true;
+  });
+  if (made) {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+    if (await page.isVisible('#lock-password')) { await page.fill('#lock-password', 'testpassword123'); await page.click('#lock-submit'); }
+    await page.waitForFunction(() => typeof switchTab === 'function', null, { timeout: 20000 });
+    await page.waitForTimeout(1800);
+  }
   const opened = await page.evaluate(async () => {
     switchTab('library');
     await new Promise((r) => setTimeout(r, 900));
