@@ -1672,9 +1672,12 @@ button.recording.live-level {
 #meeting-overlay:not(.meeting-into) .meeting-save-into {
   display: none;
 }
+/* A bottom margin of its own, as `.space-dialog label`: with none the 2px focus ring at a 2px offset
+   drew 4px into "What is this recording?" (the owner, 2026-11-22). */
 .meeting-title-label {
   display: block;
   margin-top: var(--space-5);
+  margin-bottom: var(--space-2);
   font-size: var(--text-sm);
   color: var(--muted);
 }
