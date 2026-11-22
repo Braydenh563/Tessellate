@@ -21,7 +21,7 @@ from tessellate.core.deps import get_config, get_session
 from tessellate.entry import sync_extras, sync_keys, sync_link, sync_pull, sync_segments
 
 router = APIRouter(tags=["sync"])
-#: Registered open in `app.ROUTERS`: its own gate takes a session or a sync pass.
+#: Registered open in `app.ROUTER_ROWS`: its own gate takes a session or a sync pass.
 open_router = APIRouter(tags=["sync"])
 
 NO_DEVICE = "Allow this computer in Other devices on the other computer first."

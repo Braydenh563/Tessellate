@@ -30,10 +30,13 @@ def _corpus(docs: bool = True) -> str:
 
 def main() -> None:
     from tessellate.api.app import create_app
+    from tessellate.api.lazy_routes import load_all_routes
 
     corpus = _corpus("--no-docs" not in sys.argv)
     found = []
-    for route in create_app().routes:
+    app = create_app()
+    load_all_routes(app)
+    for route in app.routes:
         path = getattr(route, "path", "")
         if not path.startswith("/") or path.startswith(("/docs", "/openapi", "/redoc")):
             continue
