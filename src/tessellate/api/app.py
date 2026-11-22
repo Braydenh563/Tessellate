@@ -39,6 +39,10 @@ from starlette.middleware.gzip import DEFAULT_EXCLUDED_CONTENT_TYPES, GZipMiddle
 
 from tessellate import __version__
 from tessellate.ai import autonomous, embeddings
+#: The speller's app vocabulary is registered by the help topics, which routes_help
+#: used to bring in at import; with routes loaded lazily (L-world-class-230) the app
+#: loads them itself, about 5 ms, so the first question reads the app's own words.
+from tessellate.ai import help_topics_core  # noqa: F401
 from tessellate.search import searxng_manager
 from tessellate.api import versioning
 from tessellate.api import asset_strip, routes_auth, routes_diag, routes_update
