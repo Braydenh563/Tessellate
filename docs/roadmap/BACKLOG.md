@@ -910,6 +910,9 @@ trusting it).
 ### Board library tiles: the layout left in a board's first note
 Owner lag log 2026-11-22: `#wb-add-note` still lays out 73 SVG tiles. 4x CPU, 3 runs, event/frame median (`scratchpad/lag/probe.js` SCEN=wbnote): as built 376/341 ms (forced 119 to 219); `content-visibility: auto` per tile 560/502 (forced 38 to 65, moved into the frame); thumbnails not drawn at all 480/445. Not drawing them did not shorten the frame, so lazy or raster thumbnails cannot: parked until a quiet-machine trace names the rest.
 
+### Notes sub-tab switch and the dashboard's boot frame: two attempts each, parked
+Owner lag log 2026-11-22, 4x CPU (`scratchpad/lag/probe.js`). Sub-tabs (AB, event/frame median): the fade mark on the arriving panel, not the page, 272/222 to 416/366 (n 3); `content-visibility: auto` on a section's blocks 352/289 to 328/266 (n 4, noise, and its paint containment would clip a section's menus). Dashboard boot, longest frame median (n 4): as built 320 ms; `content-visibility: auto` on the widgets 433; the Atlas animations paused 282, the one gain, which is L-ui-modernisation-201's.
+
 ---
 
 ## 12. Does the AI know it is an agent?
