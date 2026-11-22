@@ -307,6 +307,9 @@ def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]
             break
         if flight.started >= since:  # asked after the download finished: its answer, or what was known
             return flight.result if flight.error is None and flight.result is not None else installed
+    # A runner that refuses the list (OllamaError) has answered too; only an
+    # unexpected error leaves it unanswered, and then a finished pull reads
+    # "running" (bar full, its counts kept) for at most PULL_LIST_RETRY_SECONDS.
     with _installed_lock:
         answered = _installed_known_asked.get(key, float("-inf")) >= since
     if not answered:

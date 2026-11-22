@@ -912,3 +912,18 @@ def test_a_download_is_not_reported_finished_beside_a_list_from_before_it(ai_cli
     assert started.status_code == 200
     body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success", timeout=8.0)
     assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"]), body["installed_models"]
+
+
+def test_a_failing_model_list_does_not_hold_a_finished_download(ai_client, fake_ollama, monkeypatch):
+    """Review of PR 253: a list that errors after the download finished is its answer, so the download is
+    reported as it is, not held at "running" for PULL_LIST_RETRY_SECONDS (10 s, past this wait)."""
+    from tessellate.ai.ollama_client import OllamaError
+
+    def refused():
+        raise OllamaError("refused")
+
+    _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
+    monkeypatch.setattr(fake_ollama, "list_models", refused)
+    started = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert started.status_code == 200
+    _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success", timeout=4.0)
