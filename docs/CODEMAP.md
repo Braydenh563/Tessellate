@@ -5203,16 +5203,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `fileDragHasFiles` | frontend/js/file-drop.js:24 |
-| `fileDropArm` | frontend/js/file-drop.js:104 |
-| `fileDropEnter` | frontend/js/file-drop.js:122 |
-| `fileDropHide` | frontend/js/file-drop.js:63 |
-| `fileDropImport` | frontend/js/file-drop.js:137 |
-| `fileDropLocked` | frontend/js/file-drop.js:28 |
-| `fileDropOver` | frontend/js/file-drop.js:91 |
-| `fileDropShow` | frontend/js/file-drop.js:57 |
-| `fileDropVeil` | frontend/js/file-drop.js:33 |
-| `showLibraryMedia` | frontend/js/file-drop.js:132 |
+| `fileDragHasFiles` | frontend/js/file-drop.js:25 |
+| `fileDropArm` | frontend/js/file-drop.js:105 |
+| `fileDropEnter` | frontend/js/file-drop.js:123 |
+| `fileDropHide` | frontend/js/file-drop.js:64 |
+| `fileDropImport` | frontend/js/file-drop.js:138 |
+| `fileDropLocked` | frontend/js/file-drop.js:29 |
+| `fileDropOver` | frontend/js/file-drop.js:92 |
+| `fileDropShow` | frontend/js/file-drop.js:58 |
+| `fileDropVeil` | frontend/js/file-drop.js:34 |
+| `showLibraryMedia` | frontend/js/file-drop.js:133 |
 
 ### frontend/js/first-run.js (16)
 
@@ -6657,10 +6657,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `notePickExcerpt` | frontend/js/note-pick-preview.js:25 |
-| `notePickText` | frontend/js/note-pick-preview.js:20 |
-| `notePickThumb` | frontend/js/note-pick-preview.js:44 |
-| `richPickerNote` | frontend/js/note-pick-preview.js:69 |
+| `notePickExcerpt` | frontend/js/note-pick-preview.js:26 |
+| `notePickText` | frontend/js/note-pick-preview.js:21 |
+| `notePickThumb` | frontend/js/note-pick-preview.js:45 |
+| `richPickerNote` | frontend/js/note-pick-preview.js:70 |
 
 ### frontend/js/note-properties.js (12)
 
@@ -32136,14 +32136,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4481 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4357 |
-| Needs hardware | docs/roadmap/LEDGER.md:567 |
+| Needs hardware | docs/roadmap/LEDGER.md:566 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1299 |
-| Owner calls | docs/roadmap/LEDGER.md:560 |
+| Owner calls | docs/roadmap/LEDGER.md:559 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4230 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32324,7 +32324,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3155 |
-| Plan session briefs | docs/roadmap/LEDGER.md:693 |
+| Plan session briefs | docs/roadmap/LEDGER.md:692 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2635 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32378,26 +32378,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:709 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:793 |
+| chat | docs/roadmap/LEDGER.md:708 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:792 |
 | documents | docs/roadmap/LEDGER.md:325 |
-| documents | docs/roadmap/LEDGER.md:733 |
-| general | docs/roadmap/LEDGER.md:522 |
-| general | docs/roadmap/LEDGER.md:527 |
+| documents | docs/roadmap/LEDGER.md:732 |
+| general | docs/roadmap/LEDGER.md:521 |
+| general | docs/roadmap/LEDGER.md:526 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:697 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:805 |
+| graph | docs/roadmap/LEDGER.md:696 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:804 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4366 |
 | mindmap | docs/roadmap/LEDGER.md:341 |
-| mindmap | docs/roadmap/LEDGER.md:745 |
+| mindmap | docs/roadmap/LEDGER.md:744 |
 | timeline | docs/roadmap/LEDGER.md:461 |
-| timeline | docs/roadmap/LEDGER.md:769 |
+| timeline | docs/roadmap/LEDGER.md:768 |
 | ui-modernisation | docs/roadmap/LEDGER.md:344 |
-| ui-modernisation | docs/roadmap/LEDGER.md:757 |
+| ui-modernisation | docs/roadmap/LEDGER.md:756 |
 | whiteboard | docs/roadmap/LEDGER.md:280 |
-| whiteboard | docs/roadmap/LEDGER.md:721 |
+| whiteboard | docs/roadmap/LEDGER.md:720 |
 | world-class | docs/roadmap/LEDGER.md:463 |
-| world-class | docs/roadmap/LEDGER.md:781 |
+| world-class | docs/roadmap/LEDGER.md:780 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2805 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2856 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2963 |

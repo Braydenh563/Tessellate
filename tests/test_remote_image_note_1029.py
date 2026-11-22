@@ -16,6 +16,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 
@@ -23,7 +25,7 @@ node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not avai
 
 
 def _decl(path: str, name: str) -> str:
-    text = (JS / path).read_text(encoding="utf-8")
+    text = _js_scope.unwrapped((JS / path).read_text(encoding="utf-8"))
     start = re.search(rf"^function {name}\(", text, re.M).start()
     return text[start : text.index("\n}\n", start) + 2]
 

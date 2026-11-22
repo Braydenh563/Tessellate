@@ -16,8 +16,10 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
-DROP = (ROOT / "frontend/js/file-drop.js").read_text(encoding="utf-8")
+DROP = _js_scope.unwrapped((ROOT / "frontend/js/file-drop.js").read_text(encoding="utf-8"))
 WIRING = (ROOT / "frontend/js/settings-wiring.js").read_text(encoding="utf-8")
 APP = (ROOT / "frontend/js/app.js").read_text(encoding="utf-8")
 
