@@ -586,7 +586,14 @@ const openReminderList = (() => {
     const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
     if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false, open: look?.open };
     //: A month covers the longest early alert (43200 minutes); later ones are not announced yet.
-    const all = await apiJson("/reminders?include_done=false&due_within_days=31", { silent: true }).catch(() => null);
+    //: The first look takes the month from the open-reminders slice (store.js)
+    //: rather than asking for it: the dashboard and the bell read the whole
+    //: open list a moment later and join that read, so boot makes one
+    //: `/reminders` GET, not two (L-world-class-879).
+    const month = Date.now() + 31 * 86400000;
+    const all = cache.all
+      ? await apiJson("/reminders?include_done=false&due_within_days=31", { silent: true }).catch(() => null)
+      : await openReminders().then((rows) => rows.filter((r) => r.due_at && Date.parse(r.due_at) <= month), () => null);
     if (!all) return null;
     //: The stamp was read first, so a change in between leaves the cache looking
     //: older than the list, and the next look fetches again: the safe side.
