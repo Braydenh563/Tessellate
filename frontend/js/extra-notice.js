@@ -201,7 +201,12 @@
       window.dispatchEvent(new CustomEvent("tessellate:extras-changed", { detail: { id } }));
       extraNoticeCheck(host, id, true, needed);
     });
-    host.append(text, install);
+    //: The action and the close are one group, so a row too narrow for them
+    //: beside the words moves both under it at the right, never the close alone.
+    const actions = document.createElement("span");
+    actions.className = "notice-end";
+    actions.append(install);
+    host.append(text, actions);
     const close = document.createElement("button");
     close.type = "button";
     close.className = "ghost small icon-only";
@@ -216,7 +221,7 @@
       host.replaceChildren();
       host.classList.add("hidden");
     });
-    host.append(close);
+    actions.append(close);
   }
 
   //: Puts the notice as the first child of `parent` (one per package there) and

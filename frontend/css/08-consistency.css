@@ -2597,7 +2597,9 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    not a failure, it is an answer with less behind it than usual. */
 .notice {
   display: flex;
-  align-items: flex-start;
+  /* One row, every part on its centre line (the owner 2026-11-22: "the icon
+     and text sit at the top while the button and x sit in the middle"). */
+  align-items: center;
   gap: var(--space-2);
   margin: 0 0 var(--space-3);
   padding: var(--space-2) var(--space-3);
@@ -2614,25 +2616,41 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .notice-warn {
   border-color: var(--warn);
 }
-/* The icon keeps its own line height so a notice that wraps to two lines
-   still has its mark against the first, not floating in the middle. */
 .notice > .ph {
   flex: none;
-  line-height: 1.45;
   color: var(--muted);
+}
+/* The words: whatever is not the icon or a button grows to fill the row, so
+   the action and the close end on the right edge; 6rem is their floor before
+   the buttons wrap under them, so at 360 a package notice with a phone's 44px
+   close still fits one row. */
+.notice > :not(.ph, button, .notice-end) {
+  flex: 1 1 6rem;
+  min-width: 0;
+}
+.notice > button {
+  flex: none;
+}
+.notice > :not(button) + button {
+  margin-inline-start: auto;
+}
+/* The optional-package notice (extra-notice.js) wraps: below the words' floor
+   its action group takes a row of its own, still at the right, so "Open
+   Packages" never runs past its button in a 320px Settings card (L-world-class-36). */
+.extra-notice {
+  flex-wrap: wrap;
+}
+/* A notice's action and close as one group (extra-notice.js): wrapped, they
+   move under the words together and stay at the right. */
+.notice > .notice-end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  margin-inline-start: auto;
 }
 .notice-warn > .ph {
   color: var(--warn);
-}
-/* The optional-package notice (extra-notice.js): its action keeps the width of
-   its label and the row wraps, so "Open Packages" no longer runs 21px past
-   its button in a 320px Settings card (L-world-class-36). */
-.extra-notice {
-  flex-wrap: wrap;
-  align-items: center;
-}
-.extra-notice > button {
-  flex: none;
 }
 /* --- glass reaches the floating chrome that sat outside it ------------------
    Owner, with four screenshots: "some elements dont use the glass styles if

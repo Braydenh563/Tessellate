@@ -279,6 +279,16 @@
   margin-inline-start: 0;
 }
 
+/* A notice's action is not a text action under a sentence: it ends the notice's row
+   at the right (08-consistency.css, `.notice`), which the outdent above undid once the
+   row wrapped at 360 (Open Packages at the left, 205px short of the edge). */
+:root:not([data-contrast="on"]) :is(#settings-modal, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) .notice button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  margin-inline-start: 0;
+}
+:root:not([data-contrast="on"]) :is(#settings-modal, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) .notice > :not(button) + button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  margin-inline-start: auto;
+}
+
 /* A collapsed hint keeps no gap under the title (1610: controls sat 6px low). */
 .setting-label > .setting-hint.is-collapsed {
   margin-top: calc(-1 * var(--space-1));

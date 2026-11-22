@@ -42,7 +42,7 @@ def test_every_registry_package_has_one_short_sentence() -> None:
 
 def test_the_notice_is_the_recipe_and_dismissal_ends_on_a_state_change() -> None:
     assert 'setLabel(host, "ph:package")' in JS
-    order = [JS.index("host.append(text"), JS.index("host.append(close)")]
+    order = [JS.index("host.append(text"), JS.index("actions.append(close)")]
     assert order == sorted(order), "icon, sentence, button, then the close last"
     assert 'close.dataset.dismiss = "notice"' in JS
     assert 'close.className = "ghost small icon-only"' in JS

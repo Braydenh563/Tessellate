@@ -7965,10 +7965,12 @@ def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
 
 
 def test_the_optional_package_notice_keeps_its_action_whole() -> None:
-    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings)."""
+    """L-world-class-36: "Open Packages" ran 21px past its button at 320 and 390 (Settings).
+    The unshrinking action is now the package notice's action group, the install
+    button and the close together (2026-11-22, the close never wraps alone)."""
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
     assert re.search(r"\.extra-notice \{\s*flex-wrap: wrap;", css)
-    assert re.search(r"\.extra-notice > button \{\s*flex: none;", css)
+    assert re.search(r"\.notice > \.notice-end \{[^}]*flex: none;", css)
 
 
 def test_the_more_tags_chip_keeps_its_finger_target_inside_its_box() -> None:

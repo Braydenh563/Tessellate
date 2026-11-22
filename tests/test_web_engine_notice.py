@@ -28,8 +28,9 @@ def _fn(name: str, text: str) -> str:
 def test_the_status_refresh_draws_the_engine_notice_on_every_path():
     panel = (JS / "web-panel.js").read_text(encoding="utf-8")
     refresh = _fn("refreshWebSearxngStrip", panel)
-    # Once where no backend can run it (cleared), once with the state.
-    assert refresh.count("renderWebEngineNotice(") == 2
+    # Defined inside it (no new shared-scope name), then called once where no
+    # backend can run it (cleared) and once with the state.
+    assert refresh.count("renderWebEngineNotice(") == 3
 
 
 def test_the_notice_is_the_notice_recipe_above_the_field_with_the_dots_words():
@@ -41,7 +42,7 @@ def test_the_notice_is_the_notice_recipe_above_the_field_with_the_dots_words():
     # Stopped offers Start; DuckDuckGo and absent draw nothing here.
     assert 'state === "stopped" || state === "starting"' in body
     assert 'provider !== "duckduckgo"' in body
-    assert "setWebSearxngRunning(true)" in body
+    assert 'ensureModule("webClip").then(() => setWebSearxngRunning(true))' in body
 
 
 def test_a_failed_search_is_a_message_then_one_row_of_actions():
