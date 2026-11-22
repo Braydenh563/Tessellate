@@ -181,7 +181,8 @@ def test_the_sidebar_lights_one_row_lists_every_category_and_takes_the_keyboard(
     assert "!draftsOnly && !favouritesOnly" in side
     assert "categoryMeta.keys()" in side
     assert "compareCategoryNames" in side and "].sort()" not in side
-    assert side.count("wireSidebarRowKeys(") >= 3
+    #: The row builders (`addRow` here, `filterRow` and `sheetRow` split out as `drawSidebar.*`) each wire the keys.
+    assert _read("notes-sidebar.js").count("wireSidebarRowKeys(") >= 3
     assert 'setAttribute("aria-current", "true")' in _function(notes, "markSidebarRowCurrent")
     assert "categoryMeta.keys()" in _function(notes, "fillCategoryOptions")
     # The bigger of two same-named categories (two spaces) is the one kept.

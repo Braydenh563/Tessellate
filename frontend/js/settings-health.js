@@ -1,6 +1,55 @@
 // settings-health.js: Settings, About's health block and the sampling rows, moved out of settings.js on 2026-10-12 for the boot gzip budget. Drawn when their pane opens; `LAZY_ENTRY_POINTS.settingsHealth` (app.js) stands in.
 
 (() => {
+  //: The speed budgets (WORLD_CLASS_PLAN decision 54, L603): the times the
+  //: app is held to, beside this notebook's own. The server half is timed
+  //: live over loopback by `/models/bench/budgets?live=true`; the browser
+  //: half the page can read without a test is its own first paint. Built
+  //: here, not in index.html, for the same element cap.
+  function speedRow() {
+    if (document.getElementById("health-speed-run")) return;
+    const after = $("health-selfcheck-run")?.closest(".setting-row");
+    if (!after) return;
+    const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+    const row = make("div", { className: "setting-row setting-row-stack" });
+    const label = make("div", { className: "setting-label" });
+    label.append(make("span", { textContent: "Speed" }), make("small", { className: "muted", textContent: "This notebook against the times the app is held to." }));
+    const control = make("span", { className: "setting-control row" });
+    const run = make("button", { type: "button", id: "health-speed-run", className: "ghost small", textContent: "Check now" });
+    const line = make("span", { id: "health-speed", className: "muted", textContent: "Not checked yet" });
+    const list = make("ul", { id: "health-speed-list", className: "muted health-missing hidden" });
+    control.append(run, line);
+    row.append(label, control, list);
+    after.after(row);
+    run.onclick = async () => {
+      setLabel(run, "ph:spin Checking");
+      try {
+        const { budgets = [] } = await apiJson("/models/bench/budgets?live=true");
+        const items = [];
+        const over = [];
+        const paint = performance.getEntriesByName("first-contentful-paint")[0];
+        const first = budgets.find((budget) => budget.key === "first_paint");
+        if (paint && first) {
+          const ms = Math.round(paint.startTime);
+          if (ms > first.cap_ms) over.push(first.label);
+          items.push(`${first.label}: ${ms} ms on this page, held to ${first.cap_ms} ms${ms > first.cap_ms ? ", over" : ""}`);
+        }
+        for (const budget of budgets) {
+          if (budget.live_ms == null) continue;
+          if (!budget.live_within) over.push(`${budget.label}, server part`);
+          items.push(`${budget.label}, server part: ${budget.live_ms} ms, held to ${budget.server_cap_ms} ms${budget.live_within ? "" : ", over"}`);
+        }
+        list.replaceChildren(...items.map((text) => make("li", { textContent: text })));
+        list.classList.toggle("hidden", !items.length);
+        line.textContent = over.length ? `Over the limit: ${over.join("; ")}.` : "Everything is inside its limit.";
+      } catch (e) {
+        line.textContent = "Not checked";
+        toast(`The speed check could not run: ${e.message}`, true, { action: ["Try again", () => run.click()] });
+      }
+      setLabel(run, "Check now");
+    };
+  }
+
   async function renderHealthBlock() {
     //: Settings, About, Running copies (INBOX 1641): other copies of this app on
     //: this computer, each with Shut down; this copy is named and has none.
@@ -181,54 +230,6 @@
       list.classList.toggle("hidden", !missing.count);
     }
     paintSelfCheck(trust.self_check);
-    //: The speed budgets (WORLD_CLASS_PLAN decision 54, L603): the times the
-    //: app is held to, beside this notebook's own. The server half is timed
-    //: live over loopback by `/models/bench/budgets?live=true`; the browser
-    //: half the page can read without a test is its own first paint. Built
-    //: here, not in index.html, for the same element cap as the row above.
-    function speedRow() {
-      if (document.getElementById("health-speed-run")) return;
-      const after = $("health-selfcheck-run")?.closest(".setting-row");
-      if (!after) return;
-      const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
-      const row = make("div", { className: "setting-row setting-row-stack" });
-      const label = make("div", { className: "setting-label" });
-      label.append(make("span", { textContent: "Speed" }), make("small", { className: "muted", textContent: "This notebook against the times the app is held to." }));
-      const control = make("span", { className: "setting-control row" });
-      const run = make("button", { type: "button", id: "health-speed-run", className: "ghost small", textContent: "Check now" });
-      const line = make("span", { id: "health-speed", className: "muted", textContent: "Not checked yet" });
-      const list = make("ul", { id: "health-speed-list", className: "muted health-missing hidden" });
-      control.append(run, line);
-      row.append(label, control, list);
-      after.after(row);
-      run.onclick = async () => {
-        setLabel(run, "ph:spin Checking");
-        try {
-          const { budgets = [] } = await apiJson("/models/bench/budgets?live=true");
-          const items = [];
-          const over = [];
-          const paint = performance.getEntriesByName("first-contentful-paint")[0];
-          const first = budgets.find((budget) => budget.key === "first_paint");
-          if (paint && first) {
-            const ms = Math.round(paint.startTime);
-            if (ms > first.cap_ms) over.push(first.label);
-            items.push(`${first.label}: ${ms} ms on this page, held to ${first.cap_ms} ms${ms > first.cap_ms ? ", over" : ""}`);
-          }
-          for (const budget of budgets) {
-            if (budget.live_ms == null) continue;
-            if (!budget.live_within) over.push(`${budget.label}, server part`);
-            items.push(`${budget.label}, server part: ${budget.live_ms} ms, held to ${budget.server_cap_ms} ms${budget.live_within ? "" : ", over"}`);
-          }
-          list.replaceChildren(...items.map((text) => make("li", { textContent: text })));
-          list.classList.toggle("hidden", !items.length);
-          line.textContent = over.length ? `Over the limit: ${over.join("; ")}.` : "Everything is inside its limit.";
-        } catch (e) {
-          line.textContent = "Not checked";
-          toast(`The speed check could not run: ${e.message}`, true, { action: ["Try again", () => run.click()] });
-        }
-        setLabel(run, "Check now");
-      };
-    }
     speedRow();
     const run = $("health-selfcheck-run");
     if (run) {
@@ -246,10 +247,8 @@
     jobs.textContent = (running.length ? running.map((job) => job.label).join(", ") : "Nothing running") + asOf;
     const last = trust.last_error || {};
     lastError.textContent = last.at ? `${when(last.at)} · ${last.line}` : `None recorded${asOf}`;
-    // PLAN B9's p50/p95, per task kind. The endpoint carried them from the
-    // start; the block did not draw them (BACKLOG §116.1 item 2). Seconds with
-    // one decimal, because a caption takes 3.2s and a re-index 40s, and "3210
-    // ms" is a number nobody reads at a glance.
+    // PLAN B9's p50/p95, per task kind (BACKLOG §116.1 item 2). Seconds with one
+    // decimal, because a caption takes 3.2s and a re-index 40s, and "3210 ms" is a number nobody reads at a glance.
     //: What the search engine has to work with. Its own route says the Settings
     //: page wants this and the Settings page had never asked; it answers the
     //: question behind every "search did not find my note", which is whether

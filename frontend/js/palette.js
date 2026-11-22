@@ -1400,11 +1400,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
           placeStep(spot);
           drawAnswerPanels(stepsHolder, panels, spot).then(() => spot.remove());
         }
-        //: A browser tool opened or moved a page: the Web panel shows it, as in Chat (L-world-class-629).
-        if (event.ok && /^https?:\/\//.test(event.panel_url || "") && event.tool !== "browser_read") ensureModule("webClip").then(() => { toggleWebPanel(true); openWebReader(event.panel_url); });
+        cmdPaletteAsk.showBrowserPage(event);
         keepAtBottom(cmdPaletteResults);
-        // Something visible while a tool runs, so a long silence reads as
-        // work rather than as nothing happening.
+        // Something visible while a tool runs, so a long silence reads as work.
         //: `setLabel`, not `textContent`. A tool event's label carries this
         //: app's icon token, `ph:books Listed notes (…)`, and `setLabel` is
         //: the one function that turns that into the glyph. Writing it as text
@@ -1570,6 +1568,11 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
     }
   }
 }
+
+//: A browser tool opened or moved a page: the Web panel shows it, as in Chat (L-world-class-629).
+cmdPaletteAsk.showBrowserPage = (event) => {
+  if (event.ok && /^https?:\/\//.test(event.panel_url || "") && event.tool !== "browser_read") ensureModule("webClip").then(() => { toggleWebPanel(true); openWebReader(event.panel_url); });
+};
 
 // The palette's input is a `<textarea>` (see index.html for why), so it has
 // to be told to behave like a command bar rather than a text box: Enter

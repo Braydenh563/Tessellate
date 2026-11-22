@@ -198,10 +198,14 @@ def test_ctrl_slash_has_one_owner_per_surface():
     The editor's keymap commented the line and selected it, then the global
     registry's `editorMenu` wrote "/" over the selection. In a document the
     comment owns the chord; in a note box the blocks menu does."""
-    app = app_js_text()
     #: DX16 (a29j, 132bf47) put Ctrl+K's palette on the same guard; the rule
-    #: for Ctrl+/ is unchanged.
-    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;' in app
+    #: for Ctrl+/ is unchanged. The guard is `typingBurst.skips` in
+    #: settings-wiring.js since the over-cap split (0de63553), where `return
+    #: true` is the loop's `continue`.
+    wiring = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    skips = wiring[wiring.index("typingBurst.skips = (id, e) => {") :][:1200]
+    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) return true;' in skips
+    assert "if (typingBurst.skips(id, e)) continue;" in wiring
     notes = _function("noteSurfaceKeymap")
     # A note binds Ctrl+/ itself now, ahead of the engine's defaultKeymap,
     # whose own comment toggle wrote `<!--  -->` into a markdown note. The
