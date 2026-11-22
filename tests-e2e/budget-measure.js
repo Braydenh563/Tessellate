@@ -206,4 +206,40 @@ async function pinFullFigure(page) {
   });
 }
 
-module.exports = { p50, boot, listPaint, search, boardOpen, documentOpen, tabTaskCpu, mainCpuMs, idleCpuPerSecond, pinFullFigure };
+// The companion's looks and hand-overs (`nameMarkBuddyAfterCleanTask`, avatars.js), in CPU
+// time at 4x: per call, the forced style recalc plus layout inside it (what the app's lag log
+// calls "forced layout"). Tab switches drive the looks. Returns the worst call's forced ms, its
+// whole ms and the most elements one of its recalcs touched.
+async function companionForcedCpu(page, tabs = ["notes", "documents", "library", "dashboard"], rounds = 2) {
+  const cdp = await page.context().newCDPSession(page);
+  const events = [];
+  const onData = (d) => events.push(...d.value);
+  try {
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    cdp.on("Tracing.dataCollected", onData);
+    const done = new Promise((resolve) => cdp.once("Tracing.tracingComplete", resolve));
+    await cdp.send("Tracing.start", { categories: "devtools.timeline,disabled-by-default-devtools.timeline", transferMode: "ReportEvents" });
+    for (let r = 0; r < rounds; r++) for (const tab of tabs) {
+      await page.evaluate((t) => switchTab(t), tab);
+      await page.waitForTimeout(1800);
+    }
+    await cdp.send("Tracing.end");
+    await done;
+  } finally {
+    cdp.off("Tracing.dataCollected", onData);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 }).catch(() => {});
+    await cdp.detach();
+  }
+  const X = events.filter((e) => e.ph === "X");
+  const ms = (e) => (e.tdur || e.dur || 0) / 1000;
+  let worst = { forced: 0, whole: 0, elements: 0, calls: 0 };
+  for (const call of X.filter((e) => e.name === "FunctionCall" && e.args?.data?.functionName === "nameMarkBuddyAfterCleanTask")) {
+    const inner = X.filter((e) => e.pid === call.pid && e.tid === call.tid && e.ts >= call.ts && e.ts < call.ts + call.dur && (e.name === "UpdateLayoutTree" || e.name === "Layout"));
+    const forced = inner.reduce((a, e) => a + ms(e), 0);
+    worst.calls += 1;
+    if (forced > worst.forced) worst = { ...worst, forced: Math.round(forced), whole: Math.round(ms(call)), elements: Math.max(0, ...inner.map((e) => e.args?.elementCount || 0)) };
+  }
+  return worst;
+}
+
+module.exports = { p50, boot, companionForcedCpu, listPaint, search, boardOpen, documentOpen, tabTaskCpu, mainCpuMs, idleCpuPerSecond, pinFullFigure };

@@ -117,9 +117,10 @@ test("companion_idle_cpu: Atlas idle costs at most 120 ms/s of main-thread CPU o
   const idle = async (kind) => {
     await page.evaluate(async (k) => { localStorage.removeItem("nm-buddy-spots"); prefs.set("avatar-buddy", k); await ensureModule("characters"); syncNameMarkBuddy(); }, kind);
     await page.evaluate(() => revealTab("dashboard"));
-    // 3 s to settle and 3 s read, from 6 and 4: the gap is about 480 against 120,
-    // so the shorter read proves the same miss, and still fails loudly the day it passes.
-    await page.waitForTimeout(3000);
+    // 8 s to settle, then 3 s read (L-ui-modernisation-95, the hub's call 2026-11-22): the
+    // budget is idle at rest, and the first 3 s after a build are the build and its
+    // entrance (625 and 465 ms/s in its first two seconds, then 50 to 240), not idle.
+    await page.waitForTimeout(8000);
     return measure.idleCpuPerSecond(browser, page, 3000);
   };
   const runs = [];
