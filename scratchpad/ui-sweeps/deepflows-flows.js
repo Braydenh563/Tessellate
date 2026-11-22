@@ -401,7 +401,9 @@ flows.document = async (env) => {
     await env.wait(900);
     await env.js(() => document.querySelector('#library-subtabs [data-target="library-view-docs"]')?.click());
     await env.wait(1500);
-    await env.page.locator('#library-view-docs').getByText('Trip plan', { exact: true }).first().click();
+    // The row's page thumbnail repeats the title (L-documents-54) under the
+    // open button, so click the button itself.
+    await env.page.locator('#library-view-docs .doc-list-title.card-open').getByText('Trip plan', { exact: true }).first().click();
     //: A phone opens a document to read it; Edit is one press away.
     await env.page.waitForSelector('#doc-back', { state: 'visible', timeout: 8000 });
     await env.wait(1000);
