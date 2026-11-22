@@ -116,6 +116,14 @@ Nothing else needs it. The script downloads only when you ask, no mode of
   and skill counts, the version, the optional packages), and
   `tests/test_readme_freshness.py` fails until the README says the same.
 
+### Dependencies
+
+A new dependency, or an upgrade of one, uses a release at least 30 days old,
+so a compromised or broken release has time to be found before it lands here.
+The one exception is an upgrade that fixes a published security advisory; name
+the advisory in the commit. Its licence must be AGPL-compatible, and it is
+named in `docs/THIRD_PARTY.md` in the same commit.
+
 ## Working with an AI assistant
 
 AI coding tools are welcome here, but this codebase is mature (most obvious
