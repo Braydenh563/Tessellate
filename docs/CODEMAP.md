@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9036, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11066, test files 2899, tests 23200, plan headings 695, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9041, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11066, test files 2899, tests 23200, plan headings 695, app scripts 29, boot scripts 38, script files 402.
 
-## Frontend functions (9036)
+## Frontend functions (9041)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7614,12 +7614,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `runVendorFetch` | frontend/js/run-core.js:35 |
 | `runVendorScript` | frontend/js/run-core.js:53 |
 
-### frontend/js/run-debug.js (23)
+### frontend/js/run-debug.js (28)
 
 | Name | File:line |
 |---|---|
 | `runDebugArguments` | frontend/js/run-debug.js:497 |
+| `runDebugArrow` | frontend/js/run-debug.js:698 |
 | `runDebugAssign` | frontend/js/run-debug.js:207 |
+| `runDebugBinary` | frontend/js/run-debug.js:732 |
 | `runDebugBind` | frontend/js/run-debug.js:97 |
 | `runDebugBlank` | frontend/js/run-debug.js:374 |
 | `runDebugClass` | frontend/js/run-debug.js:519 |
@@ -7628,9 +7630,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `runDebugDeclaration` | frontend/js/run-debug.js:186 |
 | `runDebugEdit` | frontend/js/run-debug.js:57 |
 | `runDebugEnclosing` | frontend/js/run-debug.js:457 |
+| `runDebugForOf` | frontend/js/run-debug.js:773 |
 | `runDebugHead` | frontend/js/run-debug.js:180 |
 | `runDebugKids` | frontend/js/run-debug.js:69 |
-| `runDebugLower` | frontend/js/run-debug.js:659 |
+| `runDebugLower` | frontend/js/run-debug.js:850 |
 | `runDebugMark` | frontend/js/run-debug.js:88 |
 | `runDebugObjectSpread` | frontend/js/run-debug.js:318 |
 | `runDebugParams` | frontend/js/run-debug.js:225 |
@@ -7641,6 +7644,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `runDebugSpreadNew` | frontend/js/run-debug.js:403 |
 | `runDebugSuperCall` | frontend/js/run-debug.js:632 |
 | `runDebugTagged` | frontend/js/run-debug.js:416 |
+| `runDebugTemplate` | frontend/js/run-debug.js:827 |
+| `runDebugYield` | frontend/js/run-debug.js:657 |
 
 ### frontend/js/run-tests.js (3)
 

@@ -653,6 +653,197 @@
     }
   }
 
+  //: Lowers one await or yield node (a part of runDebugLower's visit).
+  function runDebugYield(ctx, ref, depth) {
+    const { source, edits, refuse } = ctx;
+    const name = ref.name;
+    const text = () => source.slice(ref.from, ref.to);
+    const fn = runDebugEnclosing(ref.node);
+    const kids = fn ? runDebugKids(fn) : [];
+    const tag = (n) => kids.some((c) => c.name === n);
+    //: The keyword is deleted after the opening is put in, so another
+    //: construct opening at the same place (`await a ?? b`) stays outside.
+    const open = (at, text, rank) => {
+      runDebugEdit(edits, at, at, text, rank);
+    };
+    if (name === "AwaitExpression") {
+      if (fn && !tag("async")) refuse("await outside an async function", ref.from);
+      if (!fn) ctx.tla = true;
+      open(ref.from, fn && tag("Star") ? "__aw(" : "__yield(", depth);
+      runDebugEdit(edits, ref.from, ref.from + 5, "", 1e6);
+      runDebugEdit(edits, ref.to, ref.to, ")", -depth);
+    } else {
+      if (!tag("Star") || (name === "VariableName" && !fn)) refuse("yield outside a generator", ref.from);
+      if (name === "VariableName") {
+        open(ref.from, "__yield()", depth);
+        runDebugEdit(edits, ref.from, ref.to, "", 1e6);
+      } else {
+        //: The parse tree ends a `yield` at its first operand (`yield a + b`
+        //: is `(yield a) + b` to it); it takes the whole expression.
+        const star = runDebugKids(ref.node).find((c) => c.name === "Star");
+        let top = ref.node;
+        let up = 0;
+        while (top.parent && top.parent.from === top.from && /^(?:BinaryExpression|ConditionalExpression|PostfixExpression|MemberExpression|CallExpression)$/.test(top.parent.name)) {
+          top = top.parent;
+          up += 1;
+        }
+        open(ref.from, star ? (tag("async") ? "__ayieldStar(" : "__yieldStar(") : "__yield(", depth - up - 0.5);
+        runDebugEdit(edits, ref.from, star ? star.to : ref.from + 5, "", 1e6);
+        runDebugEdit(edits, top.to, top.to, ")", -(depth - up - 0.5));
+      }
+    }
+  }
+
+  //: Lowers one arrow function node (a part of runDebugLower's visit).
+  function runDebugArrow(ctx, ref, depth) {
+    const { source, edits, refuse } = ctx;
+    const name = ref.name;
+    const text = () => source.slice(ref.from, ref.to);
+    const kids = [];
+    for (let c = ref.node.firstChild; c; c = c.nextSibling) kids.push(c);
+    const arrow = kids.find((c) => c.name === "Arrow");
+    const params = kids.find((c) => c.name === "ParamList");
+    const co = runDebugCoroutine(ctx, ref.node, depth);
+    const body = kids[kids.length - 1];
+    if (!arrow || !params || !body || body === arrow) refuse("this arrow function", ref.from);
+    //: `x => ...` is a ParamList too, without its brackets.
+    if (params.name === "ParamList" && source[params.from] === "(") {
+      runDebugEdit(edits, params.from, params.from, "function ", depth);
+    } else {
+      runDebugEdit(edits, params.from, params.from, "function (", depth);
+      runDebugEdit(edits, params.to, params.to, ")", -depth);
+    }
+    runDebugEdit(edits, arrow.from, arrow.to, "", 0);
+    let prelude = "";
+    if (body.name !== "Block" && params.name === "ParamList") {
+      ctx.done.add(params.from);
+      prelude = runDebugParams(ctx, params);
+    }
+    const usesThis = /\bthis\b/.test(source.slice(body.from, body.to));
+    if (body.name === "Block") {
+      if (usesThis) runDebugEdit(edits, ref.to, ref.to, ".bind(this)", -depth);
+    } else {
+      runDebugEdit(edits, body.from, body.from, `{ ${prelude ? `${prelude} ` : ""}return ${co ? `${co}(this, function () { return (` : "("}`, depth);
+      runDebugEdit(edits, body.to, body.to, `); }${co ? "); }" : ""}${usesThis ? ".bind(this)" : ""}`, -depth);
+    }
+  }
+
+  //: Lowers one `**` or `??` binary expression node (a part of runDebugLower's visit).
+  function runDebugBinary(ctx, ref, depth) {
+    const { source, edits, refuse } = ctx;
+    const name = ref.name;
+    const text = () => source.slice(ref.from, ref.to);
+    const kids = runDebugKids(ref.node);
+    const op = kids[1];
+    if (op && op.name === "ArithOp" && source.slice(op.from, op.to) === "**" && !ctx.powDone.has(`${ref.from}:${ref.to}`)) {
+      //: The parse tree groups a chain to the left; `**` groups to the
+      //: right (2 ** 3 ** 2 is 2 ** 9), so the whole chain is read flat
+      //: and written as nested Math.pow calls, once, from its outer node.
+      const operands = [];
+      const ops = [];
+      let at = ref.node;
+      for (;;) {
+        const parts = runDebugKids(at);
+        ctx.powDone.add(`${at.from}:${at.to}`);
+        operands.unshift(parts[2]);
+        ops.unshift(parts[1]);
+        const left = parts[0];
+        const lp = left.name === "BinaryExpression" ? runDebugKids(left) : null;
+        if (lp && lp[1] && lp[1].name === "ArithOp" && source.slice(lp[1].from, lp[1].to) === "**") at = left;
+        else {
+          operands.unshift(left);
+          break;
+        }
+      }
+      for (let i = 0; i < ops.length; i++) {
+        runDebugEdit(edits, operands[i].from, operands[i].from, "Math.pow(", depth);
+        runDebugEdit(edits, ops[i].from, ops[i].to, ",", 0);
+      }
+      runDebugEdit(edits, ref.to, ref.to, ")".repeat(ops.length), -depth);
+    }
+    if (op && op.name === "LogicOp" && source.slice(op.from, op.to) === "??") {
+      ctx.needNc = true;
+      runDebugEdit(edits, ref.from, ref.from, "((__nc = ", depth);
+      runDebugEdit(edits, op.from, op.to, ") != null ? __nc : ", 0);
+      runDebugEdit(edits, ref.to, ref.to, ")", -depth);
+    }
+  }
+
+  //: Lowers one for...of spec node (a part of runDebugLower's visit).
+  function runDebugForOf(ctx, ref, depth) {
+    const { source, edits, refuse } = ctx;
+    const name = ref.name;
+    const text = () => source.slice(ref.from, ref.to);
+    const kids = runDebugKids(ref.node);
+    const target = kids.find((c) => c.name === "VariableDefinition");
+    const pattern = kids.find((c) => c.name === "ArrayPattern" || c.name === "ObjectPattern");
+    const of = kids.find((c) => c.name === "of");
+    const iterable = of ? kids[kids.indexOf(of) + 1] : null;
+    const loop = ref.node.parent;
+    const body = loop ? runDebugKids(loop).slice(-1)[0] : null;
+    if ((!target && !pattern) || !iterable || !body || body === ref.node) refuse("this for...of loop", ref.from);
+    ctx.loops += 1;
+    const it = `__it${ctx.loops}`;
+    const r = `__r${ctx.loops}`;
+    let pick = target ? `var ${source.slice(target.from, target.to)} = ${r}.value;` : "";
+    if (pattern) {
+      const b = runDebugBind(ctx, pattern);
+      runDebugMark(ctx, pattern);
+      pick = `var ${[runDebugHead(ctx, b, `${r}.value`), ...b.list].join(", ")};`;
+    }
+    //: `for await` waits for each `next()` (an async generator's, or an array's
+    //: values); the wait is the enclosing body's own (`__aw` in an async generator).
+    const awaitKw = runDebugKids(loop).find((c) => c.name === "await");
+    const fn = runDebugEnclosing(loop);
+    const fnKids = fn ? runDebugKids(fn) : [];
+    if (awaitKw && fn && !fnKids.some((c) => c.name === "async")) refuse("for await outside an async function", awaitKw.from);
+    if (awaitKw && !fn) ctx.tla = true;
+    const wait = fnKids.some((c) => c.name === "Star") ? "__aw" : "__yield";
+    const cl = `__cl${ctx.loops}`;
+    if (awaitKw) runDebugEdit(edits, awaitKw.from, awaitKw.to, "", 0);
+    //: The iterator is closed when the loop ends early (break, return, a throw,
+    //: a `continue` of an outer loop): a `finally` round the whole statement
+    //: (and its labels), so a generator's own `finally` runs.
+    let outer = loop;
+    while (outer.parent?.name === "LabeledStatement") outer = outer.parent;
+    runDebugEdit(edits, outer.from, outer.from, "try { ", depth);
+    runDebugEdit(edits, outer.to, outer.to, awaitKw ? ` } finally { (${cl} = __aclose(${it}, ${r})) && ${wait}(${cl}); }` : ` } finally { __close(${it}, ${r}); }`, -depth + 0.5);
+    if (awaitKw) {
+      runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __aiter(`, 0);
+      runDebugEdit(edits, iterable.to, ref.to, `), ${r}, ${cl}; !(${r} = null, ${r} = ${wait}(${it}.next())).done; )`, 0);
+    } else {
+      runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __iter(`, 0);
+      runDebugEdit(edits, iterable.to, ref.to, `), ${r}; !(${r} = null, ${r} = ${it}.next()).done; )`, 0);
+    }
+    if (body.name === "Block") {
+      runDebugEdit(edits, body.from + 1, body.from + 1, ` ${pick}`, 0);
+    } else {
+      runDebugEdit(edits, body.from, body.from, `{ ${pick} `, depth);
+      runDebugEdit(edits, body.to, body.to, " }", -depth);
+    }
+  }
+
+  //: Lowers one template string node (a part of runDebugLower's visit).
+  function runDebugTemplate(ctx, ref, depth) {
+    const { source, edits, refuse } = ctx;
+    const name = ref.name;
+    const text = () => source.slice(ref.from, ref.to);
+    let at = ref.from + 1;
+    runDebugEdit(edits, ref.from, ref.from + 1, '("', depth);
+    for (let c = ref.node.firstChild; c; c = c.nextSibling) {
+      if (c.name === "Interpolation") {
+        runDebugEdit(edits, at, c.from, runDebugQuote(source.slice(at, c.from)), 0);
+        const start = c.firstChild;
+        const end = c.lastChild;
+        if (start?.name === "InterpolationStart") runDebugEdit(edits, start.from, start.to, '" + (', depth);
+        if (end?.name === "InterpolationEnd") runDebugEdit(edits, end.from, end.to, ') + "', -depth);
+        at = c.to;
+      }
+    }
+    runDebugEdit(edits, at, ref.to - 1, runDebugQuote(source.slice(at, ref.to - 1)), 0);
+    runDebugEdit(edits, ref.to - 1, ref.to, '")', -depth);
+  }
+
   //: Lower `source` for JS-Interpreter. Returns `{ code, dom }` (`dom`: the
   //: script reaches for `document` or `window`); throws an Error with `line`
   //: naming the first construct it cannot lower.
@@ -669,15 +860,12 @@
     const edits = [];
     //: What the pass shares with its helpers: patterns and spreads it lowered,
     //: temporaries, and the line-1 helpers a lowering needs.
-    const ctx = { source, edits, refuse, handled: new Set(), temps: 0, paramNames: 0, fieldIds: 0, assignTemps: [], done: new Set(), argsOf: new Set(), tla: false, blanks };
+    const ctx = { source, edits, refuse, handled: new Set(), temps: 0, paramNames: 0, fieldIds: 0, assignTemps: [], done: new Set(), argsOf: new Set(), tla: false, blanks, powDone: new Set(), needNc: false, loops: 0 };
     let depth = 0;
     let dom = false;
     //: The classes being lowered, innermost last; helpers a lowering needs on
     //: line 1 (`var __nc` for `??`, `__forOf` for `for...of`) and a loop count.
     const classes = [];
-    const powDone = new Set();
-    let needNc = false;
-    let loops = 0;
     tree.iterate({
       enter(ref) {
         depth += 1;
@@ -704,42 +892,7 @@
         if (name === "Number" && /[n_]/i.test(text()) && !/^0x/i.test(text())) refuse("BigInt and numeric separators", ref.from);
         if (name === "VariableName" && /^(?:document|window)$/.test(text())) dom = true;
         if (RUN_DEBUG_FUNCTIONS.has(name) && name !== "ArrowFunction") runDebugCoroutine(ctx, ref.node, depth);
-        if (name === "AwaitExpression" || name === "YieldExpression" || (name === "VariableName" && text() === "yield")) {
-          const fn = runDebugEnclosing(ref.node);
-          const kids = fn ? runDebugKids(fn) : [];
-          const tag = (n) => kids.some((c) => c.name === n);
-          //: The keyword is deleted after the opening is put in, so another
-          //: construct opening at the same place (`await a ?? b`) stays outside.
-          const open = (at, text, rank) => {
-            runDebugEdit(edits, at, at, text, rank);
-          };
-          if (name === "AwaitExpression") {
-            if (fn && !tag("async")) refuse("await outside an async function", ref.from);
-            if (!fn) ctx.tla = true;
-            open(ref.from, fn && tag("Star") ? "__aw(" : "__yield(", depth);
-            runDebugEdit(edits, ref.from, ref.from + 5, "", 1e6);
-            runDebugEdit(edits, ref.to, ref.to, ")", -depth);
-          } else {
-            if (!tag("Star") || (name === "VariableName" && !fn)) refuse("yield outside a generator", ref.from);
-            if (name === "VariableName") {
-              open(ref.from, "__yield()", depth);
-              runDebugEdit(edits, ref.from, ref.to, "", 1e6);
-            } else {
-              //: The parse tree ends a `yield` at its first operand (`yield a + b`
-              //: is `(yield a) + b` to it); it takes the whole expression.
-              const star = runDebugKids(ref.node).find((c) => c.name === "Star");
-              let top = ref.node;
-              let up = 0;
-              while (top.parent && top.parent.from === top.from && /^(?:BinaryExpression|ConditionalExpression|PostfixExpression|MemberExpression|CallExpression)$/.test(top.parent.name)) {
-                top = top.parent;
-                up += 1;
-              }
-              open(ref.from, star ? (tag("async") ? "__ayieldStar(" : "__yieldStar(") : "__yield(", depth - up - 0.5);
-              runDebugEdit(edits, ref.from, star ? star.to : ref.from + 5, "", 1e6);
-              runDebugEdit(edits, top.to, top.to, ")", -(depth - up - 0.5));
-            }
-          }
-        }
+        if (name === "AwaitExpression" || name === "YieldExpression" || (name === "VariableName" && text() === "yield")) runDebugYield(ctx, ref, depth);
         if (name === "VariableName" && text() === "arguments") runDebugArguments(ctx, ref.node);
         if (name === "let" || name === "const") runDebugEdit(edits, ref.from, ref.to, "var", 0);
         if (name === "ParamList" && !ctx.done.has(ref.from)) {
@@ -757,120 +910,9 @@
           if (def && kids.length === 1) runDebugEdit(edits, def.to, def.to, `: ${source.slice(def.from, def.to)}`, 0);
           if (def && kids[1]?.name === "ParamList") runDebugEdit(edits, def.to, def.to, ": function", 0);
         }
-        if (name === "ArrowFunction") {
-          const kids = [];
-          for (let c = ref.node.firstChild; c; c = c.nextSibling) kids.push(c);
-          const arrow = kids.find((c) => c.name === "Arrow");
-          const params = kids.find((c) => c.name === "ParamList");
-          const co = runDebugCoroutine(ctx, ref.node, depth);
-          const body = kids[kids.length - 1];
-          if (!arrow || !params || !body || body === arrow) refuse("this arrow function", ref.from);
-          //: `x => ...` is a ParamList too, without its brackets.
-          if (params.name === "ParamList" && source[params.from] === "(") {
-            runDebugEdit(edits, params.from, params.from, "function ", depth);
-          } else {
-            runDebugEdit(edits, params.from, params.from, "function (", depth);
-            runDebugEdit(edits, params.to, params.to, ")", -depth);
-          }
-          runDebugEdit(edits, arrow.from, arrow.to, "", 0);
-          let prelude = "";
-          if (body.name !== "Block" && params.name === "ParamList") {
-            ctx.done.add(params.from);
-            prelude = runDebugParams(ctx, params);
-          }
-          const usesThis = /\bthis\b/.test(source.slice(body.from, body.to));
-          if (body.name === "Block") {
-            if (usesThis) runDebugEdit(edits, ref.to, ref.to, ".bind(this)", -depth);
-          } else {
-            runDebugEdit(edits, body.from, body.from, `{ ${prelude ? `${prelude} ` : ""}return ${co ? `${co}(this, function () { return (` : "("}`, depth);
-            runDebugEdit(edits, body.to, body.to, `); }${co ? "); }" : ""}${usesThis ? ".bind(this)" : ""}`, -depth);
-          }
-        }
-        if (name === "BinaryExpression") {
-          const kids = runDebugKids(ref.node);
-          const op = kids[1];
-          if (op && op.name === "ArithOp" && source.slice(op.from, op.to) === "**" && !powDone.has(`${ref.from}:${ref.to}`)) {
-            //: The parse tree groups a chain to the left; `**` groups to the
-            //: right (2 ** 3 ** 2 is 2 ** 9), so the whole chain is read flat
-            //: and written as nested Math.pow calls, once, from its outer node.
-            const operands = [];
-            const ops = [];
-            let at = ref.node;
-            for (;;) {
-              const parts = runDebugKids(at);
-              powDone.add(`${at.from}:${at.to}`);
-              operands.unshift(parts[2]);
-              ops.unshift(parts[1]);
-              const left = parts[0];
-              const lp = left.name === "BinaryExpression" ? runDebugKids(left) : null;
-              if (lp && lp[1] && lp[1].name === "ArithOp" && source.slice(lp[1].from, lp[1].to) === "**") at = left;
-              else {
-                operands.unshift(left);
-                break;
-              }
-            }
-            for (let i = 0; i < ops.length; i++) {
-              runDebugEdit(edits, operands[i].from, operands[i].from, "Math.pow(", depth);
-              runDebugEdit(edits, ops[i].from, ops[i].to, ",", 0);
-            }
-            runDebugEdit(edits, ref.to, ref.to, ")".repeat(ops.length), -depth);
-          }
-          if (op && op.name === "LogicOp" && source.slice(op.from, op.to) === "??") {
-            needNc = true;
-            runDebugEdit(edits, ref.from, ref.from, "((__nc = ", depth);
-            runDebugEdit(edits, op.from, op.to, ") != null ? __nc : ", 0);
-            runDebugEdit(edits, ref.to, ref.to, ")", -depth);
-          }
-        }
-        if (name === "ForOfSpec") {
-          const kids = runDebugKids(ref.node);
-          const target = kids.find((c) => c.name === "VariableDefinition");
-          const pattern = kids.find((c) => c.name === "ArrayPattern" || c.name === "ObjectPattern");
-          const of = kids.find((c) => c.name === "of");
-          const iterable = of ? kids[kids.indexOf(of) + 1] : null;
-          const loop = ref.node.parent;
-          const body = loop ? runDebugKids(loop).slice(-1)[0] : null;
-          if ((!target && !pattern) || !iterable || !body || body === ref.node) refuse("this for...of loop", ref.from);
-          loops += 1;
-          const it = `__it${loops}`;
-          const r = `__r${loops}`;
-          let pick = target ? `var ${source.slice(target.from, target.to)} = ${r}.value;` : "";
-          if (pattern) {
-            const b = runDebugBind(ctx, pattern);
-            runDebugMark(ctx, pattern);
-            pick = `var ${[runDebugHead(ctx, b, `${r}.value`), ...b.list].join(", ")};`;
-          }
-          //: `for await` waits for each `next()` (an async generator's, or an array's
-          //: values); the wait is the enclosing body's own (`__aw` in an async generator).
-          const awaitKw = runDebugKids(loop).find((c) => c.name === "await");
-          const fn = runDebugEnclosing(loop);
-          const fnKids = fn ? runDebugKids(fn) : [];
-          if (awaitKw && fn && !fnKids.some((c) => c.name === "async")) refuse("for await outside an async function", awaitKw.from);
-          if (awaitKw && !fn) ctx.tla = true;
-          const wait = fnKids.some((c) => c.name === "Star") ? "__aw" : "__yield";
-          const cl = `__cl${loops}`;
-          if (awaitKw) runDebugEdit(edits, awaitKw.from, awaitKw.to, "", 0);
-          //: The iterator is closed when the loop ends early (break, return, a throw,
-          //: a `continue` of an outer loop): a `finally` round the whole statement
-          //: (and its labels), so a generator's own `finally` runs.
-          let outer = loop;
-          while (outer.parent?.name === "LabeledStatement") outer = outer.parent;
-          runDebugEdit(edits, outer.from, outer.from, "try { ", depth);
-          runDebugEdit(edits, outer.to, outer.to, awaitKw ? ` } finally { (${cl} = __aclose(${it}, ${r})) && ${wait}(${cl}); }` : ` } finally { __close(${it}, ${r}); }`, -depth + 0.5);
-          if (awaitKw) {
-            runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __aiter(`, 0);
-            runDebugEdit(edits, iterable.to, ref.to, `), ${r}, ${cl}; !(${r} = null, ${r} = ${wait}(${it}.next())).done; )`, 0);
-          } else {
-            runDebugEdit(edits, ref.from, iterable.from, `(var ${it} = __iter(`, 0);
-            runDebugEdit(edits, iterable.to, ref.to, `), ${r}; !(${r} = null, ${r} = ${it}.next()).done; )`, 0);
-          }
-          if (body.name === "Block") {
-            runDebugEdit(edits, body.from + 1, body.from + 1, ` ${pick}`, 0);
-          } else {
-            runDebugEdit(edits, body.from, body.from, `{ ${pick} `, depth);
-            runDebugEdit(edits, body.to, body.to, " }", -depth);
-          }
-        }
+        if (name === "ArrowFunction") runDebugArrow(ctx, ref, depth);
+        if (name === "BinaryExpression") runDebugBinary(ctx, ref, depth);
+        if (name === "ForOfSpec") runDebugForOf(ctx, ref, depth);
         if (name === "ClassDeclaration" || name === "ClassExpression") {
           classes.push(runDebugClass(ctx, ref.node, name === "ClassDeclaration"));
         }
@@ -886,29 +928,14 @@
           const parentName = ref.node.parent?.name;
           if (parentName !== "CallExpression") refuse("super property access", ref.from);
         }
-        if (name === "TemplateString" && !ctx.handled.has(ref.from)) {
-          let at = ref.from + 1;
-          runDebugEdit(edits, ref.from, ref.from + 1, '("', depth);
-          for (let c = ref.node.firstChild; c; c = c.nextSibling) {
-            if (c.name === "Interpolation") {
-              runDebugEdit(edits, at, c.from, runDebugQuote(source.slice(at, c.from)), 0);
-              const start = c.firstChild;
-              const end = c.lastChild;
-              if (start?.name === "InterpolationStart") runDebugEdit(edits, start.from, start.to, '" + (', depth);
-              if (end?.name === "InterpolationEnd") runDebugEdit(edits, end.from, end.to, ') + "', -depth);
-              at = c.to;
-            }
-          }
-          runDebugEdit(edits, at, ref.to - 1, runDebugQuote(source.slice(at, ref.to - 1)), 0);
-          runDebugEdit(edits, ref.to - 1, ref.to, '")', -depth);
-        }
+        if (name === "TemplateString" && !ctx.handled.has(ref.from)) runDebugTemplate(ctx, ref, depth);
       },
       leave(ref) {
         depth -= 1;
         if (ref.name === "ClassDeclaration" || ref.name === "ClassExpression") classes.pop();
       },
     });
-    if (needNc) runDebugEdit(edits, 0, 0, "var __nc; ", -1e9);
+    if (ctx.needNc) runDebugEdit(edits, 0, 0, "var __nc; ", -1e9);
     //: A top-level await makes the file the body of a coroutine (its declarations
     //: are then the wrapper's own, shown as the top level's).
     if (ctx.tla) {
