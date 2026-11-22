@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 96 | 108 | 4 | 0 | 17 | 208 |
+| ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 55 | 0 | 69 | 357 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 326 | 353 | 66 | 0 | 122 | 745 |
+| all | 326 | 355 | 66 | 0 | 122 | 747 |
 
 ## graph
 
@@ -95,11 +95,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L382** `ui-modernisation` open, S: Fix help popovers closing at once (exit transition cancelled, 1419). From a30c-1102.md Still open small. Evidence: No fix commit found; menus.js:302 handles only graph exit
 - [ ] **L383** `ui-modernisation` open, S: Replace bespoke #search-help and #capture-help toggles (1123). From a30c-1102.md Still open small. Evidence: reveal-targets.js:265 still clicks #search-help directly
 - [ ] **L384** `ui-modernisation` open, S: Fix Ask head model picker sitting on its own short line at 390. From OPEN.md:835; OPEN.md:3516. Evidence: Pre-existing layout, no fix found; cosmetic
+- [ ] **L385** `ui-modernisation` open, S: Give #chat-results second half a head with actions or drop the panel-head. From OPEN.md:953. Evidence: No change found; index.html:2339 #chat-results head unchanged; no-op until a head wants a control
 - [ ] **L386** `ui-modernisation` open, S: Share one recipe between web link cards in chat/web reader and markdown.js linkCard. From OPEN.md:988. Evidence: markdown.js linkCard still separate; no recipe lint found in test_ui_recipes
 - [ ] **L387** `ui-modernisation` open, S: Fix single focus ring at 1:1 in Chat (button.active outline takes ground colour). From OPEN.md:994. Evidence: Bug recorded from focusring.js; no fix commit found
 - [ ] **L388** `ui-modernisation` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:1952. Evidence: Measured identical on base; no fix
 - [ ] **L389** `ui-modernisation` open, S: Isolate and fix .skill-fact-reads chip dy +4px at 1440. From OPEN.md:3471. Evidence: Instance not isolated; no fix commit found.
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
+- [ ] **L391** `ui-modernisation` open, S: Check and fix the chat dock settings button radius (Brief 91, E19). From SESSION_BRIEFS.md:285. Evidence: E19 not checked; no fix commit found
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
 - [ ] **L393** `ui-modernisation` open, S: Fix phone collapsed row buttons overflowing the right edge by 87.8px. From OPEN.md:744; OPEN.md:3549. Evidence: Measured, unchanged per row; no fix commit found
 - [ ] **L394** `ui-modernisation` open, S: Fix .skill-fact-reads chip 4px vertical offset and rerun badgealign sweep. From OPEN.md:978. Evidence: Selector still in library.js; no fix commit found; badgealign sweep not rerun
