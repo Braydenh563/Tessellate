@@ -205,3 +205,23 @@ def test_the_tail_and_the_rig_frames_stop_while_the_companion_is_held() -> None:
     # The HTML-box loops' once-a-second sync must not play them back mid-scroll.
     sync = LIFE[LIFE.index("box.atlasLoopsOn !== loops") - 200 : LIFE.index("box.atlasLoopsOn !== loops")]
     assert "!atlasTailCalm.scroll.on" in sync
+
+
+def test_nothing_new_starts_on_the_companion_while_the_page_scrolls() -> None:
+    """Traced on a held scroll (a patched setAttribute, animate and setProperty in Playwright): the hold paused the
+    loops it found, but the lower body's idle-variant timer re-posed the boxes and started five new endless flow loops,
+    the saccade stepped the irises, a blink, a micro act (head lag, crest) and a one-off play (the nod, on the SVG
+    head: each frame re-laid out the head's skin, edge, catch and hair paths) all started mid-hold. Each waits now."""
+    motion = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
+    micro = (ROOT / "frontend" / "js" / "atlas-micro.js").read_text(encoding="utf-8")
+    atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
+    # The idle variant waits out the hold and tries again; it never re-poses mid-scroll.
+    nxt = _block(LIFE, "const next = () => {", "};")
+    assert "atlasTailCalm.scroll.on" in nxt and "setTimeout(next" in nxt[nxt.index("atlasTailCalm.scroll.on") :]
+    step = _block(motion, "atlasBlink.saccade.step = ", "atlasBlink.saccade.hold(irises);")
+    assert "atlasRigFrame?.held" in step[: step.index("setProperty")]
+    may = _block(motion, "function atlasBlinkMay(", "\n}\n")
+    assert "atlasRigFrame?.held" in may
+    assert "atlasTailCalm?.scroll.on" in _block(micro, "function atlasMicroMay(", "\n}\n")
+    play = _block(atlas, "function atlasPlay(", "\n}\n")
+    assert "atlasRigFrame?.held" in play and "setTimeout(() => atlasPlay(name, ms)" in play

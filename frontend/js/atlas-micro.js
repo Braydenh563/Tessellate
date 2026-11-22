@@ -92,6 +92,8 @@ function atlasMicroMay(box) {
   //: Not at rest (owner decision Q10): a glance or a tilt on an SVG head is ten to thirty layouts, and two seconds from
   //: the last input the drawn loops stop (`atlasTailCalm.rest`, atlas-life.js); the clock goes on, the next input ends the rest.
   if (globalThis.atlasTailCalm?.rest.on) return false;
+  //: Nor while the page scrolls (`atlasTailCalm.scroll`): a head lag or a crest flick is layouts on every scroll frame.
+  if (globalThis.atlasTailCalm?.scroll.on) return false;
   return true;
 }
 //: Plays `frames` on `el`, in place of whatever else moves that property

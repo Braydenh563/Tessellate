@@ -1650,6 +1650,8 @@
     const next = () => {
       if (!rig.box.isConnected) return;
       if (document.hidden || rig.box.classList.contains("atl-off")) low.timer = setTimeout(next, 4000);
+      //: Nor while the page scrolls under the companion (`atlasTailCalm.scroll`): a new variant started five endless flow loops the hold never paused.
+      else if (buddy && atlasTailCalm.scroll.on) low.timer = setTimeout(next, atlasTailCalm.scroll.quiet);
       else atlasRigLower(rig, performance.now(), atlasMotionOK(rig.box), buddy);
     };
     if (live && atlasRigLower.rests.has(state)) low.timer = setTimeout(next, low.at - now + 10);

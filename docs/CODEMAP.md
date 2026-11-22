@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8509, frontend ids 2792, CSS sections 542, backend routes 714, backend modules 10946, test files 2893, tests 22694, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8509, frontend ids 2792, CSS sections 542, backend routes 714, backend modules 10946, test files 2893, tests 22695, plan headings 689, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8509)
 
@@ -2099,14 +2099,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasMicroCast` | frontend/js/atlas-micro.js:133 |
-| `atlasMicroDo` | frontend/js/atlas-micro.js:219 |
+| `atlasMicroCast` | frontend/js/atlas-micro.js:135 |
+| `atlasMicroDo` | frontend/js/atlas-micro.js:221 |
 | `atlasMicroGap` | frontend/js/atlas-micro.js:47 |
 | `atlasMicroMay` | frontend/js/atlas-micro.js:87 |
 | `atlasMicroPick` | frontend/js/atlas-micro.js:51 |
-| `atlasMicroPlay` | frontend/js/atlas-micro.js:99 |
-| `atlasMicroStart` | frontend/js/atlas-micro.js:313 |
-| `atlasMicroTick` | frontend/js/atlas-micro.js:294 |
+| `atlasMicroPlay` | frontend/js/atlas-micro.js:101 |
+| `atlasMicroStart` | frontend/js/atlas-micro.js:315 |
+| `atlasMicroTick` | frontend/js/atlas-micro.js:296 |
 
 ### frontend/js/atlas-motion.js (18)
 
@@ -2114,22 +2114,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `atlasBlink` | frontend/js/atlas-motion.js:11 |
 | `atlasBlinkMay` | frontend/js/atlas-motion.js:51 |
-| `atlasBlinkStart` | frontend/js/atlas-motion.js:173 |
-| `atlasBlinkTick` | frontend/js/atlas-motion.js:69 |
-| `atlasLowerState` | frontend/js/atlas-motion.js:209 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:238 |
-| `atlasProbeWatch` | frontend/js/atlas-motion.js:287 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:246 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:603 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:338 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:303 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:363 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:383 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:548 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:440 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:454 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:517 |
-| `atlasTossState` | frontend/js/atlas-motion.js:462 |
+| `atlasBlinkStart` | frontend/js/atlas-motion.js:176 |
+| `atlasBlinkTick` | frontend/js/atlas-motion.js:71 |
+| `atlasLowerState` | frontend/js/atlas-motion.js:212 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:241 |
+| `atlasProbeWatch` | frontend/js/atlas-motion.js:290 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:249 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:606 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:341 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:306 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:366 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:386 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:551 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:443 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:457 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:520 |
+| `atlasTossState` | frontend/js/atlas-motion.js:465 |
 
 ### frontend/js/atlas.js (97)
 
@@ -2157,7 +2157,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasDraw` | frontend/js/atlas.js:3472 |
 | `atlasDrawFigure` | frontend/js/atlas.js:3101 |
 | `atlasDressMarks` | frontend/js/atlas.js:3540 |
-| `atlasDrift` | frontend/js/atlas.js:4062 |
+| `atlasDrift` | frontend/js/atlas.js:4068 |
 | `atlasDrop` | frontend/js/atlas.js:1569 |
 | `atlasEars` | frontend/js/atlas.js:1840 |
 | `atlasExtras` | frontend/js/atlas.js:1681 |
@@ -2193,7 +2193,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMirror` | frontend/js/atlas.js:902 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:392 |
 | `atlasNightcap` | frontend/js/atlas.js:1670 |
-| `atlasOn` | frontend/js/atlas.js:4010 |
+| `atlasOn` | frontend/js/atlas.js:4016 |
 | `atlasOrbits` | frontend/js/atlas.js:3310 |
 | `atlasPaw` | frontend/js/atlas.js:915 |
 | `atlasPivot` | frontend/js/atlas.js:166 |
@@ -2215,7 +2215,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:4085 |
+| `atlasStreak` | frontend/js/atlas.js:4091 |
 | `atlasStyle` | frontend/js/atlas.js:3687 |
 | `atlasTail` | frontend/js/atlas.js:1888 |
 | `atlasTailMasks` | frontend/js/atlas.js:2762 |
@@ -2227,10 +2227,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTuneSegs` | frontend/js/atlas.js:1086 |
 | `atlasTuneStyle` | frontend/js/atlas.js:3062 |
 | `atlasTurnAbout` | frontend/js/atlas.js:1001 |
-| `atlasWake` | frontend/js/atlas.js:4118 |
+| `atlasWake` | frontend/js/atlas.js:4124 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3621 |
 | `atlasWhenShown` | frontend/js/atlas.js:3566 |
-| `charactersArrived` | frontend/js/atlas.js:4215 |
+| `charactersArrived` | frontend/js/atlas.js:4221 |
 | `setAtlasMood` | frontend/js/atlas.js:3911 |
 
 ### frontend/js/attach-to.js (4)
@@ -28176,7 +28176,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22694)
+## Tests (22695)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28304,7 +28304,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_rig_undefined_0_1111.py | 3 |
 | tests/test_atlas_saccade_1109.py | 4 |
-| tests/test_atlas_scroll_hold_202.py | 8 |
+| tests/test_atlas_scroll_hold_202.py | 9 |
 | tests/test_atlas_shape.py | 51 |
 | tests/test_atlas_sleep_z.py | 2 |
 | tests/test_atlas_stars.py | 7 |

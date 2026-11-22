@@ -3995,6 +3995,12 @@ function atlasPlay(name, ms = 900) {
   const cls = `atl-play-${name}`;
   for (const svg of marks) svg.classList.remove(cls);
   if (!marks.length || document.hidden) return;
+  //: Not while the page scrolls under the companion (`atlasRigFrame.held`, atlas-motion.js): a nod on the SVG head re-laid
+  //: out its skin, edge and hair paths on every scroll frame; it plays once the hold has ended.
+  if (globalThis.atlasRigFrame?.held && marks.some((svg) => svg.closest("#nm-buddy"))) {
+    setTimeout(() => atlasPlay(name, ms), 250);
+    return;
+  }
   const turns = (atlasPlay.turns ||= {});
   const turn = (turns[name] = (turns[name] || 0) + 1);
   afterFrames(() => {

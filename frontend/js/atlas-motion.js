@@ -56,6 +56,8 @@ function atlasBlinkMay(box) {
   const lids = box.querySelector(".atl-layer-lids:not(.atl-layer-lidf)");
   const buddy = box.closest("#nm-buddy");
   if (!lids || box.querySelector(".atl-blinking, .atl-blinking-slow") || box.hasAttribute("data-atl-moving") || buddy?.classList.contains("nmb-act-hide")) return false;
+  //: Not while the page scrolls under the companion (`atlasRigFrame.held`): the lids are SVG layers, a blink is main-thread frames.
+  if (buddy && globalThis.atlasRigFrame?.held) return false;
   //: Not behind a modal (INBOX 1587): unseen, and the read below settled the
   //: open overlay (237ms at 4x CPU with Settings open).
   if (buddy && nameMarkBuddyBehindCover()) return false;
@@ -120,7 +122,8 @@ atlasBlink.saccade.step = (r = [Math.random(), Math.random()]) => {
   //: And not at rest: the held look is kept, the irises stop stepping until the next input (`atlasTailCalm.rest`).
   if (globalThis.atlasTailCalm?.rest.on) return false;
   const box = buddy.querySelector(".atl-figure-box");
-  if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging")) return true;
+  //: Held while the page scrolls (`atlasRigFrame.held`): the gaze keeps its look, the next step comes after.
+  if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging") || globalThis.atlasRigFrame?.held) return true;
   const ex = (nmb.ex || 0) + (r[0] - 0.5) * 0.5;
   const ey = (nmb.ey || 0) + (r[1] - 0.5) * 0.36;
   const irises = buddy.querySelectorAll(".nm-atlas .atl-iris");
