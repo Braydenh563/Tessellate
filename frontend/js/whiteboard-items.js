@@ -611,24 +611,21 @@
   function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     wbScheduleStickyDates();
 
-    // Shared by both `objDrag` (bound to the whole `.wb-object`) and
-    // `gripDrag` (bound only to `.wb-object-grip`, see below): `this` is
-    // whichever element the gesture actually started on, so every DOM write
-    // goes through `this.closest(".wb-object")` rather than `this` directly,
-    // the same convention `resizeDrag`'s own "drag" handler already uses.
+    // Shared by both `objDrag` (bound to the whole `.wb-object`) and `gripDrag` (bound only to `.wb-object-grip`, see
+    // below): `this` is whichever element the gesture actually started on, so every DOM write goes through
+    // `this.closest(".wb-object")` rather than `this` directly, the same convention `resizeDrag`'s own "drag" handler
+    // already uses.
     function objDragStart(event, d) {
       if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
       // A link tool on a text box starts a *link* from it, through the same
       // three handlers the cards use, see `wbLinkItem`.
       if (window.currentTool?.startsWith("link-")) { d._linkKind = "object"; return dragStart.call(this, event, d); }
       d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
-      // A map node's tree edges are not sketches (see `wbMapEdgesFor`), so the
-      // line above finds none of them: collected here for the same reason and
-      // at the same moment.
+      // A map node's tree edges are not sketches (see `wbMapEdgesFor`), so the line above finds none of them: collected
+      // here for the same reason and at the same moment.
       d._mapEdges = wbMapEdgesFor(d.id);
-      //: The canvas box for the whole gesture, measured at the press before any
-      //: move has written: the drop target, the cull and the edge pan read it
-      //: after a step's writes, where a fresh measure forces a restyle.
+      //: The canvas box for the whole gesture, measured at the press before any move has written: the drop target, the
+      //: cull and the edge pan read it after a step's writes, where a fresh measure forces a restyle.
       wbCanvasOrigin();
       // `.raise()` deliberately does NOT happen here, moved to objDragMove.
       // See the matching comment on the card drag's own `dragging` for the
@@ -646,9 +643,8 @@
       d._moveUndoBefore = WB_KIND_INFO.object.payload(d);
       d._altCopy = Boolean(event.sourceEvent?.altKey);
       d._gesture = wbBeginGesture(() => wbRestoreMove("object", d), true);
-      // Bulk-move detection deliberately waits for the first real
-      // "drag" frame below, not decided here, see the matching comment on
-      // the sketch drag's own "start" for the click-toggle bug that caused.
+      // Bulk-move detection deliberately waits for the first real "drag" frame below, not decided here, see the
+      // matching comment on the sketch drag's own "start" for the click-toggle bug that caused.
     }
     function objDragMove(event, d) {
       if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
@@ -669,19 +665,17 @@
           : wbMapBranchDragOrigin(d, d._dragAlone) || wbFrameDragOrigin(d, d._dragAlone);
         if (d._bulkOrigin?.branchOf === d.id) wbMapDragLayer.open(d._bulkOrigin, d, this.closest(".wb-object"));
       }
-      //: Once per gesture, not once per move: the card drag beside this one
-      //: took the same fix (INBOX 114, and see its own comment). `raise()`
-      //: reappends the element even when it is already last, and a DOM move
-      //: invalidates layout, so every frame's first `getBoundingClientRect`
-      //: (the drop target's, below) paid for a full re-layout of the board.
+      //: Once per gesture, not once per move: the card drag beside this one took the same fix (INBOX 114, and see its
+      //: own comment). `raise()` reappends the element even when it is already last, and a DOM move invalidates layout,
+      //: so every frame's first `getBoundingClientRect` (the drop target's, below) paid for a full re-layout of the
+      //: board.
       if (!d._raised) {
         d3.select(this.closest(".wb-object")).raise();
         d._raised = true;
       }
-      // d3.drag's dx/dy are raw screen pixels, not board-space, the
-      // resize handles below already divide by the zoom scale for exactly
-      // this reason; a plain drag has to as well, or a card/object moves
-      // faster than the cursor when zoomed out and slower when zoomed in.
+      // d3.drag's dx/dy are raw screen pixels, not board-space, the resize handles below already divide by the zoom
+      // scale for exactly this reason; a plain drag has to as well, or a card/object moves faster than the cursor when
+      // zoomed out and slower when zoomed in.
       const transform = d3.zoomTransform(wbInstances.container());
       d._rawX = (d._rawX ?? d.x) + step.dx / transform.k;
       d._rawY = (d._rawY ?? d.y) + step.dy / transform.k;
@@ -701,14 +695,12 @@
       const lock = wbAxisLock(d._rawX - d._dragOriginX, d._rawY - d._dragOriginY, event.sourceEvent?.shiftKey);
       d.x = d._dragOriginX + (lock === "y" ? 0 : wbSnap(d._rawX - d._dragOriginX, bypassSnap));
       d.y = d._dragOriginY + (lock === "x" ? 0 : wbSnap(d._rawY - d._dragOriginY, bypassSnap));
-      // Smart alignment guides: asked for directly ("draw.io and Microsoft
-      // PowerPoint have... dotted alignment rule guides"). Same Alt bypass as
-      // grid-snap just above: holding it means "no snap assistance at all
-      // for this drag", one concept, not two separate modifier keys to learn.
+      // Smart alignment guides: asked for directly ("draw.io and Microsoft PowerPoint have... dotted alignment rule
+      // guides"). Same Alt bypass as grid-snap just above: holding it means "no snap assistance at all for this drag",
+      // one concept, not two separate modifier keys to learn.
       if (!bypassSnap) {
-        //: The group's own box when several things are moving, the item's when
-        //: one is. Either way the delta lands on `d`, and `wbApplyBulkMove`
-        //: below carries the rest of the selection by the same amount.
+        //: The group's own box when several things are moving, the item's when one is. Either way the delta lands on
+        //: `d`, and `wbApplyBulkMove` below carries the rest of the selection by the same amount.
         const group = wbBulkGroupBox(d, "object");
         const own = wbRotatedBounds(d.x, d.y, d.width, d.height, wbItemRotation("object", d));
         const { dx, dy, guideLines } = wbAlignmentGuides(

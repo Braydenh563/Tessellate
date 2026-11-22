@@ -75,7 +75,8 @@ const { boot } = require('./lib.js');
   }
   await page.waitForTimeout(400);
   const mid = await page.evaluate(() => {
-    const g = document.getElementById('wb-align-guides');
+    // A class on the open board's overlay group now (L-whiteboard-73: an embed's guides are a group of their own).
+    const g = document.querySelector('.wb-align-guides');
     const lines = [...(g?.querySelectorAll('line') || [])].map((l) => ({
       x1: Math.round(+l.getAttribute('x1')), y1: Math.round(+l.getAttribute('y1')),
       x2: Math.round(+l.getAttribute('x2')), y2: Math.round(+l.getAttribute('y2')),
@@ -148,7 +149,7 @@ const { boot } = require('./lib.js');
     }
     await page.waitForTimeout(400);
     const read = await page.evaluate((id) => ({
-      lines: [...(document.getElementById('wb-align-guides')?.querySelectorAll('line') || [])].length,
+      lines: [...(document.querySelector('.wb-align-guides')?.querySelectorAll('line') || [])].length,
       d: document.querySelector(`.sketch-group[data-id="${id}"] .sketch-path`)?.getAttribute('d') || '',
     }), sketchCase.id);
     sketchLines = read.lines;

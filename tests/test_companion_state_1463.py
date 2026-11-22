@@ -88,8 +88,9 @@ def test_the_click_that_ends_a_long_press_does_not_press_the_menu_it_opened() ->
     the lift landed on its first row, which ran and closed it (a held touch in
     companionmenu.js, 1280x800 at 1.5)."""
     src = AV[AV.index("let hold = 0;") : AV.index("//: The one-place and four-corner choices")]
-    assert "nmb.menu?.contains(event.target)" in src
-    assert 'document.addEventListener("click", swallow, { capture: true, once: true })' in src
+    # The swallow is its own function since the build's size seed (test_js_function_size).
+    assert "nmb.menu?.contains(event.target)" in _fn("nmbSwallowMenuClick")
+    assert 'document.addEventListener("click", nmbSwallowMenuClick, { capture: true, once: true })' in src
     assert "setTimeout(() => document.removeEventListener" in src
 
 

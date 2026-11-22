@@ -331,10 +331,9 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
   surfaceBuild("settings");
-  //: **The window's own listeners arrive before the window does** (the gzip
-  //: budget, settings-controls.js). Only the first open waits, and only for
-  //: that file: once its marker constant exists this stays synchronous, so a
-  //: caller that reads the window straight after the call still finds it open.
+  //: **The window's own listeners arrive before the window does** (the gzip budget, settings-controls.js). Only the
+  //: first open waits, and only for that file: once its marker constant exists this stays synchronous, so a caller that
+  //: reads the window straight after the call still finds it open.
   if (typeof SETTINGS_CONTROLS_READY === "undefined") {
     await ensureModule("settingsControls");
   }
@@ -359,15 +358,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
   const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
   $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
-  //: The running build (L-general-6): which commit, since when, and whether the notebook folder takes writes.
-  //: Local, not a top-level function: the shared scope only shrinks (test_global_scope_ratchet).
-  const aboutBuildLine = (h) => {
-    const commit = h.source_commit ? `Build ${h.source_commit.slice(0, 10)}` : "Build not stamped";
-    const since = whenText(h.started_at);
-    const folder = h.data_dir_writable ? "the notebook folder takes writes" : "the notebook folder is read-only, so nothing new can be saved";
-    return `${commit}, running since ${since}, notebook ${h.data_dir_id}; ${folder}.`;
-  };
-  $("about-build").textContent = aboutHealth?.started_at ? aboutBuildLine(aboutHealth) : "";
+  $("about-build").textContent = aboutHealth?.started_at ? openSettingsModal.buildLine(aboutHealth) : "";
   //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
   afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
@@ -521,6 +512,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     });
   }
 }
+
+//: The running build (L-general-6): which commit, since when, and whether the notebook folder takes writes.
+//: On `openSettingsModal`, not a top-level name: the shared scope only shrinks (test_global_scope_ratchet).
+openSettingsModal.buildLine = (h) => {
+  const commit = h.source_commit ? `Build ${h.source_commit.slice(0, 10)}` : "Build not stamped";
+  const since = whenText(h.started_at);
+  const folder = h.data_dir_writable ? "the notebook folder takes writes" : "the notebook folder is read-only, so nothing new can be saved";
+  return `${commit}, running since ${since}, notebook ${h.data_dir_id}; ${folder}.`;
+};
 
 // CHANGELOG.md, rendered in Settings, About (§36E). Loaded once per session
 // and only when the settings panel is opened, it is several thousand words

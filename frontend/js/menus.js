@@ -1386,9 +1386,7 @@ function buildMenuGroupButton(label, subItems) {
   let openedByHoverAt = 0;
   const groupWrap = document.createElement("div");
   groupWrap.className = "menu-group";
-  //: ARIA allows no wrapper in a menu.
-  groupWrap.setAttribute("role", "none");
-
+  groupWrap.setAttribute("role", "none"); //: ARIA allows no wrapper in a menu.
   const trigger = document.createElement("button");
   trigger.setAttribute("role", "menuitem");
   trigger.setAttribute("aria-haspopup", "menu");

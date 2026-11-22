@@ -9609,8 +9609,8 @@
     if (!entry) return;
     const row = document.querySelector(`.note-page-list li[data-id="${CSS.escape(String(id))}"], li[data-id="${CSS.escape(String(id))}"]`);
     if (entry.is_private) nameMarkBuddyReact("private", row);
-    //: A list row holds the first 300 characters (`content_truncated`), so its length says nothing: the server's word count does (about six characters a word).
-    else if ((entry.content_truncated ? (entry.word_count || 0) * 6 : String(entry.content || "").length) > 1200) nameMarkBuddyReact("read", row);
+    //: The list carries a long note cut short (`content_truncated`, 297 characters), so its length is not the note's.
+    else if (entry.content_truncated || String(entry.content || "").length > 1200) nameMarkBuddyReact("read", row);
   }
   function nameMarkBuddyNoteOpen(id) {
     const inSet = (set) => set && (set.has(id) || set.has(Number(id)) || set.has(String(id)));
@@ -10865,12 +10865,20 @@
 
   //: Whether it is out (chosen in Appearance, or still on the page): `nameMarkBuddyShowing`, lazy-entries.js.
 
+  //: A long press opens the menu under the finger, and the click that comes with the lift would land on its first row
+  //: (run, then closed). That one click is swallowed, for a moment after the lift (`nameMarkBuddyBuild`).
+  function nmbSwallowMenuClick(event) {
+    if (nmb.menu?.contains(event.target)) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
   function nameMarkBuddyBuild() {
     const buddy = document.createElement("div");
     buddy.id = "nm-buddy";
-    //: Hidden from its first style on: its size is measured below, which
-    //: computes its style, and a class added after that faded it out from
-    //: where it was built (the window's corner) rather than never drawing it.
+    //: Hidden from its first style on: its size is measured below, which computes its style, and a class added after
+    //: that faded it out from where it was built (the window's corner) rather than never drawing it.
     buddy.classList.add("nmb-away");
     const face = document.createElement("button");
     face.type = "button";
@@ -10891,13 +10899,11 @@
       z.textContent = "z";
       sleep.appendChild(z);
     }
-    //: The figure itself (`characterFor(seed).figure()`) goes in first, when
-    //: `syncNameMarkBuddy` knows whose it is.
+    //: The figure itself (`characterFor(seed).figure()`) goes in first, when `syncNameMarkBuddy` knows whose it is.
     char.append(think, sleep);
     face.appendChild(char);
-    //: **Its little emotes** (the owner: "should there be more emotes like
-    //: zzzz coming off it for sleeping"): a question mark, a sparkle, a sweat
-    //: drop by its head, each played once by `nameMarkBuddyEmote`.
+    //: **Its little emotes** (the owner: "should there be more emotes like zzzz coming off it for sleeping"): a
+    //: question mark, a sparkle, a sweat drop by its head, each played once by `nameMarkBuddyEmote`.
     const emote = document.createElement("span");
     emote.className = "nmb-emote";
     emote.setAttribute("aria-hidden", "true");
@@ -10975,8 +10981,7 @@
         grip.removeEventListener("pointerup", end);
         grip.removeEventListener("pointercancel", end);
         buddy.classList.remove("nmb-sizing");
-        //: A press that never pulled leaves the size as it was (it may be
-        //: the first of a double).
+        //: A press that never pulled leaves the size as it was (it may be the first of a double).
         if (press.moved) nameMarkBuddySetSize(nmb.scale, true);
       };
       grip.addEventListener("pointermove", move);
@@ -11022,10 +11027,9 @@
       nmb.seenObserver.observe(buddy);
     }
 
-    //: **A smooth drag** (the owner: "dragging the corner companion is jerky
-    //: and kinda like a grid snap"): a `translate` applied once a frame from
-    //: the latest pointer, held by its hands with its legs kicking, and the
-    //: place written back once, on release, where it lands.
+    //: **A smooth drag** (the owner: "dragging the corner companion is jerky and kinda like a grid snap"): a
+    //: `translate` applied once a frame from the latest pointer, held by its hands with its legs kicking, and the place
+    //: written back once, on release, where it lands.
     let drag = null;
     let dragFrame = 0;
     const follow = () => {
@@ -11067,10 +11071,9 @@
       if (!drag) return;
       drag.x = event.clientX;
       drag.y = event.clientY;
-      //: The pull's last moves, for the speed it is let go at.
-      //: The input's own time, not when this ran: on a busy main thread the
-      //: handler runs late, and a late stamp read the pull as having stopped
-      //: (a throw let go at speed came down as a plain drop at 4x CPU).
+      //: The pull's last moves, for the speed it is let go at. The input's own time, not when this ran: on a busy main
+      //: thread the handler runs late, and a late stamp read the pull as having stopped (a throw let go at speed came
+      //: down as a plain drop at 4x CPU).
       const t = event.timeStamp;
       (drag.samples ||= []).push([event.clientX, event.clientY, t]);
       while (drag.samples.length > 2 && t - drag.samples[0][2] > 160) drag.samples.shift();
@@ -11092,8 +11095,7 @@
         drag.box = { left: box.left, top: box.top, right: box.left + box.width, bottom: box.top + box.height, width: box.width, height: box.height };
         drag.sx = drag.x;
         drag.sy = drag.y;
-        //: Carried in the window, not in a scroll area: where it lands
-        //: decides what it rides next.
+        //: Carried in the window, not in a scroll area: where it lands decides what it rides next.
         nameMarkBuddyRide(null);
         nameMarkBuddyAloft.rest(false);
         nameMarkBuddyAct("");
@@ -11422,22 +11424,14 @@
         held = true;
       }, 550);
     });
-    //: The menu opens under the finger, and the click that comes with the lift would land on its first row
-    //: (run, then closed). That one click is swallowed, for a moment after the lift.
     let held = false;
-    const swallow = (event) => {
-      if (nmb.menu?.contains(event.target)) {
-        event.stopPropagation();
-        event.preventDefault();
-      }
-    };
     for (const type of ["pointerup", "pointercancel", "pointermove"]) {
       face.addEventListener(type, () => {
         if (type !== "pointermove" || (drag && drag.moved)) clearTimeout(hold);
         if (type === "pointerup" && held) {
           held = false;
-          document.addEventListener("click", swallow, { capture: true, once: true });
-          setTimeout(() => document.removeEventListener("click", swallow, true), 600);
+          document.addEventListener("click", nmbSwallowMenuClick, { capture: true, once: true });
+          setTimeout(() => document.removeEventListener("click", nmbSwallowMenuClick, true), 600);
         }
       });
     }

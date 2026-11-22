@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9057, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11088, test files 2922, tests 23310, plan headings 695, app scripts 29, boot scripts 38, script files 403.
+Counts: frontend functions 9058, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11088, test files 2922, tests 23310, plan headings 695, app scripts 29, boot scripts 38, script files 403.
 
-## Frontend functions (9057)
+## Frontend functions (9058)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -170,8 +170,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `escapeMenuToBody` | frontend/js/menus.js:754 |
 | `fitActionMenuInWindow` | frontend/js/menus.js:512 |
 | `focusMenuItem` | frontend/js/menus.js:645 |
-| `historyActorLabel` | frontend/js/menus.js:1570 |
-| `isEditConflict` | frontend/js/menus.js:1565 |
+| `historyActorLabel` | frontend/js/menus.js:1568 |
+| `isEditConflict` | frontend/js/menus.js:1563 |
 | `menuClippingAncestor` | frontend/js/menus.js:659 |
 | `menuExitMs` | frontend/js/menus.js:791 |
 | `menuSidePlan` | frontend/js/menus.js:490 |
@@ -2279,7 +2279,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autocorrectSurface` | frontend/js/autocorrect.js:329 |
 | `autocorrectUndo` | frontend/js/autocorrect.js:162 |
 
-### frontend/js/avatars.js (263)
+### frontend/js/avatars.js (264)
 
 | Name | File:line |
 |---|---|
@@ -2312,7 +2312,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyBlend` | frontend/js/avatars.js:10021 |
 | `nameMarkBuddyBody` | frontend/js/avatars.js:3871 |
 | `nameMarkBuddyBoredom` | frontend/js/avatars.js:10148 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:10868 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:10877 |
 | `nameMarkBuddyBurst` | frontend/js/avatars.js:7388 |
 | `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9976 |
 | `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6336 |
@@ -2367,7 +2367,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyHalt` | frontend/js/avatars.js:8926 |
 | `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8875 |
 | `nameMarkBuddyHeadAt` | frontend/js/avatars.js:10293 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11580 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11574 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:4410 |
 | `nameMarkBuddyHold` | frontend/js/avatars.js:9412 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:7079 |
@@ -2404,7 +2404,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9615 |
 | `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9607 |
 | `nameMarkBuddyNotice` | frontend/js/avatars.js:10324 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:11457 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11451 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3979 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6352 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:4366 |
@@ -2537,6 +2537,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nmLineFor` | frontend/js/avatars.js:1707 |
 | `nmLuma` | frontend/js/avatars.js:1711 |
 | `nmMix` | frontend/js/avatars.js:1698 |
+| `nmbSwallowMenuClick` | frontend/js/avatars.js:10870 |
 | `nmbTick` | frontend/js/avatars.js:7604 |
 | `nmbTickArm` | frontend/js/avatars.js:7583 |
 | `ownNameMarkStyle` | frontend/js/avatars.js:328 |
@@ -2544,7 +2545,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7751 |
 | `registerCharacter` | frontend/js/avatars.js:1219 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:295 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:11468 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11462 |
 | `watchNameMark` | frontend/js/avatars.js:1106 |
 
 ### frontend/js/batch-space.js (8)
@@ -5339,36 +5340,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmApplySpellcheck` | frontend/js/documents-view.js:492 |
-| `docCmChanged` | frontend/js/documents-view.js:882 |
-| `docCmDrawFor` | frontend/js/documents-view.js:795 |
-| `docCmExtensions` | frontend/js/documents-view.js:352 |
-| `docCmGutter` | frontend/js/documents-view.js:918 |
+| `docCmApplySpellcheck` | frontend/js/documents-view.js:494 |
+| `docCmChanged` | frontend/js/documents-view.js:884 |
+| `docCmDrawFor` | frontend/js/documents-view.js:797 |
+| `docCmExtensions` | frontend/js/documents-view.js:354 |
+| `docCmGutter` | frontend/js/documents-view.js:920 |
 | `docCmKeymap` | frontend/js/documents-view.js:184 |
-| `docCmLanguageEffects` | frontend/js/documents-view.js:889 |
-| `docCmRepaintFindings` | frontend/js/documents-view.js:668 |
-| `docCmSpellcheck` | frontend/js/documents-view.js:481 |
-| `docCmSyncFileType` | frontend/js/documents-view.js:828 |
-| `docCmSyncGutter` | frontend/js/documents-view.js:904 |
-| `docCmSyncLanguage` | frontend/js/documents-view.js:863 |
-| `docCmUpdate` | frontend/js/documents-view.js:504 |
-| `docCmViewLanguage` | frontend/js/documents-view.js:853 |
-| `docFenceGutterOn` | frontend/js/documents-view.js:900 |
-| `docFindingsPlugin` | frontend/js/documents-view.js:610 |
-| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:761 |
+| `docCmLanguageEffects` | frontend/js/documents-view.js:891 |
+| `docCmRepaintFindings` | frontend/js/documents-view.js:670 |
+| `docCmSpellcheck` | frontend/js/documents-view.js:483 |
+| `docCmSyncFileType` | frontend/js/documents-view.js:830 |
+| `docCmSyncGutter` | frontend/js/documents-view.js:906 |
+| `docCmSyncLanguage` | frontend/js/documents-view.js:865 |
+| `docCmUpdate` | frontend/js/documents-view.js:506 |
+| `docCmViewLanguage` | frontend/js/documents-view.js:855 |
+| `docFenceGutterOn` | frontend/js/documents-view.js:902 |
+| `docFindingsPlugin` | frontend/js/documents-view.js:612 |
+| `docGuardGlobalShortcuts` | frontend/js/documents-view.js:763 |
 | `docIdeCall` | frontend/js/documents-view.js:335 |
-| `docLineClipboardEvent` | frontend/js/documents-view.js:969 |
-| `docLineClipboardExtension` | frontend/js/documents-view.js:996 |
-| `docLineClipboardRange` | frontend/js/documents-view.js:957 |
-| `docLinePasteEvent` | frontend/js/documents-view.js:982 |
+| `docLineClipboardEvent` | frontend/js/documents-view.js:971 |
+| `docLineClipboardExtension` | frontend/js/documents-view.js:998 |
+| `docLineClipboardRange` | frontend/js/documents-view.js:959 |
+| `docLinePasteEvent` | frontend/js/documents-view.js:984 |
 | `docProseChord` | frontend/js/documents-view.js:166 |
 | `docRedoChord` | frontend/js/documents-view.js:127 |
 | `docTableCellClick` | frontend/js/documents-view.js:297 |
-| `docToggleCodeDraw` | frontend/js/documents-view.js:804 |
-| `docWatchAppearance` | frontend/js/documents-view.js:779 |
-| `ensureDocEditor` | frontend/js/documents-view.js:720 |
-| `mountDocEditor` | frontend/js/documents-view.js:690 |
-| `noteSurfaceGutter` | frontend/js/documents-view.js:1012 |
+| `docToggleCodeDraw` | frontend/js/documents-view.js:806 |
+| `docWatchAppearance` | frontend/js/documents-view.js:781 |
+| `ensureDocEditor` | frontend/js/documents-view.js:722 |
+| `mountDocEditor` | frontend/js/documents-view.js:692 |
+| `noteSurfaceGutter` | frontend/js/documents-view.js:1014 |
 
 ### frontend/js/documents-warm.js (2)
 
@@ -7073,15 +7074,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dismissNotification` | frontend/js/notifications.js:437 |
+| `dismissNotification` | frontend/js/notifications.js:440 |
 | `noticeLiveValid` | frontend/js/notifications.js:9 |
 | `notificationActionButton` | frontend/js/notifications.js:55 |
 | `notificationGoes` | frontend/js/notifications.js:46 |
-| `openExportsFromNotification` | frontend/js/notifications.js:457 |
+| `openExportsFromNotification` | frontend/js/notifications.js:460 |
 | `openNotifications` | frontend/js/notifications.js:171 |
 | `reminderDoneButton` | frontend/js/notifications.js:93 |
 | `runNotificationGo` | frontend/js/notifications.js:28 |
-| `setNotificationUnread` | frontend/js/notifications.js:427 |
+| `setNotificationUnread` | frontend/js/notifications.js:430 |
 
 ### frontend/js/obj-carry.js (9)
 
@@ -10976,21 +10977,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:4216 |
-| `dragging` | frontend/js/whiteboard.js:3631 |
+| `addBoardToNote` | frontend/js/whiteboard.js:4215 |
+| `dragging` | frontend/js/whiteboard.js:3630 |
 | `handleWbZoom` | frontend/js/whiteboard.js:601 |
-| `highlighterBlend` | frontend/js/whiteboard.js:4236 |
+| `highlighterBlend` | frontend/js/whiteboard.js:4235 |
 | `initWhiteboard` | frontend/js/whiteboard.js:1967 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:3894 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:4128 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:3997 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:2628 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:3893 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:4127 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:3996 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:2630 |
 | `renderWhiteboardNow` | frontend/js/whiteboard.js:2602 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4053 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4052 |
 | `wbAlignTol` | frontend/js/whiteboard.js:1019 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:447 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:528 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3873 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3872 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:510 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:478 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:364 |
@@ -11006,7 +11007,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1056 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:978 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3858 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3857 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
 | `wbMultiKey` | frontend/js/whiteboard.js:1439 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:953 |
@@ -11021,8 +11022,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbScreenToBoard` | frontend/js/whiteboard.js:501 |
 | `wbShapeAt` | frontend/js/whiteboard.js:1179 |
 | `wbShapePoly` | frontend/js/whiteboard.js:1180 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3821 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:3808 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3820 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:3807 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:669 |
 | `wbSnap` | frontend/js/whiteboard.js:1002 |
 | `wbSnapOn` | frontend/js/whiteboard.js:989 |
@@ -14064,7 +14065,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:161 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:3988 |
 | The surface model pickers on a phone | frontend/css/10-responsive.css:2296 |
-| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:11350 |
+| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:11351 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:663 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1634 |
 | The two rows that still wrapped at 1024 | frontend/css/08-consistency.css:1500 |
@@ -14460,7 +14461,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/05-sidebars-themes.css | 5983 |
 | frontend/css/06-timeline-dialogs.css | 3679 |
 | frontend/css/07-whiteboard-misc.css | 11681 |
-| frontend/css/08-consistency.css | 11376 |
+| frontend/css/08-consistency.css | 11377 |
 | frontend/css/09-editor.css | 983 |
 | frontend/css/10-responsive.css | 3076 |
 | frontend/css/answer-foot-lazy.css | 165 |
@@ -32779,13 +32780,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3116 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4378 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4277 |
-| Needs hardware | docs/roadmap/LEDGER.md:666 |
+| Needs hardware | docs/roadmap/LEDGER.md:667 |
 | Next up | docs/ROADMAP.md:238 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:659 |
+| Owner calls | docs/roadmap/LEDGER.md:660 |
 | Owner input from the general rows (2026-11-21) | docs/roadmap/BACKLOG.md:4336 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4150 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
@@ -32967,7 +32968,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4177 |
-| Plan session briefs | docs/roadmap/LEDGER.md:824 |
+| Plan session briefs | docs/roadmap/LEDGER.md:825 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2662 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -33025,25 +33026,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:840 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:924 |
+| chat | docs/roadmap/LEDGER.md:841 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:925 |
 | documents | docs/roadmap/LEDGER.md:282 |
-| documents | docs/roadmap/LEDGER.md:864 |
-| general | docs/roadmap/LEDGER.md:652 |
+| documents | docs/roadmap/LEDGER.md:865 |
+| general | docs/roadmap/LEDGER.md:653 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:828 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:936 |
+| graph | docs/roadmap/LEDGER.md:829 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:937 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4286 |
 | mindmap | docs/roadmap/LEDGER.md:285 |
-| mindmap | docs/roadmap/LEDGER.md:876 |
-| timeline | docs/roadmap/LEDGER.md:409 |
-| timeline | docs/roadmap/LEDGER.md:900 |
-| ui-modernisation | docs/roadmap/LEDGER.md:289 |
-| ui-modernisation | docs/roadmap/LEDGER.md:888 |
+| mindmap | docs/roadmap/LEDGER.md:877 |
+| timeline | docs/roadmap/LEDGER.md:410 |
+| timeline | docs/roadmap/LEDGER.md:901 |
+| ui-modernisation | docs/roadmap/LEDGER.md:290 |
+| ui-modernisation | docs/roadmap/LEDGER.md:889 |
 | whiteboard | docs/roadmap/LEDGER.md:279 |
-| whiteboard | docs/roadmap/LEDGER.md:852 |
-| world-class | docs/roadmap/LEDGER.md:411 |
-| world-class | docs/roadmap/LEDGER.md:912 |
+| whiteboard | docs/roadmap/LEDGER.md:853 |
+| world-class | docs/roadmap/LEDGER.md:412 |
+| world-class | docs/roadmap/LEDGER.md:913 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2832 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2883 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2990 |

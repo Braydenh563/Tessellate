@@ -2043,8 +2043,8 @@ const wbMapDragLayer = {
   stayAt: 32,
 
   open(origin, d, grabbedEl) {
-    const html = document.getElementById("wb-html-layer");
-    const edgeGroup = document.querySelector("#wb-zoom-group .wb-map-edges");
+    const html = wbInstances.query("#wb-html-layer");
+    const edgeGroup = wbInstances.query("#wb-zoom-group .wb-map-edges");
     if (!origin || origin.layer || !html || !edgeGroup || !grabbedEl) return null;
     const ids = new Set([d.id]);
     for (const entry of origin.values()) if (entry.kind === "object") ids.add(entry.id);
@@ -2094,7 +2094,7 @@ const wbMapDragLayer = {
     const links = [...innerLinks.values()];
     const groups = new Map();
     if (links.some((pair) => !pair.el?.isConnected)) {
-      for (const group of document.querySelectorAll(".sketch-group[data-id]")) if (!groups.has(group.dataset.id)) groups.set(group.dataset.id, group);
+      for (const group of wbInstances.queryAll(".sketch-group[data-id]")) if (!groups.has(group.dataset.id)) groups.set(group.dataset.id, group);
     }
     for (const pair of links) if (!pair.el?.isConnected) pair.el = groups.get(String(pair.sketch.id)) || null;
     //: The branch's sizes as the pick-up measured them: a move resizes no
@@ -2126,7 +2126,7 @@ const wbMapDragLayer = {
       //: The board layer's own transform is the zoom's, so the drag rides on
       //: the separate `translate` property, which applies outside it: in
       //: screen pixels, so scaled by the zoom.
-      const k = d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1;
+      const k = d3.zoomTransform(wbInstances.container()).k || 1;
       layer.stay.html.style.translate = `${dx * k}px ${dy * k}px`;
       layer.stay.edgeGroup.setAttribute("transform", `translate(${dx} ${dy})`);
       for (const still of layer.stay.fixed) still.style.translate = `${-dx}px ${-dy}px`;

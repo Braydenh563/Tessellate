@@ -2625,9 +2625,9 @@ function renderWhiteboardNow() {
   wbMapAfterRender();
 }
 
+//: A render places every topic from its data; a dragged branch's layer would carry them a
+//: second time, so it is undone first (the first line below).
 function renderWhiteboard() {
-  //: A render places every topic from its data; a dragged branch's layer
-  //: would carry them a second time, so it is undone first.
   if (wbMapDragLayer.live) wbMapDragLayer.close();
   wbPruneSelection();
   //: A render replaces every map node's element, so every measurement taken
@@ -2697,9 +2697,8 @@ function renderWhiteboard() {
       d._dragOriginalD = parsed ? parsed.d : null;
       d._moveUndoBefore = WB_KIND_INFO.sketch.payload(d);
       d._altCopy = Boolean(event.sourceEvent?.altKey);
-      //: A connector drawn between two cards has no path of its own to
-      //: carry (its ends follow the cards), so it starts no move: the delete
-      //: target came up on its drag and stayed (INBOX 1405).
+      //: A connector drawn between two cards has no path of its own to carry (its ends follow the cards), so it starts
+      //: no move: the delete target came up on its drag and stayed (INBOX 1405).
       d._gesture = d._dragOriginalD == null ? null : wbBeginGesture(() => wbRestoreMove("sketch", d), true);
       // Raw (never-snapped) running totals, applied fresh from the
       // *original* d each frame, the same fix as `dragging`'s own comment

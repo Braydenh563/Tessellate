@@ -90,6 +90,8 @@ var document = {
   querySelectorAll: () => [],
   addEventListener() {},
 };
+//: The board's own lookups go through the active instance (test_wb_instances), here the fake page.
+var wbInstances = { query: (sel) => (sel === "#wb-html-layer" ? htmlLayer : document.querySelector(sel)), queryAll: (sel) => document.querySelectorAll(sel), container: () => root };
 """
 
 #: A trunk (1) outside the drag, the grabbed topic (2), and its branch: 3 and 4 under 2, 5 under 3.

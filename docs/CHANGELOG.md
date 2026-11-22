@@ -6,6 +6,11 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Merge with the base, corrected: the companion's read reaction takes the base's `content_truncated` test again; the map's dragged-branch layer finds its layers through the active board (`wbInstances`); seven functions this branch grew are back at their size seeds (helpers moved out as properties, comments rewrapped), and the chat list's two seeds follow it to chat-list.js.
+- Sweeps: deepflows opens a document by its row title, not the small page's heading (L-documents-54), which was first and 7px tall.
+- Documents: the idle warm-up loads the whole library bundle, not documents.js alone, which ran before documents-surface.js had exported setDocView (page error "setDocView is not defined", fontmatrix in CI).
+- Capture bar: the phone and touch row height is two plain selectors instead of a list :is(), keeping the CSS rule buckets at their caps (136 and 375).
+- Sweeps: canvasconventions reads the undo depth from wbStacks and wbgroupguides finds the guides by their class, after the whiteboard split.
 - Companion: a stopped desktop companion is freed on Python 3.11 (its window procedure and the host held each other through a ctypes callback the 3.11 collector cannot see through); a test worker reached 6.1 GB over 20 runners and was killed, which lost CI's 3.11 leg 1 runner.
 - Notes: a list redraw waits while a note row's menu is open, so a save landing a moment after an action no longer closes the menu being read (deepflows private and link failed 2 of 14 runs at 1440, now 0 of 14).
 - Sweeps: deepflows' settings flow presses a switch by its id and puts away the toast a press raised, which sat over the next switch at 390 (Keep Atlas on this machine over the hide-notices switch; failed 3 of 3 after asktab and companionmenu, now passes).

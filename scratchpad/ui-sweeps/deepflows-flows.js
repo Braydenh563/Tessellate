@@ -418,7 +418,8 @@ flows.document = async (env) => {
     await env.wait(900);
     await env.js(() => document.querySelector('#library-subtabs [data-target="library-view-docs"]')?.click());
     await env.wait(1500);
-    await env.page.locator('#library-view-docs').getByText('Trip plan', { exact: true }).first().click();
+    //: The row's title: its small page (L-documents-54) prints the heading too, 7px tall, and was first.
+    await env.page.locator('#library-view-docs .doc-list-title').getByText('Trip plan', { exact: true }).first().click();
     //: A phone opens a document to read it; Edit is one press away.
     await env.page.waitForSelector('#doc-back', { state: 'visible', timeout: 8000 });
     await env.wait(1000);

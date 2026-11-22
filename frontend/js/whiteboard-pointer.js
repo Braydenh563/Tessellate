@@ -47,11 +47,10 @@
       wbErasing = false;
       wbEraseSettle();
     });
-    //: Every sample the browser coalesced into this event is hit-tested, so a
-    //: fast finger or pen stroke between two events erases what it crossed
-    //: (audit B21); `pointerenter` alone never fires reliably on touch or pen.
-    //: One swipe, one Undo step (L-whiteboard-35): each delete pushes its own
-    //: entry as it lands, and the swipe's end folds them into one batch.
+    //: Every sample the browser coalesced into this event is hit-tested, so a fast finger or pen stroke between two
+    //: events erases what it crossed (audit B21); `pointerenter` alone never fires reliably on touch or pen. One swipe,
+    //: one Undo step (L-whiteboard-35): each delete pushes its own entry as it lands, and the swipe's end folds them
+    //: into one batch.
     let wbEraseHad = null;
     function wbEraseSettle() {
       if (!wbEraseHad) return;
@@ -167,10 +166,9 @@
     // families cannot cancel each other, so the target check is the only place
     // this can be fixed.
     function wbIsEmptyCanvasTarget(target) {
-      // `.sketch-group:not(.wb-link-sketch)`: see the class's own note in the
-      // sketch render. A drawn shape claims the gesture (it can be moved by its
-      // body); a link cannot be, and its 20px hit band was swallowing the
-      // marquee wherever a connector crossed the canvas.
+      // `.sketch-group:not(.wb-link-sketch)`: see the class's own note in the sketch render. A drawn shape claims the
+      // gesture (it can be moved by its body); a link cannot be, and its 20px hit band was swallowing the marquee
+      // wherever a connector crossed the canvas.
       return wbIsBareCanvas(target);
     }
     function rectsIntersect(ax, ay, aw, ah, bx, by, bw, bh) {
@@ -187,10 +185,9 @@
     let wbMarqueeAt = null;
     let wbMarqueeFrame = 0;
     let wbMarqueeInk = "";
-    //: End the marquee gesture and take its rectangle off the canvas. Every
-    //: exit from the drag goes through here, the completed one, the cancelled
-    //: one, and the sweep `wbClearSelectionOverlays` runs, so there is exactly
-    //: one place that can forget to remove the element.
+    //: End the marquee gesture and take its rectangle off the canvas. Every exit from the drag goes through here, the
+    //: completed one, the cancelled one, and the sweep `wbClearSelectionOverlays` runs, so there is exactly one place
+    //: that can forget to remove the element.
     function wbEndMarqueeDrag() {
       if (wbMarqueeStart?.place) wbClearAlignmentGuides();
       //: A selection drag cut off (cancelled, capture lost) goes back where it
@@ -207,9 +204,8 @@
       wbMarqueeAt = null;
     }
     wbInstances.on("pointerdown", (e) => {
-      //: A new press is a new gesture: a one-shot left by a drag released off
-      //: the board (no click ever reached the canvas to spend it) must not
-      //: swallow this press's click.
+      //: A new press is a new gesture: a one-shot left by a drag released off the board (no click ever reached the
+      //: canvas to spend it) must not swallow this press's click.
       wbMarqueeJustSelected = false;
       wbPlaceJustDrawn = false;
       //: **The text and sticky tools draw their box too** (the owner,
@@ -223,8 +219,7 @@
       //: And the frame tool (decision 14), the same two gestures.
       const place = ["text", "sticky", "frame"].includes(window.currentTool) ? window.currentTool : null;
       if ((window.currentTool !== "select" && !place) || !wbIsEmptyCanvasTarget(e.target)) return;
-      //: A finger on bare canvas with Select pans (`wbZoomFilter`), so it is
-      //: not also the start of an area select.
+      //: A finger on bare canvas with Select pans (`wbZoomFilter`), so it is not also the start of an area select.
       if (!place && e.pointerType === "touch") return;
       // Primary button only. A right-click opens the context menu and a middle
       // click pans; neither ends with the pointerup this drag is waiting for,
