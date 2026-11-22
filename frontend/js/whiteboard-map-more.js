@@ -730,16 +730,25 @@
 
   //: Wear (or drop) the mark on one drawn label from the kept answer; a text
   //: with no answer yet is queued, and nothing else is done here.
+  //:
+  //: **A label with no finding and no mark is not read** (L-mindmap-27). Each
+  //: Harper answer repaints every drawn topic, and the label's lookup and its
+  //: `isContentEditable` (a style read) cost the first pan frame of a
+  //: 500-topic map 40 to 46ms. `_wbGrammarMark` says this node's label wears
+  //: one; a node drawn afresh starts without it, and so does its label.
   function wbGrammarPaint(node, datum) {
-    const el = node.querySelector(".wb-map-text");
-    if (!el || datum.kind !== "topic") return;
+    if (datum.kind !== "topic") return;
     const text = String(datum.data?.content || "").trim();
-    const hit = text.length > 3 && !el.isContentEditable ? wbGrammar.found.get(text) : null;
+    const kept = text.length > 3 ? wbGrammar.found.get(text) : null;
+    const el = kept || node._wbGrammarMark ? node.querySelector(".wb-map-text") : null;
+    const hit = el && !el.isContentEditable ? wbGrammar.found.get(text) : null;
     if (hit) {
       el.dataset.grammar = hit.message;
+      node._wbGrammarMark = true;
       return;
     }
-    if (el.dataset.grammar) delete el.dataset.grammar;
+    if (el?.dataset.grammar) delete el.dataset.grammar;
+    node._wbGrammarMark = false;
     if (text.length > 3 && !wbGrammar.found.has(text) && wbGrammarAvailable()) {
       wbGrammar.queue.add(text);
       if (!wbGrammar.timer) wbGrammarSoon();
