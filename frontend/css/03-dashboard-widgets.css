@@ -39,7 +39,10 @@
   margin-inline: var(--space-2) auto;
 }
 
-.inbox-card .dialog-head > .sheet-title {
+/* Only beside a select: its `margin-inline: auto` then pushes the buttons right. Without one (the
+   Timeline's "Add to <date>", the owner 2026-11-22) a shrunk title left Minimise and Close beside it,
+   357px short of the head's right edge at 1440; the title's own `flex: 1 1 auto` pushes them there. */
+.inbox-card .dialog-head:has(> .select-shell) > .sheet-title {
   flex: 0 1 auto;
 }
 

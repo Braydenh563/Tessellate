@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the "Add to <date>" sheet's Minimise and Close sit at the head's right edge again (an `.inbox-card` title shrank to its words even with no select to push them; Close's right edge 726 against the head's 1083 at 1440, now 1083; `tests/test_sheet_head_buttons_right_1122.py`).
 - Chat: a file chosen with the paperclip is staged as a chip and imported only when the message is sent; removing the chip, or never sending, leaves no document or Library file (the owner, 2026-11-22; `tests/test_chat_files_staged_1122.py`, sweep `scratchpad/ui-sweeps/chatstage1122.js`).
 - Tests: three Ollama-client test modules no longer write the repo's `data/` folder in a serial run (they read the config without `app_state`; L-general-71).
 - Link reasons with the model down: after the first "not running" (or connect timeout) the suggestions sheet's "Why?" batch stops, later batches are not sent for 30 s, and it is logged once (the owner's log had six back to back, each logged; `tests/test_link_reasons_backoff_1122.py`).
