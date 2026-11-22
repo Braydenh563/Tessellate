@@ -98,3 +98,13 @@ def test_a_space_export_carries_only_that_space(client):
     with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
         text = " ".join(archive.read(n).decode("utf-8", "ignore") for n in archive.namelist() if n.endswith(".md"))
     assert "Kept in the work space" in text and "Kept in the default space" not in text
+
+
+# --- a space's own dashboard line ----------------------------------------------
+
+
+def test_the_dashboard_line_names_the_space_it_counts():
+    dash = (JS / "dashboard.js").read_text(encoding="utf-8")
+    body = dash.split("async function renderDashSubmessage(", 1)[1].split("\n}\n", 1)[0]
+    assert '"space"' in body and "In ${" in body
+    assert "SPACE_ALL" in body

@@ -521,6 +521,10 @@ async function renderDashSubmessage() {
     dashTodayLine(dashLine.bucket).catch(() => ""),
   ]);
   const bits = [];
+  //: **A space's own line** (WORLD_CLASS_PLAN 27.1, Spaces): every count here
+  //: is that space's, so the line says whose they are.
+  const space = activeSpaceId() !== SPACE_ALL && spacesCache.find((s) => s.id === activeSpaceId());
+  if (space && spacesCache.length > 1) bits.push(["space", `In ${space.name}`]);
   if (composed) bits.push(["notes", composed]);
   else if (stats) {
     const n = stats.total_entries;
