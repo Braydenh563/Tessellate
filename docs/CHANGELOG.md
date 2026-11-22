@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: exporting a board as a folder builds the zip on disk and streams it, so a large board no longer holds hundreds of megabytes in memory.
 - Board: more of the board's code moves into smaller files (guides, background and votes, line ends, groups and zoom, styles, the board tree, gestures, copy and paste), with no change to how a board works.
 - Board: the board's code is split into smaller files (the board list, item drawing and saving, the selection grips, dragging), with no change to how a board works.
 - Companion: it puts its reading glasses on when you open a long note with Show more again; the list sends a long note cut short and it took that for a short one.

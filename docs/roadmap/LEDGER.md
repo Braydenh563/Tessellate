@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
-| whiteboard | 0 | 3 | 0 | 0 | 0 | 3 |
+| whiteboard | 0 | 2 | 1 | 0 | 0 | 3 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 25 | 2 | 0 | 5 | 27 |
-| all | 472 | 520 | 124 | 2 | 173 | 1116 |
+| all | 472 | 519 | 125 | 2 | 173 | 1116 |
 
 ## graph
 
@@ -553,7 +553,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L631** `world-class` open, L: Allow reading of uploaded PDF documents outside the app (ocr_media 415). From OPEN.md:1449; OPEN.md:2424. Evidence: routes_files.py:~2125 ocr_media still 415 'Only images can be read this way' for non-image suffixes
 - [ ] **L632** `world-class` open, L: Trim without decoding the whole file in page (streaming decode or server cut). From OPEN.md:1622; OPEN.md:2740. Evidence: meetings.js:1277,2421 decodeAudioData on the whole buffer, no streaming decode
 - [ ] **L633** `world-class` open, L: Build a per-site retry for the toast(e.message, true) calls (plainHttpError gives the why, no retry param exists). From OPEN.md:1397; OPEN.md:3665. Evidence: status.js:1085 plainHttpError gives the why; per-site retry not built (no retry param found)
-- [ ] **L634** `whiteboard` open, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done
+- [ ] **L634** `whiteboard` partly, L: Split whiteboard.js (26,201 lines, initWhiteboard 4,000+) and whiteboard-map.js (11,408 lines, wbBuildMapNode 369). From OPEN.md:4439; OPEN.md:4440; OPEN.md:4460. Evidence: wc: whiteboard.js is 26,201 lines now; no split done Progress 2026-11-22: whiteboard.js 26,201 to 7,976 lines and whiteboard-map.js 11,408 to 6,533, carved into wrapped files (whiteboard-boards, -handles, -items, -drag, -guides, -paint, -caps, -groups, -style, -tree, -gesture, -clipboard, -map-strip/-waypoints/-marks/-edges/-notes/-look/-record, -undo). Left: initWhiteboard itself and wbBuildMapNode.
 - [ ] **L635** `world-class` open, L: Isolate search engine latency from HTTP load. From OPEN.md:943. Evidence: Loaded GET /search 1.8-5.0s figure only; no isolated benchmark found
 - [ ] **L636** `world-class` open, L: Sweep coverage: open board/map, graph popup at 390, print dialog, lightbox, confirm, looks, contrast, forced colours. From OPEN.md:1244; OPEN.md:3503. Evidence: No sweeps listed for these surfaces; print dialog also not automatable.
 - [ ] **L637** `world-class` open, L: ARCH-02: POST /entries p50 210 ms at 5,000 notes, get under 150. From OPEN.md:1480; OPEN.md:3246. Evidence: HISTORY covers search/similar_pairs wins only; no POST /entries 5k result under 150ms found

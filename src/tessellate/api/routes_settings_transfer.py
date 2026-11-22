@@ -16,7 +16,7 @@ import zipfile
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Response, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -226,11 +226,86 @@ BOARD_SVG_MAX = 64 * 1024 * 1024
 BOARD_PNG_MAX = 96 * 1024 * 1024
 
 
-def _read_capped(upload: UploadFile, limit: int, what: str) -> bytes:
-    data = upload.file.read(limit + 1)
-    if len(data) > limit:
+#: The zip spills to disk past this, and the uploads are copied in chunks of
+#: `_CHUNK` (review 6008796874, finding 7): read whole, a 64 MB picture and a
+#: 96 MB PNG were held as bytes, then again inside an in-memory zip and once
+#: more as the response body, over 300 MB at the peak.
+_SPOOL_MAX = 4 * 1024 * 1024
+_CHUNK = 1024 * 1024
+
+
+def _upload_size(upload: UploadFile) -> int:
+    upload.file.seek(0, os.SEEK_END)
+    size = upload.file.tell()
+    upload.file.seek(0)
+    return size
+
+
+def _check_upload(upload: UploadFile, limit: int, what: str, magic, refusal: str) -> None:
+    """The cap and the first bytes, without reading the file into memory."""
+    if _upload_size(upload) > limit:
         raise HTTPException(status_code=413, detail=f"The {what} is too large to export.")
-    return data
+    head = upload.file.read(1024)
+    upload.file.seek(0)
+    if not magic(head):
+        raise HTTPException(status_code=422, detail=refusal)
+
+
+def _is_svg(head: bytes) -> bool:
+    return head.lstrip().startswith((b"<svg", b"<?xml"))
+
+
+def _is_png(head: bytes) -> bool:
+    return head.startswith(b"\x89PNG")
+
+
+def _copy_into(archive: zipfile.ZipFile, arcname: str, source, *, utf8: bool = False) -> None:
+    """One upload into the zip, a chunk at a time. `utf8` checks the text as it
+    goes (an SVG that is not UTF-8 is refused, as the whole-file decode did)."""
+    import codecs
+
+    decoder = codecs.getincrementaldecoder("utf-8")() if utf8 else None
+    with archive.open(arcname, "w") as out:
+        while chunk := source.read(_CHUNK):
+            if decoder is not None:
+                try:
+                    decoder.decode(chunk)
+                except UnicodeDecodeError:
+                    raise HTTPException(status_code=422, detail="That is not an SVG picture.") from None
+            out.write(chunk)
+    if decoder is not None:
+        try:
+            decoder.decode(b"", final=True)
+        except UnicodeDecodeError:
+            raise HTTPException(status_code=422, detail="That is not an SVG picture.") from None
+
+
+def build_board_folder(svg, png, slug: str, notes_zip: bytes | None):
+    """The folder's zip in a SpooledTemporaryFile, rewound; the caller closes
+    it. `svg` and `png` are readable binary files (PNG may be None)."""
+    spool = tempfile.SpooledTemporaryFile(max_size=_SPOOL_MAX)
+    try:
+        with zipfile.ZipFile(spool, "w", zipfile.ZIP_DEFLATED) as archive:
+            _copy_into(archive, f"{slug}/{slug}.svg", svg, utf8=True)
+            if png is not None:
+                _copy_into(archive, f"{slug}/{slug}.png", png)
+            if notes_zip:
+                notes = zipfile.ZipFile(io.BytesIO(notes_zip))
+                for name in notes.namelist():
+                    archive.writestr(f"{slug}/notes/{name}", notes.read(name))
+    except BaseException:
+        spool.close()
+        raise
+    spool.seek(0)
+    return spool
+
+
+def _stream_and_close(spool):
+    try:
+        while chunk := spool.read(_CHUNK):
+            yield chunk
+    finally:
+        spool.close()
 
 
 @router.post("/export/board-folder")
@@ -245,35 +320,22 @@ def export_board_folder(
     as SVG and PNG, and every note it links as Markdown, the same files the
     selection's Export writes, under `notes/`. One zip, one folder inside.
     `ids` is the note ids, comma separated; a browser that could not draw a
-    PNG sends none and still exports."""
+    PNG sends none and still exports. Built on disk past 4 MB and streamed."""
     try:
         note_ids = sorted({int(part) for part in ids.split(",") if part.strip()})
     except ValueError:
         raise HTTPException(status_code=422, detail="The note list could not be read.") from None
     if len(note_ids) > 5000:
         raise HTTPException(status_code=422, detail="That is too many notes for one export.")
-    try:
-        svg_text = _read_capped(svg, BOARD_SVG_MAX, "picture").decode("utf-8")
-    except UnicodeDecodeError:
-        svg_text = ""
-    if not svg_text.lstrip().startswith(("<svg", "<?xml")):
-        raise HTTPException(status_code=422, detail="That is not an SVG picture.")
-    png_bytes = _read_capped(png, BOARD_PNG_MAX, "PNG") if png is not None else None
-    if png_bytes is not None and not png_bytes.startswith(b"\x89PNG"):
-        raise HTTPException(status_code=422, detail="The PNG could not be read.")
+    _check_upload(svg, BOARD_SVG_MAX, "picture", _is_svg, "That is not an SVG picture.")
+    if png is not None:
+        _check_upload(png, BOARD_PNG_MAX, "PNG", _is_png, "The PNG could not be read.")
     #: The ASCII form: it names the download in a header, which is Latin-1.
     slug = paths.slug(name, 60, ascii_only=True, fallback="board")
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr(f"{slug}/{slug}.svg", svg_text)
-        if png_bytes is not None:
-            archive.writestr(f"{slug}/{slug}.png", png_bytes)
-        if note_ids:
-            notes = zipfile.ZipFile(io.BytesIO(build_markdown_export(session, note_ids)))
-            for name in notes.namelist():
-                archive.writestr(f"{slug}/notes/{name}", notes.read(name))
-    return Response(
-        content=buffer.getvalue(),
+    notes_zip = build_markdown_export(session, note_ids) if note_ids else None
+    spool = build_board_folder(svg.file, png.file if png is not None else None, slug, notes_zip)
+    return StreamingResponse(
+        _stream_and_close(spool),
         media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="{slug}.zip"'},
     )

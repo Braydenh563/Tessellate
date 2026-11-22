@@ -10,7 +10,7 @@
 #appearance-panel .settings-section .theme-reset-row {
   margin-top: var(--space-4);
 }
-#appearance-panel .settings-section button:not([class*="card"]):not([class*="tile"], .tour-row):not([class*="swatch"]):not([class*="preview"]):not(.icon-only):not(.icon-button):not([class*="help"]):not([class*="hint"]):not(.linklike),
+#appearance-panel .settings-section button:not([class*="card"]):not([class*="tile"], .tour-row, .doc-dock-menu-item):not([class*="swatch"]):not([class*="preview"]):not(.icon-only):not(.icon-button):not([class*="help"]):not([class*="hint"]):not(.linklike),
 #appearance-panel .settings-section select,
 #appearance-panel .settings-section .select-opener,
 #appearance-panel .settings-section summary,

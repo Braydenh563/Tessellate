@@ -785,7 +785,11 @@ def test_every_board_tool_names_its_own_cursor() -> None:
     js = frontend_text("whiteboard.js")
     tools = set(re.findall(r'data-tool="([a-z-]+)"', html))
     assert len(tools) >= 18, tools
-    body = js[js.index("function wbCursorForTool(") : js.index("// The visible half of Select")]
+    # The function's own closing brace ends the slice: L634 moved it into
+    # whiteboard-caps.js, away from the comment that used to follow it.
+    start = js.index("function wbCursorForTool(")
+    indent = js[js.rindex("\n", 0, start) + 1 : start]
+    body = js[start : js.index("\n" + indent + "}\n", start)]
     brushes = set(re.findall(r'"([a-z]+)"', js[js.index("const WB_BRUSH_TOOLS"):js.index("const WB_HIGHLIGHTER_ALPHA")]))
     # The flyout's further shapes are brushes by the spread of their table's
     # keys; the keys are read off the table, so a new one is still checked.

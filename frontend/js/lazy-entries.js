@@ -20,18 +20,18 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-map-record.js", //: After whiteboard-map.js: the Undo-recorded map commands, bound through `wbRecorded` (defined there); wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
-    "/js/whiteboard-boards.js", //: After whiteboard.js, before the files that follow it: the board list, loading, renaming and new boards; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-handles.js", //: After whiteboard.js, before the files that follow it: path transforms, end caps and the selection grips; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-items.js", //: After whiteboard.js, before the files that follow it: painting, fitting, saving and deleting items; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-drag.js", //: After whiteboard.js, before the files that follow it: the link index and dragging; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-guides.js", //: After whiteboard.js, before the files that follow it: alignment guides, spacing and grid; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-paint.js", //: After whiteboard.js, before the files that follow it: background, cursors, highlighter, votes and timer; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-caps.js", //: After whiteboard.js, before the files that follow it: shape paths and arrow heads; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-groups.js", //: After whiteboard.js, before the files that follow it: groups, item boxes and zoom to fit; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-style.js", //: After whiteboard.js, before the files that follow it: tool settings, copied styles and context menu rows; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-tree.js", //: After whiteboard.js, before the files that follow it: the mind-map tree on a board; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-gesture.js", //: After whiteboard.js, before the files that follow it: gestures, the bin target and drag finishing; wrapped, names whiteboard.js at run time only (L634).
-    "/js/whiteboard-clipboard.js", //: After whiteboard.js, before the files that follow it: copy, paste and the item grips; wrapped, names whiteboard.js at run time only (L634).
+    "/js/whiteboard-boards.js", //: After whiteboard.js: the board list, loading, renaming and new boards; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-handles.js", //: After whiteboard.js: path transforms, end caps and the selection grips; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-items.js", //: After whiteboard.js: painting, fitting, saving and deleting items; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-drag.js", //: After whiteboard.js: the link index and dragging; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-guides.js", //: After whiteboard.js: alignment guides, spacing and grid; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-paint.js", //: After whiteboard.js: background, cursors, highlighter, votes and timer; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-caps.js", //: After whiteboard.js: shape paths and arrow heads; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-groups.js", //: After whiteboard.js: groups, item boxes and zoom to fit; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-style.js", //: After whiteboard.js: tool settings, copied styles and context menu rows; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-tree.js", //: After whiteboard.js: the mind-map tree on a board; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-gesture.js", //: After whiteboard.js: gestures, the bin target and drag finishing; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-clipboard.js", //: After whiteboard.js: copy, paste and the item grips; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-instances.js", //: After whiteboard.js: board state per instance (an embed's own state, selection, undo and zoom); wrapped, reads whiteboard.js's `wbZoom` at load.
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.
@@ -140,7 +140,7 @@ Object.assign(LAZY_MODULES, {
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
   mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
-  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save, dictation (gesture-kit.js's header).
+  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save, dictation, the phone ⋯ sheet (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
   chatTurn: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/chat-turn.js"],
@@ -212,7 +212,7 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation", "openKebabSheet"],
   notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],
