@@ -215,7 +215,7 @@
       iconRow.append(iconLabel, icons);
       const hint = document.createElement("p");
       hint.className = "muted wb-map-markers-hint";
-      hint.textContent = "View, Filter by marker shows the topics that carry one. Esc closes.";
+      hint.textContent = "Board, Filter by marker shows the topics that carry one. Esc closes.";
       panel.replaceChildren(
         wbMapMarkerSeg("Priority", [[null, "None"], [1, "1", "Highest"], [2, "2"], [3, "3"], [4, "4"], [5, "5", "Lowest"]],
           parts.priority, (value) => set({ priority: value })),
@@ -334,7 +334,7 @@
       toast("No topic on this map has a marker or a label yet. A topic's menu, Content, Markers adds one.");
       return;
     }
-    const target = anchor || document.querySelector('[aria-controls="wb-view-menu"]') || wbInstances.container();
+    const target = anchor || document.querySelector(".wb-board-menu-wrap > [data-wb-menu-toggle]") || wbInstances.container();
     const panel = document.createElement("div");
     panel.className = "help-popover wb-map-markers-pop wb-map-filter-pop";
     panel.setAttribute("role", "dialog");
