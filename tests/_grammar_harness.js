@@ -59,7 +59,7 @@ function declaration(name) {
 
 const NAMES = options.names || [
   "DOC_PROSE_RULES", "AUTOCORRECT_TYPOS", "autocorrectRefused", "autocorrectState", "autocorrectFind", "DOC_AUTOCORRECT", "DOC_LONG_SENTENCE_WORDS", "DOC_PROSE_SKIP", "docProseSkipMask",
-  "docProseFindings", "docSpellable", "docWordKnown", "docSpellRoot", "docEditsOnce", "docSpellConfident",
+  "docProseFindings", "docLongSentences", "docSpellable", "docWordKnown", "docSpellRoot", "docEditsOnce", "docSpellConfident",
   "docSpellLookup", "DOC_CONFIDENT_MIN", "DOC_ALPHABET", "DOC_EDIT_SWAP", "DOC_EDIT_DROP", "DOC_EDIT_ADD",
   "DOC_EDIT_SWAP_LETTER", "docMatchCase", "docWordlistReady", "DOC_VARIANT_LABEL",
   "DOC_GRAMMAR_SKIP_KINDS", "DOC_GRAMMAR_DASH", "docGrammarMessage", "docGrammarFindings", "DOC_GRAMMAR_WIKI", "docGrammarOutside",
