@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+A test pins folder uploads past Starlette's 1,000-file default (L-world-class-411): 1,200 files to `/import/app` import all 1,200 (`bounds.FolderUploadRoute`, built under L979); without the route class the request is a 400.
 The import preview builds its rows in chunks (L-world-class-870): a thousand files built every row in one task (125 to 229 ms idle, 1.1 s on a loaded host); it now builds 40, then 100 a frame, with the ticks kept apart from the boxes so Import and Select all are right before the last row lands. Measured at 1,000 rows, idle: longest task 0 to 83 ms.
 Boot reads the open reminders once, not twice (L-world-class-879): the due poll's first look (`openReminderList`, status.js) asked for a month's window while the dashboard and the bell read the whole open list; it now cuts its month from that shared read, which they join (1 `/reminders` GET at boot, was 2). Later looks keep the stamp and the month's window.
 The opening curtain waits for the hero line and first steps too (L-world-class-879): it lifted on the dashboard's widgets alone, and in 1 of 16 boots the hero line and the first-steps card and menu landed after it and moved the page 0.053 in view. `dashShown` holds all three; measured 16 boots at 390 px, 0 shift after the lift, median lift 692 ms.
