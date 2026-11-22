@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps (L554): 412 of the 583 unrun browser sweeps ran once on a fresh data dir (248 pass, 142 fail, 22 hit 150 s); `SWEEP_EAGER=1` makes `boot` load every lazy module first (fixed 87 scripts that read Settings controls at boot); `notetoolbar.js` names the controls inside a toolbar pair and `sheetdismiss.js` waits for the lazy More sheet, both now pass; the other failures and the 171 not reached are LEDGER rows (`L-world-class-395` to `398`).
 - Tests: the answer pictures, citation order and copy-app-link checks read chat-list.js, where the saved-chat code moved from sheets-selects.js.
 - Sweeps: companioninteract passes above the face for its follow-off check (the old path crossed the face, and a pointer on the face is a touch that looks with the setting off too).
 - Sweeps: every sweep that runs a python seed takes it from one helper (`venvPython` in lib.js: VENV, else the repo .venv, else python3), so asktab and twelve others no longer spawn a .venv/bin/python CI does not have.

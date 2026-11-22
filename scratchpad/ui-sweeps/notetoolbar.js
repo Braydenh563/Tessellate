@@ -61,7 +61,7 @@ const WIDTHS = [
           top: Math.round(k.getBoundingClientRect().top - tops[0]),
           w: Math.round(k.getBoundingClientRect().width),
         })),
-        unnamed: kids.filter((k) => !name(k)).map((k) => k.outerHTML.slice(0, 60)),
+        unnamed: kids.flatMap((k) => (k.classList.contains("doc-toolbar-pair") ? [...k.children] : [k])).filter((k) => !name(k)).map((k) => k.outerHTML.slice(0, 60)),
       };
     });
     if (!m) {

@@ -251,6 +251,12 @@ async function boot(opts={}) {
   if (!process.env.SEMANTIC_ASK) {
     await page.evaluate(() => apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }).catch(() => null));
   }
+  //: SWEEP_EAGER=1 loads every lazy module (app.js ensureModule) before the sweep starts, for the
+  //: older sweeps written when the Settings, whiteboard and map code was eager (L554).
+  if (process.env.SWEEP_EAGER) {
+    await page.evaluate(async () => { if (typeof ensureModule === 'function' && typeof LAZY_MODULES === 'object') await Promise.all(Object.keys(LAZY_MODULES).map((k) => ensureModule(k))); }).catch(() => {});
+    await page.waitForTimeout(500);
+  }
   //: `signIn` says which way it came in: 'lock' or 'app' (sign-in off).
   return {browser, ctx, page, OUT, signIn: way};
 }

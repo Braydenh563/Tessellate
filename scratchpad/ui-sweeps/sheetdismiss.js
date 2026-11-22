@@ -76,10 +76,12 @@ const { boot } = require('./lib.js');
   check('a press outside closes it', afterOutside === false, `open: ${afterOutside}`);
 
   // The recipe's own sheet, for the same three things.
-  const more = await page.evaluate(() => {
+  const more = await page.evaluate(async () => {
     const btn = document.getElementById('phone-more-btn');
     if (!btn) return { skipped: 'no More button at this width' };
     btn.click();
+    // The sheet is a lazy module now (phoneMore): it builds and takes focus a beat after the press.
+    await new Promise((r) => setTimeout(r, 600));
     // The More sheet by name: the press-outside step above can land on a
     // note row, which opens the note page, a sheet of its own.
     const overlay = document.querySelector('.sheet-overlay[data-sheet="more"]');
