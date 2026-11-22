@@ -104,6 +104,58 @@
     return word === "graph" ? "flowchart" : word;
   };
 
+  //: The line a drag on a picture that already fits shows (1679 m).
+  function panNote() {
+    const note = document.createElement("p");
+    note.className = "dgm-pan-note muted hidden";
+    note.setAttribute("role", "status");
+    note.textContent = "The whole diagram is in view, so there is nothing to move. Zoom in to pan.";
+    return note;
+  }
+  //: The picked box brought into view when the picture is zoomed past the pane.
+  function revealBox(fig, S, img, b) {
+    const r = img.getBoundingClientRect();
+    const [vx, vy, vw, vh] = S.hit.vb;
+    const at = [r.left + ((b.x - vx) / vw) * r.width, r.top + ((b.y - vy) / vh) * r.height];
+    const pane = fig.getBoundingClientRect();
+    const nudge = (v, lo, hi) => (v < lo + 24 ? v - lo - 24 : v > hi - 24 ? v - hi + 24 : 0);
+    fig.scrollBy({ left: nudge(at[0], pane.left, pane.right), top: nudge(at[1], pane.top, pane.bottom), behavior: "auto" });
+  }
+  //: The two fingers' distance and middle.
+  function pinchSpan(points) {
+    const [a, b] = [...points.values()];
+    return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  }
+  //: The corner bar: a plain `.dock` (DESIGN.md, "A zoom control on a picture"), with the typeable 100% readout.
+  function zoomBar(step, fitTo, onPercent) {
+    const bar = document.createElement("div");
+    bar.className = "dock dgm-zoom";
+    bar.setAttribute("role", "toolbar");
+    bar.setAttribute("aria-label", "Zoom the picture");
+    const group = document.createElement("div");
+    group.className = "dock-group";
+    const buttons = {
+      out: smallButton("ph:minus", "Zoom out", () => step(-1)),
+      in: smallButton("ph:plus", "Zoom in", () => step(1)),
+      fit: smallButton("Fit", "Fit the diagram to the pane", fitTo),
+    };
+    //: 100% is the drawing's own size; type a number and Enter, or pick one from the chevron (the 1 key still goes to 100%).
+    const levelHost = document.createElement("span");
+    levelHost.className = "dgm-zoom-level";
+    const level = valueField(levelHost, {
+      value: 100,
+      min: 5,
+      max: 500,
+      label: "Zoom percent",
+      format: (v) => `${Math.round(v)}%`,
+      presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: fitTo }]),
+      onCommit: onPercent,
+    });
+    group.append(buttons.out, buttons.in, buttons.fit, levelHost);
+    bar.append(group);
+    return { bar, buttons, level };
+  }
+
   function wire(S) {
     const fig = S?.fig;
     if (!fig || fig.dataset.view) return;
@@ -117,10 +169,7 @@
     //: A drag on a picture that already fits moves nothing; a line says why (1679 m), once a drag has gone 24 px.
     let wasted = 0;
     let noteTimer = 0;
-    const note = document.createElement("p");
-    note.className = "dgm-pan-note muted hidden";
-    note.setAttribute("role", "status");
-    note.textContent = "The whole diagram is in view, so there is nothing to move. Zoom in to pan.";
+    const note = panNote();
     let f = 1;
 
     const stage = document.createElement("div");
@@ -139,17 +188,7 @@
       clearTimeout(told);
       told = setTimeout(() => (S.live.textContent = text), 20);
     };
-    //: The picked box brought into view when the picture is zoomed past the pane.
-    const reveal = (b) => {
-      const img = image();
-      if (!img) return;
-      const r = img.getBoundingClientRect();
-      const [vx, vy, vw, vh] = S.hit.vb;
-      const at = [r.left + ((b.x - vx) / vw) * r.width, r.top + ((b.y - vy) / vh) * r.height];
-      const pane = fig.getBoundingClientRect();
-      const nudge = (v, lo, hi) => (v < lo + 24 ? v - lo - 24 : v > hi - 24 ? v - hi + 24 : 0);
-      fig.scrollBy({ left: nudge(at[0], pane.left, pane.right), top: nudge(at[1], pane.top, pane.bottom), behavior: "auto" });
-    };
+    const reveal = (b) => image() && revealBox(fig, S, image(), b);
     const choose = (key) => {
       const list = boxes();
       if (!list) return false;
@@ -314,35 +353,12 @@
       if (img && dims(img)) aim(1, ...centre());
     };
 
-    //: The corner bar: a plain `.dock` (DESIGN.md, "A zoom control on a picture").
-    const bar = document.createElement("div");
-    bar.className = "dock dgm-zoom";
-    bar.setAttribute("role", "toolbar");
-    bar.setAttribute("aria-label", "Zoom the picture");
-    const group = document.createElement("div");
-    group.className = "dock-group";
-    const buttons = {
-      out: smallButton("ph:minus", "Zoom out", () => step(-1)),
-      in: smallButton("ph:plus", "Zoom in", () => step(1)),
-      fit: smallButton("Fit", "Fit the diagram to the pane", fitTo),
-    };
-    //: 100% is the drawing's own size; type a number and Enter, or pick one from the chevron (the 1 key still goes to 100%).
-    const levelHost = document.createElement("span");
-    levelHost.className = "dgm-zoom-level";
-    level = valueField(levelHost, {
-      value: 100,
-      min: 5,
-      max: 500,
-      label: "Zoom percent",
-      format: (v) => `${Math.round(v)}%`,
-      presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: fitTo }]),
-      onCommit: (pct) => {
-        const img = image();
-        if (img && dims(img)) aim(pct / 100, ...centre());
-      },
+    const made = zoomBar(step, fitTo, (pct) => {
+      const img = image();
+      if (img && dims(img)) aim(pct / 100, ...centre());
     });
-    group.append(buttons.out, buttons.in, buttons.fit, levelHost);
-    bar.append(group);
+    const { bar, buttons } = made;
+    level = made.level;
     stage.append(bar);
     stage.append(note);
     //: The overview in the corner, for a picture larger than the pane (W18 R15); a diagram that fits never fetches it.
@@ -380,10 +396,7 @@
 
     //: Touch and mouse: two fingers pinch; one finger or the mouse drags the picture when it is bigger than the pane;
     //: a double tap fits it, or opens it to twice the fit.
-    const span = () => {
-      const [a, b] = [...points.values()];
-      return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-    };
+    const span = () => pinchSpan(points);
     const roomy = () => fig.scrollWidth > fig.clientWidth + 1 || fig.scrollHeight > fig.clientHeight + 1;
     //: The right button pans too (L-documents-1, as draw.io does): a press that stays put still opens its menu, a drag holds it back.
     let rightDrag = false;

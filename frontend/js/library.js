@@ -3655,11 +3655,15 @@ async function renderLibraryDocuments() {
   const empty = document.getElementById("library-docs-empty");
   const noMatch = document.getElementById("library-docs-no-match");
   if (!list) return;
-  const needle = (document.getElementById("library-docs-search")?.value || "")
-    .trim()
-    .toLowerCase();
-
+  const needle = (document.getElementById("library-docs-search")?.value || "").trim().toLowerCase();
   let docs = [];
+  // One element with a class and (optionally) text: the row below is a dozen of them.
+  const mk = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
   showSkeletons(list, 4, "li");
   //: The type table names a code card's kind; the library can open before
   //: the Documents tab has asked for it.
@@ -3678,10 +3682,7 @@ async function renderLibraryDocuments() {
     //: and call it the oldest, and the pager would offer pages that do not
     //: exist. With `q` given the server counts the matches, not the table,
     //: so the loop ends on the size of the search.
-    docs = await apiPagedList(
-      needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents",
-      DOCUMENTS_PAGE_SIZE
-    );
+    docs = await apiPagedList(needle ? `/documents?q=${encodeURIComponent(needle)}` : "/documents", DOCUMENTS_PAGE_SIZE);
   } catch {
     list.replaceChildren();
     return surfaceFailed(empty, "your documents", renderLibraryDocuments);
@@ -3708,9 +3709,7 @@ async function renderLibraryDocuments() {
   // by a new search) - drop it from the selection too, or the bar's count
   // would go on including a row that no longer exists.
   const liveIds = new Set(docs.map((d) => d.id));
-  for (const id of [...libraryDocsSelection]) {
-    if (!liveIds.has(id)) libraryDocsSelection.delete(id);
-  }
+  for (const id of [...libraryDocsSelection]) if (!liveIds.has(id)) libraryDocsSelection.delete(id);
 
   list.replaceChildren();
   const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
@@ -3749,15 +3748,13 @@ async function renderLibraryDocuments() {
     const start = (libraryDocsCurrentPage - 1) * pageSize;
     docs = docs.slice(start, start + pageSize);
     pageBar?.classList.remove("hidden");
-    document.getElementById("library-docs-page-status").textContent =
-      `Page ${libraryDocsCurrentPage} of ${totalPages}`;
+    document.getElementById("library-docs-page-status").textContent = `Page ${libraryDocsCurrentPage} of ${totalPages}`;
     document.getElementById("library-docs-page-prev").disabled = libraryDocsCurrentPage <= 1;
     document.getElementById("library-docs-page-next").disabled = libraryDocsCurrentPage >= totalPages;
   }
 
   for (const doc of docs) {
     const item = document.createElement("li");
-
     // Reported: "can't rename, multi select, or delete documents in the
     // library subtab" - this row used to be nothing but the Open button
     // below. The tick and the ⋯ menu give it the same three actions a
@@ -3774,50 +3771,37 @@ async function renderLibraryDocuments() {
     const open = document.createElement("article");
     open.className = "doc-list-item";
     Object.assign(open.dataset, { obj: `document:${doc.id}`, objTitle: doc.title || "Untitled" });
-    const openDoc = () => {
-      // switchTab first, then open. Reported as "the documents subtab document
-      // cards don't even do anything": openDocument() loaded the document
-      // correctly, but the Documents *page* stayed hidden behind the Library
-      // tab, so from the outside the click did nothing at all.
-      switchTab("documents");
-      openDocument(doc.id);
-    };
+    // switchTab first, then open. Reported as "the documents subtab document
+    // cards don't even do anything": openDocument() loaded the document
+    // correctly, but the Documents *page* stayed hidden behind the Library
+    // tab, so from the outside the click did nothing at all.
+    const openDoc = () => { switchTab("documents"); openDocument(doc.id); };
     open.addEventListener("click", openDoc);
 
-    const top = document.createElement("div");
-    top.className = "doc-list-top";
-    const tick = document.createElement("input");
-    tick.type = "checkbox";
-    tick.className = "doc-list-tick";
+    const top = mk("div", "doc-list-top");
+    const tick = Object.assign(mk("input", "doc-list-tick"), { type: "checkbox" });
     tick.checked = libraryDocsSelection.has(doc.id);
     tick.setAttribute("aria-label", `Select "${doc.title || "Untitled"}"`);
     tick.addEventListener("click", (event) => event.stopPropagation());
     tick.addEventListener("change", () => {
-      if (tick.checked) libraryDocsSelection.add(doc.id);
-      else libraryDocsSelection.delete(doc.id);
+      libraryDocsSelection[tick.checked ? "add" : "delete"](doc.id);
       syncLibraryDocsSelectbar();
     });
-    const icon = document.createElement("span");
-    icon.className = "doc-list-icon";
+    const icon = mk("span", "doc-list-icon");
     setLabel(icon, "ph:file-text");
     icon.setAttribute("aria-hidden", "true");
     top.append(tick, icon);
 
-    const body = document.createElement("span");
-    body.className = "doc-list-body";
-    const title = document.createElement("span");
-    title.className = "doc-list-title";
-    title.textContent = doc.title || "Untitled";
+    const body = mk("span", "doc-list-body");
+    const title = mk("span", "doc-list-title", doc.title || "Untitled");
     cardOpener(title, openDoc);
-    const meta = document.createElement("span");
-    meta.className = "muted doc-list-meta";
+    const meta = mk("span", "muted doc-list-meta");
     // Words and when it was last touched, the two facts that tell you which
     // of five similarly-named drafts is the one you meant.
     //: A code file is its lines and its type ("6 lines · JavaScript"), not
     //: its words (1031 CE8; `docSizeText` is the one rule).
     const words = docSizeText(doc, true);
-    const when = doc.updated_at ? relativeTime(doc.updated_at) : "";
-    meta.textContent = [words, when].filter(Boolean).join(" · ");
+    meta.textContent = [words, doc.updated_at ? relativeTime(doc.updated_at) : ""].filter(Boolean).join(" · ");
     body.append(title, meta);
 
     // The document's own opening, which is the thing that actually tells four
@@ -3835,20 +3819,16 @@ async function renderLibraryDocuments() {
     const page = document.createElement("span");
     page.className = "doc-list-page";
     page.setAttribute("aria-hidden", "true");
-    const leaf = document.createElement("span");
-    leaf.className = "doc-list-page-leaf";
-    const leafHead = document.createElement("span");
-    leafHead.className = "doc-list-page-head";
+    const leaf = mk("span", "doc-list-page-leaf");
+    const leafHead = mk("span", "doc-list-page-head");
     leafHead.textContent = doc.title || "Untitled";
-    const leafLines = document.createElement("span");
-    leafLines.className = "doc-list-page-lines";
+    const leafLines = mk("span", "doc-list-page-lines");
     leafLines.textContent = docPreview;
     leaf.append(leafHead, leafLines);
     page.append(leaf);
     //: The document's first picture is the page's cover (L-documents-80): the summary names it, the image loads lazily, and a broken one leaves the text page.
     if (doc.cover) {
-      const cover = document.createElement("img");
-      cover.className = "doc-list-page-cover";
+      const cover = mk("img", "doc-list-page-cover");
       cover.loading = "lazy";
       cover.decoding = "async";
       cover.alt = "";
@@ -3856,20 +3836,14 @@ async function renderLibraryDocuments() {
       cover.src = doc.cover;
       page.append(cover);
     }
-    if (docPreview) {
-      const preview = document.createElement("span");
-      preview.className = "doc-list-preview";
-      preview.textContent = docPreview;
-      body.append(preview);
-    }
+    if (docPreview) body.append(mk("span", "doc-list-preview", docPreview));
 
     // Same three actions `libraryActions()` gives a document's card in the
     // "All" view: kept as its own copy rather than calling that function
     // directly, because its `reload` is hard-coded to `loadLibrary()` (the
     // "All" view's own data), which would leave this list showing a document
     // that was just renamed or deleted until something else refreshed it.
-    const menu = kebabMenu(
-      withLibraryCopyActions([
+    const menu = kebabMenu(withLibraryCopyActions([
         // **A read-only showcase, not the editor.** Asked for directly:
         // "make a way to view documents in the documents tab in the
         // lightbox." The row's own click already opens the full editor, 
@@ -3887,26 +3861,21 @@ async function renderLibraryDocuments() {
             toast(error.message || voiceLine("failed", { what: "open that document" }), true);
             return;
           }
-          openLightbox(
-            [
-              {
-                filename: full.title || "Untitled",
-                id: full.id,
-                //: What tells the lightbox this preview has an editor to open
-                //:, see `openDocBtn` there. Separate from `id`, which the
-                //: lightbox also uses for attachments and uploads.
-                documentId: full.id,
-                kind: full.file_type === "md" ? "markdown" : "code",
-                text: full.content || "",
-                addedAt: full.updated_at || "",
-                // No file on /media to fetch a URL from, Save reads this
-                // directly, the same route the kebab's own "Download .md"
-                // item already uses.
-                getUrl: () => `/documents/${full.id}/export.md`,
-              },
-            ],
-            0
-          );
+          openLightbox([{
+            filename: full.title || "Untitled",
+            id: full.id,
+            //: What tells the lightbox this preview has an editor to open
+            //:, see `openDocBtn` there. Separate from `id`, which the
+            //: lightbox also uses for attachments and uploads.
+            documentId: full.id,
+            kind: full.file_type === "md" ? "markdown" : "code",
+            text: full.content || "",
+            addedAt: full.updated_at || "",
+            // No file on /media to fetch a URL from, Save reads this
+            // directly, the same route the kebab's own "Download .md"
+            // item already uses.
+            getUrl: () => `/documents/${full.id}/export.md`,
+          }], 0);
         }),
         makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
           const next = await promptDialog("Rename this document", doc.title || "");
@@ -3927,9 +3896,7 @@ async function renderLibraryDocuments() {
           libraryDocsSelection.delete(doc.id);
           renderLibraryDocuments();
         }),
-      ], "document", doc.title, doc.id),
-      `Actions for "${doc.title || "Untitled"}"`
-    );
+    ], "document", doc.title, doc.id), `Actions for "${doc.title || "Untitled"}"`);
     menu.classList.add("doc-list-menu");
     menu.addEventListener("click", (event) => event.stopPropagation());
     // **Reported: "the documents popup menu in the library subtab gets cut
