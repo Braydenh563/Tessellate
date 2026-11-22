@@ -34447,8 +34447,8 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:767 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1463 |
 | Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2698 |
-| Sweeps still failing after two measured runs, L-world-class-413, 2026-11-22 | docs/roadmap/BACKLOG.md:4463 |
-| Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21 | docs/roadmap/BACKLOG.md:4455 |
+| Sweeps still failing after two measured runs, L-world-class-413, 2026-11-22 | docs/roadmap/BACKLOG.md:4464 |
+| Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21 | docs/roadmap/BACKLOG.md:4456 |
 | The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4134 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:912 |
 | The asymmetry these exploit | docs/roadmap/WORLD_CLASS_PLAN.md:998 |
