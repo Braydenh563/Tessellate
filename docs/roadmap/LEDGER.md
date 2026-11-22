@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
 | whiteboard | 0 | 0 | 0 | 0 | 0 | 0 |
-| documents | 0 | 0 | 1 | 0 | 0 | 1 |
+| documents | 0 | 0 | 0 | 0 | 0 | 0 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 24 | 2 | 0 | 5 | 26 |
-| all | 402 | 504 | 124 | 2 | 153 | 1030 |
+| all | 402 | 504 | 123 | 2 | 153 | 1029 |
 
 ## graph
 
@@ -280,7 +280,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## documents
 
-- [ ] **L-documents-104** `documents` partly, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile; documents side built behind boardInstance stub, 2349346a1; waits on #223's instance API Left for the wiring step: a card that CodeMirror removes is noticed only on the next doc-shown, doc-saved or board-edited (no MutationObserver, test_frontend_wake_sources), so the embed widget's destroy hook should end its instance; help and manual parity move then.
 
 ## mindmap
 
