@@ -621,6 +621,46 @@
    "notice": "p5.LICENSE.txt"
   },
   {
+   "path": "perfect-freehand/LICENSE",
+   "sha256": "6a5ac82b42ce0af6a1e5fe39b46f0b52f1368e81e437175e8d9ae21569c8688e",
+   "size": 1073,
+   "library": "perfect-freehand",
+   "version": "1.2.3 (`perfect-freehand.min.js`, the npm CommonJS build wrapped as a classic script by `build.sh`; `perfect-freehand/VERSION.txt`)",
+   "upstream": "https://github.com/steveruizok/perfect-freehand",
+   "licence": "MIT",
+   "notice": "perfect-freehand/LICENSE"
+  },
+  {
+   "path": "perfect-freehand/VERSION.txt",
+   "sha256": "5024cd9e24d2d8651a5e1a13eeb6fa8b12277ab5ac890dc9507188e9a26da4dc",
+   "size": 34,
+   "library": "perfect-freehand",
+   "version": "1.2.3 (`perfect-freehand.min.js`, the npm CommonJS build wrapped as a classic script by `build.sh`; `perfect-freehand/VERSION.txt`)",
+   "upstream": "https://github.com/steveruizok/perfect-freehand",
+   "licence": "MIT",
+   "notice": "perfect-freehand/LICENSE"
+  },
+  {
+   "path": "perfect-freehand/build.sh",
+   "sha256": "33c3cba658f5a76d2caea50435687351122b4c6014ad99e34439cfc5acc41a7a",
+   "size": 1044,
+   "library": "perfect-freehand",
+   "version": "1.2.3 (`perfect-freehand.min.js`, the npm CommonJS build wrapped as a classic script by `build.sh`; `perfect-freehand/VERSION.txt`)",
+   "upstream": "https://github.com/steveruizok/perfect-freehand",
+   "licence": "MIT",
+   "notice": "perfect-freehand/LICENSE"
+  },
+  {
+   "path": "perfect-freehand/perfect-freehand.min.js",
+   "sha256": "c56a2b85b5b3722503eaa161bc77fce8ea42833e1a0e060b96554bf18f305d23",
+   "size": 4919,
+   "library": "perfect-freehand",
+   "version": "1.2.3 (`perfect-freehand.min.js`, the npm CommonJS build wrapped as a classic script by `build.sh`; `perfect-freehand/VERSION.txt`)",
+   "upstream": "https://github.com/steveruizok/perfect-freehand",
+   "licence": "MIT",
+   "notice": "perfect-freehand/LICENSE"
+  },
+  {
    "path": "phosphor/LICENSE",
    "sha256": "ff053b805bf9d58b7cf95e59a7eb65f46e69c5304648d8f4a5fc1e10cc7356c1",
    "size": 1178,

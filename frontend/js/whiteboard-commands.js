@@ -725,7 +725,7 @@ function wbInitMoreMenu() {
     { label: "ph:align-left Align", ids: ["align-left", "align-hcenter", "align-right", "align-top", "align-vcenter", "align-bottom", "key-object"] },
     { label: "ph:columns Distribute, size and flip", ids: ["distribute-h", "distribute-v", "same-width", "same-height", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "turn-90"] },
     { label: "ph:graph Layout", ids: ["layout-flow-h", "layout-flow-v", "layout-radial", "layout-org", "layout-organic", "layout-circle", "layout-rack"] },
-    { label: "ph:tree-structure Tidy and connect", ids: ["tidy-down", "tidy-right", "join-chain", "join-fan", "measure", "parallel-edges"] },
+    { label: "ph:tree-structure Tidy and connect", ids: ["tidy-down", "tidy-right", "join-chain", "join-fan", "measure", "parallel-edges", "loop"] },
     { label: "ph:link Group and lock", ids: ["group", "ungroup", "remove-from-group", "lock", "unlock-all"] },
   ];
 

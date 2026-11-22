@@ -93,7 +93,11 @@ def test_no_new_board_key_takes_an_app_shortcut() -> None:
     shared = app & mine
     #: Changed 2026-11-12 (orchestrator review): the board first took Ctrl+Shift+A, E, R and Y from Atlas,
     #: selection actions, record and the companion; those stay the app's, so no new board key is an app key.
-    assert shared == set(), shared
+    #: F2 is shared since L-ui-modernisation-14 put "rename the row you are on" in the app's table: the app's
+    #: F2 acts only with the focus on a list row (`closest(ROW_MENU_HOSTS)`), the board's only with the keys on a
+    #: board, so the two never meet; any other shared key is still a theft.
+    assert shared <= {"F2"}, shared
+    assert "document.activeElement.closest(ROW_MENU_HOSTS)" in WIRING
     # Taken in the capture phase, ahead of the app's document listener, and only while a board has the keys.
     assert "wbBoardHasFocus()" in KEYS and "e.stopImmediatePropagation()" in KEYS
 
