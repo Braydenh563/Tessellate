@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
+| world-class | 130 | 177 | 57 | 0 | 72 | 364 |
 | general | 0 | 22 | 2 | 0 | 5 | 24 |
-| all | 402 | 502 | 124 | 2 | 153 | 1028 |
+| all | 402 | 502 | 123 | 2 | 153 | 1027 |
 
 ## graph
 
@@ -588,7 +588,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
-- [ ] **L686** `world-class` partly, M: Finish INBOX 1748: one optional-package notice recipe for every package (dismissable, back after an uninstall), Q10, Q11 (30 s cache reset on the model coming up), Q25 first-run calibration step, row 22 drafts pick-up. From INBOX 1748. Evidence: Verify each part in code first; built parts move to HISTORY
 - [ ] **L687** `world-class` partly, L: MCP: add HTTP transport and restricted token/URL setup, drop embedder load at startup, decide trust model. From OPEN.md:723; OPEN.md:1007; INBOX.md:904 B52. Evidence: Resources and prompts built (mcp_server.py:28-30,173); embedder load and stdio-only not confirmed changed
 - [ ] **L688** `world-class` partly, L: Finish the rest of the architecture audit (ARCH-04/13/16/22/10/25). From OPEN.md:1936; OPEN.md:3255. Evidence: HISTORY.md:46642 notes list follows X-Next-Cursor; other items unverified
 - [ ] **L689** `world-class` partly, L: Make filing against a never-answering model non-serial for a 20-note burst. From OPEN.md:1715. Evidence: Commit c26b090b4/902ffcbcc: late answer replaces stand-in, wait is a preference; serial burst of 20 not shown fixed
