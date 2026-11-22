@@ -835,7 +835,10 @@ function wbCullNow(transform, size, unlessDrawn = false) {
       const right = Math.max(a.x + (a.width || 0), b.x + (b.width || 0));
       const bottom = Math.max(a.y + (a.height || 0), b.y + (b.height || 0));
       const cull = outside(left, top, right - left, bottom - top);
-      if (held.wrap.classList.contains("wb-culled") !== cull) held.wrap.classList.toggle("wb-culled", cull);
+      if (held.wrap.classList.contains("wb-culled") === cull) continue;
+      //: A line a drop left undrawn off screen is drawn as it comes on (`wbUpdateMapEdges`, `onScreen`).
+      if (!cull && held.path._wbMoved) wbUpdateMapEdges.drawHeld([held.path]);
+      held.wrap.classList.toggle("wb-culled", cull);
     }
   }
 }

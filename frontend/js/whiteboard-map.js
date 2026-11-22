@@ -2162,7 +2162,7 @@ const wbMapDragLayer = {
       if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
       for (const [id, size] of layer.sizes) if (!wbMapNodeSizeCache.has(id)) wbMapNodeSizeCache.set(id, size);
     }
-    if (layer.innerEdges.length) wbUpdateMapEdges(layer.innerEdges);
+    if (layer.innerEdges.length) wbUpdateMapEdges(layer.innerEdges, { onScreen: true });
     for (const pair of layer.links) pair.el?.removeAttribute("transform");
     if (layer.links.length) wbUpdateLinkedSketches(layer.grabbed.id, layer.links);
   },
