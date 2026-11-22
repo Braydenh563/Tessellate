@@ -1629,6 +1629,9 @@ class _LazyRouters(BaseRoute):
         self.app = app
         self.gates = gates
         self.loaded = [False] * len(ROUTER_ROWS)
+        # Rows tried, whether or not they came in: a row that failed to import is logged
+        # once and not retried at every request.
+        self.settled = [False] * len(ROUTER_ROWS)
         self.by_segment: dict[str, list[int]] = {}
         for index, row in enumerate(ROUTER_ROWS):
             for segment in row.segments.split():
@@ -1638,29 +1641,48 @@ class _LazyRouters(BaseRoute):
     def matches(self, scope):
         if scope["type"] in ("http", "websocket"):
             indexes = self.by_segment.get(_first_segment(get_route_path(scope)))
-            if indexes and not all(self.loaded[i] for i in indexes):
+            if indexes and not all(self.settled[i] for i in indexes):
                 self.load(indexes)
         return Match.NONE, {}
 
     def load(self, indexes) -> None:
         for index in indexes:
-            if self.loaded[index]:
+            if self.settled[index]:
                 continue
             row = ROUTER_ROWS[index]
             # Imported outside the lock, so a request's own row is not kept waiting
             # behind another module's import (the launch warm-up's `load_all`).
-            router = row.router()
+            try:
+                router = row.router()
+            except Exception:  # noqa: BLE001  # one broken module must not take down the rows after it
+                self._fail(index, row)
+                continue
             with self._lock:
-                if self.loaded[index]:
+                if self.settled[index]:
                     continue
                 routes = self.app.router.routes
-                self.app.include_router(router, dependencies=self.gates[row.gate])
+                try:
+                    self.app.include_router(router, dependencies=self.gates[row.gate])
+                except Exception:  # noqa: BLE001
+                    self._fail(index, row)
+                    continue
                 included = routes.pop()
                 # In place, not a new list: the request that called `matches` is
                 # iterating this very list and must see the router it just included.
+                # `include_router` has already marked the routes changed.
                 routes.insert(routes.index(self) + 1 + sum(self.loaded[:index]), included)
                 self.loaded[index] = True
-                self.app.router._mark_routes_changed()
+                self.settled[index] = True
+
+    def _fail(self, index: int, row: Row) -> None:
+        """Its paths answer 404 from here on, and the log names the module, once, at error
+        level, so a broken route module is not a quiet 500 per request or a debug line."""
+        self.settled[index] = True
+        logging.getLogger("tessellate.startup").error(
+            "route module tessellate.api.%s failed to load; its routes are not served",
+            row.module,
+            exc_info=True,
+        )
 
     def load_all(self) -> None:
         self.load(range(len(ROUTER_ROWS)))
