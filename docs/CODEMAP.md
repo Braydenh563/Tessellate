@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11663, test files 3061, tests 24048, plan headings 691, app scripts 29, boot scripts 38, script files 420.
+Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11666, test files 3062, tests 24054, plan headings 691, app scripts 29, boot scripts 38, script files 420.
 
 ## Frontend functions (9110)
 
@@ -2539,9 +2539,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `batchSpaceRequest` | frontend/js/batch-space.js:13 |
 | `moveNotesToSpace` | frontend/js/batch-space.js:55 |
 | `pickSpaceDialog` | frontend/js/batch-space.js:21 |
-| `rmSpace` | frontend/js/batch-space.js:99 |
-| `spaceDeleteNeedsName` | frontend/js/batch-space.js:95 |
-| `spaceDeleteSubmit` | frontend/js/batch-space.js:153 |
+| `rmSpace` | frontend/js/batch-space.js:111 |
+| `spaceDeleteNeedsName` | frontend/js/batch-space.js:107 |
+| `spaceDeleteSubmit` | frontend/js/batch-space.js:165 |
 
 ### frontend/js/bg-art.js (38)
 
@@ -15207,7 +15207,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/spaces/{space_id}` | DELETE | `delete_space` | src/tessellate/api/routes_spaces.py:314 |
 | `/spaces/{space_id}` | PUT | `update_space` | src/tessellate/api/routes_spaces.py:103 |
 | `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:80 |
-| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:345 |
+| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:347 |
 | `/spaces/{space_id}/private` | PUT | `set_space_private` | src/tessellate/api/routes_private_spaces.py:144 |
 | `/speak` | POST | `speak` | src/tessellate/api/routes_voice.py:56 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:793 |
@@ -15444,7 +15444,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11663)
+## Backend modules (11666)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24956,7 +24956,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `create_space` | src/tessellate/api/routes_spaces.py:88 |
 | `delete_space` | src/tessellate/api/routes_spaces.py:315 |
 | `get_spaces` | src/tessellate/api/routes_spaces.py:76 |
-| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:346 |
+| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:348 |
 | `restore_space` | src/tessellate/api/routes_spaces.py:161 |
 | `space_counts` | src/tessellate/api/routes_spaces.py:81 |
 | `update_space` | src/tessellate/api/routes_spaces.py:104 |
@@ -28991,14 +28991,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `names_label` | src/tessellate/entry/mentions.py:113 |
 | `sentence_around` | src/tessellate/entry/mentions.py:78 |
 
-### src/tessellate/entry/moving.py (4)
+### src/tessellate/entry/moving.py (7)
 
 | Name | File:line |
 |---|---|
+| `_home_name` | src/tessellate/entry/moving.py:77 |
 | `_move_dependents` | src/tessellate/entry/moving.py:45 |
 | `_move_entries` | src/tessellate/entry/moving.py:34 |
+| `_outside_ends` | src/tessellate/entry/moving.py:59 |
+| `hidden_links` | src/tessellate/entry/moving.py:89 |
 | `to_category` | src/tessellate/entry/moving.py:18 |
-| `to_space` | src/tessellate/entry/moving.py:59 |
+| `to_space` | src/tessellate/entry/moving.py:108 |
 
 ### src/tessellate/entry/opens.py (1)
 
@@ -30461,7 +30464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24048)
+## Tests (24054)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -32297,6 +32300,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_motion_recipes.py | 6 |
 | tests/test_motion_resolved.py | 8 |
 | tests/test_motion_tokens.py | 15 |
+| tests/test_move_keeps_links_row22b.py | 6 |
 | tests/test_move_notes_tool.py | 7 |
 | tests/test_name_mood.py | 40 |
 | tests/test_namemark_follow_cost.py | 2 |

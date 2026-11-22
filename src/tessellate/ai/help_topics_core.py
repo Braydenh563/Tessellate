@@ -430,6 +430,8 @@ HELP_TOPICS: list[dict] = [
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
             "switch made in the first, and an answer still on its way from the old space is dropped. "
+            "Moving selected notes to another space asks first when a link joins one of them to a note staying "
+            "behind: those links are read inside one space only, so they go out of view until both notes are in the same space again. "
             "A space can be private: Private in New space or Edit space seals everything in it."
         ),
         "badge": {"label": "Account & security", "section": "account"},
