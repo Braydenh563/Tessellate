@@ -240,8 +240,10 @@
 
 
   //: The app's colour tokens, read once per render. One document, one theme,
-  //: so every surface reads the same ones.
-  const gcTokens = {};
+  //: so every surface reads the same ones. `let`: a theme change hands out a new
+  //: object (`gcThemeChanged`), because every cache below (the scene, the label
+  //: copy, each node's sprite) is keyed on this object's identity.
+  let gcTokens = {};
 
   //: Node radius, GRAPH_PLAN.md §5 Phase 1: `4 + 2*sqrt(degree)`, clamped to
   //: [4, 18]. Degree is counted client-side from the edges until Phase 5 sends
@@ -341,6 +343,22 @@
       fadeMs: gcMs(get("--ui-slow", "0.2s")),
       hoverMs: gcMs(get("--ui-slow", "0.2s")),
     });
+  }
+
+  //: **A theme change repaints the map** (owner: light and dark on the graph
+  //: left the node outlines and label chips in the old theme). The tokens were
+  //: read when a map rendered and never again, and each cache is keyed on the
+  //: identity of `gcTokens`, so a new object makes every one miss once. One
+  //: read and one redraw per change, on the app's own announcement of one
+  //: (`refreshArtForTheme`, which the toggle, the OS scheme and a palette all
+  //: reach, after the new attribute is set): no observer of its own, no
+  //: polling, nothing per frame.
+  function gcThemeChanged() {
+    gcTokens = {};
+    gcReadTokens(gcTab);
+    gcSpriteCache.clear();
+    gcHoverMark.cache.clear();
+    for (const s of [gcTab, graphPaneSurface]) if (s && s.ctx) gcRequestDraw(s);
   }
 
   //: A CSS time ("0.16s", "120ms") in milliseconds.
@@ -7967,9 +7985,11 @@
     }
   }
 
+  //: A getter, not a copy: `gcTokens` is replaced on a theme change.
+  Object.defineProperty(window, "gcTokens", { configurable: false, get: () => gcTokens });
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   //: The sweeps' hands on its own names (scratchpad/ui-sweeps/graphlinkpeek), on a name already shared so
   //: the shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
   renderGraphCanvas.sweep = { curvedLinks: gcCurvedLinks, bowPoint: gcBowPoint, peekKinds: GC_PEEK_KINDS, edgeAtWorld: gcEdgeAtWorld, nodeAtWorld: gcNodeAtWorld };
-  Object.assign(window, { gcAutoFitTurnedOn, gcCat, gcExportPng, gcFitInsets, gcOpenTopic, gcPost, gcRenameTopicInline, gcRequestDraw, gcReshuffle, gcStill, gcStop, gcTab, gcTogglePin, gcTokens, gcTopicMembers, gcTopicSummaries, gcTreeFrameNodes, gcVisibleAtTime, gcWorkerParams, graphPaneRerender, renderGraphCanvas });
+  Object.assign(window, { gcAutoFitTurnedOn, gcCat, gcExportPng, gcFitInsets, gcOpenTopic, gcPost, gcRenameTopicInline, gcRequestDraw, gcReshuffle, gcStill, gcStop, gcTab, gcThemeChanged, gcTogglePin, gcTopicMembers, gcTopicSummaries, gcTreeFrameNodes, gcVisibleAtTime, gcWorkerParams, graphPaneRerender, renderGraphCanvas });
 })();
