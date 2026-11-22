@@ -18,6 +18,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 
@@ -32,7 +34,7 @@ SCANNERS = {
 
 def _literal(name: str) -> str:
     file, start, end, _flags = SCANNERS[name]
-    text = (JS / file).read_text(encoding="utf-8")
+    text = _js_scope.unwrapped((JS / file).read_text(encoding="utf-8"))
     at = text.index(start) + (len(start) if start.endswith("/") else len(".replace(/"))
     if start.startswith(".replace"):
         at = text.index(start) + len(".replace(/")

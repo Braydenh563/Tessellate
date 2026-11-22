@@ -16,6 +16,7 @@ import shutil
 import subprocess
 
 import pytest
+from tests import _js_scope
 from tests._app_js import JS_DIR
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -40,7 +41,7 @@ def _node(body: str):
 
 
 def _excerpt(content: str) -> list[str]:
-    preview = (JS_DIR / "note-pick-preview.js").read_text(encoding="utf-8")
+    preview = _js_scope.unwrapped((JS_DIR / "note-pick-preview.js").read_text(encoding="utf-8"))
     head = re.search(r"^const NOTE_PICK_LINES.*?^function notePickThumb", preview, re.S | re.M).group(0).rsplit("//:", 1)[0]
     script = f"""
 {_constant("INLINE_MD", "notes-list.js")}
@@ -102,7 +103,7 @@ def test_the_preview_file_rides_the_note_panels_bundle():
 
 def _thumb(entry: dict, fail: bool = False) -> dict:
     """Run notePickThumb with a fake DOM and api, as the picker draws an attached picture (L516)."""
-    preview = (JS_DIR / "note-pick-preview.js").read_text(encoding="utf-8")
+    preview = _js_scope.unwrapped((JS_DIR / "note-pick-preview.js").read_text(encoding="utf-8"))
     thumb = re.search(r"^function notePickThumb\(.*?^\}", preview, re.S | re.M).group(0)
     loader = re.search(
         r"^async function attachmentObjectUrl\(.*?^\}", (JS_DIR / "lightbox.js").read_text(encoding="utf-8"), re.S | re.M
