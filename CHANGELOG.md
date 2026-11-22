@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: the companion sweeps (life, react, smooth) pin the page clock to early afternoon, as a night yawn takes the place of the drift they check; wbtopbar820 seeds a board when the notebook has only the default one.
+- Tests: six Python 3.13 checks follow moved code (chat-list.js, the queued tool-group save, the map-drag close before a prune), and the build stamp reads the app clock.
 - UI: with a mouse the tab strip keeps its 32px row from 820 to 1200 (the 44px strip is for touch), so the header is 44px at 1093x614 and 1024x768 instead of 56 (22.4 shell pass).
 - Docs: UI_MODERNISATION 13.3 carries the 2026-11-22 recount of decisions 9 to 17 from the running app (`gate13.js`): every count at or under its ratchet, the 13a remainder is a LEDGER row, and INBOX 266 ask 1 (the usability and IA read) has its own row.
 - Tests: the answer pictures, citation order and copy-app-link checks read chat-list.js, where the saved-chat code moved from sheets-selects.js.
