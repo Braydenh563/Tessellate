@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 58 | 7 | 0 | 0 | 65 |
-| general | 0 | 28 | 2 | 0 | 6 | 30 |
-| all | 372 | 439 | 78 | 2 | 113 | 889 |
+| general | 0 | 29 | 2 | 0 | 6 | 31 |
+| all | 372 | 440 | 78 | 2 | 113 | 890 |
 
 ## graph
 
@@ -522,6 +522,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 - [ ] **L-world-class-393** `world-class` open, M: Documents and Media selection bars: a document and a file carry no tags, category or properties (no column on `Document` or the file table), so decision 65's 'every list' needs those fields before their bars can set them; the Library bar sets all three for the notes ticked since L-world-class-392. From L-world-class-392, 2026-11-14. Evidence: database.py:1744 (Document: title, content, file_type, no tags); index.html #library-docs-selectbar, #library-media-selectbar
+- [ ] **L-general-73** `general` open, M: Server trim for webm, ogg and mp4 recordings. From L685 D18. Evidence: webm/ogg/mp4 still decode in the tab (about 12 MB a minute); a server trim needs a muxer. routes_recordings.py is 670 lines with no cap entry.
 
 ## general
 
