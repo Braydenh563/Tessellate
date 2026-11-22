@@ -164,6 +164,11 @@
      "source": "https://github.com/pyodide/pyodide"
     },
     {
+     "name": "Ruff (wasm)",
+     "licence": "MIT",
+     "source": "https://github.com/astral-sh/ruff"
+    },
+    {
      "name": "needle",
      "licence": "Apache-2.0",
      "source": "https://huggingface.co/Cactus-Compute/needle3"

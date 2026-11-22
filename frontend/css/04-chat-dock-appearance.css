@@ -402,7 +402,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   font-size: var(--text-sm);
 }
 
-
 /* Below the width the script draws it at, never: see NOTES_RAIL_MIN_WIDTH in
    notes-list.js, which has to name the same number. The note's own
    Connections sheet is the way in there. */
@@ -2642,7 +2641,8 @@ label.setting-check,
    every in-flow item, the icon included. As an inline-block the words sit in
    an inline formatting context, where an inline-block icon is atomic and the
    decoration stops at its edge. */
-:is(.linklike, .link-button):has(> .ph) {
+.linklike:has(> .ph),
+.link-button:has(> .ph) {
   display: inline-block;
 }
 :is(.linklike, .link-button) > .ph {
@@ -2700,7 +2700,6 @@ span > .chip {
   visibility: visible;
   transform: none;
 }
-
 
 .scroll-top:focus-visible {
   outline: 2px solid var(--accent);
@@ -3399,7 +3398,8 @@ span > .chip {
   background: none;
   border-radius: inherit;
 }
-.att-chip-pill :is(.att-chip-open, .att-chip-x) {
+.att-chip-pill .att-chip-open,
+.att-chip-pill .att-chip-x {
   gap: var(--space-2);
   margin: calc((var(--control-h-lg) - var(--target-min)) / 2) 0;
   padding: 0;
@@ -3466,6 +3466,9 @@ span > .chip {
   resize: vertical;
   flex: 1 1 auto;
   min-height: 11rem;
+  /* The app's textarea margin made a bare box 9.6px shorter than its mounted editor surface (no
+     margin), so a focused thoughts box stood 294.8 beside a 285.2 draft (L-documents-73, real model). */
+  margin: 0;
 }
 
 /* **The thoughts footer is as tall as the draft's, so the two boxes end on one line** (L303, L326:
@@ -3715,11 +3718,22 @@ span > .chip {
   flex: 0 0 auto;
 }
 
+/* One line, a control tall, scrolling sideways past it: the row appears with the second pass and
+   took 42px from the draft box alone (285.2 to 242.8 against the thoughts box's 294.8, L888,
+   docsverify-write.js). One fixed height lets the thoughts footer below take the same height. */
 .draft-versions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-2);
+  min-height: var(--control-h);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* Side by side only: 08-consistency.css resets it in its 72rem one-column query (no new breakpoint). */
+.draft-columns:has(#draft-versions:not(.hidden)) .draft-foot {
+  min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 3 * 0.4rem + var(--control-h));
 }
 
 .draft-versions-label {
@@ -3770,25 +3784,6 @@ span > .chip {
   }
 }
 
-/* --- documents tab ----------------------------------------------------------- */
-/* Reported with a screenshot: "I clicked some buttons in the documents
-   toolbar and it broke my screen", the whole editor, toolbars and all,
-   squeezed into a ~18rem column at the left of an empty page. That column
-   is the *sidebar's*: this grid is two tracks, and once the sidebar is
-   hidden the editor is the first grid child and auto-places into track one,
-   which is capped at 18rem. The sidebar track has to go with the sidebar. */
-.doc-layout:has(> #doc-sidebar.hidden),
-.doc-layout:has(> #doc-sidebar[hidden]),
-.doc-layout:not(:has(> #doc-sidebar)) {
-  /* `!important` on purpose, and measured: the sidebar's resize handle
-     writes the column widths *inline* (`260px 965px` was the computed value
-     with the sidebar hidden), and an inline style beats every selector
-     there is except this. Without it the editor was pinned to a column that
-     still existed at the sidebar's saved width. */
-  grid-template-columns: 1fr !important;
-}
-
-
 /* Belt to the `:has()` braces above: whatever hides the sidebar (a class this
    file never heard of, `display: none` from a focus mode, the element removed
    outright), the editor is pinned to the second track and can never be
@@ -3807,19 +3802,6 @@ span > .chip {
 .doc-layout:has(> #doc-sidebar[hidden]) > .doc-main,
 .doc-layout:not(:has(> #doc-sidebar)) > .doc-main {
   grid-column: 1;
-}
-
-.doc-layout {
-  display: grid;
-  grid-template-columns: minmax(14rem, 18rem) 1fr;
-  grid-template-rows: minmax(0, 1fr);
-  gap: var(--space-6);
-  /* `start` here is what shrink-wrapped the sidebar. `stretch` makes both
-     columns the height of the row, which the flex chain below makes the height
-     of the page: the same arrangement #tab-chat already uses. */
-  align-items: stretch;
-  min-height: 0;
-  padding: 0;
 }
 
 /* The flex chain from the page down to the layout, so `height: 100%` on a grid
@@ -3899,7 +3881,9 @@ span > .chip {
   .doc-sidebar .doc-new-split .toolbar-word {
     display: none;
   }
-  #doc-sidebar-list .doc-head-tools > :is(.graph-help-toggle, #doc-new-template, #doc-new-diagram) {
+  #doc-sidebar-list .doc-head-tools > :where(.graph-help-toggle):is(.graph-help-toggle, #doc-new-template),
+  #doc-sidebar-list .doc-head-tools > #doc-new-template,
+  #doc-sidebar-list .doc-head-tools > #doc-new-diagram {
     display: none;
   }
   .doc-sidebar .doc-head-more {
@@ -3923,10 +3907,6 @@ span > .chip {
   gap: 0.25rem;
   flex: 1 1 auto;
   overflow-y: auto;
-}
-
-.doc-item {
-  position: relative;
 }
 
 .doc-item-button {
@@ -3964,58 +3944,16 @@ span > .chip {
   }
 }
 
-.doc-item.active .doc-item-button {
-  background: var(--accent-soft);
-}
-
 /* **One line, so every row is one height.** The rows came out 56.5px and
    78.5px depending on whether the title wrapped, in a list where nothing else
    varies, and at 0.92rem full weight the title was also the largest thing in
    the sidebar, competing with the card's own headings. `--text-md` is the
    scale's own size for a list row; the full title is on the row's tooltip. */
-.doc-item-title {
-  font-weight: 600;
-  font-size: var(--text-md);
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.doc-item-meta {
-  font-size: var(--text-sm);
-}
 
 /* The file type, first in the meta line because it is the one fact that says
    what the row *is*: a .py and a .md were indistinguishable before it. Weight
    rather than colour, so it separates from the count beside it without
    becoming a second accent in a list of eight rows. */
-.doc-item-type {
-  font-weight: 600;
-}
-
-/* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
-   beside every title in a tight sidebar list would compete with the titles
-   themselves. */
-.menu-wrap.doc-item-menu {
-  position: absolute;
-  top: 0.3rem;
-  right: 0.3rem;
-  opacity: 0;
-  transition: opacity var(--ui-fast) var(--ease-out);
-}
-
-.doc-item:hover .doc-item-menu,
-.doc-item-button:focus-visible ~ .doc-item-menu,
-.doc-item:focus-within .doc-item-menu {
-  opacity: 1;
-}
-
-@media (hover: none) {
-  .doc-item-menu {
-    opacity: 1;
-  }
-}
 
 /* The Library's own Documents sub-tab (#library-docs-list): a *different*
    list from the editor's sidebar above, sharing only the .doc-list layout
@@ -4064,7 +4002,6 @@ span > .chip {
   gap: var(--space-3);
   flex: 0 0 auto;
 }
-
 
 /* Same hover/focus reveal as `.menu-wrap.library-card-menu`
    (00-tokens-shell.css) - a permanent ⋯ on every row in a long list is a
@@ -4223,22 +4160,6 @@ span > .chip {
   padding: 1.5rem var(--doc-gutter);
 }
 
-/* Set by app.js the moment a person drags #doc-content's native resize
-   handle. Without it #doc-panes keeps flex-growing to fill .doc-main at its
-   pre-resize height regardless of the textarea now being shorter, and the
-   freed space is trapped between the textarea and .doc-hint instead of
-   showing up at the bottom of the card. See that listener for why this can't
-   just be a CSS rule. */
-#doc-panes.doc-panes-manual {
-  flex: 0 1 auto;
-}
-
-/* Same default-<p>-margin fix as .doc-hint below, this is the other half of
-   the gap that stacked on top of it. */
-.doc-status {
-  margin: 0;
-}
-
 /* --- the dock above the editor ------------------------------------------------
    Title on the left, everything else on the right, wrapping between the two
    rather than through the middle of a control group. See the note on
@@ -4295,9 +4216,6 @@ span > .chip {
 /* The title row's two controls share a height of their own, taller than the
    action row's, because the title is set at 1.15rem and a 2.3rem box around
    it reads as cramped. Declared on the row so the pair can never disagree. */
-.doc-dock-identity {
-  --identity-h: 2.75rem;
-}
 
 .doc-dock-identity > .doc-title-input {
   height: var(--identity-h);
@@ -4376,7 +4294,6 @@ span > .chip {
   gap: var(--space-3);
 }
 
-
 /* `.card > .row.space-between > .row` (01-forms-settings.css) sets
    `flex: 0 0 auto` on any inner row of a card head, which is right for a
    card head and wrong for this dock: the dock has its own two-line layout
@@ -4404,27 +4321,6 @@ span > .chip {
      ask. Found by `errors.js` once it started opening the Documents tab at
      all (INBOX 121); every width above 390 was already fine. */
   min-width: 0;
-}
-
-/* Status facts as one group, so a narrow window breaks the bar between the
-   status and the actions instead of between two buttons that belong
-   together. `margin-right: auto` is what puts the group on the left of that
-   row and everything else on the right, the dock's own `space-between` only
-   ever separated the title from all of this. */
-.doc-dock-status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-right: auto;
-}
-
-.doc-saved {
-  /* Reserved so "Saving…" → "Saved" does not shift the controls to its right
-     by a few pixels twice a minute while someone types. Left-aligned and
-     sitting directly against the stats: right-aligning it inside its own
-     reserved box is what produced the empty channel that got reported. */
-  min-width: 4rem;
-  text-align: left;
 }
 
 /* The kebab: export and delete, which were a third of the bar and are the
@@ -4512,22 +4408,6 @@ span > .chip {
   white-space: nowrap;
 }
 
-.doc-title-input {
-  flex: 1 1 12rem;
-  /* Was min-width: 0, which let the title absorb all of a narrow window's
-     shortfall before .doc-toolbar's own flex-wrap ever kicked in, .doc-
-     actions' row of buttons wraps internally instead of shrinking, so the
-     title had nowhere to stop and was crushed to a few illegible pixels
-     (reported live, screenshotted). This floor forces the toolbar to wrap
-     the actions onto their own row once the title would otherwise go below
-     a readable width, instead of shrinking the title toward zero. */
-  min-width: 8rem;
-  font-size: var(--text-h3);
-  font-weight: 600;
-  border: 1px solid transparent;
-  background: none;
-}
-
 .doc-title-input:focus {
   border-color: var(--glass-border);
   background: var(--card);
@@ -4559,29 +4439,6 @@ span > .chip {
   color: var(--on-accent);
 }
 
-/* --- the code editor: gutter + monospace ------------------------------------ */
-
-/* The textarea and its line-number gutter, as one unit. #doc-panes lays out
-   *this* beside the preview now, not the bare textarea. */
-.doc-source-wrap {
-  display: flex;
-  flex: 1 1 auto;
-  /* A positioning context of its own, so anything absolutely placed inside
-     this pane is placed against the pane. The Phase 0 backdrop needed it and
-     is gone; CodeMirror's own panels and tooltips need the same thing, and
-     without it their offsetParent is whatever ancestor happens to be
-     positioned (measured, at the time: an element 219px to the left and 72px
-     up from where it should have been). */
-  position: relative;
-  min-height: 0;
-  min-width: 0;
-  gap: 0;
-}
-
-.doc-source-wrap.hidden {
-  display: none;
-}
-
 /* A textarea cannot render per-line content, so the numbers are a sibling
    painted from the same text and scroll-locked to it (documents.js,
    `renderDocGutter`). Everything that affects where a line sits vertically
@@ -4606,27 +4463,6 @@ span > .chip {
   line-height: 1.6;
   padding-top: 0.6rem;
   padding-bottom: 0.6rem;
-}
-
-#doc-content.doc-content-code {
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: var(--text-lg);
-}
-
-/* **The code pane must not soft-wrap, or the numbers cannot be right.**
-   Reported: "the document line numbers in the documents dont actually work or
-   go all the way". A `<textarea>` wraps by default, so one logical line can
-   occupy three visual rows; the gutter prints one number per *logical* line
-   (`white-space: pre`), so from the first wrapped line onwards every number is
-   against the wrong row, and the column ends short of the bottom of the text
-   by however many rows the wrapping added. Matching the font and line-height
-   -- which the rule above is careful about -- cannot fix that on its own.
-
-   Horizontal scrolling is the accepted trade in every editor that shows line
-   numbers, and it is what makes the two columns agree line for line. */
-#doc-content.doc-content-code {
-  white-space: pre;
-  overflow-x: auto;
 }
 
 .doc-gutter {
@@ -4690,7 +4526,6 @@ span > .chip {
 .doc-gutter.hidden {
   display: none;
 }
-
 
 /* The Phase 0 backdrop's rules lived here: `.doc-backdrop` (a div behind the
    textarea holding the same text) and `#doc-content.has-backdrop` (the
@@ -4819,17 +4654,6 @@ span > .chip {
   color: var(--muted);
 }
 
-.doc-hint {
-  /* <p> carries the UA default `margin: 1em 0`, nothing here ever zeroed it,
-     so it stacked with .doc-main's own `gap` and #doc-status's identical
-     unreset margin above it. Live-reproduced: the gap between the editor and
-     this hint measured ~65px and was present on a fresh, never-resized load, 
-     unrelated to the #doc-panes-manual resize mechanism right above this rule
-     despite looking like the same symptom. */
-  margin: 0;
-  font-size: var(--text-base);
-}
-
 .doc-hint kbd {
   padding: 0.05rem 0.25rem;
   border: 1px solid var(--border);
@@ -4930,16 +4754,6 @@ span > .chip {
 /* The answer, once there is one. A column rather than three loose children of
    the card, so the label, the text and the two actions appear and disappear as
    one thing and the card's own `gap` does not leave a hole where they were. */
-.doc-ai-result-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-height: 0;
-}
-
-.doc-ai-result-block.hidden {
-  display: none;
-}
 
 .doc-ai-result-block > textarea {
   margin-bottom: 0;
@@ -4951,10 +4765,6 @@ span > .chip {
    (07-whiteboard-misc.css records finding ten rows written that way and drawing
    left), so a class that looks like alignment and is not would be the same trap
    a third time. */
-.doc-ai-result-actions {
-  justify-content: flex-end;
-  gap: var(--space-3);
-}
 
 /* --- the assistant's head and its three verbs (the owner, 2026-09-24:
    "redesign the top section of this panel, it is poorly structured and
@@ -4994,30 +4804,14 @@ span > .chip {
   color: var(--ink);
 }
 
-.doc-ai-card > #doc-ai-verb label > .ph {
-  color: var(--muted);
-}
-
-.doc-ai-card > #doc-ai-verb label:has(input:checked) {
-  font-weight: 600;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
 /* By the sibling, not `label:has(input:checked) > .ph`: a `:has()` before
    a class every icon in the app wears made any change Chrome could not rule
    out restyle every `.ph` on the page (traced on a 301-topic map: 4,700
    icons on one Tab, FEAT-02's 100ms gate). The radio comes first in each
    label, so its checked state reaches the icon after it directly. */
-.doc-ai-card > #doc-ai-verb label > input:checked + .ph {
-  color: var(--accent-text);
-}
 
 /* The keyboard's place in the group, drawn on the segment: the radio itself
    is clipped to a pixel, so its own focus ring is never seen. */
-.doc-ai-card > #doc-ai-verb label:has(input:focus-visible) {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
 
 /* Extract notes (BACKLOG.md §62): another "read the AI's proposal before
    anything is saved" dialog, same family as .doc-ai-card above, just wider
@@ -5077,7 +4871,6 @@ span > .chip {
   flex: 1;
 }
 
-
 /* **The picker dialog** (`pickerDialog`, selection.js; INBOX 548): every
    "choose from your notebook" dialog on the dialog recipes, the head, the
    `.seg` of sources, the `.search-field`, the rich picker's rows (or the
@@ -5092,11 +4885,6 @@ span > .chip {
 }
 
 /* A map's facts and its look (`wbInfoDialog`): the same head, no foot. */
-.wb-info-card {
-  width: min(30rem, calc(100vw - var(--space-8) * 2));
-  max-height: calc(100vh - var(--space-8) * 2);
-  overflow-y: auto;
-}
 
 /* One row height for every picker row (INBOX 572): 56px holds the 2rem tile
    and the two lines with air above and below, so two rows never read as one. */
@@ -5208,22 +4996,26 @@ span > .chip {
   scrollbar-width: auto;
 }
 
-.entry-pick-card > :is(.entry-pick-list, .media-pick-grid)::-webkit-scrollbar {
+.entry-pick-card > .entry-pick-list::-webkit-scrollbar,
+.entry-pick-card > .media-pick-grid::-webkit-scrollbar {
   width: 10px;
 }
 
-.entry-pick-card > :is(.entry-pick-list, .media-pick-grid)::-webkit-scrollbar-track {
+.entry-pick-card > .entry-pick-list::-webkit-scrollbar-track,
+.entry-pick-card > .media-pick-grid::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.entry-pick-card > :is(.entry-pick-list, .media-pick-grid)::-webkit-scrollbar-thumb {
+.entry-pick-card > .entry-pick-list::-webkit-scrollbar-thumb,
+.entry-pick-card > .media-pick-grid::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--muted) 55%, transparent) padding-box;
 }
 
 @supports not selector(::-webkit-scrollbar) {
-  .entry-pick-card > :is(.entry-pick-list, .media-pick-grid) {
+  .entry-pick-card > .entry-pick-list,
+  .entry-pick-card > .media-pick-grid {
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) transparent;
   }
@@ -5466,7 +5258,6 @@ span > .chip {
   gap: var(--space-2);
 }
 
-
 /* The activity-mode picker in the notifications panel head. `select` is
    `width: 100%` by default in this app (see the base rule), which in a row of
    small buttons makes it the whole row, the same trap `.chat-toolbar select`
@@ -5476,7 +5267,6 @@ span > .chip {
   margin: 0;
   min-width: 0;
 }
-
 
 /* The header's context meter. A button, because it does something (opens
    Compress): and coloured only when it is telling you something: quiet under
@@ -5591,12 +5381,6 @@ input.doc-title-input:focus-visible {
   background: var(--card);
 }
 
-input.doc-title-input::placeholder {
-  font-weight: 500;
-  color: var(--muted);
-}
-
-
 /* **The turn's status belongs with the turn, not under the box you type in.**
 
    Reported: "maybe remove the little 'the model is writing' line at the bottom
@@ -5637,7 +5421,6 @@ input.doc-title-input::placeholder {
     justify-content: flex-end;
   }
 }
-
 
 /* The picker's source strip. It sits above the search box because it decides
    what that box searches -- reading order and cause order agree here. A
@@ -6010,7 +5793,6 @@ button.ghost.tour-row:is(:focus-visible, :has(:focus-visible)) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 
 /* The whole tour (the pane's one filled button) and Replay the welcome, the
    quiet one beside it; the sections are the list under them. */

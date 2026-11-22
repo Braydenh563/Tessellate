@@ -329,6 +329,9 @@ class PreferencesBody(BaseModel):
     #: The register the composer writes its connecting words in when no model
     #: answers (`ai/composer_tables.py`): plain and friendly, or formal.
     composer_voice: Literal["natural", "professional", "playful", "plain"] | None = None
+    #: The long-form choice made at first run (L-documents-48): which surface New opens and the document style a person has
+    #: not picked for themselves (the serif page). "notes" is short notes first, the default.
+    writing_style: Literal["notes", "documents"] | None = None
     #: The first day of the week for the Statistics page: the person's pick,
     #: or "auto" to follow the locale the browser reports (`week_start_locale`,
     #: a Python weekday, 0 Monday to 6 Sunday).
@@ -836,6 +839,7 @@ def _prefs_notebook(config) -> dict:
         "search_relative_z_margin": config.get_preference("search_relative_z_margin", 0.5),
         "communication_style": config.get_preference("communication_style", "friendly"),
         "composer_voice": config.get_preference("composer_voice", "natural"),
+        "writing_style": config.get_preference("writing_style", "notes"),
         "week_start": config.get_preference("week_start", "auto"),
         "week_start_locale": config.get_preference("week_start_locale", 0),
         "before_includes_day": config.get_preference("before_includes_day", False),

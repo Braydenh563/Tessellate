@@ -17,9 +17,9 @@ from __future__ import annotations
 
 import re
 
-from tests._app_js import JS_DIR
+from tests._app_js import documents_text
 
-DOCS = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def _fn(name: str) -> str:

@@ -13,6 +13,7 @@ pass on the same text.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -149,6 +150,6 @@ def test_a_window_without_blank_lines_is_cut_at_a_line_not_the_whole_text(ran) -
 
 
 def test_the_page_keeps_one_pass_per_key_and_the_settle_wiring() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     assert re.search(r"docProse\.typing = true;\s*try \{\s*renderDocProse\(\);", docs)
     assert "docProseSkipMask.memo" in docs and "if (this.dirty) renderDocProse();" in docs

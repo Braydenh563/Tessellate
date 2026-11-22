@@ -11,10 +11,11 @@ shape the sweeps found working.
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 CODE = (ROOT / "frontend" / "js" / "documents-code.js").read_text(encoding="utf-8")
-DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def _function(text: str, name: str) -> str:
@@ -82,3 +83,13 @@ def test_the_debug_tabs_chord_has_a_row_so_the_sheet_lists_it():
     row = table[table.index('id: "debug-panel"') :]
     row = row[: row.index("},")]
     assert 'keys: "Ctrl+Shift+D"' in row and 'docPanelToggle("debug")' in row
+
+
+def test_the_lane_under_a_finger_outranks_the_theme_and_is_the_touch_floor():
+    """L886: the coarse rule named the lane at two classes and the editor theme's
+    0.875rem at three, so the 1.5rem never applied (14px measured at 390 under
+    touch emulation, docsverify-lane.js). It names four and takes the floor."""
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    at = css.index("@media (pointer: coarse) {\n  .cm-editor .cm-gutters .cm-debug-gutter .cm-gutterElement")
+    rule = css[at : css.index("}\n}", at)]
+    assert "width: var(--target-min);" in rule

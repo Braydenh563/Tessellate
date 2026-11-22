@@ -11,7 +11,7 @@ from tests._app_js import frontend_text
 
 
 def test_a_candidate_row_is_bare_text_with_the_first_marked_best():
-    src = frontend_text("documents.js")
+    src = frontend_text("documents-suggest.js")  # the piece draws the rows (L327)
     start = src.index('answerRows.filter((row) => row.kind === "candidate").forEach((row) => {')
     block = src[start : src.index("});", start)]
     assert "item.textContent = row.label;" in block

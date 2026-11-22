@@ -16,6 +16,7 @@ What the harness cannot see (the underline in the browser, the popover) is
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -218,7 +219,7 @@ def test_the_switch_is_in_settings_writing_and_the_dictionary_dialog() -> None:
     # The load side moved with loadPrefs into settings-prefs.js (Sh1 P12, fc806ad6d); the save side stays.
     prefs = (JS / "settings-prefs.js").read_text(encoding="utf-8")
     assert 'prefsCache.check_link_text === true' in prefs
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     assert 'check_link_text: event.currentTarget.checked' in docs
 
 

@@ -21,6 +21,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,7 +56,7 @@ def blocks_source() -> str:
 #: is the order `applyMarkdownAction` writes them in for every `block` action,
 #: which is what puts the selection on the placeholder.
 def inserted_columns() -> str:
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = documents_text()
     entry = re.search(
         r"\n  columns: \{(.*?)\n  \},", text, re.S
     )

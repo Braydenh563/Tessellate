@@ -374,13 +374,16 @@
   :root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy {
     &.nmb-act-climb[data-variant="0"] .nmb-hold-l { animation: nmb-reach 0.9s ease-in-out infinite alternate; }
     &.nmb-act-climb[data-variant="1"] .nmb-hold-r { animation: nmb-reach 0.9s ease-in-out infinite alternate; }
-    &.nmb-act-climb[data-variant="2"] :is(.nmb-hold-l, .nmb-hold-r) { animation: nmb-reach 1.3s ease-in-out infinite alternate; }
+    &.nmb-act-climb[data-variant="2"] .nmb-hold-l,
+    &.nmb-act-climb[data-variant="2"] .nmb-hold-r { animation: nmb-reach 1.3s ease-in-out infinite alternate; }
     &.nmb-act-climb[data-variant="2"] .nm-buddy-char { animation: nmb-pull 1.3s ease-in-out infinite alternate; }
     &.nmb-act-climb .nmb-leg-l { animation: nmb-step 0.62s ease-in-out infinite alternate; }
     &.nmb-act-climb .nmb-leg-r { animation: nmb-step 0.62s ease-in-out -0.62s infinite alternate; }
-    &.nmb-act-glide :is(.nmb-leg-l, .nmb-leg-r) { animation: nmb-trail 1.9s ease-in-out infinite alternate; }
+    &.nmb-act-glide .nmb-leg-l,
+    &.nmb-act-glide .nmb-leg-r { animation: nmb-trail 1.9s ease-in-out infinite alternate; }
     &.nmb-act-glide .nmb-leg-r { animation-delay: -0.95s; }
-    &.nmb-act-drift :is(.nmb-leg-l, .nmb-leg-r) { animation: nmb-trail 4.6s ease-in-out infinite alternate; }
+    &.nmb-act-drift .nmb-leg-l,
+    &.nmb-act-drift .nmb-leg-r { animation: nmb-trail 4.6s ease-in-out infinite alternate; }
     &.nmb-act-drift .nmb-leg-r { animation-delay: -2.3s; }
   }
 }

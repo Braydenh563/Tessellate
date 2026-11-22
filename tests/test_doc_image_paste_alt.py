@@ -10,6 +10,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 import pytest
 
 DOCS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js"
@@ -23,7 +25,7 @@ def _function(source: str, head: str) -> str:
 
 
 def _run(said: str, steps: str = "") -> dict:
-    source = DOCS.read_text(encoding="utf-8")
+    source = documents_text()
     body = "\n".join(_function(source, head) for head in ("async function docImagePasteAsk(", "async function docImageUpload("))
     script = (
         """
@@ -65,7 +67,7 @@ def test_an_empty_answer_still_adds_the_picture_with_the_default_alt():
 
 
 def test_the_paste_is_taken_ahead_of_the_note_upload_only_inside_a_markdown_document():
-    source = DOCS.read_text(encoding="utf-8")
+    source = documents_text()
     listener = source[source.index('window.addEventListener("paste"'):]
     listener = listener[: listener.index("}, true);")]
     assert "docCmView" in listener and "doc-content-code" in listener
