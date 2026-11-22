@@ -73,7 +73,7 @@ function check(label, ok, detail) {
 
   await roundTrip("Delete key on a topic with a branch", async () => {
     const a = await id("Alpha");
-    await page.evaluate(async (x) => { await wbDeleteObjectRef((wbState.objects || []).find((o) => o.id === x)); }, a);
+    await page.evaluate(async (x) => { await wbDeleteObject((wbState.objects || []).find((o) => o.id === x)); }, a);
   });
   await roundTrip("fold a branch", async () => { const a = await id("Alpha"); await page.evaluate((x) => wbMapToggleCollapse(x), a); });
   await roundTrip("theme field", () => page.evaluate(() => wbMapSetTheme({ edge_dashed: true })), { redoCheck: false });
@@ -145,7 +145,7 @@ function check(label, ok, detail) {
   }, board.id);
   const boardBefore = await boardState();
   check("the board has two boxes and a link", /One->Two/.test(boardBefore), boardBefore);
-  await page.evaluate(async () => { await wbDeleteObjectRef(wbState.objects.find((o) => o.data.content === "One")); });
+  await page.evaluate(async () => { await wbDeleteObject(wbState.objects.find((o) => o.data.content === "One")); });
   await undo();
   check("a deleted box comes back with its link", (await boardState()) === boardBefore, await boardState());
   await redo();
@@ -170,15 +170,15 @@ function check(label, ok, detail) {
 
   // Brief 77 row 3: an agent's write (straight to the server, as a chat tool
   // writes, then the stream's `mm:board-changed`) is one step on the stack.
-  const depth = () => page.evaluate(() => wbUndoStack.length);
+  const depth = () => page.evaluate(() => wbStacks.undo.length);
   const d0 = await depth();
   await page.evaluate(async (b) => {
     await fetch("/whiteboard/objects", { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": authToken(), "X-Workspace-ID": activeSpaceId() },
       body: JSON.stringify({ kind: "text", data: { content: "Agent" }, board_id: b, x: 700, y: 100, z: 1, width: 160, height: 80 }) });
     document.dispatchEvent(new CustomEvent("mm:board-changed", { detail: { source: "Atlas" } }));
   }, board.id);
-  await page.waitForFunction(() => /^Atlas/.test(wbUndoStack[wbUndoStack.length - 1]?.label || ""), null, { timeout: 5000 }).catch(() => {});
-  const agentLabel = await page.evaluate(() => wbUndoStack[wbUndoStack.length - 1]?.label || "");
+  await page.waitForFunction(() => /^Atlas/.test(wbStacks.undo[wbStacks.undo.length - 1]?.label || ""), null, { timeout: 5000 }).catch(() => {});
+  const agentLabel = await page.evaluate(() => wbStacks.undo[wbStacks.undo.length - 1]?.label || "");
   const agentDepth = (await depth()) - d0;
   await undo();
   await page.waitForTimeout(600);
@@ -197,8 +197,8 @@ function check(label, ok, detail) {
     window.currentBoardId = b;
     await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify({ kind: "text", data: { content: "Tab" }, board_id: b, x: 900, y: 100, z: 1, width: 160, height: 80 }) });
   }, board.id).catch((e) => console.log("other tab:", e.message));
-  await page.waitForFunction(() => /^Another tab/.test(wbUndoStack[wbUndoStack.length - 1]?.label || ""), null, { timeout: 5000 }).catch(() => {});
-  const tabLabel = await page.evaluate(() => wbUndoStack[wbUndoStack.length - 1]?.label || "");
+  await page.waitForFunction(() => /^Another tab/.test(wbStacks.undo[wbStacks.undo.length - 1]?.label || ""), null, { timeout: 5000 }).catch(() => {});
+  const tabLabel = await page.evaluate(() => wbStacks.undo[wbStacks.undo.length - 1]?.label || "");
   const tabDepth = (await depth()) - d1;
   await undo();
   await page.waitForTimeout(600);

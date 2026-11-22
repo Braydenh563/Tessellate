@@ -93,7 +93,7 @@ function probe(page) {
       return { x: Math.round(r.left * 100) / 100, y: Math.round(r.top * 100) / 100 };
     };
     const card = document.querySelector("#wb-html-layer .wb-object, #wb-html-layer .wb-card, #wb-html-layer .node-card");
-    const shape = document.querySelector("#wb-shapes-group path, #wb-shapes-group rect, #wb-zoom-group .sketch-group path");
+    const shape = document.querySelector('g.sketch-group path.sketch-path[d^="M 140 320"]'); // decision 43: sketches live in the band svgs of #wb-html-layer, found by the fixture's own path
     const link = document.querySelector(".wb-link-sketch path, #wb-lines-group path");
     return {
       html: read("#wb-html-layer"),
