@@ -287,10 +287,8 @@
         }
 
         drop(event) {
-          const press = this.press;
-          const plan = this.plan;
+          const { press, plan, view } = this;
           if (!press || event.pointerId !== press.id) return;
-          const view = this.view;
           this.end();
           if (!press.drag || !plan || !plan.steps || view.state.doc.length !== press.text.length) return;
           //: The move is a swap of text the document already has, so the change is
