@@ -254,3 +254,38 @@ def test_the_render_the_export_and_a_press_settle_what_the_drop_held() -> None:
     drag = frontend_text("whiteboard-drag.js")
     redraw = drag[drag.index("function wbUpdateLinkedSketches("):]
     assert redraw.index('if (entry.el && wbMapDragLayer.held.delete(entry.el)) entry.el.removeAttribute("transform");') < redraw.index('entry.path?.setAttribute("d", pathData);')
+
+
+@needs_node
+def test_an_idle_wait_that_timed_out_draws_every_held_link() -> None:
+    #: A busy page's idle callback fires at its timeout with no time left; asking again drew nothing, for ever.
+    got = run(
+        """
+        drop(40, 20);
+        const before = wbMapDragLayer.held.size;
+        wbMapDragLayer.settle({ didTimeout: true, timeRemaining: () => 0 });
+        __out({ before, left: wbMapDragLayer.held.size });
+        """
+    )
+    assert got["before"] > 0 and got["left"] == 0, got
+
+
+@needs_node
+def test_a_press_inside_the_first_drops_wait_already_settles() -> None:
+    #: The press and key listeners are on before the 150ms timer, so a second grab within it draws first.
+    got = run(
+        """
+        const types = [];
+        document.addEventListener = (type) => types.push(type);
+        drop(40, 20);
+        __out({ held: wbMapDragLayer.held.size, types });
+        """
+    )
+    assert got["held"] > 0
+    assert sorted(got["types"]) == ["keydown", "pointerdown"], got
+
+
+def test_a_held_link_whose_ends_are_gone_still_loses_its_translate() -> None:
+    drag = frontend_text("whiteboard-drag.js")
+    redraw = drag[drag.index("function wbUpdateLinkedSketches("):]
+    assert redraw.index('if (entry.el && wbMapDragLayer.held.delete(entry.el)) entry.el.removeAttribute("transform");') < redraw.index("if (!look && !endpoints) continue;")

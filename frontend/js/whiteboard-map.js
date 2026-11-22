@@ -2211,14 +2211,19 @@ const wbMapDragLayer = {
     }
     //: Not before the drop's own frame is painted: an idle slice there landed in it (mapperf 500, 84 to 98ms).
     //: A timer rather than a frame loop, so the page gains no wake source (`test_frontend_wake_sources`).
-    if (wbMapDragLayer.held.size) setTimeout(() => wbMapDragLayer.settleLater(), 150);
+    //: The press and key listeners go on now: a second grab inside the wait must draw first (review of c4fc07107).
+    if (wbMapDragLayer.held.size) {
+      wbMapDragLayer.arm();
+      setTimeout(() => wbMapDragLayer.settleLater(), 150);
+    }
     return redraw;
   },
 
   //: Draws the held links now; with an idle `deadline`, as many as its time allows.
   settle(deadline = null) {
     for (const pair of wbMapDragLayer.held.values()) {
-      if (deadline && deadline.timeRemaining() < 2) return wbMapDragLayer.settleLater();
+      //: A wait that timed out has no time left by definition; it draws the rest rather than ask again.
+      if (deadline && !deadline.didTimeout && deadline.timeRemaining() < 2) return wbMapDragLayer.settleLater();
       wbUpdateLinkedSketches(null, [pair]);
     }
   },
@@ -2229,11 +2234,14 @@ const wbMapDragLayer = {
     wbMapDragLayer.held.clear();
   },
 
-  settleLater() {
+  arm() {
     if (!wbMapDragLayer.armed) {
       wbMapDragLayer.armed = true;
       for (const type of ["pointerdown", "keydown"]) document.addEventListener(type, () => wbMapDragLayer.settle(), true);
     }
+  },
+
+  settleLater() {
     const later = window.requestIdleCallback || ((fn) => setTimeout(fn, 120));
     later((deadline) => wbMapDragLayer.settle(deadline), { timeout: 1000 });
   },

@@ -135,6 +135,9 @@
     const pairs = precomputed || wbLinkedSketchesFor(nodeId);
     for (const entry of pairs) {
       const { sketch, parsed } = entry;
+      //: The one writer of a link's path a drop may have left on its translate (`wbMapDragLayer.held`),
+      //: first, so a link whose ends are gone is let go too.
+      if (entry.el && wbMapDragLayer.held.delete(entry.el)) entry.el.removeAttribute("transform");
       const look = wbMapCrossLinkLook(parsed);
       const endpoints = look ? null : wbResolveLinkEndpoints(parsed);
       if (!look && !endpoints) continue;
@@ -152,8 +155,6 @@
       //: `wbBulkMoveElement` already uses: a sketch deleted mid-gesture is gone
       //: from the document and has to be looked for again rather than written
       //: to invisibly for ever.
-      //: The one writer of a link's path a drop may have left on its translate (`wbMapDragLayer.held`).
-      if (entry.el && wbMapDragLayer.held.delete(entry.el)) entry.el.removeAttribute("transform");
       if (!entry.el || !entry.el.isConnected) {
         entry.el = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
         entry.path = undefined;
