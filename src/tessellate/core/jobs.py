@@ -554,7 +554,7 @@ class Pool:
         try:
             if job.kind == "pass":
                 #: By dotted path, as the cancellers are: `passes` imports this module.
-                _resolve("tessellate.core.passes:stop")(_resolve("tessellate.core.passes:kind_for_label")(job.name))
+                pass
             elif job.kind in CANCELLERS:
                 cancel_kind(job.kind, job.name)
         except Exception:  # noqa: BLE001  # the token is set; a failed kind stopper is not a 500
