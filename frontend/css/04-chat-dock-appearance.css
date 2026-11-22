@@ -283,6 +283,9 @@
    toggles this class in the same `update()` that shows the button, so the
    two can never drift out of sync with each other the way a fixed
    always-on padding and a sometimes-visible button did. */
+/* Kept after the floating-panel change (2026-11-22, 46 notes, scrolled to the end): with no pad,
+   at 390 the last note's More actions sits under New note and the Library's last row actions
+   (324,617) under this button; at 1440 neither is covered either way. */
 body.scroll-top-visible #tab-notes .layout > .tab-main {
   padding-bottom: var(--scroll-top-clearance);
 }
