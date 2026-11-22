@@ -1067,7 +1067,6 @@ def stop_running(kind: str, name: str = "", durable_id: int | None = None) -> tu
 
 
 jobstore.set_forget(forget)
-jobstore.set_stop_running(stop_running)
 
 
 def shutdown(deadline: float = 5.0) -> bool:
