@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 31 | 0 | 0 | 0 | 31 |
+| world-class | 0 | 29 | 0 | 0 | 0 | 29 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 422 | 75 | 2 | 111 | 869 |
+| all | 372 | 420 | 75 | 2 | 111 | 867 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -504,8 +504,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
 - [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
 - [ ] **L-world-class-878** `world-class` open, M: Budgets UI: show the six interaction budgets (measured, cap, live server share) somewhere a person can read them; needs a recipe-compliant home first (a Health pane row in Settings once its files are free, with a data-help-for line and the Guide topic). From L603 (budgets UI half). Evidence: docs/DESIGN.md recipe index has no readout or diagnostics recipe outside Settings; Statistics tab is note statistics; Settings markup and settings-body.js are off-limits this pass; the data is ready: GET /models/bench/budgets (routes_bench.py) serves the six budgets and ?live=true times the server share
-- [ ] **L-world-class-890** `world-class` open, S: Find the remaining 0.5 MB a minute of heap growth in the ten-minute browser loop. From agent checks 2026-11-22, scratchpad/ui-sweeps/memrun.js. Evidence: after the note-surface fix the ten-minute loop still grows the forced-GC heap 28.3 to 33.2 MB (min 1 to end) with nodes +650 and listeners +374; the source of the JS heap creep is not found (a heap snapshot run crashed the page)
-- [ ] **L-world-class-891** `world-class` open, S: Folder import of thousands of files freezes the page for seconds while the request body is built. From agent checks 2026-11-22, scratchpad/ui-sweeps/upload5000.js. Evidence: 5,000-file folder import: the page stalls 2.9 s (long task) when the files are chosen and 1.4 s at the import POST while the browser builds the multipart body (CDP profile: fetch 3.4 s self time); a chunked upload would need a server-side batch protocol
 
 ## general
 

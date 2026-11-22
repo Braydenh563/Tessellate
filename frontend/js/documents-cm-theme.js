@@ -7,8 +7,19 @@
 // from `docCmExtensions` and on a theme change, after the bundle.
 
 (() => {
+  //: **One theme per mode** (L-world-class-890): `EditorView.theme` mounts a
+  //: new style module each call and CodeMirror keeps every module it has
+  //: mounted, so building one per editor kept about 90KB of rules for every
+  //: note opened (a ten-minute loop grew the heap 0.5MB a minute). The
+  //: rules read only the mode and the guide count, so those are the key.
+  const kept = new Map();
   function docCmTheme(CM) {
     const dark = document.documentElement.dataset.mode === "dark";
+    const key = `${dark}:${docIndentGuides.levels}`;
+    if (kept.get(CM)?.key !== key) kept.set(CM, { key, theme: docCmThemeBuild(CM, dark) });
+    return kept.get(CM).theme;
+  }
+  function docCmThemeBuild(CM, dark) {
     return CM.view.EditorView.theme(
       {
         "&": {

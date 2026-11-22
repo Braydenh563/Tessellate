@@ -127,33 +127,49 @@ async function importFromApp(spec) {
     $("import-app-status").textContent = `No ${spec.label} notes in what you chose.`;
     return;
   }
-  const form = new FormData();
-  for (const file of files) form.append("files", file, file.webkitRelativePath || file.name);
-  setLabel(status, `ph:spin Reading ${spec.label}…`);
+  //: **Sent in parts** (L-world-class-891): one body of 5,000 files took the
+  //: page 1.4s to build, and it was built twice (the preview, then the
+  //: import). Parts of `PART` go to a batch the server stages; the preview and
+  //: the import both name it, so the files cross the wire once.
+  const PART = 200;
+  let batch = "";
+  const drop = () => batch && api(`/import/app/batches/${batch}`, { method: "DELETE", silent: true }).catch(() => {});
   let left = [];
   try {
-    const seen = await (await api.upload(`/import/app?source=${spec.source}&dry_run=1`, form)).json();
+    setLabel(status, `ph:spin Reading ${spec.label}…`);
+    batch = (await (await api.upload("/import/app/batches")).json()).batch;
+    for (let at = 0; at < files.length; at += PART) {
+      if (files.length > PART) setLabel(status, `ph:spin Reading ${spec.label}: ${Math.min(at + PART, files.length)} of ${nounCount(files.length, "file")}…`);
+      const part = new FormData();
+      for (const file of files.slice(at, at + PART)) part.append("files", file, file.webkitRelativePath || file.name);
+      await api.upload(`/import/app/batches/${batch}`, part);
+    }
+    const seen = await (await api.upload(`/import/app?source=${spec.source}&dry_run=1&batch=${batch}`)).json();
     if (!seen.found) {
+      drop();
       status.textContent = `No ${spec.label} notes in what you chose.`;
       return;
     }
     const chosen = await importPreview({ label: spec.label, rows: seen.notes, more: seen.more });
     if (chosen === null) {
+      drop();
       status.textContent = "Nothing was imported.";
       return;
     }
     left = chosen;
   } catch (error) {
+    drop();
     status.textContent = error.message || `Couldn't read ${spec.label}.`;
     status.classList.add("error");
     return;
   }
+  const form = new FormData();
   if (left.length) form.append("exclude", JSON.stringify(left));
   setLabel(status, `ph:spin Importing from ${spec.label}…`);
   try {
     //: `api.upload` throws the server's own words on a refusal; the catch
     //: below shows them.
-    const response = await api.upload(`/import/app?source=${spec.source}`, form);
+    const response = await api.upload(`/import/app?source=${spec.source}&batch=${batch}`, form);
     const body = await response.json().catch(() => ({}));
     const parts = [`Imported ${nounCount(body.imported, "note")} from ${spec.label}.`];
     if (body.already) parts.push(`${body.already} ${body.already === 1 ? "was" : "were"} already here.`);
