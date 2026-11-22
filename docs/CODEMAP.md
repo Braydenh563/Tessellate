@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9000, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11054, test files 2883, tests 23111, plan headings 693, app scripts 29, boot scripts 38, script files 382.
+Counts: frontend functions 9000, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11056, test files 2883, tests 23111, plan headings 693, app scripts 29, boot scripts 38, script files 382.
 
 ## Frontend functions (9000)
 
@@ -15019,7 +15019,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/restore` | POST | `restore_document` | src/tessellate/api/routes_documents.py:856 |
 | `/{document_id}/revisions` | GET | `document_revisions` | src/tessellate/api/routes_documents.py:1343 |
 | `/{document_id}/revisions` | POST | `name_current_version` | src/tessellate/api/routes_documents.py:1405 |
-| `/{document_id}/revisions/summary` | POST | `revisions_summary` | src/tessellate/api/routes_document_story.py:147 |
+| `/{document_id}/revisions/summary` | POST | `revisions_summary` | src/tessellate/api/routes_document_story.py:184 |
 | `/{document_id}/revisions/{revision_id}` | GET | `document_revision` | src/tessellate/api/routes_documents.py:1383 |
 | `/{document_id}/revisions/{revision_id}` | PUT | `rename_version` | src/tessellate/api/routes_documents.py:1421 |
 | `/{document_id}/revisions/{revision_id}/restore` | POST | `restore_document_revision` | src/tessellate/api/routes_documents.py:1436 |
@@ -15093,7 +15093,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11054)
+## Backend modules (11056)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23024,20 +23024,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_words_rule` | src/tessellate/api/routes_document_claims.py:145 |
 | `claim_check` | src/tessellate/api/routes_document_claims.py:212 |
 
-### src/tessellate/api/routes_document_story.py (10)
+### src/tessellate/api/routes_document_story.py (12)
 
 | Name | File:line |
 |---|---|
-| `_ask_model` | src/tessellate/api/routes_document_story.py:133 |
-| `_clip` | src/tessellate/api/routes_document_story.py:87 |
+| `_ask_model` | src/tessellate/api/routes_document_story.py:143 |
+| `_clip` | src/tessellate/api/routes_document_story.py:95 |
+| `_model_account` | src/tessellate/api/routes_document_story.py:170 |
 | `_names` | src/tessellate/api/routes_document_story.py:58 |
-| `_plain` | src/tessellate/api/routes_document_story.py:103 |
-| `_plural` | src/tessellate/api/routes_document_story.py:92 |
-| `_prompt` | src/tessellate/api/routes_document_story.py:117 |
+| `_plain` | src/tessellate/api/routes_document_story.py:111 |
+| `_plural` | src/tessellate/api/routes_document_story.py:100 |
+| `_prompt` | src/tessellate/api/routes_document_story.py:125 |
 | `_section_of` | src/tessellate/api/routes_document_story.py:49 |
 | `_step` | src/tessellate/api/routes_document_story.py:67 |
-| `_step_line` | src/tessellate/api/routes_document_story.py:96 |
-| `revisions_summary` | src/tessellate/api/routes_document_story.py:148 |
+| `_step_line` | src/tessellate/api/routes_document_story.py:104 |
+| `_steps` | src/tessellate/api/routes_document_story.py:157 |
+| `revisions_summary` | src/tessellate/api/routes_document_story.py:185 |
 
 ### src/tessellate/api/routes_documents.py (68)
 

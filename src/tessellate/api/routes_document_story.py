@@ -72,7 +72,9 @@ def _step(older: str, newer: str) -> dict:
     removed: list[str] = []
     sections: list[str] = []
     exact = max(len(a), len(b)) <= EXACT_DIFF_LINES
-    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=not exact).get_opcodes():
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(
+        None, a, b, autojunk=not exact
+    ).get_opcodes():
         if tag == "equal":
             continue
         removed += [x for x in a[i1:i2] if x.strip()]
@@ -81,7 +83,13 @@ def _step(older: str, newer: str) -> dict:
         for name in _names(*side):
             if name not in sections:
                 sections.append(name)
-    return {"added": len(added), "removed": len(removed), "sections": sections, "added_lines": added, "removed_lines": removed}
+    return {
+        "added": len(added),
+        "removed": len(removed),
+        "sections": sections,
+        "added_lines": added,
+        "removed_lines": removed,
+    }
 
 
 def _clip(line: str) -> str:
@@ -118,7 +126,9 @@ def _prompt(steps: list[dict]) -> str:
     left = BUDGET_CHARS
     blocks = []
     for n, s in enumerate(steps, 1):
-        rows = [f"Step {n}, {s['when']}: {s['added']} lines added, {s['removed']} removed; sections: {', '.join(s['sections']) or 'none'}"]
+        rows = [
+            f"Step {n}, {s['when']}: {s['added']} lines added, {s['removed']} removed; sections: {', '.join(s['sections']) or 'none'}"
+        ]
         for sign, key in (("+", "added_lines"), ("-", "removed_lines")):
             for line in s[key][:STEP_LINES]:
                 text = f"  {sign} {_clip(line)}"
@@ -144,6 +154,33 @@ def _ask_model(steps: list[dict]) -> str:
     return str(reply.get("content") or "").strip()[:SUMMARY_CHARS]
 
 
+def _steps(db: Session, document) -> list[dict]:
+    """The newest saved versions, each against the one that replaced it, oldest step first."""
+    steps: list[dict] = []
+    newer = document.content or ""
+    for row in document_repo.revisions(db, document.id)[:STEPS]:
+        step = _step(row.content or "", newer)
+        step["when"] = row.created_at.strftime("%d %b %H:%M").lstrip("0")
+        steps.append(step)
+        newer = row.content or ""
+    steps.reverse()
+    return steps
+
+
+def _model_account(changed: list[dict]) -> tuple[str, str]:
+    """(text, reason) from the model; an empty text means the counts stand in, for that reason."""
+    try:
+        text = _ask_model(changed)
+    except TimeoutError:
+        return "", "timeout"
+    except Exception:
+        logging.getLogger("tessellate.documents").warning(
+            "History summary: the model failed", exc_info=True
+        )
+        return "", "failed"
+    return (text, "model") if text else ("", "unusable")
+
+
 @router.post("/{document_id}/revisions/summary")
 def revisions_summary(document_id: int, db: Session = Depends(get_session)) -> dict:
     """An account of the newest versions' changes; nothing written. A plain `def`: FastAPI runs it on a worker
@@ -151,32 +188,24 @@ def revisions_summary(document_id: int, db: Session = Depends(get_session)) -> d
     from tessellate.api.routes_documents import _existing
 
     document = _existing(db, document_id)
-    rows = document_repo.revisions(db, document_id)[:STEPS]
-    steps: list[dict] = []
-    newer = document.content or ""
-    for row in rows:
-        step = _step(row.content or "", newer)
-        step["when"] = row.created_at.strftime("%d %b %H:%M").lstrip("0")
-        steps.append(step)
-        newer = row.content or ""
-    steps.reverse()
+    steps = _steps(db, document)
     changed = [s for s in steps if s["added"] or s["removed"]]
-    plain = _plain(steps)
-    out = {"steps": len(steps), "added": sum(s["added"] for s in steps), "removed": sum(s["removed"] for s in steps)}
+    out = {
+        "steps": len(steps),
+        "added": sum(s["added"] for s in steps),
+        "removed": sum(s["removed"] for s in steps),
+    }
+    words = {**out, "summary": _plain(steps), "source": "words"}
     if not changed:
-        return {**out, "summary": plain, "source": "words", "reason": "none"}
+        return {**words, "reason": "none"}
     #: A private document's changed lines are its plaintext: no model reads them (as Atlas reads no private note).
     if document.is_private or private_space.is_private_space(db, document.workspace_id):
-        return {**out, "summary": plain, "source": "words", "reason": "private"}
+        return {**words, "reason": "private"}
     if not deps.get_ollama().is_running():
-        return {**out, "summary": plain, "source": "words", "reason": "offline"}
-    try:
-        text = _ask_model(changed)
-    except TimeoutError:
-        return {**out, "summary": plain, "source": "words", "reason": "timeout"}
-    except Exception:
-        logging.getLogger("tessellate.documents").warning("History summary: the model failed", exc_info=True)
-        return {**out, "summary": plain, "source": "words", "reason": "failed"}
-    if not text:
-        return {**out, "summary": plain, "source": "words", "reason": "unusable"}
-    return {**out, "summary": text, "source": "model", "reason": "model"}
+        return {**words, "reason": "offline"}
+    text, reason = _model_account(changed)
+    return (
+        {**out, "summary": text, "source": "model", "reason": reason}
+        if text
+        else {**words, "reason": reason}
+    )
