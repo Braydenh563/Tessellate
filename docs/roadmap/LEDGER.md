@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 37 | 0 | 0 | 0 | 37 |
+| world-class | 0 | 36 | 0 | 0 | 0 | 36 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 428 | 75 | 2 | 111 | 875 |
+| all | 372 | 427 | 75 | 2 | 111 | 874 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -509,7 +509,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
 - [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
 - [ ] **L-world-class-870** `world-class` open, M: Folder import: preview long task of 1.1 s at 1,000 rows, and a 1,000-file multipart cap under /import/app's 5,000. From scratchpad/ui-sweeps/folder5000.js (L979). Evidence: settings-data.js markdownPreview renders 1000 rows in one 1,127 ms long task; /import/app takes MAX_FILES 5000 but Starlette refuses over 1000 files (400)
-- [ ] **L-world-class-872** `world-class` open, M: Duplicate scan at 5,000 near-identical notes: cut the 31 s /tidy and the 100 MB per-block allocation. From L-world-class-410 follow-up, 04cc8653. Evidence: src/tessellate/entry/duplicates.py find_duplicates: GET /tidy took 31 s at 5,000 near-identical notes under load 2.5 to 6; each dense block allocates up to about 100 MB
 
 ## general
 
