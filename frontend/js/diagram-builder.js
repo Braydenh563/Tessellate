@@ -526,22 +526,10 @@
   //: The ... menu (1546 D7): what the host adds (`io.menu`, the dialog's Turn into shapes), then the
   //: exports. They run from diagram-embed.js, fetched on the first press.
   function more(S) {
-    const out = (how) => () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name));
-    const exportRow = (label, how) => makeMenuItem(label, "", out(how));
-    //: Suggest folds in here on a phone; at 480 px or less Direction, Redo and Ask too (diagram-kindbar.js, L-documents-7).
-    const { rows: fold, key } = diagramModel.kindbar.fold(S, DIRS, suggestMenu);
-    //: The host's rows by `slot`: Save to Library goes inside Save as, Clear is the last, separated, danger row.
-    const mine = (S.io.menu || []).map((row) => (row.items || row.slot ? row : { group: "view", ...row }));
-    const slot = (name) => mine.filter((row) => row.slot === name);
-    const grouped = [
-      ...fold,
-      ...mine.filter((row) => !row.slot),
-      { label: "ph:download-simple Save as", group: "out", items: [exportRow("ph:file-svg SVG", "svg"), exportRow("ph:file-png PNG", "png"), ...slot("save")] },
-      { label: "ph:copy Copy as", group: "out", items: [exportRow("ph:image Picture", "picture"), exportRow("ph:code Mermaid", "mermaid"), exportRow("ph:file-svg SVG", "svgtext")] },
-      { ...makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), group: "help" },
-      ...slot("clear").map((row) => ({ ...row, group: "danger" })),
-    ];
-    const menu = kebabMenu(grouped, "More for this diagram");
+    //: The grouped rows are made in diagram-kindbar.js (this file's gzip budget): Suggest folds in on a phone, the host's rows by `slot`.
+    const exportTo = (how) => () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name));
+    const { rows, key } = diagramModel.kindbar.more(S, DIRS, suggestMenu, exportTo, () => styleDo(S, "shortcuts"));
+    const menu = kebabMenu(rows, "More for this diagram");
     menu.classList.add("dgm-more");
     menu.dataset.rows = key;
     return menu;

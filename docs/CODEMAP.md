@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9127, frontend ids 2862, CSS sections 532, backend routes 763, backend modules 11746, test files 3086, tests 24156, plan headings 691, app scripts 29, boot scripts 38, script files 424.
+Counts: frontend functions 9128, frontend ids 2862, CSS sections 532, backend routes 763, backend modules 11746, test files 3087, tests 24160, plan headings 691, app scripts 29, boot scripts 38, script files 424.
 
-## Frontend functions (9127)
+## Frontend functions (9128)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -161,7 +161,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `afterMenuExit` | frontend/js/menus.js:804 |
-| `buildMenuGroupButton` | frontend/js/menus.js:1407 |
+| `buildMenuGroupButton` | frontend/js/menus.js:1409 |
 | `buildMenuItemButton` | frontend/js/menus.js:1374 |
 | `cardOpener` | frontend/js/menus.js:465 |
 | `closeActionMenus` | frontend/js/menus.js:101 |
@@ -174,8 +174,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `escapeMenuToBody` | frontend/js/menus.js:774 |
 | `fitActionMenuInWindow` | frontend/js/menus.js:512 |
 | `focusMenuItem` | frontend/js/menus.js:645 |
-| `historyActorLabel` | frontend/js/menus.js:1590 |
-| `isEditConflict` | frontend/js/menus.js:1585 |
+| `historyActorLabel` | frontend/js/menus.js:1592 |
+| `isEditConflict` | frontend/js/menus.js:1587 |
 | `menuClippingAncestor` | frontend/js/menus.js:659 |
 | `menuExitMs` | frontend/js/menus.js:811 |
 | `menuSidePlan` | frontend/js/menus.js:490 |
@@ -3237,7 +3237,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `blockItems` | frontend/js/diagram-builder.js:301 |
 | `blockKeys` | frontend/js/diagram-builder.js:140 |
 | `buildBlock` | frontend/js/diagram-builder.js:208 |
-| `buildPalette` | frontend/js/diagram-builder.js:549 |
+| `buildPalette` | frontend/js/diagram-builder.js:550 |
 | `buildRow` | frontend/js/diagram-builder.js:221 |
 | `commit` | frontend/js/diagram-builder.js:43 |
 | `drawPicture` | frontend/js/diagram-builder.js:58 |
@@ -3247,16 +3247,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `joinChip` | frontend/js/diagram-builder.js:284 |
 | `joinPick` | frontend/js/diagram-builder.js:511 |
 | `joins` | frontend/js/diagram-builder.js:507 |
-| `kindOf` | frontend/js/diagram-builder.js:648 |
+| `kindOf` | frontend/js/diagram-builder.js:651 |
 | `menuAt` | frontend/js/diagram-builder.js:491 |
 | `more` | frontend/js/diagram-builder.js:528 |
-| `mount` | frontend/js/diagram-builder.js:551 |
+| `mount` | frontend/js/diagram-builder.js:552 |
 | `nameOf` | frontend/js/diagram-builder.js:36 |
 | `nameOnPicture` | frontend/js/diagram-builder.js:367 |
 | `nestBlock` | frontend/js/diagram-builder.js:423 |
 | `onKey` | frontend/js/diagram-builder.js:445 |
 | `reconcile` | frontend/js/diagram-builder.js:132 |
-| `refreshMore` | frontend/js/diagram-builder.js:540 |
+| `refreshMore` | frontend/js/diagram-builder.js:539 |
 | `relabel` | frontend/js/diagram-builder.js:371 |
 | `removeBlock` | frontend/js/diagram-builder.js:431 |
 | `render` | frontend/js/diagram-builder.js:92 |
@@ -3266,13 +3266,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shapeGlyph` | frontend/js/diagram-builder.js:148 |
 | `shapeItems` | frontend/js/diagram-builder.js:156 |
 | `shapeRow` | frontend/js/diagram-builder.js:169 |
-| `show` | frontend/js/diagram-builder.js:658 |
+| `show` | frontend/js/diagram-builder.js:661 |
 | `stepBlock` | frontend/js/diagram-builder.js:421 |
 | `stops` | frontend/js/diagram-builder.js:120 |
 | `styleDo` | frontend/js/diagram-builder.js:513 |
 | `suggest` | frontend/js/diagram-builder.js:501 |
 | `suggestMenu` | frontend/js/diagram-builder.js:519 |
-| `sync` | frontend/js/diagram-builder.js:623 |
+| `sync` | frontend/js/diagram-builder.js:626 |
 | `titleOf` | frontend/js/diagram-builder.js:35 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3325,10 +3325,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `draftsRead` | frontend/js/diagram-embed.js:247 |
 | `draftsWrite` | frontend/js/diagram-embed.js:257 |
 | `el` | frontend/js/diagram-embed.js:10 |
-| `expand` | frontend/js/diagram-embed.js:718 |
+| `expand` | frontend/js/diagram-embed.js:716 |
 | `freshTitle` | frontend/js/diagram-embed.js:229 |
 | `hashOf` | frontend/js/diagram-embed.js:276 |
-| `headExport` | frontend/js/diagram-embed.js:704 |
+| `headExport` | frontend/js/diagram-embed.js:702 |
 | `historyKey` | frontend/js/diagram-embed.js:90 |
 | `link` | frontend/js/diagram-embed.js:133 |
 | `mount` | frontend/js/diagram-embed.js:309 |
@@ -3358,7 +3358,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `titleOf` | frontend/js/diagram-joins.js:29 |
 | `words` | frontend/js/diagram-joins.js:105 |
 
-### frontend/js/diagram-kindbar.js (12)
+### frontend/js/diagram-kindbar.js (13)
 
 | Name | File:line |
 |---|---|
@@ -3370,6 +3370,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `fresh` | frontend/js/diagram-kindbar.js:32 |
 | `historyKey` | frontend/js/diagram-kindbar.js:166 |
 | `lost` | frontend/js/diagram-kindbar.js:140 |
+| `more` | frontend/js/diagram-kindbar.js:212 |
 | `mount` | frontend/js/diagram-kindbar.js:69 |
 | `open` | frontend/js/diagram-kindbar.js:97 |
 | `sample` | frontend/js/diagram-kindbar.js:54 |
@@ -30628,7 +30629,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24156)
+## Tests (24160)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31533,6 +31534,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_markdown_l_documents_59.py | 6 |
 | tests/test_diagram_minimap_1110.py | 10 |
 | tests/test_diagram_model.py | 15 |
+| tests/test_diagram_more_menu_groups.py | 3 |
 | tests/test_diagram_multi_r5.py | 19 |
 | tests/test_diagram_object_kind.py | 2 |
 | tests/test_diagram_open_lag_1109.py | 5 |
@@ -33385,7 +33387,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 317 |
+| tests/test_ui_recipes.py | 318 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 7 |
 | tests/test_ui_targets_1029b.py | 9 |

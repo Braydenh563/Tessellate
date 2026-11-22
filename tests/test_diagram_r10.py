@@ -27,7 +27,9 @@ def test_copy_as_picture_writes_a_png_and_falls_back_to_a_download():
 
 
 def test_the_builders_menu_offers_it_and_a_shelf_row_exports_by_id():
-    assert "Copy as picture" in BUILDER and '"picture"' in BUILDER
+    # The stated intent moved: Copy as picture is the Picture row of the Copy as submenu (diagram-kindbar.js).
+    kindbar = (ROOT / "frontend" / "js" / "diagram-kindbar.js").read_text(encoding="utf-8")
+    assert '"Copy as"' in kindbar.replace("ph:copy ", "") and '"picture"' in kindbar
     assert "async function outDoc" in EMBED and "apiJson(`/documents/${id}`)" in EMBED
     #: The export list grew with R9c (save, swapRange, link); the intent is that outDoc is exported.
     assert "outDoc" in EMBED.split("diagramModel.embed = {", 1)[1].split("}", 1)[0]

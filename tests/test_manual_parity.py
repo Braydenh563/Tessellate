@@ -463,15 +463,16 @@ def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-elsewhere"))
     for words in ("Edit as blocks", "double-click a diagram object", "Open as a diagram", "![[name]]", "Done", "Cancel, Escape and the X",
-                  "SVG", "PNG", "Copy as Mermaid", "Copy as SVG", "Source"):
+                  "Save as (SVG, PNG)", "Copy as (Picture, Mermaid, SVG)", "Source"):
         assert words in body, words
     assert "diagram-elsewhere" in TOPIC_META and "diagram-elsewhere" in dict(HELP_GROUPS)["Documents and code"]
     embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
-    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     draw = (FRONTEND / "js" / "mermaid-draw.js").read_text(encoding="utf-8")
     mermaid = (FRONTEND / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
-    for label in ("Save as SVG", "Save as PNG", "Copy as Mermaid", "Copy as SVG"):
-        assert label in builder, label
+    #: The stated intent moved: the exports are rows of the Save as and Copy as submenus, made in diagram-kindbar.js.
+    kindbar = (FRONTEND / "js" / "diagram-kindbar.js").read_text(encoding="utf-8")
+    for label in ("Save as", "Copy as", "ph:file-png PNG", "ph:code Mermaid", "ph:image Picture"):
+        assert label in kindbar, label
     assert '"Edit as blocks"' in mermaid and '"Open as a diagram"' in draw
     #: R9c (1621 D4, D7): Save to Library on a fence and in the menu, the swap offer, and the chat card.
     for words in ("Save to Library", "replace the fence with a link", "link a board's diagram", "Attach a Library diagram to Chat"):
@@ -563,8 +564,8 @@ def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() 
     assert '["Tab, Shift + Tab in Source", "Indent, take the indent back"]' in style and '["Esc in Source", "Leave the text for the views"]' in style
     reading = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
     kinds = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
-    assert "Hand-drawn look, in the ... menu" in kinds and "Clean look takes it back" in kinds
-    assert '"ph:pencil-line Hand-drawn look"' in embed and '"ph:rectangle Clean look"' in embed
+    assert "Hand-drawn look, under Look in the ... menu" in kinds and "press it again to take it back" in kinds
+    assert '"ph:pencil-line Hand-drawn look"' in embed and "setLook(!hand)" in embed
     for words in ("In Source, Tab indents and Shift+Tab takes it back", "Escape leaves the text", "a red line number", "Title names the document Done makes (blank dates it)"):
         assert words in reading, words
     assert "In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture" in reading

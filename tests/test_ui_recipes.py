@@ -8290,3 +8290,14 @@ def test_no_stylesheet_declares_the_weight_650() -> None:
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
     assert not hits, f"declare 600, not 650: {hits}"
+
+
+def test_a_submenu_row_carries_current_like_a_top_level_row_and_a_settings_menu_uses_it() -> None:
+    """A radio or checkbox in a flyout is the row's `current` (`aria-current`), drawn by the one chosen-row rule, never a hand-drawn tick;
+    the diagram builder's ... menu (Spacing, Lines, Look) is the first user (DESIGN.md "A menu behind a button")."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "A submenu row takes `current` too" in design
+    menus = (ROOT / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    assert 'item.current) button.setAttribute("aria-current", "true")' in menus.split("function buildMenuItemButton(", 1)[1].split("\n}\n", 1)[0]
+    embed = (ROOT / "frontend" / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    assert "current: level === now" in embed and "current: hand" in embed

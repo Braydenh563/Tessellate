@@ -2605,7 +2605,7 @@ MORE_TOPICS.extend([
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
             "[ and ] fold the list and the picture to a rail. On a phone, once there is an arrow (another kind: a block), Blocks list opens the list as a sheet. "
             "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history, and a red line number is the line an error names; its note has Undo the last edit. Ctrl+Space lists words; Enter takes one. "
-            "In the bar Left and Right walk the buttons; the ... menu has the look, Save as PNG and Save to Library. On the picture Enter names the picked box, Shift+Enter adds a joined box and Alt+Enter a sister, Ctrl+D copies, Ctrl+A picks all, Delete removes, Ctrl+F or / finds by name, and a double press on empty space adds a box. "
+            "In the bar Left and Right walk the buttons; the ... menu has Look, Save as and Copy as. On the picture Enter names the picked box, Shift+Enter adds a joined box and Alt+Enter a sister, Ctrl+D copies, Ctrl+A picks all, Delete removes, Ctrl+F or / finds by name, and a double press on empty space adds a box. "
             "The New diagram window's Title names the document Done makes (blank dates it) and the files you export."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -2635,7 +2635,7 @@ MORE_TOPICS.extend([
             "a head dragged sideways reorders, a drag from one lifeline to another adds a message, and the + at a gap opens the Add menu; "
             "from the keyboard, Insert in the blocks list adds a step under the selected one, + on the picture. "
             "A suggestion of its own kind arrives as ghosts to take; "
-            "one of another kind says so and is left out when the diagram has blocks, and replaces a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
+            "one of another kind says so and is left out when the diagram has blocks, and replaces a blank one. Hand-drawn look, under Look in the ... menu, sketches any; press it again to take it back."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2671,8 +2671,8 @@ MORE_TOPICS.extend([
             "ask before dropping changes. On a board, double-click a diagram object. In Chat or Ask, "
             "a reply's diagram has Open as a diagram under it. "
             "Type ![[name]] in a note or a document to draw that diagram there, with a "
-            "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG, "
-            "Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's Library card "
+            "line that opens it. The ... menu in the editor's bar has Save as (SVG, PNG) "
+            "and Copy as (Picture, Mermaid, SVG). A diagram's Library card "
             "has the same pictures in its menu; its page has Export in its head, and Download .mmd, in the ... menu, saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
             "/diagram and a board's Insert list your diagrams, then New diagram: an empty builder whose Done embeds that file. "
@@ -2680,7 +2680,7 @@ MORE_TOPICS.extend([
             "On the last box, Tab adds a joined box; on any other, Tab moves on. Shift+Tab selects its source, F6 leaves the blocks and Ctrl+Enter keeps the diagram. "
             "The Keys button in its foot, or ? outside a text field, lists every key. "
             "On a phone, and in Sequence, Mind map and Timeline, the shapes are one Add button that opens a sheet of them; pinch to "
-            "zoom, drag to move, double tap to fit. Save to Library, in the ... menu "
+            "zoom, drag to move, double tap to fit. Save to Library, under Save as in the ... menu "
             "and on a diagram's corner beside Edit as blocks, keeps a copy as a diagram in the Library; "
             "a notice offers to replace the fence with a link, or to link a board's diagram to it; "
             "nothing changes until you press it. Attach a Library diagram to Chat and the model "
@@ -3135,10 +3135,9 @@ MORE_TOPICS.append({
         "expand a diagram", "full screen diagram",
     ),
     "body": (
-        "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
-        "Stepped lines, Usual lines) and how far apart the blocks sit (Compact, Roomy, "
-        "Normal spacing). Both are kept in the diagram's own text as front matter and Undo "
-        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, in the ... menu or by the Wrap button beside Source, folds long Source lines onto the next row and hides their numbers. A diagram's page "
+        "A flowchart's ... menu sets how arrows are drawn (Lines: Straight, Curved, Stepped) "
+        "and how far apart the blocks sit (Spacing: Compact, Roomy); the chosen row is ticked and pressing it again goes back to the usual. Both are kept in the diagram's own text as front matter and Undo "
+        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, under Look in the ... menu or by the Wrap button beside Source, folds long Source lines onto the next row and hides their numbers. A diagram's page "
         "menu keeps Download or print, Connections and History, and leaves out the "
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "

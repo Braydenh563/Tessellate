@@ -110,8 +110,9 @@ def test_a_phone_opens_its_blocks_from_the_blocks_view_and_focus_starts_in_the_w
 
 def test_the_look_menu_offers_the_look_that_is_not_on():
     # UX 5: both rows were offered with nothing to say which was on. `kebabMenu` rows carry no checked state, so the row is the other look.
-    assert "get menu() {" in EMBED and "lookRow()," in EMBED
-    assert 'makeMenuItem("ph:rectangle Clean look"' in EMBED and 'makeMenuItem("ph:pencil-line Hand-drawn look"' in EMBED
+    # The stated intent moved: the Look submenu is a checkbox, so the row marks `current` when the look is on and pressing it takes it off.
+    assert "get menu() {" in EMBED and "items: [lookRow(), wrapRow()]" in EMBED
+    assert 'makeMenuItem("ph:pencil-line Hand-drawn look"' in EMBED and "current: hand" in EMBED
     assert "const hand = diagramModel.front(history[at]).front.some(" in EMBED
 
 
