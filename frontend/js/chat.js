@@ -212,7 +212,7 @@ function atlasSuggestion(question, label = `Ask Atlas: ${question}`) {
   ask.type = "button";
   ask.className = "atlas-suggest";
   setLabel(ask, `ph:compass ${label}`);
-  ask.title = "Opens Atlas with this question";
+  ask.title = "Ask Atlas: opens Chat with this question";
   ask.addEventListener("click", () => askAtlasAbout(question));
   line.appendChild(ask);
   return line;

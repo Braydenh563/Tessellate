@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9112, frontend ids 2858, CSS sections 531, backend routes 754, backend modules 11660, test files 3064, tests 24041, plan headings 692, app scripts 29, boot scripts 38, script files 420.
+Counts: frontend functions 9112, frontend ids 2858, CSS sections 531, backend routes 754, backend modules 11660, test files 3065, tests 24043, plan headings 692, app scripts 29, boot scripts 38, script files 420.
 
 ## Frontend functions (9112)
 
@@ -1883,12 +1883,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `importReportSection` | frontend/js/app-import.js:213 |
 | `openImportReport` | frontend/js/app-import.js:247 |
 
-### frontend/js/app-palette.js (45)
+### frontend/js/app-palette.js (46)
 
 | Name | File:line |
 |---|---|
+| `chatPaletteRows` | frontend/js/app-palette.js:876 |
 | `closePalette` | frontend/js/app-palette.js:166 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:875 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:887 |
 | `openPalette` | frontend/js/app-palette.js:121 |
 | `paletteActRows` | frontend/js/app-palette.js:465 |
 | `paletteArrow` | frontend/js/app-palette.js:829 |
@@ -1901,7 +1902,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteFeatureRows` | frontend/js/app-palette.js:448 |
 | `paletteFind` | frontend/js/app-palette.js:717 |
 | `paletteFuzzyScore` | frontend/js/app-palette.js:192 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:982 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:994 |
 | `paletteKeydown` | frontend/js/app-palette.js:838 |
 | `paletteLight` | frontend/js/app-palette.js:803 |
 | `paletteMatches` | frontend/js/app-palette.js:226 |
@@ -1911,7 +1912,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteNearestRows` | frontend/js/app-palette.js:686 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:39 |
 | `paletteNoteRows` | frontend/js/app-palette.js:46 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:972 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:984 |
 | `palettePick` | frontend/js/app-palette.js:623 |
 | `palettePicks` | frontend/js/app-palette.js:604 |
 | `palettePool` | frontend/js/app-palette.js:423 |
@@ -3900,12 +3901,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `loadCodeMirror` | frontend/js/documents-cm-load.js:51 |
 | `warmDocumentEngine` | frontend/js/documents-cm-load.js:34 |
 
-### frontend/js/documents-cm-theme.js (2)
+### frontend/js/documents-cm-theme.js (1)
 
 | Name | File:line |
 |---|---|
 | `docCmTheme` | frontend/js/documents-cm-theme.js:152 |
-| `docCmThemeBuild` | frontend/js/documents-cm-theme.js:158 |
 
 ### frontend/js/documents-cm.js (8)
 
@@ -30453,7 +30453,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24041)
+## Tests (24043)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -32709,6 +32709,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_rank4_1101.py | 6 |
 | tests/test_rank4_chat_1101.py | 1 |
 | tests/test_raw_fetch_headers.py | 2 |
+| tests/test_reach_876.py | 2 |
 | tests/test_read_headings_1102.py | 2 |
 | tests/test_reading.py | 15 |
 | tests/test_reading_tokens_1108.py | 4 |
