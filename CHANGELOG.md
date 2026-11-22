@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Boot, L-world-class-280: first paint re-measured on an idle machine, 20 of 20 cold loads under the 300 ms line (205 to 289 ms); closed on the numbers, nothing trimmed.
 Lag, L-world-class-355: moved to BACKLOG with its numbers after two measured attempts (26 of 29 Settings and tab presses under 100 ms at 4x; the first show of Appearance from the keyboard still 175 to 191 ms).
 Palette, L-world-class-780: Agent runs and Job history open the activity panel on those tabs, so every tab of it is one pick away (it was four presses).
 Budgets, L540: the browser budgets are re-measured on an idle machine and tightened (first interaction 6960 to 2840 ms, first paint 1070 to 390 ms); the server shares keep their loaded figures, since their test runs in the loaded suite.

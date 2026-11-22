@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 18 | 0 | 0 | 1 | 18 |
+| world-class | 0 | 17 | 0 | 0 | 1 | 17 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 272 | 358 | 71 | 2 | 85 | 701 |
+| all | 272 | 357 | 71 | 2 | 85 | 700 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -428,7 +428,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-182** `world-class` open, L: An in-built browser with MCP tool abilities beside web search. From IDEAS.md:123. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-185** `world-class` open, M: Streamline, enhance and optimise the backend and every AI interaction (ongoing). From IDEAS.md:129. Evidence: IDEAS.md 'Still open' list, 2026-11-14
 - [ ] **L-world-class-230** `world-class` open, L: Lazy router host: register route modules at their first request, not at import (owner call: openapi and route listing). From L-world-class-150 measurement. Evidence: route modules are 825 of 2,060 ms of app import; each of 632 routes costs about 1.3 ms in FastAPI's APIRoute build; only a lazy router host (import a router module on its first request) removes it, and it touches openapi, route-listing tests, the auth gates and CODEMAP routes
-- [ ] **L-world-class-280** `world-class` open, M: First paint sits at 300 to 330 ms against the 300 ms line: find what the first frame waits for (844 KB of HTML with every surface template, 22 stylesheets) and trim it. From WORLD_CLASS_PLAN.md:1823 (L-world-class-90 measured). Evidence: first paint median 301 / 332 ms in two 5-run cold loads at 1440x900 (range 246 to 456; 300 line); html 844 KB decoded (163 KB gz), 22 render-blocking css 1,024 KB decoded (195 KB gz); defer on every boot script gave no gain (7 pairs, 408 to 390 ms median); the lock screen paints after 34 to 53 of 85 resources
 - [ ] **L-world-class-410** `world-class` open, M: Unexplained transient 2.1 GB server RSS spike after a browser session at 5,000 notes. From L-world-class-125. Evidence: Server RSS climbs linearly from 243 MB to 2.1-2.2 GB over about 80 s after a Playwright session on a 5,000-note notebook, then drops to 415 MB; a curl replay of the page's 28 boot GETs stays at 262 MB, so the trigger is a browser-only request (static, stream or POST). Isolate by logging requests during the climb.
 - [ ] **L-world-class-560** `world-class` open, M: MCP over HTTP: scope a token to categories or tags, OAuth for a remote client such as claude.ai, and an easy Docker setup. From INBOX.md 1860; BACKLOG.md:4277 B52. Evidence: core/mcp_clients.py create(): a token carries only writes; routes_mcp.py has no OAuth
 - [ ] **L-world-class-390** `world-class` open, S: The companion's calm pause is still one long task at 4x CPU. From L-world-class-126, 2026-11-14. Evidence: is-calm on the figure (not html) restyles the figure's 73 loops, 123 to 139 ms at 4x (was 200 to 280), 17 to 26 ms at 1x; Web Animations pause() is 0 to 1 ms but makes CSS play-state (atl-off, data-atlas-hidden) stop applying to those loops
