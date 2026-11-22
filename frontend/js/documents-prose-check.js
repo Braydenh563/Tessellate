@@ -1384,6 +1384,28 @@
     if (/\[\[[^\]]*$/.test(upto)) return null;
     return { start: line.from + match.index, fragment: match[0] };
   }
+  //: The field keeps focus while the arrows light a row, so the lit row is announced through the
+  //: field's `aria-activedescendant` (review 6008801452). Written only on a change: this runs on keys.
+  function docCompleteAria(host, id) {
+    const was = docCompleteAria.host;
+    if (was && was !== host && was.hasAttribute("aria-activedescendant")) {
+      was.removeAttribute("aria-activedescendant");
+      was.setAttribute("aria-expanded", "false");
+    }
+    docCompleteAria.host = host || null;
+    if (!host) return;
+    if (!id) {
+      if (host.hasAttribute("aria-activedescendant")) {
+        host.removeAttribute("aria-activedescendant");
+        host.setAttribute("aria-expanded", "false");
+      }
+      return;
+    }
+    if (host.getAttribute("aria-activedescendant") === id) return;
+    host.setAttribute("aria-activedescendant", id);
+    if (host.getAttribute("aria-controls") !== "doc-complete-list") host.setAttribute("aria-controls", "doc-complete-list");
+    host.setAttribute("aria-expanded", "true");
+  }
   //: **Home again on a pause, not on each key** (L342, L-documents-26): the list goes back into the
   //: card when it closes, and every move in or out of `.doc-main` restyled the card's whole subtree
   //: (about 365 elements through the `.doc-layout:has()` rules, 11 to 42 ms at 4x CPU, on one key in
@@ -1394,6 +1416,7 @@
     //: Written only on a change (L342): a key with no rows calls this, and `classList` writes the
     //: attribute even when the class is already there.
     if (list && !list.classList.contains("hidden")) list.classList.add("hidden");
+    docCompleteAria(docCompleteAria.host, "");
     clearTimeout(hideDocComplete.home);
     hideDocComplete.home = setTimeout(() => {
       if (list?.classList.contains("hidden")) docReturnFromViewport(list);
@@ -1514,6 +1537,7 @@
       list.replaceChildren();
       docCompleteMatches.forEach((match, index) => {
         const li = document.createElement("li");
+        li.id = `doc-complete-opt-${index}`;
         li.setAttribute("role", "option");
         li.setAttribute("aria-selected", String(index === docCompleteIndex));
         li.classList.toggle("active", index === docCompleteIndex);
@@ -1568,6 +1592,7 @@
     //: pass reads the layout that frame makes anyway, before the paint, so the list is never seen
     //: where it was; the fallback textarea has no such pass and places at once.
     const view = box.kind === "codemirror" && typeof docCmView !== "undefined" ? docCmView : null;
+    docCompleteAria(view ? view.contentDOM : box.el, `doc-complete-opt-${docCompleteIndex}`);
     if (view) {
       view.requestMeasure({
         key: "doc-complete-place",

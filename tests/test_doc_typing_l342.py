@@ -157,7 +157,7 @@ def test_the_word_list_keeps_its_rows_when_the_words_are_the_same():
     from tests._app_js import documents_text
 
     src = documents_text()
-    script = _FAKE_DOM + _function(src, "function renderDocComplete(") + """
+    script = _FAKE_DOM + _function(src, "function docCompleteAria(") + _function(src, "function renderDocComplete(") + """
 const box = { kind: "textarea", id: 1 };
 const out = {};
 rows = [{ word: "quick", typed: 2 }, { word: "quiet", typed: 2 }, { word: "quill", typed: 2 }];
@@ -423,7 +423,7 @@ def test_the_word_list_and_the_block_grip_write_their_class_only_on_a_change():
         "add: (c) => this.cls.add(c), remove: (c) => this.cls.delete(c)",
         "add: (c) => { writes += 1; this.cls.add(c); }, remove: (c) => { writes += 1; this.cls.delete(c); }",
     ).replace("const hideDocComplete = () => { docCompleteMatches = []; };\n", "const docReturnFromViewport = () => {};\n")
-    script = fake + _function(src, "function hideDocComplete(") + _function(src, "function renderDocComplete(") + """
+    script = fake + _function(src, "function docCompleteAria(") + _function(src, "function hideDocComplete(") + _function(src, "function renderDocComplete(") + """
 const box = { kind: "textarea", id: 1, selection: () => ({ from: 0 }) };
 const out = {};
 list.cls.add("hidden");
