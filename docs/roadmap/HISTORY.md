@@ -56495,3 +56495,21 @@ From DOCUMENTS_PLAN section 17d (L-documents-67). The plan's earlier text: "One 
 1840. **Chat session, 2026-11-14 ~16:00Z (decision taken under standing order 3, not the owner's words):** L180's "enlarged view corner/oval/notice" is read as Brief 34's second part (HISTORY): the enlarged view mirrors the corner companion, a framed Atlas is clipped to its round mark, and the Show companion notice meets the toast recipe. All three were measured built in uxfix5-1018 and ai1518-1101; no new corner oval is drawn. Pinned by tests/test_atlas_enlarged_and_framed_l180.py. Recommendation: close L180 on that reading; taken 2026-11-14. The owner may reverse it.
 1848. **Companion agent, 2026-11-21 (decision taken under standing order 3, not the owner's words):** L173 ends in an owner question (should a float and a lean get lower-body silhouettes of their own, or is idle-like acceptable?) and no dated owner answer exists in HANDOVER, CHAT_PLAN or BACKLOG. Recommendation: give the float a longer, narrower trail and the lean a visible side sweep, each measured in the app as a drawn path box that differs from the standing idle's, then re-render the desk frames and re-register `LID_EYES` and the canvas anchors. Taken 2026-11-21. The owner may reverse it. **Fixed a253c4b0.** Measured in the app (lower layer's drawn path box, 1x): feminine stand 27.4x49.6, float 29.7x62 (12.4 px longer, narrower in ratio), lean 41.5x48.6 (14.1 px wider); masculine 44.7x48, 46.7x62.7, 58.3x47. Desk frames re-rendered and LID_EYES re-registered; overlay set green but the three pre-existing rest_1670 seeds.
 
+## Moved from the plans, 2026-11-22 (BACKLOG built bullets)
+
+From BACKLOG section 1 (live log console):
+
+- ~~**Confirm nothing is silently dropped.**~~ **Done.** `logbuffer.py`
+  tracks `_dropped`/`_dropped_since` (a full ring buffer counts what it
+  discards rather than losing the fact silently), and the frontend renders it
+  - "N earlier records … the oldest record still kept is from …", whenever
+  `stats().dropped` is nonzero.
+
+From BACKLOG section 22 (reported in use):
+
+- ~~**A skill that writes skills.**~~ **Built**, "Build a skill" in
+  `ai/skills.py`'s `BUILTIN_SKILLS`, same `ask_user`-driven interview shape
+  as "Interview me about an idea": asks what the job should do, whether it
+  touches notes (decides the tool allowlist), what should be an input, drafts
+  the whole thing and confirms before calling `save_skill`, and checks
+  `list_skills` first so a near-duplicate ask reuses rather than doubling up.

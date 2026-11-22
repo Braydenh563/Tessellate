@@ -73,11 +73,7 @@ support bundle** (an allowlist zip of the log buffer, scrubbed
   the user chooses whether to send it, which is the difference between this
   and the outside review's other suggestion (opt-in crash reporting),
   rejected in §30.
-- ~~**Confirm nothing is silently dropped.**~~ **Done.** `logbuffer.py`
-  tracks `_dropped`/`_dropped_since` (a full ring buffer counts what it
-  discards rather than losing the fact silently), and the frontend renders it
-  - "N earlier records … the oldest record still kept is from …", whenever
-  `stats().dropped` is nonzero.
+- Nothing silently dropped from the log: done, see [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built bullets)").
 
 ---
 
@@ -1567,12 +1563,7 @@ Small, concrete, each seen in the running app:
   notes or history dominates, and only then trim the variable half. **(needs Opus)**: it needs a real
   3-turn chat on a real model.
   **Next:** `scratchpad/llama-dev.sh serve`, three turns through the agent, read the "prompt composition" log lines (`ai/agent.py`) for which part dominates before trimming anything; real model only.
-- ~~**A skill that writes skills.**~~ **Built**, "Build a skill" in
-  `ai/skills.py`'s `BUILTIN_SKILLS`, same `ask_user`-driven interview shape
-  as "Interview me about an idea": asks what the job should do, whether it
-  touches notes (decides the tool allowlist), what should be an input, drafts
-  the whole thing and confirms before calling `save_skill`, and checks
-  `list_skills` first so a near-duplicate ask reuses rather than doubling up.
+- A skill that writes skills: built, see [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built bullets)").
 - **Appearance settings page (§15).** **Next:** the audit is the section 15 list above, checked 2026-10-05 (fonts, line-height, palette import and export, hover preview are the gaps; saved looks are built). Asked whether it can be improved;
   nobody has audited it against §15 yet. The chat empty-state emblem now
   animates (same motion switch as the ai-mark), which was the one concrete
@@ -4389,6 +4380,14 @@ Owner, verbatim: "make sure that the ai and the composer cna give specialised mo
 - **Scheduled:** a Settings choice sets the time and how often (daily, weekdays, weekly, off). On open, the app writes a briefing only when one is due and the last open was before that time, never on every open.
 - **Stored:** each briefing is kept as a chat conversation (or a note; decide at design time) so it can be read again later.
 - **Build on what exists first** (CLAUDE.md section 1): the dashboard greeting, the reminders' due stamp (`GET /reminders/due`), the composer's date readers and digest, and the lean-workflow `brief` view as a model of the shape.
+
+## Reminders: details, extraction and importance (owner idea, 2026-11-22; backlog, "add this to the backlog")
+
+Owner, verbatim: "I want to be able to add details such as descriptions and locations as well as relevant people once the address book us added to reminders and also if I use magic add or the composer agent or ai to add a new reminder it should be able to distinguish when the reminder times are who the relevant people are, the description with key facts and more etc from what the user writes. add this to the backlog. oh also I want to be able to give each reminder a level of importance and have the ai and composer able to dynamically set it and do it if the user specifically asks."
+
+- **Fields:** a reminder takes a description, a location and people; people link to the address book once it lands (Contact book, above).
+- **Extraction:** magic add, the composer and the AI agent parse free text into the time or times, the people, the location and a description of the key facts.
+- **Importance:** a level per reminder, set by hand, set dynamically by the AI and the composer, and set when the user asks.
 
 ## llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog")
 
