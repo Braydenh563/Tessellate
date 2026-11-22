@@ -42,6 +42,21 @@ function namedBy(label, sig, cmds) {
   if (!stems(bare).length) return true;
   return names.some((n) => hit(stems(n), cmds));
 }
+// A step inside a flow (L-world-class-781): a row reached from a destination that is named, so the flow's own
+// command or Guide topic finds the step (the Writing room's "Write from notes", New document's "Plain text (.txt)").
+// The top tabs never lend their name (every row of a tab would match), and a door ("More actions") is passed through
+// to its own parent. `byName` maps a row's ' > ' name to { depth, sig }.
+function inFlow(name, byName, cmds) {
+  const labels = name.split(' > ');
+  for (let k = labels.length - 1; k >= 1; k--) {
+    const up = byName.get(labels.slice(0, k).join(' > '));
+    if (!up || (up.depth <= 1 && TABS.test(labels[k - 1]))) return false;
+    const bare = labels[k - 1].replace(/^(actions for|more actions).*/i, '');
+    if (stems(bare).length && namedBy(labels[k - 1], up.sig, cmds)) return true;
+  }
+  return false;
+}
+
 // Self-check: the matcher's own cases, so a change that stops matching them fails before a 50-minute crawl.
 {
   const cmds = ['guide managing categories', 'browse skills skills library run', 'settings, privacy', 'guide signing in', 'new document'];
@@ -49,6 +64,9 @@ function namedBy(label, sig, cmds) {
     ['Local: Nothing left this computer since the app', ' | Privacy | ON:Settings', true], ['About signing in', ' |  | ON:About signing in', true],
     ['Plain text (.txt)', 'tab-documents | Documents+Library | ', false], ['Quantum flux', ' |  | ON:Quantum flux', false]];
   for (const [label, sig, ok] of want) if (namedBy(label, sig, cmds) !== ok) throw new Error(`reach.js self-check: "${label}" should ${ok ? '' : 'not '}be named`);
+  const byName = new Map([['Notes', { depth: 1, sig: 'tab-notes | Notes | ' }], ['Notes > Writing room', { depth: 2, sig: 'tab-notes | Notes+Writing room | ' }], ['Chat', { depth: 1, sig: 'tab-chat | Chat | ' }]]);
+  const flows = [['Notes > Writing room > Write from notes', true], ['Chat > Opens Atlas with this question', false], ['Notes > Quantum flux', false]];
+  for (const [name, ok] of flows) if (inFlow(name, byName, cmds.concat('guide writing room')) !== ok) throw new Error(`reach.js self-check: "${name}" should ${ok ? '' : 'not '}be a step in a named flow`);
 }
 const MAXD = Number(process.env.MAXD || 4);
 const NAVISH = /^(open|go to|manage|customi[sz]e|settings|tools|history|browse|view|show|see|details|properties|more|help|guide|tour|templates?|new|edit|find|filter|select|sort|search|bin|trash|activity|tidy|tags|categories|spaces?|notifications?|account|appearance|import|export|backup|about|shortcuts|recent|quick|capture|compose|ask|write|record|read|library|dashboard|notes|chat|graph|timeline|reminders|documents?|boards?|maps?|skills|images|files|links|bookmarks|contents)/i;
@@ -179,17 +197,22 @@ async function replay(page, path) {
     if (!guide.length) throw new Error('reach.js: GET /help/topics gave no Guide topics');
     cmds.push(...guide);
     console.log(`\nPALETTE: ${cmds.length - guide.length} commands (each one chord or one click away), Guide topics ${guide.length}`);
-    const missing = [];
+    const missing = [], steps = [];
+    const byName = new Map(rows.map((r) => [r.name, r]));
     for (const r of rows.filter((r) => r.depth > 0)) {
       const label = r.path[r.path.length - 1].split('|').slice(1).join('|');
       if (/^(menu)\|/.test(r.path[r.path.length - 1])) continue;
-      if (!namedBy(label, r.sig, cmds)) missing.push(r);
+      if (namedBy(label, r.sig, cmds)) continue;
+      if (inFlow(r.name, byName, cmds)) steps.push(r);
+      else missing.push(r);
     }
+    console.log(`STEPS INSIDE A NAMED FLOW: ${steps.length}`);
+    for (const r of steps) console.log(`${r.depth}  ${r.name}`);
     console.log(`DESTINATIONS WITH NO PALETTE COMMAND: ${missing.length} of ${rows.length - 1}`);
     for (const r of missing) console.log(`${r.depth}  ${r.name}`);
     const byDepth = {};
     for (const r of rows) byDepth[r.depth] = (byDepth[r.depth] || 0) + 1;
-    console.log(`\nSUMMARY (${process.env.THEME || 'light'}): destinations ${rows.length}, by depth ${JSON.stringify(byDepth)}, deeper than 3: ${deep.length}, no palette command: ${missing.length}, palette commands ${cmds.length - guide.length}, Guide topics ${guide.length}`);
+    console.log(`\nSUMMARY (${process.env.THEME || 'light'}): destinations ${rows.length}, by depth ${JSON.stringify(byDepth)}, deeper than 3: ${deep.length}, no palette command: ${missing.length}, steps in a named flow: ${steps.length}, palette commands ${cmds.length - guide.length}, Guide topics ${guide.length}`);
   };
   let frontier = [{ path: [], sig: start.sig, candidates: start.candidates, page: start.sig.split(' | ')[0] }];
   // The header and the tab bar are on every page: pressed from the first page
