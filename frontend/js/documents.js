@@ -8522,6 +8522,18 @@ function mountEditorToolbarExtras(bar) {
     return el;
   };
   bar.appendChild(sep());
+  //: A strip without its own Insert (the notes' two) gets the same button, ahead of the pairs: the row
+  //: folds from its end (`fitDocToolbarRow`), so Insert, a thing reached for, outlasts Undo and Indent
+  //: (Capture at 1280: Insert was the first thing behind More, with 55px of the row empty).
+  if (!bar.querySelector('[data-md="insert"]')) {
+    const insert = document.createElement("button");
+    insert.type = "button";
+    insert.dataset.md = "insert";
+    insert.dataset.mdExtra = "1";
+    insert.title = "Insert a block, image, link, table, diagram, emoji or equation (or press /)";
+    setLabel(insert, "ph:plus Insert");
+    bar.appendChild(insert);
+  }
   //: **A pair is one flex item.** Undo and redo (and outdent and indent) are
   //: one decision; the strip wraps between items, and at 1440 it wrapped
   //: between Undo and Redo, leaving Redo alone at the start of row two.
@@ -8542,16 +8554,6 @@ function mountEditorToolbarExtras(bar) {
     button.setAttribute("aria-label", spec.title);
     setLabel(button, spec.icon);
     pair.appendChild(button);
-  }
-  //: A strip without its own Insert (the notes' two) gets the same button.
-  if (!bar.querySelector('[data-md="insert"]')) {
-    const insert = document.createElement("button");
-    insert.type = "button";
-    insert.dataset.md = "insert";
-    insert.dataset.mdExtra = "1";
-    insert.title = "Insert a block, image, link, table, diagram, emoji or equation (or press /)";
-    setLabel(insert, "ph:plus Insert");
-    bar.appendChild(insert);
   }
   for (const menu of EDITOR_TOOLBAR_MENUS) {
     //: The document strip carries these rows in its Style menu already.
@@ -10425,16 +10427,16 @@ function docToolbarMode() {
       return "wrap";
     }
     if (stored === "row" || stored === "wrap") return stored;
-    //: No stored choice and a narrow window: one row (143 px wrapped, 59 px
-    //: here at 700 px wide; dogfood item 10). The toggle always wins.
-    return window.matchMedia?.(DOC_TOOLBAR_NARROW)?.matches ? "row" : "wrap";
+    //: No stored choice: one row at every width, with what does not fit behind More (`fitDocToolbarRow`),
+    //: the one mechanism Capture's strip uses too. Wrapping was the default above 760px and drew the
+    //: documents strip's last tools (Undo, Redo) on a second row or past its end (the owner, at 1920).
+    //: The layout toggle always wins.
+    return "row";
   } catch {
     return "wrap"; // private mode: the safe shape, since it never clips
   }
 }
 
-const DOC_TOOLBAR_NARROW = "(max-width: 760px)";
-window.matchMedia?.(DOC_TOOLBAR_NARROW)?.addEventListener?.("change", () => applyDocToolbarMode(docToolbarMode()));
 
 function applyDocToolbarMode(mode) {
   const row = mode === "row";
@@ -10774,6 +10776,10 @@ function mountDocToolbarControls() {
   for (const bar of document.querySelectorAll(".doc-toolbar")) mountDocToolbarControlsFor(bar);
   applyDocToolbarLayoutButtons();
   applyDocToolbarCollapsed(docToolbarCollapsed());
+  //: A late font changes every tool's width and not the strip's, so the width observer never sees it:
+  //: the row was fitted on the fallback face and ran past its end on the real one.
+  document.fonts?.ready?.then(fitDocToolbars);
+  document.fonts?.addEventListener?.("loadingdone", fitDocToolbars);
 }
 
 function applyDocToolbarLayoutButtons(only = null) {

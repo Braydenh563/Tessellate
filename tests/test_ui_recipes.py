@@ -8194,3 +8194,27 @@ def test_no_stylesheet_declares_the_weight_650() -> None:
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
     assert not hits, f"declare 600, not 650: {hits}"
+
+
+def test_the_capture_strip_recipe_holds() -> None:
+    """The formatting strip's four rules (DESIGN.md, the toolbar with more tools than a row holds).
+
+    Reported on Capture: the menu opener a filled pill among bare buttons, Insert the first tool
+    behind More with room to spare, and a caret as tall as the three-line placeholder.
+    """
+    theme = (ROOT / "frontend" / "js" / "documents-cm-theme.js").read_text(encoding="utf-8")
+    placeholder = re.search(r'"\.cm-placeholder":\s*\{([^}]*)\}', theme)
+    assert placeholder and 'position: "absolute"' in placeholder.group(1), (
+        "a placeholder in the line's flow makes an empty line as tall as the placeholder"
+    )
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert ".doc-toolbar summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary)," in css, (
+        "the strip's menu opener must carry the disclosure rule's exclusions or that rule paints it as a pill"
+    )
+    docs = documents_text()
+    extras = docs[docs.index("function mountEditorToolbarExtras"):]
+    extras = extras[: extras.index("for (const menu of EDITOR_TOOLBAR_MENUS)")]
+    assert extras.index('"ph:plus Insert"') < extras.index("doc-toolbar-pair"), (
+        "the row folds from its end, so Insert must come before the Undo and Indent pairs"
+    )
+    assert "document.fonts?.ready?.then(fitDocToolbars)" in docs, "a late font must refit the strip"

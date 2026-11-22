@@ -98,7 +98,11 @@
         ".cm-selectionMatch": { backgroundColor: "var(--accent-soft)" },
         ".cm-searchMatch": { backgroundColor: "var(--accent-soft)" },
         ".cm-searchMatch.cm-searchMatch-selected": { outline: "1px solid var(--accent)" },
-        ".cm-placeholder": { color: "var(--muted)" },
+        //: Out of the line's flow: CodeMirror draws it as an inline-block, so a three-line
+        //: placeholder made the empty line three lines tall and the caret with it (the owner,
+        //: Capture: "the caret is 3 lines tall"). Absolute with no offsets it stays where the
+        //: line starts and takes no height.
+        ".cm-placeholder": { color: "var(--muted)", position: "absolute", maxWidth: "calc(100% - 2rem)", whiteSpace: "pre-wrap", pointerEvents: "none" },
         ".cm-tooltip": {
           backgroundColor: "var(--card)",
           border: "1px solid var(--border)",
