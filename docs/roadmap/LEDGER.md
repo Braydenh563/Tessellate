@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 25 | 1 | 0 | 0 | 26 |
-| general | 0 | 19 | 2 | 0 | 5 | 21 |
-| all | 372 | 412 | 76 | 2 | 111 | 860 |
+| general | 0 | 18 | 2 | 0 | 5 | 20 |
+| all | 372 | 411 | 76 | 2 | 111 | 859 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -519,7 +519,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-25** `general` open, S: Confirm or replace the question_noise misspelling table's source. From open-work sweep 2026-11-12, docs/THIRD_PARTY.md:101. Evidence: The question_noise.py misspelling table may be CC BY-SA 4.0 from Wikipedia. Its provenance is unconfirmed, and nothing tracks confirming or replacing it. This is a licence risk under AGPL.
 - [ ] **L-general-26** `general` open, S: Update the deep-audit skill steps to brief from and write LEDGER rows, not ranked files. From open-work sweep 2026-11-12, .claude/skills/deep-audit/SKILL.md:38. Evidence: Steps 2 and 3 say to brief from and write audit-*-ranked.md files, which no longer exist. checklist.md says findings are LEDGER rows. The skill contradicts its own checklist.
-- [ ] **L-general-27** `general` open, S: Align CONTRIBUTING with replace, do not layer and the current test count. From open-work sweep 2026-11-12, CONTRIBUTING.md:129. Evidence: This contradicts CLAUDE.md section 8, "Replace, do not layer: remove the old path". Line 52's "13,300+ tests" also disagrees with CLAUDE.md's "about 9,000". The docs/ mirror carries the same text.
 - [ ] **L-general-28** `general` open, S: Move the placed INBOX items to HISTORY and correct the stale 904 statuses. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:36. Evidence: Five items are still listed under Open items although each has a Placed id. INBOX is intake only, so they should be in HISTORY. The 904 text also still says 'not built' for B03, B11, B15, B18, B20, B2
 - [ ] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
