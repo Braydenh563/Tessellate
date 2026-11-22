@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9128, frontend ids 2863, CSS sections 532, backend routes 763, backend modules 11745, test files 3079, tests 24136, plan headings 692, app scripts 29, boot scripts 38, script files 424.
+Counts: frontend functions 9128, frontend ids 2863, CSS sections 532, backend routes 763, backend modules 11745, test files 3080, tests 24138, plan headings 692, app scripts 29, boot scripts 38, script files 424.
 
 ## Frontend functions (9128)
 
@@ -3878,19 +3878,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmHighlight` | frontend/js/documents-cm-load.js:376 |
-| `docCmLanguageFor` | frontend/js/documents-cm-load.js:147 |
-| `docCmSearchCount` | frontend/js/documents-cm-load.js:316 |
-| `docCmViewShown` | frontend/js/documents-cm-load.js:504 |
-| `docHistoryPersist` | frontend/js/documents-cm-load.js:488 |
-| `docHistoryRestore` | frontend/js/documents-cm-load.js:472 |
-| `docListGuides` | frontend/js/documents-cm-load.js:287 |
+| `docCmHighlight` | frontend/js/documents-cm-load.js:377 |
+| `docCmLanguageFor` | frontend/js/documents-cm-load.js:148 |
+| `docCmSearchCount` | frontend/js/documents-cm-load.js:317 |
+| `docCmViewShown` | frontend/js/documents-cm-load.js:505 |
+| `docHistoryPersist` | frontend/js/documents-cm-load.js:489 |
+| `docHistoryRestore` | frontend/js/documents-cm-load.js:473 |
+| `docListGuides` | frontend/js/documents-cm-load.js:288 |
 | `docRedo` | frontend/js/documents-cm-load.js:20 |
-| `docResetDocument` | frontend/js/documents-cm-load.js:431 |
-| `docSearchCountText` | frontend/js/documents-cm-load.js:308 |
-| `docTableGridRules` | frontend/js/documents-cm-load.js:228 |
-| `docWatchLock` | frontend/js/documents-cm-load.js:508 |
-| `loadCodeMirror` | frontend/js/documents-cm-load.js:51 |
+| `docResetDocument` | frontend/js/documents-cm-load.js:432 |
+| `docSearchCountText` | frontend/js/documents-cm-load.js:309 |
+| `docTableGridRules` | frontend/js/documents-cm-load.js:229 |
+| `docWatchLock` | frontend/js/documents-cm-load.js:509 |
+| `loadCodeMirror` | frontend/js/documents-cm-load.js:52 |
 | `warmDocumentEngine` | frontend/js/documents-cm-load.js:34 |
 
 ### frontend/js/documents-cm-theme.js (1)
@@ -14644,7 +14644,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/02-chat-graph.css | 5308 |
 | frontend/css/03-dashboard-widgets.css | 4950 |
 | frontend/css/04-chat-dock-appearance.css | 6454 |
-| frontend/css/05-sidebars-themes.css | 5983 |
+| frontend/css/05-sidebars-themes.css | 6008 |
 | frontend/css/06-timeline-dialogs.css | 3674 |
 | frontend/css/07-whiteboard-misc.css | 10203 |
 | frontend/css/08-consistency.css | 7635 |
@@ -30629,7 +30629,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24136)
+## Tests (24138)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31664,6 +31664,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_typing_l342.py | 14 |
 | tests/test_doc_video.py | 7 |
 | tests/test_doc_view_held.py | 6 |
+| tests/test_doc_warm_scope.py | 2 |
 | tests/test_doc_writing_streak.py | 6 |
 | tests/test_docexport_bundle.py | 7 |
 | tests/test_dock_fold_word_s21.py | 2 |

@@ -33,7 +33,7 @@
   let docWarmed = false;
   function warmDocumentEngine() {
     const link = navigator.connection || {};
-    if (docWarmed || link.saveData || (navigator.deviceMemory || 8) <= 2) return;
+    if (docWarmed || link.saveData || (navigator.deviceMemory || 8) <= 2) return docWarmed;
     docWarmed = true;
     const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 400));
     idle(() => {
@@ -43,6 +43,7 @@
         document.head.appendChild(el);
       }
     }, { timeout: 2000 });
+    return true;
   }
   //: The in-flight load, so two documents opened quickly do not inject two
   //: script tags. Reset to null on failure, so a later attempt can retry after

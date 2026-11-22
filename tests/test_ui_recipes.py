@@ -8317,3 +8317,13 @@ def test_the_capture_strip_recipe_holds() -> None:
         "the row folds from its end, so Insert must come before the Undo and Indent pairs"
     )
     assert "document.fonts?.ready?.then(fitDocToolbars)" in docs, "a late font must refit the strip"
+    #: The note's Live, Source and Read switch (L-documents-53) sat in the strip as a `.seg` well: 40px
+    #: tall beside 32px tools, every segment filled and the chosen one rimmed (the owner: a grey pill that
+    #: pushed Insert to a hidden line). In the strip it is the strip's own buttons, the chosen one in the
+    #: strip's one "on" (the accent edge and soft fill, as Bold pressed).
+    seg = _css_block("#note-toolbar > #entry-view-seg")
+    assert re.search(r"padding:\s*0", seg) and re.search(r"background:\s*transparent", seg), seg
+    rest = _css_block("#note-toolbar > #entry-view-seg > button:not([aria-pressed=\"true\"])")
+    assert re.search(r"background:\s*transparent", rest) and "box-shadow: none" in rest, rest
+    on = _css_block("#note-toolbar > #entry-view-seg > button[aria-pressed=\"true\"]")
+    assert "var(--accent-soft)" in on and "var(--accent)" in on and "box-shadow: none" in on, on
