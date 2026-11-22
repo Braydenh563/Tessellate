@@ -14,9 +14,10 @@ import re
 from pathlib import Path
 
 from tests._help_text import help_core_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 BOARD = frontend_text("whiteboard.js")
 HELP = help_core_text()
 DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

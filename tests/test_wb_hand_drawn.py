@@ -8,11 +8,12 @@ from __future__ import annotations
 
 from tests._app_js import frontend_text
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 WB = frontend_text("whiteboard.js")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _body(src: str, name: str) -> str:

@@ -43,6 +43,14 @@
     renderDocDictionary();
     const variant = $("doc-spelling-variant");
     if (variant) variant.value = docSpellingVariant();
+    const language = $("doc-language");
+    if (language) {
+      const tag = docProse.tagOf(docText());
+      //: A tag the list does not offer (pt, en-NZ) is shown as it is, never silently changed.
+      if (tag && ![...language.options].some((option) => option.value === tag)) language.add(new Option(tag, tag));
+      language.value = tag;
+      language.disabled = !currentDoc;
+    }
     extraNoticeMount($("xn-languagetool"), "languagetool", { fresh: true });
     const grammar = $("doc-grammar-check");
     if (grammar) {

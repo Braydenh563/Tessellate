@@ -31,7 +31,7 @@ from datetime import date, datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import realise, slash_more
+from tessellate.ai import realise, slash_more, tool_history
 from tessellate.ai.slash_more import _more, _notes, _rows, _tags_of
 from tessellate.ai.slash_table import TABLE
 
@@ -158,6 +158,7 @@ _RUN: dict[str, Callable[[Session, str, datetime], str]] = {
     "today": _today,
     "yesterday": _yesterday,
     **slash_more.RUN,
+    "tools": lambda session, arg, now: tool_history.slash(session, slash_more.count_arg(arg), now),
     "help": _help,
 }
 

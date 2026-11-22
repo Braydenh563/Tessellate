@@ -91,6 +91,18 @@ def test_execute_tool_refuses_before_the_handler(session):
     assert "note_id (integer)" in result["error"]
 
 
+from tessellate.ai import act_registry as agent_act_registry  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _no_act_reader(monkeypatch):
+    """The fake session holds no notes, so the unrun-act reader (L114), which reads the sentence
+    against the notebook, is off here: these tests are about the re-prompt, not the act card."""
+    from tessellate.ai import act_registry
+
+    monkeypatch.setattr(act_registry, "proposer", None)
+
+
 class _Session:
     def rollback(self):
         return None
@@ -319,6 +331,9 @@ def _offer(monkeypatch):
 
 def test_a_claimed_note_is_asked_for_and_then_made(monkeypatch, app_state):
     _offer(monkeypatch)
+    #: The nudge path, for a claim the act reader cannot turn into a card: with the reader loaded
+    #: (any earlier test imports `acts`) the claim is the act's own card first (L114, actguard).
+    monkeypatch.setattr(agent_act_registry, "proposer", None)
     ran = []
     monkeypatch.setattr(agent.tools, "execute_tool", lambda s, n, a, **k: ran.append(n) or {"id": 5, "label": "made"})
     fake = _Claims()
@@ -332,6 +347,9 @@ def test_a_claimed_note_is_asked_for_and_then_made(monkeypatch, app_state):
 
 def test_a_second_false_claim_still_gets_the_heads_up(monkeypatch, app_state):
     _offer(monkeypatch)
+    #: The nudge path, for a claim the act reader cannot turn into a card: with the reader loaded
+    #: (any earlier test imports `acts`) the claim is the act's own card first (L114, actguard).
+    monkeypatch.setattr(agent_act_registry, "proposer", None)
     monkeypatch.setattr(agent.tools, "execute_tool", lambda *a, **k: {})
     fake = _Claims(obey=False)
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk", [], _Models(), fake))
@@ -383,6 +401,32 @@ def test_an_imperative_on_a_small_model_requires_a_first_call(monkeypatch, app_s
     sent = [request["json"] for request in capture_post.sent]
     assert sent[0].get("tool_choice") == "required"
     assert "tool_choice" not in sent[1], "only the first round"
+
+
+def test_a_skill_step_that_must_call_a_tool_requires_the_first_call(monkeypatch, app_state, openai_client, capture_post):
+    """L250: on Qwen2.5-1.5B "Run the audit_link_reasons tool" came back as "I ran the function with
+    limit 12" in prose, no call, three attempts in a row. A step whose contract is a tool call (`must_call`)
+    now asks for it on the first round, as an imperative does; an ordinary skill turn still does not."""
+    from tests.fakes_http import FakeResponse, sse
+
+    def run(**extra):
+        capture_post.sent.clear()
+        capture_post.queue.clear()
+        capture_post.queue.extend([
+            FakeResponse(lines=sse({"choices": [{"delta": {"tool_calls": [
+                {"index": 0, "id": "a", "function": {"name": "audit_link_reasons", "arguments": "{}"}}
+            ]}}]})),
+            FakeResponse(lines=sse({"choices": [{"delta": {"content": "Done."}}]})),
+        ])
+        monkeypatch.setattr(agent.tools, "execute_tool", lambda *a, **k: {"updated": 2})
+        list(agent.run_agent(_Session(), "Run the audit_link_reasons tool.", [], _SmallModels(), openai_client,
+                             allowed_tools=["audit_link_reasons"], **extra))
+        return [request["json"] for request in capture_post.sent]
+
+    sent = run(must_call=True)
+    assert sent[0].get("tool_choice") == "required"
+    assert "tool_choice" not in sent[1], "only the first round"
+    assert "tool_choice" not in run()[0]
 
 
 def test_a_question_is_never_forced_into_a_call(monkeypatch, app_state, openai_client, capture_post):

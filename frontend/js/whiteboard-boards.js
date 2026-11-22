@@ -49,7 +49,7 @@
       //: told why. The message is what the server sent, and it belongs on
       //: screen rather than in a console nobody has open.
       const why = (err && err.message) || "the server refused it";
-      toast(voiceLine("failed", { what: "add that note to the board", why: why }), true);
+      toast(voiceLine("failed", "add that note to the board", why), true);
     }
   }
 
@@ -149,7 +149,7 @@
       wbSyncSidebarKind();
       await refreshBoardList();
     } catch (err) {
-      toast(voiceLine("failed", { what: "open that board", why: err.message }), true);
+      toast(voiceLine("failed", "open that board", err.message), true);
     }
   }
 
@@ -317,7 +317,7 @@
           wbBoardPutStep(`Renamed the board to “${board.title}”`, boardId, { title: current }, { title: board.title });
           resolve(board.title);
         } catch (err) {
-          toast(err.message || voiceLine("failed", { what: "rename that board" }), true);
+          toast(err.message || voiceLine("failed", "rename that board"), true);
           resolve(null);
         }
       };
@@ -432,7 +432,7 @@
         if (board.type !== "map") wbZoomToFit({ animate: false });
         toast(`"${board.title}" started from a template.`);
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "create that board" }), true);
+        toast(err.message || voiceLine("failed", "create that board"), true);
       }
       return;
     }
@@ -498,7 +498,7 @@
         await apiJson(`/whiteboard/boards/${board.id}/nodes`, {
           method: "POST",
           body: JSON.stringify({ kind: "topic", parent_id: null, text: name.trim() }),
-        }).catch((err) => toast(err.message || voiceLine("failed", { what: "add the root topic" }), true));
+        }).catch((err) => toast(err.message || voiceLine("failed", "add the root topic"), true));
       }
       // `list_boards` only lists a board once something is actually placed on
       // it (see its own docstring), an empty new one is invisible to both
@@ -535,7 +535,7 @@
         toast(`Board "${board.title}" created.`);
       }
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "create that board" }), true);
+      toast(err.message || voiceLine("failed", "create that board"), true);
     }
   }
 

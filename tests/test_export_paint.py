@@ -16,11 +16,12 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-
+from tests._app_js import JS_DIR
 from tests._js_scope import unwrapped
 
+
 ROOT = Path(__file__).resolve().parent.parent
-JS = "\n".join(unwrapped(p.read_text(encoding="utf-8")) for p in sorted((ROOT / "frontend" / "js").glob("*.js")))
+JS = "\n".join(unwrapped(p.read_text(encoding="utf-8")) for p in sorted(JS_DIR.glob("*.js")))
 
 
 def _body(name: str) -> str:

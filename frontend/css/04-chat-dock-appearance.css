@@ -1125,7 +1125,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* A toggle that is on says so with the accent, the same way the mode segment's
    chosen half does. `aria-pressed` is already on these buttons for the screen
    reader; this is the sighted half of the same statement, and it was missing, 
-   🌐 Web looked identical on and off unless you noticed the panel. */
+   Web looked identical on and off unless you noticed the panel. */
 .chat-dock-controls>.chat-tool-group>button[aria-pressed="true"] {
   background-color: var(--accent-surface);
   border-color: var(--accent);
@@ -1350,7 +1350,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 }
 
 /* The composer row, on one height.
-   Measured before this rule: 📎 45.2px, the box 49.0, 🎙 45.2, Send 43.2, with
+   Measured before this rule: the clip 45.2px, the box 49.0, the mic 45.2, Send 43.2, with
    three different tops: four controls, four sizes, nothing agreeing with
    anything. Each had picked up its own padding from a different base rule.
 

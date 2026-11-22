@@ -9,10 +9,11 @@ skills kind segment. A failure here means one of those was rebuilt away.
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_contents_is_an_aria_tree():

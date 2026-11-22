@@ -12,6 +12,9 @@ source; `tests/test_day_digest.py` checks every one.
 
 from __future__ import annotations
 
+import logging
+import re
+from collections.abc import Callable
 from datetime import datetime, time, timedelta, timezone
 
 from sqlalchemy import func, select
@@ -19,6 +22,8 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import due_summary, questions, realise
 from tessellate.core.database import Category, Entry, Reminder
+
+logger = logging.getLogger(__name__)
 
 #: A topic is quiet when its newest note is older than this.
 QUIET_DAYS = 30
@@ -96,7 +101,7 @@ def _due(session: Session, now: datetime) -> list[dict]:
     if late:
         parts.append(f"{realise.count_word(late)} overdue")
     lines = [{"part": "due", "kind": "count", "text": " and ".join(parts).capitalize() + ".",
-              "counts": [n for n in (today, late) if n]}]
+              "counts": [n for n in (today, late) if n], "links": parts}]
     lines.extend({"part": "due", "kind": "quote", "quote": _cut(row.text), "source": {"reminder_id": row.id},
                   "text": f"“{_cut(row.text)}”"} for row in rows[:QUOTES])
     return lines
@@ -108,7 +113,7 @@ def _questions(session: Session) -> list[dict]:
     if not total:
         return []
     verb = "is" if total == 1 else "are"
-    lines = [{"part": "questions", "kind": "count", "counts": [total],
+    lines = [{"part": "questions", "kind": "count", "counts": [total], "links": [realise.count_noun(total, "question")],
               "text": f"{realise.count_noun(total, 'question').capitalize()} in your notes {verb} still open."}]
     for item in page["items"]:
         said = _cut(item["display"] or item["text"])
@@ -132,7 +137,7 @@ def _changed(session: Session, now: datetime) -> list[dict]:
         said.append(f"{realise.count_noun(len(made), 'note')} written")
     if edited:
         said.append(f"{realise.count_noun(len(edited), 'note')} edited")
-    lines = [{"part": "changed", "kind": "count", "counts": [n for n in (len(made), len(edited)) if n],
+    lines = [{"part": "changed", "kind": "count", "counts": [n for n in (len(made), len(edited)) if n], "links": said,
               "text": (" and ".join(said) + " since this time yesterday.").capitalize()}]
     shown = 0
     for entry in (made + edited)[:QUOTES]:
@@ -144,7 +149,9 @@ def _changed(session: Session, now: datetime) -> list[dict]:
     #: The list agrees with its count: what the quotes leave out is said (INBOX 1569).
     rest = len(made) + len(edited) - shown
     if rest > 0:
-        lines.append({"part": "changed", "kind": "more", "counts": [rest], "text": f"And {realise.count_word(rest)} more note{'' if rest == 1 else 's'}."})
+        lines.append({"part": "changed", "kind": "more", "counts": [rest],
+                      "links": [f"{realise.count_word(rest)} more note{'' if rest == 1 else 's'}"],
+                      "text": f"And {realise.count_word(rest)} more note{'' if rest == 1 else 's'}."})
     return lines
 
 
@@ -164,7 +171,7 @@ def _quiet(session: Session, now: datetime) -> list[dict]:
         days = (_naive(now).date() - _naive(last).date()).days
         if days < QUIET_DAYS:
             continue
-        lines.append({"part": "quiet", "kind": "count", "counts": [days, count], "category": name,
+        lines.append({"part": "quiet", "kind": "count", "counts": [days, count], "category": name, "links": [name, realise.count_noun(days, "day"), f"{count} notes"],
                       "text": f"{name}: no new note in {realise.count_noun(days, 'day')} ({count} notes in all)."})
         if len(lines) >= QUOTES:
             break
@@ -176,6 +183,40 @@ def compose(session: Session, now: datetime) -> dict:
     empty-day line when there is nothing to say."""
     lines = _due(session, now) + _questions(session) + _changed(session, now) + _quiet(session, now)
     return {"lines": lines, "empty": _empty(session, now) if not lines else ""}
+
+
+#: A refined line is one sentence, so a rambling reply is refused by length.
+REFINE_CHARS = 160
+REFINE_PROMPT = (
+    "Reword this one dashboard line so it reads warmly, as one short sentence. "
+    "Keep every number and every word of it that names a thing; add no number, no fact. Reply with the sentence only.\n\n"
+)
+
+
+def _digits(text: str) -> list[str]:
+    return sorted(re.findall(r"\d+", text))
+
+
+def refine(lines: list[dict], say: Callable[[str], str]) -> list[dict]:
+    """The count lines reworded by a model, each only when the reworded one keeps
+    the engine's numbers exactly and every phrase the dashboard links
+    (CHAT_PLAN decision 53: the model proposes, the engine decides). A quote is
+    never sent. A model that fails, or a line that does not pass, leaves the
+    engine's line; a taken one carries `engine_text` so the page can show both."""
+    out = []
+    for line in lines:
+        if line.get("kind") != "count" or not line.get("text"):
+            out.append(line)
+            continue
+        try:
+            reply = " ".join((say(REFINE_PROMPT + line["text"]) or "").split())
+        except Exception as exc:  # noqa: BLE001  # no model, a failed one: the engine's own line stands
+            logger.info("day digest: the model could not reword a line, the engine's line stands (%s)", type(exc).__name__)
+            out.append(line)
+            continue
+        kept = bool(reply) and len(reply) <= REFINE_CHARS and _digits(reply) == _digits(line["text"]) and all(link.lower() in reply.lower() for link in line.get("links") or [])
+        out.append({**line, "text": reply, "engine_text": line["text"]} if kept else line)
+    return out
 
 
 def _empty(session: Session, now: datetime) -> str:

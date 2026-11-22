@@ -138,7 +138,7 @@ def _delete_category(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     names = [row["name"] for row in rows]
     name = object_acts._find(parsed["name"], names)  # noqa: SLF001
     if name is None:
-        return {"line": object_acts._unknown("category", parsed["name"], names)}  # noqa: SLF001
+        return {"line": object_acts._unknown("category", parsed["name"], names, "delete")}  # noqa: SLF001
     if name == manager.UNCATEGORISED:
         return {"line": f"“{name}” is where notes with no category sit, so it cannot be deleted."}
     count = next(row["count"] for row in rows if row["name"] == name)
@@ -156,7 +156,7 @@ def _merge(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     found = {key: object_acts._find(parsed[key], names) for key in ("from", "into")}  # noqa: SLF001
     for key in ("from", "into"):
         if found[key] is None:
-            return {"line": object_acts._unknown("category", parsed[key], names)}  # noqa: SLF001
+            return {"line": object_acts._unknown("category", parsed[key], names, "merge")}  # noqa: SLF001
     source, target = found["from"], found["into"]
     if source == target:
         return {"line": f"“{source}” and “{target}” are the same category."}
@@ -173,7 +173,7 @@ def _delete_tag(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     counts = tags_repo.counts(session)
     name = object_acts._find(parsed["name"], list(counts))  # noqa: SLF001
     if name is None:
-        return {"line": object_acts._unknown("tag", parsed["name"], list(counts))}  # noqa: SLF001
+        return {"line": object_acts._unknown("tag", parsed["name"], list(counts), "delete")}  # noqa: SLF001
     if refusal := object_acts.guard(session, "delete_tag", {"name": name}):
         return {"line": refusal}
     notes = counts[name]
@@ -248,7 +248,7 @@ def _source_note(session: Session, parsed: dict, note_ids: list[int] | None, hel
         return helpers["resolve_one"](session, None, note_ids, True, None)
     about = re.sub(r"\s+note$", "", src, flags=re.I)
     found = helpers["resolve_one"](session, about, note_ids, False, None)
-    #: The speller reads "todo" as "to do" before this sees it; a note titled Todo (or To-do) is looked up as typed.
+    #: The speller reads the one-word spelling as "to do" before this sees it; a note with the one-word or hyphenated title is looked up as typed.
     for spelling in ("todo", "to-do"):
         if found[0] is None and re.search(r"\bto do\b", about, re.I):
             found = helpers["resolve_one"](session, re.sub(r"\bto do\b", spelling, about, flags=re.I), note_ids, False, None)
@@ -280,13 +280,23 @@ def _run_skill(parsed: dict) -> dict:
     from tessellate.ai.tools import tool_handoff
     from tessellate.ai.tools._common import ToolError
 
+    from tessellate.ai import skills
+    from tessellate.ai.tools.tool_table import TOOLS
+    from tessellate.ai.tools.tool_turn import MAX_NAME_ECHO, MAX_SKILL_NAMES, _match_skill
+    from tessellate.core import deps
+
+    #: The line is built here, never from the error's text: a tool error is worded for the
+    #: model ("Call list_skills"), and exception text never reaches the page (CodeQL
+    #: py/stack-trace-exposure on /read/act).
+    catalog = skills.catalog(deps.get_config(), set(TOOLS))
+    wanted = str(parsed.get("name") or "").strip()
+    if not wanted or _match_skill(catalog, wanted) is None:
+        known = ", ".join(f"“{item['name']}”" for item in catalog[:MAX_SKILL_NAMES])
+        return {"line": f"There is no skill called “{wanted[:MAX_NAME_ECHO]}”. " + (f"The ones that exist are: {known}." if known else "There are none saved.")}
     try:
-        event = tool_handoff.validate_run_skill({"name": parsed["name"]})
-    except ToolError as exc:
-        said = str(exc)
-        if "needs" in said and "inputs" in said:
-            return {"line": "That skill needs some details first, so start it from the Skill menu in Chat."}
-        return {"line": said.split(" Call list_skills")[0]}
+        event = tool_handoff.validate_run_skill({"name": wanted})
+    except ToolError:
+        return {"line": "That skill needs some details first, or a larger model, so start it from the Skill menu in Chat."}
     return {"line": f"I can run the skill “{event['skill']}”. It starts when you press Run the skill.", "tool": event}
 
 

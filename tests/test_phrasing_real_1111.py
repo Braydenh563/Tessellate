@@ -100,3 +100,13 @@ def test_real_phrasing(client, notebook, name, kind, phrase):
     text = _ask(client, phrase)["text"]
     problem = _judge(kind, text) if kind != "notes" else ("empty" if not text.strip() else None)
     assert not problem, f"{name} | {phrase} | {problem} | {text[:120]!r}"
+
+
+def test_the_three_old_xfails_are_read_by_their_own_rules():
+    from tessellate.ai import composer_calendar, composer_event_verdict, recognise
+
+    assert recognise.neighbour_day("calender says tomorrow is") == "tomorrow"
+    assert recognise.neighbour_day("calendar says yesterday is") == "yesterday"
+    assert composer_calendar.restate("lunch with my friend at noon today") == "remind me to lunch with my friend at noon today"
+    assert composer_calendar.restate("do we have lunch at noon today") == "do we have lunch at noon today"
+    assert composer_event_verdict.day_question("do i have any meeting to go to today") == "what is on today"

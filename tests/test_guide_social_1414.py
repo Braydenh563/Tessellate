@@ -184,7 +184,7 @@ def test_chat_closes_with_the_same_closing_so_a_finished_act_is_not_resumed_ther
     # unfinished in Chat than in the Guide, so Chat keeps the 1414 rule.
     from pathlib import Path
 
-    routes = (Path(__file__).resolve().parents[1] / "src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
+    routes = (Path(__file__).resolve().parents[1] / "src/tessellate/api/chat_service.py").read_text(encoding="utf-8")
     #: The seed now carries the question (composer-1031), so a repeat varies.
     assert "composer_aware.closing(_awareness(req), f\"{seed}:{req.question}\", recent," in routes
     pinned = composer_aware.build(tab="chat", actions=PINNED)

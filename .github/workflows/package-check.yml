@@ -74,7 +74,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install fastapi "uvicorn[standard]" SQLAlchemy alembic python-dotenv \
             requests "certifi>=2026.10.23" numpy "fsspec[http]" bcrypt cryptography \
-            python-multipart defusedxml tzdata pywebview pystray Pillow pyinstaller
+            python-multipart defusedxml tzdata pywebview pystray Pillow pyinstaller \
+            holidays inflect rapidfuzz
           pip install -e . --no-deps
 
       - name: Build the frozen app (PyInstaller)

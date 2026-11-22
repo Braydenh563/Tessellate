@@ -17,10 +17,11 @@ from tests._app_js import documents_text
 
 import re
 from pathlib import Path
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = documents_text()
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
+CSS = css_glob_text()
 
 
 def _rule(selector: str) -> str:

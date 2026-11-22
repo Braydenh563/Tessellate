@@ -557,6 +557,25 @@ def _files_on(session: Session, entry_ids: list[int]) -> dict[int, list[str]]:
     return out
 
 
+_FILE_PICTURE = re.compile(r"^(.+\.(?:png|jpe?g|gif|webp|heic|avif|bmp)) \((.+)\)$", re.I)
+
+
+def _file_pictures(files: list[str]) -> str:
+    """A note's attached *picture files* with a caption (`_files_on`'s
+    "sketch.png (a blue bean)"), as the same block an inline picture gets, so
+    the composer reads them as pictures too (CHAT_PLAN phase 5 d): a note
+    that holds its picture as a file was a filename in the prompt and no
+    picture to the composer. Names and stored captions only, no disk read."""
+    lines = []
+    for line in files or []:
+        found = _FILE_PICTURE.match(line.strip())
+        if found and len(found.group(2).split()) >= 2:
+            lines.append(f"- {found.group(1)}: shows {found.group(2)}")
+    if not lines:
+        return ""
+    return "\n\n[Pictures in this note, as this app read them:\n" + "\n".join(lines) + "]"
+
+
 def _attachment_readings(session: Session, entry_id: int) -> str:
     """What's inside the *files* attached to a note (PDFs, Office documents,
     code, plain text): `_media_readings` above's own sibling, and the gap it

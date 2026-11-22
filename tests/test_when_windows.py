@@ -76,6 +76,7 @@ def test_later_today_after_eight_is_three_hours_on():
         ("on 3 March", date(2026, 3, 3), date(2026, 3, 3), "day"),
         ("since last week", date(2026, 9, 28), TODAY, "week"),
         ("last weekend", date(2026, 10, 3), date(2026, 10, 4), "week"),
+        ("the weekend before last", date(2026, 9, 26), date(2026, 9, 27), "week"),
     ],
 )
 def test_a_past_span(phrase, first, last, grain):

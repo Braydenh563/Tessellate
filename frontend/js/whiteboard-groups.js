@@ -79,7 +79,7 @@
         rows.push({ kind: entries[i].kind, item: entries[i].item });
       }
       await wbSaveMany(rows);
-      toast("Grouped.");
+      toast(voiceLine("done", "Grouped"));
     });
     wbUpdateContextBar();
   }
@@ -118,7 +118,7 @@
       }
       await wbSaveMany(entries);
     });
-    toast("Ungrouped.");
+    toast(voiceLine("done", "Ungrouped"));
     wbUpdateContextBar();
   }
 

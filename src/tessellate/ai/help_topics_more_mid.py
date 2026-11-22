@@ -80,7 +80,7 @@ MID_TOPICS.extend(
                 "small box over whatever tab you are on: type, press Ctrl+Enter, "
                 "and the note is saved and filed in the background while you stay "
                 "where you were. Escape closes it and keeps the words for next "
-                "time; Open in Capture moves them to the full composer. Private, in "
+                "time; Open in Capture moves them to the full composer. A word you are typing is finished in grey (Tab takes it). Private, in "
                 "Quick note, Capture and the card's foot, seals just that one note (it starts "
                 "on when Settings says new notes start private). The "
                 "dashboard's Quick capture card is the same take-a-note bar as the top of "
@@ -160,12 +160,16 @@ MID_TOPICS.extend(
                 "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
             ),
             "body": (
-                "The Chats list beside the chat shows your last eight saved chats. "
+                "The Chats list beside the chat shows your latest saved chats. "
                 "The search box above it finds a chat by its title or by anything "
-                "said in it and lists up to 32 matches. Sort "
-                "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
-                "chat stays first. Each chat's menu renames, pins, archives or "
-                "deletes it. All in Library opens every chat, with the full search."
+                "said in it. The sort and group button beside it sorts by Recent, "
+                "Oldest, Name or Most messages, groups by day, week or folder, and "
+                "keeps pinned chats first; the choice is kept. Each chat's menu "
+                "renames, pins, files it in a folder (Move to folder), archives or deletes it. In "
+                "Chat, say sort my chats by name, group my chats by "
+                "week, rename the chat about Paris to Trip plans, pin the chat "
+                "about Paris or move the chat about Paris to the folder Trips; "
+                "each waits for Confirm and has Undo. All in Library opens every chat."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -352,7 +356,7 @@ MID_TOPICS.extend(
                     "rule that needs no AI, with its count and one line on what it finds, the ones with "
                     "nothing to tidy last; press a row to open that review and its back button to return to "
                     "the overview. The reviews: Links to explain (Add reasons gives a link that only says "
-                    "similar in meaning what the two notes share, a tag, a name or a week), Weak automatic "
+                    "similar in meaning what the two notes share, a tag, a name, a week or a sentence each that says the same), Weak automatic "
                     "links (Remove links), Tags Atlas added (tags written by Atlas or a background pass, "
                     "never changed by you, that fit their note poorly; Remove tags), Tags used once (Remove "
                     "tags), Tags that look alike (Merge tags), Notes without a category (Move notes, to the "
@@ -645,7 +649,7 @@ MID_TOPICS.extend(
             "body": (
                 (
                     "Ask on the Notes tab has an AI switch beside its answer-length picker. On, your model writes the "
-                    "answer, with From your notes under it; off, the answer is From your notes, with no AI. It opens with the answer, or for"
+                    "answer, marked Atlas and the model's name; off, it is marked Atlas's assistant, from your notes, with no AI. It opens with the answer, or for"
                     " a topic with how many notes and over which months (You have eleven notes about uni, and they follow one"
                     " semester, July to early November). Three or more dated notes then read as a few short paragraphs, notes that go together in one sentence, and one"
                     " closing insight (your slang is quoted, a finish congratulated). One source mark lights its note. "
@@ -661,7 +665,7 @@ MID_TOPICS.extend(
                     "mode is greyed unless the Needle extra can run it (the app's own tools go first). Every "
                     "sentence cites a note; the app adds only joining words and what it measured, and says "
                     "which of your words no note held. The badge by the name says who "
-                    "wrote it (From your notes, a model's name, or Composer); hover or click it for what "
+                    "wrote it (Atlas's assistant, Atlas, or Composer); hover or click it for what "
                     "that means. The No model connected line above the Chat box "
                     "and the Ask box has a close button: it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
@@ -669,6 +673,22 @@ MID_TOPICS.extend(
                 )
             ),
             "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
+            #: L737 (owner, 2026-11-12): who answers plain Ask, as a Settings choice.
+            "id": "ask-answerer",
+            "keywords": (
+                "who answers ask", "who answers plain ask", "ask answered by", "ask use my model", "ask from my notes by default",
+                "default answerer", "notes answerer", "ask without the model", "small model ask",
+            ),
+            "body": (
+                "Settings, Models, Who answers plain Ask: Your model (the default) or Quoted from your notes. With your model, "
+                "Ask writes the answer and cites your notes. With Quoted from your notes, a plain question is answered by "
+                "Atlas's assistant, quoting your notes with no AI; a small model (3B and under) answers best this way. It is "
+                "the Ask box's own switch beside the answer length, and this computer keeps its own choice. "
+                "With no model running the answer is always from your notes."
+            ),
+            "badge": {"label": "Models", "section": "models", "target": "ask-answerer-row"},
         },
         {
             "id": "follow-up-trail",
@@ -726,7 +746,17 @@ MID_TOPICS.extend(
                 "Beside an Ask answer, each Matching records card is the "
                 "note's title, two lines of it (Show more for the rest), one "
                 "line of its category, date and match percentage, the reason "
-                "it was found, and N links, which opens the notes it links to."
+                "it was found, and N links, which opens the notes it links to. "
+                "When an answer tells a story of several threads, one chip per "
+                "thread sits above the cards: press one to show only its notes "
+                "(the heading says 3 of 9), press it again to show them all. "
+                "The answer itself does not change. "
+                "Around this note, on a card, opens the notes linked to it and "
+                "the notes like it right under that card; press it again to close. "
+                "Once you have narrowed to a thread or opened a note's "
+                "neighbours, a trail above the cards (Answer, thread, note) "
+                "shows where you are: its arrow, a step on it or the "
+                "browser's Back goes back one step."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
@@ -763,14 +793,21 @@ MID_TOPICS.extend(
                 "reads more notes (5, then 10, 15, up to 20) and ignores a category the "
                 "question named, so a note the first read missed can come in. Regenerate "
                 "as lists your personas: the same question answered as one of them, for "
-                "this answer only, and the persona picker stays as it was. This answer "
+                "this answer only, and the persona picker stays as it was. Regenerate "
+                "with answers once with the same model, another installed one, or "
+                "without a model, from your notes alone. Every regenerate or edit and "
+                "resend keeps the earlier answer: a pager reading 1 of 2 under the "
+                "answer steps between versions, and the latest shows first. This answer "
                 "is wrong marks the whole answer wrong: the notes it cited come last for a "
                 "question like it, and are left out once you say so twice. It shows "
                 "only where the answer cites a note, never in a private chat, and Undo "
                 "takes it back. Editing your own question clears the replies after "
                 "it; in a saved chat with later replies, Keep the earlier version as "
                 "a copy (on by default) first saves the whole chat as a copy named "
-                "after it, \"before the edit\"."
+                "after it, \"before the edit\". In Ask, the same menu keeps the answer as a "
+                "note, a document, a mind map or flashcards, or sets a reminder to come back "
+                "to it, and rates it good or not good (kept in answer_gold.jsonl in your data "
+                "folder, never sent anywhere), each with Undo."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -793,7 +830,8 @@ MID_TOPICS.extend(
                 "In Chat, a run's What changed list has an Undo on each change, "
                 "and Undo the run puts back every note it changed at once, after "
                 "showing what will go back (a board item cannot be undone, and "
-                "the list says so)."
+                "the list says so). A muted line under the list says what the run "
+                "used of its steps, tokens and seconds."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -865,7 +903,7 @@ MID_TOPICS.extend(
                 "installed models", "remove a model", "uninstall a model", "free disk space",
             ),
             "body": (
-                "Settings, Models, Suggested downloads: cards grouped by purpose "
+                "Settings, Models, Suggested downloads lists models to download as cards grouped by purpose "
                 "(chat and filing, bigger machines, search, images, reading "
                 "text), each with its size on disk, the memory it asks for, what "
                 "it is good at and whether it fits this computer, and one "

@@ -1052,7 +1052,7 @@
       }
       wbScheduleRender();
     } catch {
-      toast(voiceLine("failed", { what: "undo that" }), true);
+      toast(voiceLine("failed", "undo that"), true);
     }
   }
 
@@ -1071,7 +1071,7 @@
       toast("Redone: last change on this board", "info");
       wbScheduleRender();
     } catch {
-      toast(voiceLine("failed", { what: "redo that" }), true);
+      toast(voiceLine("failed", "redo that"), true);
     }
   }
 
@@ -1094,7 +1094,7 @@
       await refreshBoardList();
       return created;
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "add that to the board" }), true);
+      toast(err.message || voiceLine("failed", "add that to the board"), true);
       return null;
     }
   }

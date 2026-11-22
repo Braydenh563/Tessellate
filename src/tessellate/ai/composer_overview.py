@@ -27,6 +27,11 @@ from tessellate.core.lazyre import lazy_compile
 #: projects", "what did I write about uni", "summarise my uni notes", "what do
 #: I know about X", "tell me about my X", "who is Jake".
 _ASKS = (
+    #: "give me an overview of my sourdough notes": the frame is not the subject (L-chat-30).
+    lazy_compile(
+        r"^\s*(?:(?:can|could|would)\s+you\s+|please\s+)?(?:(?:give|show|get|write)(?:\s+me)?\s+)?(?:an?\s+)?(?:overview|summary|rundown|run-down|digest)\s+(?:of|on|for)\s+(?:all\s+)?(?:of\s+)?(?:my\s+|the\s+)?(?P<t>.+?\s+(?:notes|entries))\s*\??$",
+        re.I,
+    ),
     lazy_compile(
         r"^\s*(?:what|which)\s+(?:did|have)\s+i\s+(?:write|written|note|noted|say|said|jot|jotted|save|saved|got|keep|kept|store|stored|record|recorded|log|logged|collect|collected)(?:\s+down)?\s+(?:about|on)\s+(?:my\s+)?(?P<t>.+?)\s*\??$",
         re.I,

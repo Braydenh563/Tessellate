@@ -18,7 +18,8 @@ from tessellate.ai.ollama_client import OllamaClient
 
 
 @pytest.fixture()
-def ollama():
+def ollama(app_state):
+    """`app_state` first: `runtime_options` reads the config, whose default is the repo's `data/` (L-general-71)."""
     client = OllamaClient(base_url="http://127.0.0.1:1")
     client._context_lengths = {"m": 8192}
     return client

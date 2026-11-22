@@ -161,6 +161,11 @@ a = Analysis(
         # stays on the pre-Alembic additive-only path.
         (str(MIGRATIONS_DIR), "migrations"),
         (str(ALEMBIC_INI), "."),
+        # AGPL-3.0 travels with every copy of the program, and the bundled
+        # parts' notices with them (L-general-3): the installer, the MSI and
+        # the Linux zip all package this folder.
+        (str(REPO_ROOT / "LICENSE"), "."),
+        (str(REPO_ROOT / "docs" / "THIRD_PARTY.md"), "."),
         # The constraints an optional package is installed against
         # (core/extras._requirements_path), so an extra cannot drag a shared
         # library to a version the bundle was not built with.
@@ -172,6 +177,8 @@ a = Analysis(
         # The taxonomy pack filing reads (ai/taxonomy.py `DATA_DIR`): JSON
         # beside the module, so it goes where the module's package is.
         (str(REPO_ROOT / "src" / "tessellate" / "ai" / "data" / "taxonomy"), "tessellate/ai/data/taxonomy"),
+        # The composer's word tables (tessellate/data, read on first use).
+        (str(REPO_ROOT / "src" / "tessellate" / "data"), "tessellate/data"),
         # The Run sandbox's pages, workers and Python runner (api/run_sandbox.py
         # reads them at import from beside the module).
         (str(REPO_ROOT / "src" / "tessellate" / "api" / "run_sandbox_assets"), "tessellate/api/run_sandbox_assets"),

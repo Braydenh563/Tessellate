@@ -904,7 +904,7 @@
         body: JSON.stringify({ note_ids: chosen.map((note) => note.id) }),
       });
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "propose a map from those notes" }), true);
+      toast(error.message || voiceLine("failed", "propose a map from those notes"), true);
       return;
     }
 
@@ -928,7 +928,7 @@
       wbBoardMadeStep(board);
       await wbMapTidyFresh();
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "create that map" }), true);
+      toast(error.message || voiceLine("failed", "create that map"), true);
     }
   }
 
@@ -1070,7 +1070,7 @@
       //: it (W5). Everything else is text.
       content = format === "xmind" ? wbBase64(await file.arrayBuffer()) : await file.text();
     } catch {
-      toast(voiceLine("failed", { what: "read that file" }), true);
+      toast(voiceLine("failed", "read that file"), true);
       return;
     }
     if (!content.trim()) {
@@ -1108,7 +1108,7 @@
       // The server's own message, not a generic one: it names the actual
       // refusal ("Unknown import format", a DOCTYPE in the OPML, a parse
       // failure), and those are the only things a person can act on.
-      toast(error.message || voiceLine("failed", { what: "import that outline" }), true);
+      toast(error.message || voiceLine("failed", "import that outline"), true);
     }
   }
 
@@ -1289,7 +1289,7 @@
     const blob = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
     await uploadToLibrary(`whiteboard-${scope}-${stamp}.png`, blob, wbExportDescription(scope));
-    toast("Added to your image library.");
+    toast(voiceLine("done", "Added to your image library"));
   }
 
   //: The raster types beyond PNG (draw.io's export formats). JPEG has no alpha,
@@ -1324,7 +1324,7 @@
     try {
       if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw new Error("no clipboard");
       await navigator.clipboard.write([new ClipboardItem({ "image/png": picture })]);
-      toast("Copied the picture. Paste it into another app.");
+      toast(voiceLine("done", "Copied the picture. Paste it into another app"));
     } catch {
       await saveFile(wbExportFileName(scope, "png"), await picture);
       toast("This browser would not copy a picture, so it was saved as a PNG instead.");
@@ -1338,7 +1338,7 @@
     try {
       await wbExportCopyImage(scope);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "copy the picture" }), true);
+      toast(err.message || voiceLine("failed", "copy the picture"), true);
     }
   }
 
@@ -1351,9 +1351,9 @@
       if (!navigator.clipboard?.writeText) throw new Error("This browser cannot copy text. Export an SVG instead.");
       const { svg } = wbBuildExportSvg(scope, { transparent: wbExportPngPrefs().transparent });
       await navigator.clipboard.writeText(svg);
-      toast("Copied the SVG. Paste it into an editor.");
+      toast(voiceLine("done", "Copied the SVG. Paste it into an editor"));
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "copy the SVG" }), true);
+      toast(err.message || voiceLine("failed", "copy the SVG"), true);
     }
   }
 
@@ -1787,7 +1787,7 @@
       try {
         await chosen.run(where);
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "export the board" }), true);
+        toast(err.message || voiceLine("failed", "export the board"), true);
       }
     };
 

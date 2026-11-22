@@ -15,7 +15,8 @@ from tessellate.core.database import Entry, Reminder
 
 NOW = datetime(2026, 10, 29, 10, 0)
 
-VERBS = ["archive", "unarchive", "restore", "split", "merge", "duplicate", "clone", "combine"]
+#: Archive and unarchive are acts now (L-chat-46), tested in tests/test_library_acts_1114.py.
+VERBS = ["restore", "split", "merge", "duplicate", "clone", "combine"]
 FRAMES = ["{v} the scarecrow joke", "{v} my Atlas kickoff note", "please {v} the lentil soup note", "{v} this note", "Archive".replace("Archive", "{v}") + " the two lentil soup notes"]
 
 
@@ -47,7 +48,7 @@ def _stream(ai_client, question, notes_only):
 
 @pytest.mark.parametrize("notes_only", [True, False])
 @pytest.mark.parametrize("model", [False, True])
-@pytest.mark.parametrize("said", ["archive the scarecrow joke", "split the Atlas kickoff note", "merge the two lentil soup notes", "restore the scarecrow joke"])
+@pytest.mark.parametrize("said", ["split the Atlas kickoff note", "merge the two lentil soup notes", "restore the scarecrow joke"])
 def test_ask_and_chat_say_where_an_app_verb_is_done(ai_client, fake_ollama, notes_only, model, said):
     fake_ollama.running = model
     if model and not notes_only:

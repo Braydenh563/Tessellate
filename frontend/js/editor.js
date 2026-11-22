@@ -826,7 +826,7 @@ function skillCommands() {
 //: properties block, a block reference, an anchored comment, the document
 //: AI); every block that renders in a note is offered in a note.
 const EDITOR_GROUP_ORDER = [
-  "Recent", "Basic", "Structure", "Callouts", "Media", "Embeds", "Advanced", "AI", "Templates",
+  "Recent", "Basic", "Structure", "Callouts", "Media", "Embeds", "Advanced", "Edit", "AI", "Templates",
 ];
 
 //: How many recent blocks lead the menu, and how many are remembered.
@@ -904,6 +904,40 @@ function editorCodeLanguageRows() {
   }));
 }
 
+//: **Edits with no model** (CHAT_PLAN B26): tighten or summarise the selection, or
+//: continue the list the caret ends. The route (`POST /read/edit`) only takes from
+//: the text it is given. A textarea takes the result as typed text, so the browser's
+//: own Undo puts the original back in one step; CodeMirror gets a transaction.
+async function editorNoModelEdit(textarea, op) {
+  const from = textarea.selectionStart;
+  const to = textarea.selectionEnd;
+  const value = String(textarea.value || "");
+  const source = op === "continue" ? value.slice(Math.max(0, from - 2000), from) : value.slice(from, to);
+  if (!source.trim()) return toast(op === "continue" ? "Put the caret at the end of a list first." : "Select some text first.", "info");
+  const got = await apiJson("/read/edit", { method: "POST", body: JSON.stringify({ op, text: source }) }).catch((e) => toast(e.message, true));
+  if (!got) return;
+  const nothing = { tighten: "Nothing to tighten in that.", summarise: "There is no sentence there to summarise.", continue: "The caret is not at the end of a list." }[op];
+  if (got.same) return toast(nothing, "info");
+  const text = op === "continue" ? `\n${got.text}` : got.text;
+  const end = op === "continue" ? from : to;
+  const old = value.slice(from, end);
+  const put = (was, now) => {
+    editorSplice(textarea, from, from + was.length, now, null);
+    editorNotifyHost(textarea);
+  };
+  if (textarea.kind === "codemirror" || typeof textarea.setRangeText !== "function") {
+    editorSplice(textarea, from, end, text, null);
+  } else {
+    textarea.focus();
+    textarea.setSelectionRange(from, end);
+    if (!document.execCommand("insertText", false, text)) editorSplice(textarea, from, end, text, null);
+  }
+  editorNotifyHost(textarea);
+  //: The app's Undo too (Ctrl+Z works in the box; the toast works from anywhere).
+  const [label, said] = { tighten: ["Tighten", "Tightened the selection."], summarise: ["Summarise", "Summarised the selection."], continue: ["Continue the list", "Added the next line."] }[op];
+  offerUndo(label, said, () => put(text, old), () => put(old, text));
+}
+
 function editorBlockRows(context) {
   const inDocument = context === "document";
   const rows = [];
@@ -979,6 +1013,7 @@ function editorBlockRows(context) {
     add({ id: "sections", group: "Media", icon: "ph:graph", label: "Section graph", about: "This document's labelled sections and their links", keys: "```sections", keywords: ["sections", "local graph", "linked ideas", "labels"], run: (t) => editorBlock(t, "```sections\ntitle: Linked ideas\n```", "", "") });
     add({ id: "graph", group: "Media", icon: "ph:chart-line", label: "Graph", about: "Plot y = f(x) with sliders you can move", keys: "```graph", keywords: ["graph", "plot", "function", "curve", "desmos", "slider", "equation", "chart", "axes"], sample: "y = sin(a x)\na = 1 [0, 5]", run: (t) => editorBlock(t, "```graph\ny = sin(a x)\na = 1 [0, 5]\n```", "", "") });
   }
+  add({ id: "chart", group: "Media", icon: "ph:chart-bar", label: "Chart", about: "Paste values, get a bar, line, area, pie, scatter, histogram or table chart", keys: "```chart", keywords: ["chart", "graph", "plot"], run: (t) => ensureModule("chartMaker").then((ok) => ok && drawAskChart.maker.open({ onInsert: (block) => editorBlock(t, block, "", "") })) });
   add({ id: "math", group: "Media", icon: "ph:function", label: "Maths block", about: "A formula on its own line, typeset", keys: "$$ ... $$", keywords: ["math", "maths", "formula", "equation", "latex", "tex", "block"], sample: "$$ e^{i\\pi} + 1 = 0 $$", run: (t) => editorBlock(t, "$$ ", "x^2 + y^2 = z^2", " $$") });
   add({ id: "math-inline", group: "Media", icon: "ph:math-operations", label: "Inline maths", about: "A formula inside a sentence", keys: "$ ... $", keywords: ["math", "inline", "formula", "latex", "tex"], run: act("math") });
   //: DOCUMENTS_PLAN 16: the guided editor (math-editor.js, lazy), Word's Alt+=.
@@ -1014,7 +1049,10 @@ function editorBlockRows(context) {
   add({ id: "comment", group: "Advanced", icon: "ph:eye-slash", label: "Private comment", about: "Kept in the file, never shown", keys: "%% %%", keywords: ["comment", "private", "hidden", "note to self"], run: (t) => editorApplyNamed(t, "comment") });
   if (inDocument) {
     add({ id: "remind", group: "Advanced", icon: "ph:bell", label: "Remind me about this", about: "Opens this document when due", keys: "", keywords: ["remind", "reminder", "follow up"], run: () => (currentDoc?.id ? ensureModule("library").then((ok) => ok && remindAbout({ title: currentDoc.title || "this document", documentId: currentDoc.id })) : toast("Save the document first.", "info")) });
-    add({ id: "annotate", group: "Advanced", icon: "ph:chat-circle", label: "Comment on this", about: "A remark on these words, listed in the sidebar", keys: "==text== %%", keywords: ["comment", "annotate", "remark", "review", "feedback", "margin"], run: (t) => editorApplyNamed(t, "annotate") });
+    add({ id: "edit-tighten", group: "Edit", icon: "ph:scissors", label: "Tighten the selection", about: "Wordy phrases and fillers out, nothing added; Undo puts it back", keywords: ["tighten", "shorten", "concise", "wordy", "edit"], run: (t) => editorNoModelEdit(t, "tighten") });
+  add({ id: "edit-summarise", group: "Edit", icon: "ph:text-align-left", label: "Summarise the selection", about: "Its first and last sentence in place of the whole; Undo puts it back", keywords: ["summarise", "summarize", "summary", "shorten", "edit"], run: (t) => editorNoModelEdit(t, "summarise") });
+  add({ id: "edit-continue", group: "Edit", icon: "ph:list-plus", label: "Continue the list", about: "The next line of the list the caret ends, with days, months and counting filled in", keywords: ["continue", "list", "next", "more", "edit"], run: (t) => editorNoModelEdit(t, "continue") });
+  add({ id: "annotate", group: "Advanced", icon: "ph:chat-circle", label: "Comment on this", about: "A remark on these words, listed in the sidebar", keys: "==text== %%", keywords: ["comment", "annotate", "remark", "review", "feedback", "margin"], run: (t) => editorApplyNamed(t, "annotate") });
   }
   const now = new Date();
   const date = stampDate(now);
@@ -2473,7 +2511,7 @@ async function offerToCreateWikiTarget(name) {
       });
       await refreshEntries([entry.id]);
       pushEntryCreateUndo(entry, `Created the note “${wanted}”`);
-      toast(`Created “${wanted}”.`);
+      toast(voiceLine("done", `Created “${wanted}”`));
       if (entry?.id) flashEntry(entry.id);
       return;
     }
@@ -2487,11 +2525,11 @@ async function offerToCreateWikiTarget(name) {
     if (doc) {
       editorDocumentCache = [...(editorDocumentCache || []), doc];
       offerCreateUndo(doc);
-      toast(`Created “${wanted}”.`);
+      toast(voiceLine("done", `Created “${wanted}”`));
       openDocument(doc.id);
     }
   } catch (error) {
-    toast(error.message || "Couldn't create that.", true);
+    toast(error.message || voiceLine("failed", "create that"), true);
   }
 }
 

@@ -755,7 +755,7 @@ async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab
     try {
       made = await apiJson(`/whiteboard/boards/${boardId}/place`, { method: "POST", body: JSON.stringify(body) });
     } catch (err) {
-      toast(err.message || "Couldn't place that.", true);
+      toast(err.message || voiceLine("failed", "place that"), true);
       return;
     }
     wbState.sketches = [...(wbState.sketches || []), ...made.sketches];
@@ -856,7 +856,7 @@ async function wbLibNewBoardFrom(entry) {
     wbBoardMadeStep(board);
     toast(`Started "${board.title}" from ${entry.name}.`);
   } catch (err) {
-    toast(err.message || "Couldn't start a board from that.", true);
+    toast(err.message || voiceLine("failed", "start a board from that"), true);
   }
 }
 
@@ -979,7 +979,7 @@ async function wbLibToggleFavourite(entry) {
     wbAnnounce(entry.favourite ? `${entry.name} removed from favourites.` : `${entry.name} added to favourites.`);
     await wbLoadLibrary({ force: true });
   } catch (err) {
-    toast(err.message || "Couldn't change that.", true);
+    toast(err.message || voiceLine("failed", "change that"), true);
   }
 }
 
@@ -1147,7 +1147,7 @@ async function wbLibCreate(kind, name, payload, tags = []) {
     wbAnnounce(`Saved ${made.name} to the library.`);
     return made;
   } catch (err) {
-    toast(err.message || "Couldn't save that to the library.", true);
+    toast(err.message || voiceLine("failed", "save that to the library"), true);
     return null;
   }
 }
@@ -1328,7 +1328,7 @@ async function wbLibExport(libraryId) {
     const named = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") || "")?.[1] || "library.memorymap-library.json";
     await saveFile(named, blob);
   } catch (err) {
-    toast(err.message || "Couldn't export that library.", true);
+    toast(err.message || voiceLine("failed", "export that library"), true);
   }
 }
 
@@ -1341,7 +1341,7 @@ wbLibExport.drawio = async (lib) => {
     await saveFile(`${String(lib.name).replace(/[^\w .-]+/g, "").trim() || "library"}.xml`, new Blob([out.xml], { type: "text/xml" }));
     toast(`Saved ${nounCount(out.count, "shape")} for draw.io${out.left ? `; ${out.left} left out` : ""}.`);
   } catch (err) {
-    toast(err.message || "Couldn't export that library.", true);
+    toast(err.message || voiceLine("failed", "export that library"), true);
   }
 };
 
@@ -1371,7 +1371,7 @@ async function wbLibImportFile(file) {
     const extra = [note, out.skipped ? `${out.skipped} skipped` : "", out.dropped_media ? `${nounCount(out.dropped_media, "picture")} not in this notebook left out` : ""].filter(Boolean).join(", ");
     toast(`Imported ${out.items} into "${out.library.name}"${extra ? ` (${extra})` : ""}.`);
   } catch (err) {
-    toast(err.message || "Couldn't import that library.", true);
+    toast(err.message || voiceLine("failed", "import that library"), true);
   }
 }
 
@@ -1827,7 +1827,7 @@ async function wbSaveNamedLayers(layers, { undo = true, said = "" } = {}) {
     if (String(window.currentBoardId ?? "") !== String(id)) return false;
     wbState.layers = out.layers || [];
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "change the layers" }), true);
+    toast(err.message || voiceLine("failed", "change the layers"), true);
     return false;
   }
   if (undo) wbPushUndo({ action: "layers", before });

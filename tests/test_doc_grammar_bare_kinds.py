@@ -59,7 +59,8 @@ def test_every_reader_of_the_asked_lints_goes_through_findings_or_the_span_only_
     callers = {
         name for name, text in readers.items() if re.search(r"(?<!function )docGrammarAsk\(", text)
     }
-    assert callers == {"documents-prose.js", "whiteboard-map-more.js"}, callers
+    # composer-lint.js (the chat box underlines, L-chat-227) reads the lints through `docGrammarFindings` too.
+    assert callers == {"composer-lint.js", "documents-prose.js", "whiteboard-map-more.js"}, callers
     merge = readers["documents-languagetool.js"]
     body = merge[
         merge.index("async function merge(") : merge.index("window.docSpell.languageTool = merge;")

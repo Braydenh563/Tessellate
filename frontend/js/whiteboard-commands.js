@@ -653,10 +653,10 @@ function wbSyncMoreMenu(menu) {
     row.classList.toggle("menu-item-unavailable", !applies);
     row.setAttribute("aria-disabled", applies ? "false" : "true");
   }
-  //: A group with no row left to show is no row either; a hidden member leaves the group's arrow keys.
+  //: A group shows while one of its rows does (and the filter keeps it); a hidden member leaves the group's arrow keys.
   for (const group of menu.querySelectorAll(":scope > .menu-group")) {
     const rows = [...group.querySelectorAll("[data-wb-cmd]")];
-    group.hidden = rows.every((row) => row.hidden);
+    group.hidden = !rows.some((row) => !row.hidden) || group.classList.contains("list-filter-miss");
     for (const row of rows) row.setAttribute("role", row.hidden ? "none" : "menuitem");
   }
   let shown = false;
@@ -773,7 +773,7 @@ function wbInitMoreMenu() {
   //: attribute the sync also writes. A separator means nothing in a list that
   //: is being narrowed, so they hide while there is a query and the sync
   //: puts them back when it clears.
-  const filter = listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item" });
+  const filter = listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item, :scope > .menu-group" });
   const sync = () => {
     filter.refresh();
     if (filter.input.value) for (const rule of menu.querySelectorAll(":scope > .menu-sep")) rule.hidden = true;

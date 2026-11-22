@@ -13,13 +13,15 @@ import re
 from tests._app_js import JS_DIR, app_js_text, documents_text
 
 #: documents-history.js holds the history dialog (docs-1101, DC13): one closure, so its functions are indented.
-APP = app_js_text() + documents_text() + (JS_DIR / "documents-history.js").read_text(encoding="utf-8")
+def _app() -> str:
+    """Built per use, not held from collection on: the app's code plus a file is 27 MB a copy."""
+    return app_js_text() + documents_text() + (JS_DIR / "documents-history.js").read_text(encoding="utf-8")
 
 
 def _body(name: str) -> str:
-    match = re.search(rf"^ *(?:async\s+)?function\s+{name}\s*\(", APP, re.M)
+    match = re.search(rf"^ *(?:async\s+)?function\s+{name}\s*\(", _app(), re.M)
     assert match, f"{name} is missing"
-    rest = APP[match.end():]
+    rest = _app()[match.end():]
     end = re.search(r"^ *(?:async\s+)?function\s", rest, re.M)
     return rest[: end.start() if end else len(rest)]
 
@@ -53,7 +55,7 @@ def test_the_handlers_call_the_acts():
         "docBookmarkWithUndo(Number(select.value), true)",
         "restoreDocVersionWithUndo(entry)",
     ):
-        assert call in APP, call
+        assert call in _app(), call
 
 
 def test_a_restore_is_one_step_not_a_confirm():
@@ -63,7 +65,7 @@ def test_a_restore_is_one_step_not_a_confirm():
     #: Outside the editor's history, so Ctrl+Z does not undo it twice. The
     #: write takes a `keep` flag since replace-all's undo (audit 1031 DC4) keeps
     #: its own step; a restore leaves it at its default, outside the history.
-    assert "function docWriteOutsideHistory(text, keep = false)" in APP
+    assert "function docWriteOutsideHistory(text, keep = false)" in _app()
     assert "addToHistory.of(keep)" in _body("docWriteOutsideHistory")
 
 

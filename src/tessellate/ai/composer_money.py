@@ -643,6 +643,9 @@ def _total_rest(q: str):  # noqa: ANN202
     if m := _SPENT.match(q) or _TOTAL.match(q):
         return m.group(1)
     if (m := _ADD_UP.match(q)):
+        #: Two named things ("the dentist and the car service") are summed by composer_sum, not scoped here.
+        if " and " in (m.group("thing") or ""):
+            return None
         return " ".join(x for x in (m.group("subject"), m.group("rest"), m.group("thing"), m.group("all")) if x)
     if (kind := _kind_spent(q)) and not re.search(r"\b(?:did|do|does|i|we)\b", kind[0], re.I):
         return f"{kind[0]} {kind[1]}"
@@ -828,7 +831,9 @@ def _measures_line(items: list[Item], unit: str, tail: str) -> str:
         by_note[name] = by_note.get(name, 0) + item.value
     total = _figure(sum(by_note.values()), unit)
     if len(by_note) == 1:
-        return f"Your notes record {total}{tail}, going by {next(iter(by_note))}: {_listed([_figure(i.value, i.symbol) for i in items])}."
+        #: One figure is said once ("14 km cycled, going by Bike commute"), several are listed after it.
+        listed = f": {_listed([_figure(i.value, i.symbol) for i in items])}" if len(items) > 1 else ""
+        return f"Your notes record {total}{tail}, going by {next(iter(by_note))}{listed}."
     ranked = sorted(by_note.items(), key=lambda kv: -kv[1])
     return f"Your notes record {total}{tail}: {_listed([f'{name} {_figure(v, unit)}' for name, v in ranked])}."
 
@@ -972,7 +977,7 @@ def _says_kind(text: str, noun: str) -> bool:
     return any(_KIND.get(w.lower().rstrip("s")) == _KIND.get(noun) for w in _TARGET_WORD.findall(text))
 
 
-def _goal_in(views: list, dimension: str, noun: str = "") -> Item | None:
+def _goal_in(views: list, dimension: str, noun: str = "", aim: float | None = None) -> Item | None:
     """The newest figure a note sets as the goal, target or budget asked for.
     A sentence of another kind ("Overdraft limit £500" is not a budget) does
     not count, and a note titled for it counts only when it holds one figure
@@ -985,6 +990,12 @@ def _goal_in(views: list, dimension: str, noun: str = "") -> Item | None:
             titled = _says_kind(str(view.title), noun) if noun else bool(_TARGET_WORD.search(str(view.title)))
             if named or (titled and len(figures) == 1):
                 goals += [(named, view.written or date.min, Item(_note_name(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
+    return _newest_goal(goals, aim)
+
+
+def _newest_goal(goals: list, aim: float | None) -> Item | None:
+    """The newest goal; a question that names the figure ("my 10k goal") means the goal that sets it."""
+    goals = [g for g in goals if aim is None or g[2].value == aim] or goals
     return max(goals, key=lambda g: g[:2])[2] if goals else None
 
 
@@ -1001,6 +1012,16 @@ def _verdict(noun: str, aim: str, left: float, unit: str) -> str:
     return f"You are {_say(unit, left)} short of your {aim} {noun}." if left > 0 else f"You are {_say(unit, -left)} past your {aim} {noun}." if left < 0 else f"You have just reached your {aim} {noun}."
 
 
+def _goal_forms(goal: Item | None, dimension: str) -> frozenset:
+    """The doing a goal's own sentence names ("Run a 10k", "50 km walked a month"), for a question that names
+    none: "how close am I to my 10k goal" counts the runs, not every distance written."""
+    for word in re.findall(r"[a-z]+", str(getattr(goal and goal.sentence, "text", "")).lower()):
+        for verb, kind in _VERB_DIMENSION.items():
+            if kind == dimension and dimension != "money" and word in _forms(verb):
+                return frozenset(_forms(verb))
+    return frozenset()
+
+
 def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN001
     """What is left of a goal, target or budget: the figure aimed at less the
     quantity the notes record, both cited."""
@@ -1012,7 +1033,7 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
             out.lines.append(f"I found no {ask.noun} figure in your notes.")
             return True
         aim = goal.value
-    items = _items(views, win, [], dimension=ask.dimension, forms=ask.forms)
+    items = _items(views, win, [], dimension=ask.dimension, forms=ask.forms or _goal_forms(goal or _goal_in(views, ask.dimension, ask.noun, ask.value), ask.dimension))
     pool = items or ([goal] if goal else [])
     unit = _unit_of(pool, ask.dimension, ask.unit) if pool else ask.unit or _DEFAULT_UNIT[ask.dimension]
     left: list[Item] = []
@@ -1202,9 +1223,72 @@ def _difference(out, d: _Diff, views: list, today: date) -> bool:  # noqa: ANN00
     return True
 
 
+#: "how much more did I walk than run": the same notes, two doings (L-chat-234). Not a window after "than", so
+#: it is not `_difference_asked`'s.
+_VERSUS = re.compile(
+    r"^(?:and )?how (?:much|many) (?:(?P<cmp>more|less|further|farther|longer|fewer) )?(?:did|have|do) (?:i|we) (?P<a>[a-z]+)"
+    r"(?: (?:a lot|so much))? (?:than|compared (?:to|with)|versus|vs\.?) (?:(?:i|we) (?:have |had |did )?)?(?P<b>[a-z]+)\W*$",
+    re.I,
+)
+
+
+#: "walked compared to ran", "my walks versus my runs": the same difference with no "how much" in front. Read here,
+#: before `composer_ask.compare_sides` takes it for two words to list (L-chat-234).
+_VERSUS_BARE = re.compile(
+    r"^(?:and )?(?P<cmp>)(?:(?:my|our|the) )?(?P<a>[a-z]+) (?:than|compared (?:to|with)|versus|vs\.?) (?:(?:my|our|the) )?(?P<b>[a-z]+)\W*$",
+    re.I,
+)
+
+
+class _Versus(NamedTuple):
+    dimension: str
+    comparative: str
+    a: str
+    b: str
+
+
+def _doing(word: str) -> str:
+    """"walks", "ran", "running" as the verb the dimension table holds ("walk", "run"); the word itself when none."""
+    w = _BASE.get(_SPENT_FORMS.get(word, word), _SPENT_FORMS.get(word, word))
+    return next((v for v in _VERB_DIMENSION if w in _forms(v)), w)
+
+
+def _versus_asked(q: str) -> _Versus | None:
+    m = _VERSUS.match(q) or _VERSUS_BARE.match(q)
+    if not m:
+        return None
+    a, b = (_doing(m.group(side).lower()) for side in ("a", "b"))
+    dimension = _VERB_DIMENSION.get(a)
+    #: "how much more did I read than write": two doings with no amount the engine measures; said, not listed as notes.
+    if m.re is _VERSUS and a not in _VERB_DIMENSION and b not in _VERB_DIMENSION and a != b:
+        return _Versus("", (m.group("cmp") or "more").lower(), m.group("a").lower(), m.group("b").lower())
+    if not dimension or dimension == "money" or _VERB_DIMENSION.get(b) != dimension or a == b:
+        return None
+    return _Versus(dimension, (m.group("cmp") or "more").lower(), a, b)
+
+
+def _versus(out, v: _Versus, views: list) -> bool:  # noqa: ANN001
+    """Two sums, one per doing, and their difference, both cited."""
+    if not v.dimension:
+        out.lines.append(f"I can only subtract amounts I can measure (distance, time, weight), and your notes give none for {v.a} or {v.b}.")
+        return True
+    sides = [_items(views, None, [], dimension=v.dimension, forms=frozenset(_forms(verb))) for verb in (v.a, v.b)]
+    if not sides[0] and not sides[1]:
+        out.lines.append(f"I found no {_DIMENSION_NOUN.get(v.dimension, 'amounts')} for {_done(v.a)} or {_done(v.b)} in your notes.")
+        return True
+    unit = _unit_of(sides[0] + sides[1], v.dimension)
+    gap = sum(i.value for i in sides[0]) - sum(i.value for i in sides[1])
+    first, second = _past(v.a, v.dimension), _past(v.b, v.dimension)
+    out.lines.append(f"You {first} {_say(unit, abs(gap))} {_word_for(v.comparative, gap)} than you {second}." if gap else f"You {first} and {second} the same, {_say(unit, sum(i.value for i in sides[0]))}.")
+    both = " against ".join(f"{_say(unit, sum(i.value for i in items))} {past}" + (f" ({_listed(sorted({_note_name(i.view) for i in items}))})" if items else "") for items, past in zip(sides, (_done(v.a), _done(v.b)), strict=True))
+    out.lines.append(f"That is {both}.")
+    _cite_all(out, sides[0] + sides[1], out.lines[-1])
+    return True
+
+
 def asks(question: str) -> bool:
     q = " ".join(composer_lists._q(question).split())  # noqa: SLF001
-    if _total_asked(q) is not None or _DUE_ASK.match(q) or _measure_asked(q) or _left_asked(q) or _target_asked(q) or _difference_asked(q):
+    if _total_asked(q) is not None or _DUE_ASK.match(q) or _measure_asked(q) or _left_asked(q) or _target_asked(q) or _difference_asked(q) or _versus_asked(q):
         return True
     m = _MOST.match(q)
     return bool(m and set(m.group(2).lower().rstrip("?. ").split()) & _MONEY_NOUNS)
@@ -1214,7 +1298,7 @@ def sums_a_measure(question: str) -> bool:
     """"How many km have I run" is a sum, asked before the one-value slots
     ("how many km is the walk") read a single sentence."""
     q = " ".join(composer_lists._q(question).split())  # noqa: SLF001
-    return _measure_asked(q) is not None or _left_asked(q) is not None or _target_asked(q) is not None or _difference_asked(q) is not None
+    return _measure_asked(q) is not None or _left_asked(q) is not None or _target_asked(q) is not None or _difference_asked(q) is not None or _versus_asked(q) is not None
 
 
 #: The notes the money path reads: a page at a time, newest first, so a
@@ -1251,6 +1335,8 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     q = " ".join(composer_lists._q(asked).split())  # noqa: SLF001
     if (diff := _difference_asked(q)) and _difference(out, diff, views, today):
         return True
+    if verses := _versus_asked(q):
+        return _versus(out, verses, views)
     if target := _target_asked(q):
         return _toward(out, target, views, today)
     if left := _left_asked(q):

@@ -371,7 +371,7 @@ def test_the_install_reaches_the_task_history(client, monkeypatch, server):
 
 def test_needle_unpacks_the_engine_for_this_platform_only(client, monkeypatch, server):
     monkeypatch.setattr(extra_downloads, "platform_key", lambda: "linux-x86_64")
-    wheel = _zip({"needle/libneedle3.so": elf64(["malloc", "free"], ["libc.so.6"]), "cactus_needle-3.0.1.dist-info/METADATA": b"m"})
+    wheel = _zip({"cactus/libcactus.so": elf64(["malloc", "free"], ["libc.so.6"]), "cactus_runtime-4.1.0.dist-info/METADATA": b"m"})
     _point_at(
         monkeypatch,
         "needle",
@@ -383,7 +383,7 @@ def test_needle_unpacks_the_engine_for_this_platform_only(client, monkeypatch, s
     assert extras.current().outcome == "completed", extras.current().step
     folder = extra_downloads.folder(extras.EXTRAS_BY_ID["needle"])
     assert sorted(p.name for p in folder.iterdir() if p.name != extra_downloads.MARKER) == [
-        "LICENSE", "libneedle3.so", "needle3.cact",
+        "LICENSE", "libcactus.so", "needle3.cact",
     ]
     assert len(server.hits) == 3
 
@@ -405,7 +405,18 @@ def test_every_needle_platform_names_an_engine_file():
     for download in extra.downloads:
         if download.platform:
             assert download.unpack == "zip"
-            assert [name for _m, name in download.members][0].startswith("libneedle3.")
+            assert [name for _m, name in download.members][0].startswith("libcactus.")
+
+
+def test_needle_engine_is_cactus_runtime_410_pinned_to_one_revision():
+    extra = extras.EXTRAS_BY_ID["needle"]
+    assert extra.version == "4.1.0" and extra.licence == "Apache-2.0"
+    wheels = [d for d in extra.downloads if d.platform]
+    assert len(wheels) == 8 and len({d.sha256 for d in wheels}) == 8
+    for d in wheels:
+        assert "/Cactus-Compute/cactus/resolve/4e822c9036be2eb0e47ef556df32a818bb1572ef/releases/4.1.0/python/" in d.url
+        assert d.inspect_imports and d.members[0][0].startswith("cactus/libcactus.")
+    assert {d.platform: d.members[0][1] for d in wheels}["windows-x86_64"] == "libcactus.dll"
 
 
 # --- the engine is read for network code before it is kept (INBOX 699) -------------
@@ -413,7 +424,7 @@ def test_every_needle_platform_names_an_engine_file():
 
 def _install_needle_with(monkeypatch, server, engine: bytes):
     monkeypatch.setattr(extra_downloads, "platform_key", lambda: "linux-x86_64")
-    wheel = _zip({"needle/libneedle3.so": engine})
+    wheel = _zip({"cactus/libcactus.so": engine})
     _point_at(
         monkeypatch,
         "needle",
@@ -451,7 +462,7 @@ def test_needle_engine_downloads_are_all_inspected_and_pinned_per_platform():
     for d in engines:
         assert d.inspect_imports, d.platform
         assert re.fullmatch(r"[0-9a-f]{64}", d.sha256), d.platform
-        assert "/b274efcb211a9eef48c9a88da4b43bd569696a39/" in d.url, "pinned to a commit"
+        assert "/4e822c9036be2eb0e47ef556df32a818bb1572ef/" in d.url, "pinned to a commit"
     for d in extra.downloads:
         if not d.platform:
             assert re.fullmatch(r"[0-9a-f]{64}", d.sha256)

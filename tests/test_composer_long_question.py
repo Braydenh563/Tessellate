@@ -66,12 +66,12 @@ def test_a_long_question_streams_an_answer_in_bounded_time(ai_client, session):
 def test_the_model_is_given_the_whole_question():
     from types import SimpleNamespace
 
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_request
 
     short = SimpleNamespace(question="plan this", full_question=None)
     long = SimpleNamespace(question="plan this", full_question="plan this and then some")
-    assert routes_chat._in_full(short) == "plan this"
-    assert routes_chat._in_full(long) == "plan this and then some"
+    assert chat_request._in_full(short) == "plan this"
+    assert chat_request._in_full(long) == "plan this and then some"
 
 
 def test_the_cap_is_a_prefix_not_a_refusal():

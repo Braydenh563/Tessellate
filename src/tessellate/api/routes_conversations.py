@@ -18,7 +18,8 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
+from tessellate.core import chat_view, deps
+from tessellate.core.conversation_text import conversation_matches
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
@@ -28,6 +29,9 @@ from tessellate.ai.grounding import composed_support, support as grounding_suppo
 from tessellate.entry.manager import log_action
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
+
+#: How many versions of one answer a turn keeps (L165); the oldest is the first to go.
+VERSIONS_MAX = 20
 
 
 class TurnBody(BaseModel):
@@ -68,6 +72,11 @@ class TurnBody(BaseModel):
     # something new. Bounded instead by only ever storing what the client sends
     # back from a `stats` event.
     stats: dict | None = None
+    #: The earlier versions of this answer when it is a regenerate or an edit and
+    #: resend (L165): each {text, sources, made_at}. The turn's own answer is
+    #: appended as the latest, so a checkpoint and the final save of one regenerate
+    #: send the same list and store one version, not two.
+    prior_versions: list[dict] | None = Field(default=None, max_length=VERSIONS_MAX - 1)
     # Wall-clock for the whole turn, measured by the client because it is the
     # only thing that saw all of it: the server reports per-round timings, and
     # an agent turn is several rounds plus the tool calls between them.
@@ -207,6 +216,16 @@ class RenameBody(BaseModel):
 
 class PinBody(BaseModel):
     pinned: bool
+
+
+class FolderBody(BaseModel):
+    #: Blank takes the chat out of its folder.
+    folder: str = Field(default="", max_length=60)
+
+    @field_validator("folder")
+    @classmethod
+    def _trimmed(cls, value: str) -> str:
+        return " ".join(value.split())
 
 
 def _user_message(turn: TurnBody, asked: datetime) -> dict:
@@ -360,6 +379,30 @@ def _frame_fields(turn: TurnBody) -> dict:
     return {k: v for k, v in (("frame", frame if any(frame.values()) else None), ("objects", turn.objects)) if v}
 
 
+def _lean(source: dict) -> dict:
+    """A source as a version keeps it: the note's text cut, so ten versions stay small."""
+    return {**source, "content": str(source.get("content") or "")[:600]}
+
+
+def _versions(turn: TurnBody, now: datetime) -> list[dict]:
+    """The earlier versions as sent, bounded, then this answer as the latest."""
+    kept = [
+        {
+            "text": str(v.get("text") or "")[: bounds.TURN_TEXT_MAX],
+            "sources": [_lean(s) for s in (v.get("sources") or []) if isinstance(s, dict)][:40],
+            "made_at": str(v.get("made_at") or "")[:40],
+        }
+        for v in turn.prior_versions or []
+        if isinstance(v, dict)
+    ]
+    latest = {"text": turn.answer, "sources": [_lean(s) for s in (turn.raw_results or [])[:40]], "made_at": now.isoformat()}
+    return (kept + [latest])[-VERSIONS_MAX:]
+
+
+def _versions_field(turn: TurnBody, now: datetime) -> dict:
+    return {"versions": _versions(turn, now)} if turn.prior_versions else {}
+
+
 def _turn_messages(turn: TurnBody) -> list[dict]:
     # Stamped here, not by the page: the turn is saved when the answer ends,
     # so the answer's time is now and the question's is now minus the
@@ -401,7 +444,7 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     if persona:
         assistant["persona"] = persona
     assistant.update(_acts_field(turn))
-    assistant.update(_frame_fields(turn))
+    assistant.update(_frame_fields(turn) | _versions_field(turn, now))
     if turn.by:
         assistant["by"] = {
             "composed": bool(turn.by.get("composed")),
@@ -421,6 +464,7 @@ def _summary(conversation: Conversation) -> dict:
         "updated_at": conversation.updated_at.isoformat(),
         "turns": len(messages) // 2,
         "pinned": bool(conversation.pinned),
+        "folder": conversation.folder or "",
         # A line of the first question, so the list says what a chat was
         # about when its title doesn't.
         "preview": first_question[:120],
@@ -449,24 +493,6 @@ def _process_committed_media(session: Session, turn: TurnBody) -> None:
     media_process.process_committed_upload_ids(
         session, deps.get_config().data_dir / "media", turn.image_media_ids or []
     )
-
-
-def conversation_matches(conversation: Conversation, term: str) -> bool:
-    """Does this chat actually mention `term`?
-
-    Not a LIKE against the `messages` column. That column holds JSON, so its
-    own keys are searchable text: "tent" is a substring of "content", which
-    made every single conversation match. The decoded message text is the
-    only thing a user means by "what was said".
-    """
-    lowered = term.lower()
-    if lowered in conversation.title.lower():
-        return True
-    try:
-        messages = json.loads(conversation.messages)
-    except ValueError:
-        return False
-    return any(lowered in str(m.get("content", "")).lower() for m in messages)
 
 
 #: A page of the chat list, not a ceiling on how many chats a notebook may
@@ -555,6 +581,23 @@ def list_conversations(
     return [_summary(c) for c in matched[offset : offset + limit]]
 
 
+class ViewBody(BaseModel):
+    sort: str | None = None
+    group: str | None = None
+    pinned: bool | None = None
+
+
+@router.get("/view")
+def get_chat_view() -> dict:
+    """How the sidebar lists chats (sort, grouping, pinned first): one stored view (`core/chat_view`)."""
+    return chat_view.read(deps.get_config())
+
+
+@router.put("/view")
+def put_chat_view(body: ViewBody) -> dict:
+    return chat_view.write(deps.get_config(), **body.model_dump())
+
+
 @router.put("/{conversation_id}/pin")
 def pin_conversation(
     conversation_id: int, body: PinBody, session: Session = Depends(get_session)
@@ -569,6 +612,22 @@ def pin_conversation(
         update(Conversation)
         .where(Conversation.id == conversation.id)
         .values(pinned=body.pinned, updated_at=conversation.updated_at)
+    )
+    session.commit()
+    session.refresh(conversation)
+    return _summary(conversation)
+
+
+@router.put("/{conversation_id}/folder")
+def folder_conversation(
+    conversation_id: int, body: FolderBody, session: Session = Depends(get_session)
+) -> dict:
+    """Filing a chat is organising, not using it: `updated_at` is passed back as it was (as `pin_conversation`)."""
+    conversation = _existing(session, conversation_id)
+    session.execute(
+        update(Conversation)
+        .where(Conversation.id == conversation.id)
+        .values(folder=body.folder, updated_at=conversation.updated_at)
     )
     session.commit()
     session.refresh(conversation)
@@ -1241,6 +1300,7 @@ def _restore_row(conversation: Conversation) -> dict:
         "title": conversation.title,
         "messages": conversation.messages,
         "pinned": bool(conversation.pinned),
+        "folder": conversation.folder or "",
         "archived_at": iso(conversation.archived_at),
         "created_at": iso(conversation.created_at),
         "updated_at": iso(conversation.updated_at),
@@ -1265,6 +1325,7 @@ class RestoreBody(BaseModel):
     title: str = Field(max_length=120)
     messages: str
     pinned: bool = False
+    folder: str = Field(default="", max_length=60)
     archived_at: datetime | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -1289,7 +1350,7 @@ def restore_conversation(body: RestoreBody, session: Session = Depends(get_sessi
         return when.replace(tzinfo=None) if when else None
 
     conversation = Conversation(
-        id=body.id, title=body.title, messages=body.messages, pinned=body.pinned,
+        id=body.id, title=body.title, messages=body.messages, pinned=body.pinned, folder=body.folder,
         archived_at=plain(body.archived_at),
         created_at=plain(body.created_at) or utcnow(),
         updated_at=plain(body.updated_at) or utcnow(),

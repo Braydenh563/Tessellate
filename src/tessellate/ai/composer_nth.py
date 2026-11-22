@@ -21,7 +21,7 @@ _THING = r"(?:item|thing|entry|line|task|bullet|step|row)"
 _PLACE = r"\s+(?:in|on|of|from)\s+(?:my\s+|the\s+|our\s+)?(?P<note>.+?)"
 _ORD = rf"(?P<nth>{'|'.join(_ORDINALS)}|\d{{1,2}}(?:st|nd|rd|th))\s+{_THING}"
 #: "What is the third item in X", or the short forms people type ("third item in
-#: the Tokyo packing list", "show me the last item in my todo"). A short form
+#: the Tokyo packing list", "show me the last item in my to-do"). A short form
 #: must name the list: "first thing in the morning" is not an ask for one.
 _NTH = re.compile(rf"^(?:what|which)(?:'s|\s+is|\s+was)?\s+(?:the\s+)?{_ORD}(?:{_PLACE})?$", re.I)
 _NTH_SHORT = re.compile(rf"^(?:(?:show|tell|give|read)\s+me\s+)?(?:the\s+)?{_ORD}{_PLACE}$", re.I)

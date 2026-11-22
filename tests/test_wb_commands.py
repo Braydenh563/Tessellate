@@ -13,10 +13,11 @@ from tests._app_js import frontend_text
 from tests._help_text import help_chat_text
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 APP = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
 BOARD = frontend_text("whiteboard.js")
 

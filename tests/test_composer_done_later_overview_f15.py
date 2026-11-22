@@ -70,13 +70,13 @@ def test_a_task_done_in_a_later_note_is_not_still_to_do(ask, question):
 def test_a_named_note_keeps_its_records_beside_it(client, session, question):
     """The closed set of one named note fetches the notes that name its open
     items beside it (the model's context too), never in its place."""
-    from tessellate.api import routes_chat as rc
+    from tessellate.api import chat_pool, chat_service
 
     first = manager.create_entry(session, NOTES[0][0])
     later = manager.create_entry(session, NOTES[1][0])
     session.commit()
-    found = rc._Found(detected="notes")
-    rc._retrieve_for(session, question, found, [first], True, None, None, True, False)
+    found = chat_pool._Found(detected="notes")
+    chat_service._retrieve_for(session, question, found, [first], True, None, None, True, False)
     assert [e.id for e in found.entries] == [later.id]
 
 
@@ -87,11 +87,11 @@ def test_a_named_note_keeps_its_records_beside_it(client, session, question):
 def test_a_this_question_reads_the_screens_note_alone(client, session, question):
     """The records ride beside a note the question names, not beside the note on
     the screen: "summarise this" is that note as written (audit C29)."""
-    from tessellate.api import routes_chat as rc
+    from tessellate.api import chat_pool, chat_service
 
     first = manager.create_entry(session, NOTES[0][0])
     manager.create_entry(session, NOTES[1][0])
     session.commit()
-    found = rc._Found(detected="notes")
-    rc._retrieve_for(session, question, found, [first], True, None, None, True, False)
+    found = chat_pool._Found(detected="notes")
+    chat_service._retrieve_for(session, question, found, [first], True, None, None, True, False)
     assert found.entries == []

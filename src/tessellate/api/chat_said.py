@@ -22,8 +22,8 @@ from sqlalchemy.orm import Session
 from tessellate.ai import capability, composer, composer_aware, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai import acts, composer_dialogue, task_acts
-from tessellate.ai import composer_frame, composer_read
-from tessellate.ai import composer_smalltalk, composer_talk
+from tessellate.ai import composer_frame, composer_read, reading
+from tessellate.ai import composer_jokebook, composer_smalltalk, composer_talk
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.entry import manager
 from tessellate.api import chat_extra
@@ -34,6 +34,7 @@ from tessellate.core.database import AskTurn, Conversation, Entity, Entry, like_
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo import reminders as reminder_repo
+from tessellate.repo import visible_notes
 from tessellate.core.logbuffer import safe_value
 
 
@@ -171,7 +172,9 @@ def _related_elsewhere(session: Session, question: str) -> list[dict]:
 
 
 #: Under an answer composed from the notes because the model stopped mid-turn.
-MODEL_STOPPED_NOTE = "The model stopped before it could answer, so this is Atlas's answer from your notes."
+MODEL_STOPPED_NOTE = reading.MODEL_STOPPED
+#: The model finished, but no sentence of its answer was backed by the notes (review 5899348594).
+MODEL_UNBACKED_NOTE = "The model's answer said things your notes do not, so this is Atlas's answer from your notes."
 
 
 #: A how-to about the app, answered from its Help when no model writes the
@@ -288,6 +291,12 @@ def _said_events(lead: str, rest: str = "", counts: dict | None = None) -> list[
 def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> list[dict]:
     """A filed listing or a count of notes, said from the tool's figures;
     empty when the sentence is neither."""
+    from tessellate.ai import kind_find
+
+    #: Documents, boards or files asked for by subject or time (CHAT_PLAN section 8 row 3).
+    if found := kind_find.read(asked, now.date()):
+        lead, rest, counts = kind_find.answer(req.session, found)
+        return _said_events(lead, rest, counts)
     lead, rest, counts = _filed_said(req, asked, now)
     if lead:
         return _said_events(lead, rest, counts)
@@ -323,6 +332,16 @@ def _asks_capability(req: _StreamRequest, prepared: dict) -> bool:
     what Atlas can do, answered from the app's own list on every surface,
     model or none, and never a search, a web call or a tool."""
     return prepared["intent"] == intent.ABOUT_APP and capability.asks(req.question or "")
+
+
+def _capability_answer(req: _StreamRequest, ollama_running: bool, voice: str) -> str:
+    try:
+        web = bool(deps.get_config().get_preference("web_search_enabled", False))
+    except Exception:  # noqa: BLE001  # an unreadable preference is off
+        web = False
+    recent, seed = _reply_seed(req)
+    return capability.answer(req.question, prefs={"web_search_enabled": web}, model_running=ollama_running,
+                             voice=voice, recent=recent, seed=seed)
 
 
 def _app_answers(req: _StreamRequest, ollama_running: bool) -> bool:
@@ -375,7 +394,18 @@ def _saved_joke_reply(req: _StreamRequest, seed: str) -> str:
     """One you saved, said as it is written, before owning up to having none
     (audit 1031 C46); empty when no note is a joke."""
     joke = chat_extra.saved_joke(req.session, req.question + seed)
-    return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})" if joke else ""
+    if joke:
+        return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})"
+    return _jokebook_reply(req, seed)
+
+
+def _jokebook_reply(req: _StreamRequest, seed: str) -> str:
+    """C10: with no joke saved, one from the app's table, labelled as its own,
+    unless the answer style is Neutral or Plain (the opt-out)."""
+    if deps.get_config().get_preference("composer_voice", "natural") in ("professional", "plain"):
+        return ""
+    told = tuple(str(turn.get("answer") or "") for turn in (req.history or []))
+    return composer_jokebook.said(f"{req.question}|{seed}|{len(told)}", tuple(t.split(": ", 1)[-1] for t in told))
 
 
 def _ping_offer(req: _StreamRequest, prepared: dict) -> list[dict]:
@@ -722,7 +752,9 @@ def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noq
     if not composer_open.reads_note(req.question, mine[0]):
         return None
     dialogue = composer.Dialogue.from_history(req.history)
-    return composer.open_note_answer(req.question, mine[0], today=today, salt=dialogue.salt)
+    stored = deps.get_config().get_preference("composer_voice", "natural")  # Settings voice; it was ignored here
+    voice = {"professional": "professional", "plain": "professional"}.get(stored, "natural")
+    return composer.open_note_answer(req.question, mine[0], today=today, salt=dialogue.salt, voice=voice)
 
 
 #: What an answer says when it could not answer: its own "missing" lines and the
@@ -743,16 +775,15 @@ def _says_cannot(text: str) -> bool:
 def _open_title(session: Session, body: ChatRequest) -> str:
     """The title of the plain note or document open, "" for anything else: a
     private, binned or board note is never named (composer_aware's rule)."""
-    from tessellate.ai.tools._common import _visible
 
     if body.screen and body.screen.open_doc_id:
         doc_title = documents_repo.title_of(session, body.screen.open_doc_id)
         if doc_title and doc_title.strip():
             return doc_title.strip()
     if body.open_note_id:
-        row = session.query(Entry.content).filter(Entry.id == body.open_note_id, *_visible()).first()
-        if row:
-            return composer_read._title(str(row[0] or ""))[0].strip()[:60]
+        content = visible_notes.content_of(session, body.open_note_id)
+        if content is not None:
+            return composer_read._title(content)[0].strip()[:60]
     return ""
 
 
@@ -819,7 +850,6 @@ def _cited_ids(result: dict) -> list[tuple[str, int]]:
 
 def _cited_titles(session: Session, result: dict) -> list[str]:
     """The titles of the notes an answer drew on, in the order it cited them."""
-    from tessellate.ai.tools._common import _visible
 
     titles: list[str] = []
     for kind, nid in _cited_ids(result)[:3]:
@@ -827,11 +857,22 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
             doc_title = documents_repo.title_of(session, nid)
             title = realise.cut_title(doc_title.strip(), 60) if doc_title is not None else ""
         else:
-            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            title = _closing_name(str(row[0] or "")) if row else ""
+            content = visible_notes.content_of(session, nid)
+            title = _closing_name(content) if content is not None else ""
         if title:
             titles.append(title)
     return titles
+
+
+def _cited_bodies(session: Session, result: dict) -> list[tuple[str, str]]:
+    """(title, text) of the notes an answer drew on, for Detailed's supporting sentences."""
+
+    out: list[tuple[str, str]] = []
+    for kind, nid in _cited_ids(result)[:3]:
+        content = visible_notes.content_of(session, nid) if kind != "document" else None
+        if content is not None and (title := _closing_name(content)):
+            out.append((title, content))
+    return out
 
 
 def _name_documents(session: Session, rows: list[dict]) -> None:
@@ -847,7 +888,6 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
     """The notes linked to the ones an answer cited, not cited themselves
     (INBOX 1466): the related row under a composed answer, which a model's
     answer has no use for (it reads the notes it is given and says the rest)."""
-    from tessellate.ai.tools._common import _visible
 
     cited = {nid for kind, nid in _cited_ids(result) if kind == "entry"}
     if not cited:
@@ -860,9 +900,9 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
                 found.append(other)
     items: list[dict] = []
     for nid in found:
-        row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-        if row and len(items) < _RELATED_LIMIT:
-            items.append({"kind": "note", "id": nid, "label": _closing_name(str(row[0] or "")) or "Untitled note"})
+        content = visible_notes.content_of(session, nid)
+        if content is not None and len(items) < _RELATED_LIMIT:
+            items.append({"kind": "note", "id": nid, "label": _closing_name(content) or "Untitled note"})
     return items
 
 
@@ -872,12 +912,11 @@ _CHECKLIST = re.compile(r"^\s*[-*+] \[[ xX]\]", re.M)
 def _first_cited_has_list(session: Session, result: dict) -> bool:
     """Whether the first note an answer cited keeps a checklist: "What is left
     in it" is a question only such a note answers (audit 1031 C47)."""
-    from tessellate.ai.tools._common import _visible
 
     for kind, nid in _cited_ids(result)[:1]:
         if kind != "document":
-            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            return bool(row and _CHECKLIST.search(str(row[0] or "")))
+            content = visible_notes.content_of(session, nid)
+            return bool(content is not None and _CHECKLIST.search(content))
     return False
 
 
@@ -897,8 +936,11 @@ def _diagram_events(req: _StreamRequest, prepared: dict) -> list | None:
     model (INBOX 1466): a ```mermaid fence the page draws, written by rule
     (`ai/composer_mermaid.py`) from the notes found, the open note, the text
     after a colon, or the answer before."""
-    from tessellate.ai import composer_mermaid
+    from tessellate.ai import composer_graph, composer_mermaid
 
+    #: "Chart my notes on running": the measure they share (L158, INBOX 1847).
+    if charted := composer_graph.from_notes(req.question or "", prepared["notes"]):
+        return [{"type": "answer", "delta": charted["text"]}]
     if not composer_mermaid.asks(req.question or ""):
         return None
     opened = next((str(n.get("content") or "") for n in prepared["notes"] if req.body.open_note_id and n.get("id") == req.body.open_note_id), "")

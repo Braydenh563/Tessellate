@@ -71,3 +71,15 @@ def test_a_noun_phrase_caption_follows_shows_lowercased(question, caption):
 
 def test_a_name_caption_keeps_its_capital():
     assert " shows Leafeon at sunset" in _ask(QUESTIONS[0], "Leafeon at sunset")
+
+
+def test_the_owners_girl_with_bell_caption_is_said_once_as_a_picture():
+    """CHAT_PLAN, the owner's 2026-10-10 bugs (L-chat-19): "The picture in Girl with bell shows The image shows
+    a snowy scene..." said the captioner's frame inside the app's own."""
+    from tessellate.ai.composer_threads import caption_form
+
+    whole, said = caption_form(
+        'The image shows a snowy scene with a girl holding a bell, and there is a signature at the bottom left that reads "24-12-2018"'
+    )
+    assert not whole and said.startswith("a snowy scene with a girl holding a bell"), said
+    assert "image shows" not in said.lower()

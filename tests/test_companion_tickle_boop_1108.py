@@ -12,7 +12,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import unwrapped, nmb_curve_js
 
 ROOT = Path(__file__).resolve().parents[1]
 AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
@@ -38,7 +38,7 @@ def inner(name: str) -> str:
 
 
 def run(body: str):
-    script = f"const nmb = {{}};\n{fn('nameMarkBuddyStrokes')}\n{touch_scope()}\nconsole.log(JSON.stringify({body}));"
+    script = nmb_curve_js() + f"const nmb = {{}};\n{fn('nameMarkBuddyStrokes')}\n{touch_scope()}\nconsole.log(JSON.stringify({body}));"
     return json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
 
 
@@ -102,7 +102,7 @@ def test_a_boop_adds_to_the_click_reaction_and_does_not_replace_it() -> None:
     face and sneeze go on top of it, and the 3 s cool-down still holds. The poke closure is run as written, on a fixed clock."""
     start = AV.index("    const poke = () => {")
     poke = AV[start : AV.index("\n    };\n    if (nmb.visit) poke();", start) + 7]
-    script = f"""
+    script = nmb_curve_js() + f"""
 let t = 1e6; Date.now = () => t; Math.random = () => 0.1;
 const log = [];
 const nmb = {{ pokes: [], mood: {{ sociability: 0.5, curiosity: 0.5 }}, act: "", lastPoke: 0 }};

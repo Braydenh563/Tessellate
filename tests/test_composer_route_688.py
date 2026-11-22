@@ -99,7 +99,9 @@ def test_the_composed_turn_is_saved_with_its_rows(ai_client, session, monkeypatc
     assert len(turns) == 1
     turn = ai_client.get(f"/ask-history/{turns[0]['id']}").json()
     assert turn["answer"].startswith("Check-up booked for the 21st, from your Dentist note, written on")
-    assert any(row["sentence"] == "Check-up booked for the 21st" for row in turn["grounding"])
+    #: L26 moved the row's end: it runs to the end of the prose sentence so the citation mark follows the
+    #: whole sentence (E51). The row still starts with the source line, which is what a saved turn keeps.
+    assert any(row["sentence"].startswith("Check-up booked for the 21st") for row in turn["grounding"])
 
 
 def test_ai_is_still_the_model_when_a_model_runs(ai_client, fake_ollama, session):
@@ -296,7 +298,7 @@ def test_the_gold_personal_and_random_questions(client, session):
     for question, lead in PERSONAL_GOLD["questions"]:
         said, _ = _ask_personal(client, question)
         #: A list is a family whose line varies by chat and by day
-        #: (`routes_chat._reply_seed`): any of its openings is right.
+        #: (`chat_said._reply_seed`): any of its openings is right.
         if not said.startswith(tuple(lead) if isinstance(lead, list) else lead) or any(n in said for n in PERSONAL_GOLD["never"]) or not said.strip():
             misses.append((question, said[:120]))
     assert len(PERSONAL_GOLD["questions"]) >= 30

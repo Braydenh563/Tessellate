@@ -72,7 +72,8 @@ TABLE = [
 
 #: Said the same way, but not an act: a question, a preference or a topic outside the notes.
 NOT_ACTS = [
-    "remember that i prefer short answers",
+    # "remember that i prefer short answers" left this list when L114 made it the remember act
+    # (tests/test_engine_routing_1114.py): intent moved, the owner's row asks for save_user_preference by sentence.
     "summarise the french revolution",
     "put this note in projects?",
     "mark the passport note with a smile",

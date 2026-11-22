@@ -241,11 +241,12 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
     def under_window(x, y) -> bool:
         # Where it lands after hopping off a window it visited: down in the floor band under that window
         # (INBOX 1683 g), not mid-air or beside it; a rest higher than two edge zones over the floor still counts.
-        low = y >= e.floor_y() - 2 * tv.EDGE_ZONE * k
+        low = y >= area[3] - e.size[1] - 2 * tv.EDGE_ZONE * k
         return low and any(w.left <= x + e.size[0] / 2 <= w.right and y >= w.top + e.size[1] for w in WINDOWS)
 
     rests = [(x, y) for x, y, d, p in spell_at if d >= 30.0 and not p and not on_window(x, y)]
-    floor = e.floor_y()
+    # The monitor's floor (the taskbar line), not `floor_y()`, which is a window top when the hour ends on one.
+    floor = area[3] - e.size[1]
     legs = list(getattr(e, "legs", []))
     modes = list(getattr(e, "modes", []))
     return {

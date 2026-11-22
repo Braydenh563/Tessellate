@@ -238,7 +238,7 @@
       win.host.dataset.items = String(win.count);
       for (const paint of win.fig.onpaint || []) paint();
     } catch (error) {
-      toast(voiceLine("failed", { what: "The board", why: error?.message || "it could not be read" }));
+      toast(voiceLine("failed", "The board", error?.message || "it could not be read"));
     } finally {
       win.host.removeAttribute("aria-busy");
     }
@@ -291,7 +291,7 @@
       win.instance = instance;
       win.off = instance.onChange?.(() => follow(win));
     } catch (error) {
-      toast(voiceLine("failed", { what: "The board", why: error?.message || "it could not be opened" }));
+      toast(voiceLine("failed", "The board", error?.message || "it could not be opened"));
       destroy(win);
     }
   }

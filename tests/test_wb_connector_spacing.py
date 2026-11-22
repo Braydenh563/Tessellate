@@ -14,9 +14,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")

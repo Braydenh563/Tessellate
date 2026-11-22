@@ -97,24 +97,26 @@ MORE_TOPICS: list[dict] = [
             "companion looks down", "companion daydreams", "companion tinkers", "companion miffed face",
             "companion smirk", "pat the companion", "pet the companion", "companion bonk", "swipe the companion", "companion twirl", "companion cloud", "companion grabs an edge",
             "companion eats dinner", "companion blows bubbles", "companion knits", "companion rides the wind",
+            "companion paper plane", "companion conducts", "companion sketches", "companion chases its tail", "companion leans on the edge",
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
-            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap (a blanket draped over a pillow, "
-            "a small z rising, the rings dimmed to a faint halo and slowed until it wakes), watering a plant and a puzzle, "
+            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a blanket nap, watering a plant and a puzzle, "
             "a bowl of dinner, bubbles from a wand and knitting a strand of starlight, each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
             "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
-            "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer. A shake or a pout leaves it "
+            "round itself and a foot tap, then a firefly chase, a little pile of stars counted, a nap on a note card and a wave at the pointer, "
+            "a cloud pillow, a paper plane, conducting, sketching, kneeling to a sprout, leaning on the edge, a tail chase and "
+            "stretch, a balance and a back float. A shake or a pout leaves it "
             "miffed for a moment, and a shrug a smirk. "
             "The loud ones (push-ups, dumbbells) wait for a lull. They are one group, \"Atlas does the "
             "desk companion's routines\", under Settings, Appearance, Corner companion, "
             "What it does on its own; Quieter keeps "
             "it to blinks and looks. Pat its head with slow dabs and it enjoys it (Lean into a rub or a pat), "
             "a fast swipe across it makes it twirl once (Turn upside down when shaken, twirl at a fast swipe), "
-            "a hard throw into the top bar bonks it before it falls, and a long way across the page is sometimes a ride on a "
-            "cloud or in a bubble. The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
-            "dinner and knitting to the evening, and the loud ones hold off at night. A long way for Atlas is sometimes a ride on a gust of motes that curls a spiral when it sets off and settles in a small eddy; on the desktop its floating trips do the same. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
+            "a hard throw into the top bar bonks it before it falls, throw it while it holds something (a cup, a rod, a journal) and the thing lies tipped over beside it for a moment, and a long way across the page is sometimes a ride on a "
+            "cloud, in a bubble or on a gust of motes, as on the desktop. The hour counts: tea and stretches lean to the morning, bubbles, dancing and a snack to the afternoon, "
+            "dinner and knitting to the evening, and the loud ones hold off at night. The long quiet ones keep to their hours, last a few minutes and come likelier in a mood that suits them. None of it with Motion off. To take hold of a panel's edge it leaps up from its feet and grabs."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
@@ -127,14 +129,18 @@ MORE_TOPICS: list[dict] = [
             "companion reminder", "stop the companion talking",
         ),
         "body": (
-            "Now and then, a few times a day at most, the corner companion says "
-            "something from your notes in its speech bubble: a reminder that is due, "
-            "a note from this day in an earlier year, something you left open, or "
-            "a quiet day. It is written from your notes with no model, never from a "
-            "private note, and never the same line twice. It stays quiet with "
-            "Motion off, while you carry it, or while it sleeps. To stop it, turn off "
-            "Say something from your notes in Settings, Appearance, Atlas and faces, "
-            "Corner companion, What it does on its own."
+            "Now and then, at most three times a day, the corner companion says "
+            "something from your notes in its speech bubble: a reminder due within "
+            "the hour or overdue, a note you may want back, a note from this day in "
+            "an earlier year, a checklist item left unticked for over a month, two "
+            "notes that disagree, a dated plan in the next week with no reminder "
+            "(the bubble then offers Set a reminder), or a note that answers a "
+            "question you asked. It is written from your notes with no model, never "
+            "from a private note, and never about the same thing twice in a week "
+            "(a disagreement only once). It stays quiet for 20 seconds after you "
+            "type, with Motion off, while you carry it, or while it sleeps. To stop "
+            "it, turn off Say something from your notes in Settings, Appearance, "
+            "Atlas and faces, Corner companion, What it does on its own."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
@@ -253,7 +259,7 @@ MORE_TOPICS: list[dict] = [
             "Atlas is the assistant inside Tessellate. It answers questions from your notes and cites them, "
             "files new notes, sets reminders, finds, tags, moves and links notes (a change that cannot be "
             "taken back waits for your Confirm), and opens the part of the app you name. Ask lives in Notes, "
-            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab, where its paperclip, a drop or a paste adds files as chips. With no model connected it "
+            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab, where its paperclip, a drop or a paste adds files as chips, saved only when you send. With no model connected it "
             "answers from your notes by itself."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
@@ -314,6 +320,7 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "profile", "my profile", "my name", "display name", "your look",
             "shuffle", "change my name", "what to call me", "greeting name",
+            "call me", "what you call me", "call me by", "make atlas call me",
         ),
         "body": (
             "Settings, Profile is you, kept on this computer: Your name (shown "
@@ -322,7 +329,8 @@ MORE_TOPICS: list[dict] = [
             "undoes that, Choose parts yourself sets each part), and About me, "
             "which Atlas reads for more personal answers only while \"Let Atlas "
             "read your name and About me\" is on. Delete my profile data clears "
-            "it; answers just get less personal."
+            "it; answers just get less personal. Telling Atlas \"call me Sam\" "
+            "sets Your name for you."
         ),
         "badge": {"label": "Profile", "section": "preferences"},
     },
@@ -335,12 +343,11 @@ MORE_TOPICS: list[dict] = [
             "cut that reply short", "model size", "does atlas do sums",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
+            "Settings, Tools it can use lets another app use these tools: a snippet to paste into an MCP client such as Claude Desktop, "
             "with a Copy button; that client can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
             "you tick Let that app add and change notes. "
-            "A number Atlas would work out (a sum, a percentage, a conversion, a "
+            "A number Atlas would work out (a sum, a percentage, a "
             "count of days) comes from the app's own calculator, Calculate, and a "
             "date in your words from Read text, so a small model computes "
             "nothing in its head; Check answer finds any number its answer "
@@ -350,20 +357,22 @@ MORE_TOPICS: list[dict] = [
             "Agent mode, grouped as Reads your notebook, Asks you first "
             "and Reaches the web; turn one off and it is never "
             "offered, or a whole group with its Turn all off. Every change "
-            "asks you first, with a card to Confirm or a typed yes, and once Atlas has read a web page, "
+            "asks in the chat: what and why, with Allow, Allow always for this chat "
+            "(never for a removal) and Decline, which asks what instead. An edit "
+            "marks each change to keep or skip. Once Atlas has read a web page, "
             "a file, or a note clipped or imported from outside, every web request asks too. How many are offered at once: Only "
             "what the message needs (the default) or Always send all of them, "
-            "if Atlas ever misses a tool you asked for. Small model mode offers "
+            "if Atlas misses a tool. Small model mode offers "
             "a small model one tool at a time (Auto decides from the model's "
             "name, On, Off). Run budget caps what one skill run may spend, in "
             "tokens per step and in seconds; 0 means no limit. A skill may also "
             "cap its own tool calls and steps; a run that passes a cap stops, "
             "says which, and keeps its changes for Undo. With small model mode "
             "on, a skill measured below 80% on small models shows Needs a "
-            "larger model, with why. In Agent mode "
+            "larger model. In Agent mode "
             "the model's size, read from its name, decides how many tools it "
-            "sees and how long one step may write: under 3B and up to 8B get "
-            "a short toolbox and a reply that runs long is cut short, 8B and "
+            "sees and how long one step may write: below 8B gets "
+            "a short toolbox and a long reply is cut short, 8B and "
             "up get everything."
         ),
         "badge": {"label": "Tools it can use", "section": "tools"},
@@ -418,7 +427,9 @@ MORE_TOPICS: list[dict] = [
             "everything learned act on all of it and never touch your notes. "
             "The Learned from you line under the title counts your corrections "
             "and gives filing accuracy, the share of the notes Atlas filed that "
-            "you left where it put them, older half of the last 200 against newer."
+            "you left where it put them, older half of the last 200 against newer. "
+            "Under it, Clear answers marked not right forgets every answer you marked not right "
+            "in Chat; those marks are kept only on this device."
         ),
         "badge": {"label": "What it learned", "section": "learned"},
     },
@@ -479,6 +490,26 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Notes", "tab": "notes"},
     },
     {
+        "id": "goals-lists",
+        "keywords": (
+            "goals", "my goals", "lists", "my lists", "goals and lists", "checklist", "shopping list",
+            "packing list", "to do list", "progress bar", "target day", "make a goal", "new goal",
+            "new list", "tick off", "cross off", "how far am i", "finish a goal",
+        ),
+        "body": (
+            "Notes, Goals holds your goals and lists, a card each. A goal has steps you tick "
+            "off, a progress bar and an optional target day; a list is for shopping, packing "
+            "or anything you cross off. New goal and New list in the bar add one; the add "
+            "line at the foot of a card adds a step, the box ticks it and the cross removes "
+            "it. A card's menu renames it, sets the target day, finishes or reopens it, or "
+            "deletes it with Undo. The bar picks All, Goals, Lists or Finished, with a count "
+            "on each. Chat does the same in words: make a goal called Learn Spanish, add "
+            "milk to the shopping list, tick milk, how far am I on my goals. Asking what "
+            "your goals are also reads notes tagged or titled goal."
+        ),
+        "badge": {"label": "Notes", "tab": "notes"},
+    },
+    {
         "id": "general-settings",
         "keywords": (
             "smart quotes", "link offers", "offer links", "auto clear",
@@ -487,10 +518,10 @@ MORE_TOPICS: list[dict] = [
             "my birthday", "on my birthday", "date order", "day first", "month first", "before:", "first run preferences",
         ),
         "body": (
-            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "Settings, General sets how the calendar and dates read: First day of the week, and Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
-            "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
+            "and Dates like 3/4 mean (day first or month first; automatic follows your region; answers say a day the same way round), "
             "and My birthday, which \"on my birthday\" in a reminder uses. "
             "Search: Count the day itself in before: searches (off, before:2026-03-10 stops at the 9th). "
             "The welcome's preferences card offers the same choices once, and Skip passes them by. "
@@ -576,11 +607,12 @@ MORE_TOPICS: list[dict] = [
         "id": "answer-style",
         "keywords": (
             "answer style", "concise", "detailed", "shorter answers",
-            "longer answers", "friendly", "professional wording", "formal wording",
+            "longer answers", "answer length", "how long answers are", "personas off", "short answers", "friendly", "professional wording", "formal wording",
             "natural wording", "wording when no model", "composer voice",
             "voice", "playful", "plain answers", "neutral", "how atlas sounds",
             "insight", "patterns in answers", "what atlas adds",
             "long text in an answer", "wall of text", "folded text",
+            "lines written from your notes", "personal wording", "plain greeting",
         ),
         "body": (
             "Settings, Personas, Answer style: how Atlas words its answers, "
@@ -588,14 +620,22 @@ MORE_TOPICS: list[dict] = [
             "active. Below it, How Atlas sounds with no model picks the voice "
             "it answers from your notes in without a model: Warm and concise "
             "(the default), Neutral, Playful or Plain, with a sample under it. "
-            "The facts and the sources are the same in every voice. What "
+            "The facts and the sources are the same in every voice. How long "
+            "answers are is Short (one or two sentences), Normal (the default) "
+            "or Detailed (a supporting sentence for each source), the same "
+            "choice as Length in the chat dock; Personas off makes every "
+            "answer drop persona voice, and keeps your personas for later. What "
             "Atlas adds of its own sets whether an answer about a topic ends "
             "with a pattern from your notes: Nothing, One line (the default) "
             "or Everything it finds; each Not right raises the bar. A long "
             "block in an answer from no model (the text read from a picture, "
             "say) is folded to one line, its first sentence and its length; "
             "press it to read the whole. A model's own answer is never folded; "
-            "only its thinking is, under Thinking."
+            "only its thinking is, under Thinking. Lines written from your "
+            "notes (on by default) lets the dashboard greeting, the line under "
+            "it and the companion speak about your notes; off, the greeting is "
+            "a plain hello, the line shows your counts and the companion says "
+            "nothing about your notes. Answers are not changed."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },
@@ -648,7 +688,8 @@ MORE_TOPICS: list[dict] = [
             "records, with times. Autonomous background AI is here "
             "too. Battery-efficient "
             "mode pauses background AI, heavy graph work and the moving "
-            "artwork. Quit Tessellate stops the app and its server properly, so "
+            "artwork, and chat answers from your notes with no model, "
+            "saying so in one line. Quit Tessellate stops the app and its server properly, so "
             "the next start finds its port free."
         ),
         "badge": {"label": "Background tasks", "section": "tasks"},
@@ -735,7 +776,7 @@ MORE_TOPICS: list[dict] = [
             "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
             "many and names the newest. Open Activity from it, its agent runs count, the chat's ⋯ menu (Activity and past runs), or the "
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
-            "headed by a glyph and a title. Its Agent runs tab lists each run this session "
+            "headed by a glyph and a title. Drag its head to move the panel; it stays on screen, remembers where you left it, and a double-click on the head puts it back. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
             "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
@@ -761,7 +802,9 @@ MORE_TOPICS: list[dict] = [
             "to install, reinstall or remove several at once from the bar "
             "above the list; they run one after another and one that fails "
             "does not stop the rest; a bundle's row shows each of its packages "
-            "as it goes, waiting, installing or done. A feature that needs a missing "
+            "as it goes, waiting, installing or done. A download of a known size shows a bar with a percentage; "
+            "pip installs show a moving bar, as pip does not say how far it is. Closing the notice does "
+            "not stop the install: Activity keeps showing it. A feature that needs a missing "
             "package shows a notice with Install; once pressed the button turns to Undo, which stops the download or removes the package again; its x hides it until that package changes. A notice that names Settings, Packages "
             "(a feature that is not installed) has an Open Packages button that scrolls to "
             "that package's row. An installed package's ⋮ has Reinstall "
@@ -809,7 +852,9 @@ MORE_TOPICS: list[dict] = [
             "(the app keeps the note the link would make), and no thanks drops it. "
             "A story over many notes tells the ones it read and says so at the end (That tells five of the twelve; ask for a month or a tag to see the rest). "
             "A counting question in Ask (how many notes per category this month) also gets "
-            "a chart from your notes, with its numbers and Save as PNG."
+            "a chart from your notes, with its numbers and Save as PNG. In Find anything, a "
+            "question (\"when does my passport expire?\") gets a one-line answer from your "
+            "notes above the results, with a button to open the note."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -822,12 +867,17 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "A document is checked as English unless its properties set a "
-            "language (a lang key, such as fr). For French, German and Spanish, "
+            "language (a lang key, such as fr); the Dictionary sheet's This "
+            "document's language row writes it, and en-GB or en-US picks British or "
+            "American spelling for that document alone. For French, German and Spanish, "
             "Settings, Packages offers a spelling pack each (about 340 KB, "
             "kept on this computer); the Suggestions panel of such a document "
             "also has an Install button. Once installed, spelling is checked in "
             "that language and grammar stays English. Add a word to the "
-            "dictionary as usual to stop it being flagged."
+            "dictionary as usual to stop it being flagged. Japanese and Chinese "
+            "are not spell checked and have no pack to install: they are not written in "
+            "words split by spaces. Their words are counted by the browser's own "
+            "segmenter, so a long-sentence check reads them by word."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },
@@ -1074,7 +1124,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "lock",
         "keywords": (
-            "auto-lock", "auto lock", "change my password", "reset password",
+            "auto-lock", "auto lock", "lock timeout", "lock setting", "change my password", "reset password",
             "other devices", "on my phone", "another computer", "sessions",
             "lock everywhere", "re-encrypt", "new key", "rotate key",
             "recovery key", "make a recovery key",
@@ -1245,8 +1295,10 @@ MORE_TOPICS: list[dict] = [
             "file in your data folder: names and dates, never what you typed, "
             "and never sent anywhere (there is no telemetry). It lists your most "
             "used tabs and commands and the ones not used in 90 days, and the "
-            "command palette lists the commands you use most first. Clear the "
-            "counts forgets every one."
+            "command palette lists the commands you use most first. Once a week, "
+            "after the ledger is 90 days old, the dashboard's day lines add one "
+            "unused feature with Try it and not now. Clear the counts forgets "
+            "every one."
         ),
         "badge": {"label": "What you use", "section": "general", "target": "usage-box"},
     },
@@ -1286,7 +1338,7 @@ MORE_TOPICS: list[dict] = [
     {
         "id": "calculator",
         "keywords": (
-            "calculator", "open the calculator", "keypad", "unit converter",
+            "calculator", "open the calculator", "get to the calculator", "do a sum", "keypad", "unit converter",
             "convert units", "currency converter", "work out a sum",
             "calculator and equations", "equation tab", "insert as equation",
         ),
@@ -1326,6 +1378,23 @@ MORE_TOPICS: list[dict] = [
             "Units alone."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
+    },
+    {
+        "id": "currency-rates",
+        "keywords": (
+            "currency rates", "exchange rates", "edit the rates", "rates table",
+            "currency table", "update the currency", "exchange rate",
+        ),
+        "body": (
+            "Currency conversions ('50 usd in eur', Units, /calc) read one table and "
+            "say its date in the answer, for example 'at the rates from 1 October'. "
+            "Nothing is fetched. To change it, open Settings, Search and index, "
+            "Currency rates: pick the day the rates are from, then write one line per "
+            "currency, a code and how many units of it make one US dollar (EUR 0.92). "
+            "Save rates keeps it; a code you leave out keeps its built-in rate. Reset "
+            "to the built-in table puts back the rates this version shipped with."
+        ),
+        "badge": {"label": "Search and index", "section": "searchindex", "target": "currency-rates-group"},
     },
     {
         #: INBOX 1481: a chat that is not kept (chat-private.js, `ChatRequest.private`).
@@ -1683,12 +1752,12 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion lives on your desktop while the window is "
             "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom) and sleeps "
-            "when you are away, can be picked up and thrown (it tumbles and lands; a hard throw up catches the top, a harder one flies out of sight), "
-            "hangs from the top, and peeks up from behind the taskbar, a screen edge or a smaller window. It keeps to a home spot by an "
+            "when you are away, can be picked up and thrown (it tumbles and lands; a hard throw up catches the top, a harder one flies off), "
+            "hangs from the top and peeks up from behind the taskbar, a screen edge or a smaller window. It keeps to a home spot by an "
             "edge for minutes, alive in place, and makes a few trips an hour: walking, running, "
             "out at one edge and in at the other, or through a portal. Let go gently near a title bar and it hangs, "
             "then pulls itself up, swings down or lets go with a start (one hand, on a long hang). Sometimes it climbs onto the top of a window, "
-            "dangles its legs over the edge, rides it when you move it and hops off "
+            "dangles its legs, peers down at the corner, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
             " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
             "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
@@ -1720,6 +1789,7 @@ MORE_TOPICS.extend(MID_TOPICS)
 #: order. An entry with no meta is laid out from its id and body alone.
 TOPIC_META: dict[str, dict] = {
     "open-questions": {"title": "Open questions", "path": "Notes tab, Questions"},
+    "goals-lists": {"title": "Goals and lists", "path": "Notes tab, Goals"},
     "make-a-diagram": {"title": "Making a diagram", "path": "Library tab, Create"},
     "capture": {"title": "Capturing a note", "path": "Notes tab", "steps": (
         "Open the Notes tab (t then n).", "Type into Capture a thought.", "Press Save: a local AI files it and suggests tags.")},
@@ -1796,6 +1866,7 @@ TOPIC_META: dict[str, dict] = {
     "tools-setting": {"title": "Tools it can use", "path": "Settings, Tools it can use"},
     "learned": {"title": "What it learned", "path": "Settings, What it learned"},
     "general-settings": {"title": "General settings", "path": "Settings, General"},
+    "currency-rates": {"title": "Currency rates", "path": "Settings, Search and index, Currency rates"},
     "search-index": {"title": "Search and index", "path": "Settings, Search and index"},
     "search-engine-moved": {"title": "Old search files", "path": "Settings, Search and index, Old search files"},
     "answer-style": {"title": "Answer style", "path": "Settings, Personas, Answer style"},
@@ -1883,6 +1954,7 @@ TOPIC_META: dict[str, dict] = {
     "documents-list-styles": {"title": "List styles: dots, circles, squares, dashes and numbering", "path": "Library tab, Documents, List and Numbered buttons"},
     "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
     "documents-comments": {"title": "Comments in a document", "path": "Library tab, Documents, sidebar Outline, Comments"},
+    "documents-agent-edit": {"title": "Reviewing Atlas's edits to a document", "path": "Library tab, Documents, the bar over the page"},
     "documents-to-note": {"title": "Selection to a note: start a note or add to one", "path": "Library tab, Documents, select text, note button or right-click"},
     "documents-turn-into": {"title": "Turn into: change a block to a heading, list, quote or code", "path": "Library tab, Documents, select text, Turn into"},
     "mind-map-features": {"title": "Mind map features", "path": "Library tab, Boards & maps"},
@@ -1936,6 +2008,7 @@ TOPIC_META: dict[str, dict] = {
     "contents": {"title": "Contents, the notebook's outline", "path": "Library tab, Contents"},
     "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the AI switch", "steps": (
         "Open Ask on the Notes tab.", "Turn the AI switch off beside the answer length.", "Ask: the answer is quoted from your notes, with no AI.")},
+    "ask-answerer": {"title": "Who answers plain Ask", "path": "Settings, Models, Who answers plain Ask"},
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
@@ -1971,11 +2044,11 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
-        "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
+        "ask-chat", "chat-typos", "answers-from-notes", "ask-answerer", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "chat-acts-boards", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions", "goals-lists",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "diagram-chart-kinds", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-sections", "document-base", "document-query", "document-synced", "document-subpages", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run", "csv-grid",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "diagram-chart-kinds", "chart-maker", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "documents-agent-edit", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-sections", "document-base", "document-query", "document-synced", "document-subpages", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run", "csv-grid",
         "debugger", "code-panel", "code-lint", "margin-reader",
     )),
     ("Boards and maps", (
@@ -1992,7 +2065,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "private-spaces", "statistics",
     )),
     ("Small tools", (
-        "timer", "calculator", "count-words", "insert-template",
+        "timer", "calculator", "currency-rates", "count-words", "insert-template",
     )),
     ("Look and feel", (
         "appearance", "appearance-panel", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
@@ -2276,7 +2349,7 @@ MORE_TOPICS.extend([
             "save panel layout", "workspaces", "which panels are open",
         ),
         "body": (
-            "Edit inside a group: double-click a grouped item (or Ctrl+K, Edit inside the group) and the rest "
+            "Double-click a grouped item (or Ctrl+K, Edit inside the group) to edit inside it: the rest "
             "of the board dims and cannot be clicked, swept or reached with Select all or Tab; the group's own "
             "items select one at a time. Escape leaves it. Workspaces, in the View menu's Panels, save which "
             "panels are open (the context bar, overview, search, Format and the sidebar with its tab) under a "
@@ -2567,6 +2640,21 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "chart-maker",
+        "keywords": (
+            "chart maker", "make a chart", "bar chart", "line chart", "chart block", "paste values chart",
+            "chart from csv", "save chart as svg", "save chart as png", "slash chart", "chart this", "chart my notes", "graph my notes",
+        ),
+        "body": (
+            "The \"/\" menu's Chart takes pasted values (a label and a number a line, or CSV), draws a bar, line, area, pie, scatter, histogram or table chart, "
+            "and adds it to the note as a chart block that draws in the note view. Press a drawn chart to change its values or "
+            "its kind. Save as SVG, PNG or CSV is under the chart. Chat and Ask draw one too: \"chart this:\" with the values after it "
+            "(or after an answer that lists them), or \"chart my notes on running\" for the measure those notes share, one point a note; "
+            "the answer's Save as a note keeps it as a chart block."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-kinds",
         "keywords": (
             "mind map blocks", "timeline blocks", "sequence diagram blocks", "mermaid mind map",
@@ -2730,6 +2818,7 @@ TOPIC_META.update({
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
+    "chart-maker": {"title": "Make a chart", "path": "A note, the / menu, Chart"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
     "board-effects": {"title": "Text shadow, glass, picture fill, flip, frame opacity and the status bar", "path": "A board's Format panel, Style tab; the View menu, Status bar"},
@@ -2751,6 +2840,12 @@ def _act_topic() -> dict:
     from tessellate.ai import act_registry
 
     return act_registry.guide_topic()
+
+
+def _act_boards_topic() -> dict:
+    from tessellate.ai import act_registry
+
+    return act_registry.guide_topic_boards()
 
 
 MORE_TOPICS.append({
@@ -2780,6 +2875,8 @@ MORE_TOPICS.append({
 TOPIC_META["nicknames"] = {"title": "Calling Atlas by any name", "path": "Chat tab"}
 MORE_TOPICS.append(_act_topic())
 TOPIC_META["chat-acts"] = {"title": "Things Chat does for you", "path": "Chat tab"}
+MORE_TOPICS.append(_act_boards_topic())
+TOPIC_META["chat-acts-boards"] = {"title": "Boards, maps and documents by sentence", "path": "Chat tab"}
 MORE_TOPICS.append({
     "id": "tasks",
     "title": "Tasks in Chat",
@@ -2800,6 +2897,7 @@ MORE_TOPICS.append({
         "If more than one task fits the words, Chat asks which one before it changes anything, and a name that fits only in part "
         "is asked about too. Each of these waits for Confirm (press it, or type yes or go ahead; Cancel or no drops it), then has Undo on the card, or Ctrl+Z: a ticked task is reopened, a cancelled "
         "one comes back from the bin, a snoozed reminder returns to its old time. Small typos in the sentence are read through. "
+        "A change to many notes lists the first five on the card, with Show all for the rest (up to 50 at a time); a note it cannot change is named after Done, with why. "
         "A card, or an offer such as Gather them, stays in its chat when you leave and come back: a waiting one lasts about half an hour, then shows as expired, and an answered one shows what was done."
     ),
 })
@@ -2819,7 +2917,9 @@ MORE_TOPICS.append({
         "lists) and what the last answer was about, so \"notes form last week\" is from and \"fill in the form\" "
         "stays form. When two readings stay close it answers the likelier and offers the other as a Did you mean "
         "chip; press it to ask again with that word. A word that is one of your own titles or tags is left as it is. "
-        "A numeric date like 11/09 follows your locale, and a fraction is a rating only beside a rating word."
+        "A numeric date like 11/09 follows your locale, and a fraction is a rating only beside a rating word. "
+        "The chat box and the Ask box underline a grammar slip as you pause (a double line); click it for the fix "
+        "or Ignore this one. The Grammar check switch in a document's writing panel turns it off."
     ),
 })
 TOPIC_META["chat-typos"] = {"title": "How Chat reads a slip", "path": "Chat tab"}
@@ -2882,7 +2982,7 @@ MORE_TOPICS.append({
     ),
     "body": (
         "Patterns are what your notes keep coming back to, counted from the notes "
-        "themselves with no AI: a subject that came up again and again (\"university "
+        "themselves with no AI. Each is a subject that came up again and again (\"university "
         "came up 4 times since 16 July\"), one written about every week, a plan "
         "still open, a decision you went back on, or a busy week. They change as you write, "
         "since each is counted again whenever the dashboard draws. Press the "

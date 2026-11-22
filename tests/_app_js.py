@@ -49,7 +49,7 @@ def app_js_files() -> list[Path]:
 #: (app.js, `LAZY_MODULES`). Still the app's code for every test that reads
 #: it, so `app_js_text` includes them; not in `app_js_files`, which is what
 #: loads at boot and what the gzip budget counts.
-LAZY_PIECES = ("panel-movable.js", "notes-lazy.js", "lightbox-view.js", "edit-conflict.js", "categories-panel.js", "tag-manager.js", "chip-menus.js", "note-history.js", "ask-history.js", "settings-data.js", "meaning.js", "settings-find.js", "settings-models.js", "tag-suggest.js", "search-suggest.js", "sketch-pad.js", "writing-desk.js", "attachment-actions.js", "ocr-engine.js", "quick-note.js", "quick-access.js", "field-clear.js", "date-field.js", "assistant-avatar.js", "suggestions-inbox.js", "entity-page.js", "link-types.js", "note-properties.js", "reveal-targets.js", "onboarding.js", "update-dialogs.js", "app-palette.js", "note-panels.js", "settings-controls.js", "settings-prefs.js", "note-edit-panels.js", "attach-to.js", "notes-rail-spy.js", "dash-boards.js", "model-bench.js", "web-clip.js", "app-import.js", "usage-ledger.js", "chord-guide.js", "note-templates.js", "atlas-motion.js", "atlas-micro.js", "help-chat.js", "mermaid-draw.js", "code-colour.js","settings-packages.js", "batch-space.js", "atlas-life.js", "companion-menu.js", "companion-settings.js", "drag-edge.js", "pick-row.js", "vault-unlock.js", "nav-history.js", "icon-picker.js", "note-pick-preview.js", "tour.js", "questions-view.js", "ask-compose.js", "meetings.js", "chat-edit.js", "quickadd.js", "search.js", "statistics.js", "utility-tools.js", "captions.js", "translate.js", "app-features.js", "chat-undo.js", "web-results.js", "chat-private.js", "chat-time.js", "notifications.js", "shared-intake.js", "undo-kit.js", "connections.js", "timeline-calendar.js", "timeline-cal-add.js", "timeline-detail.js", "task-steps.js", "chat-tasks.js", "improve-panel.js", "lightbox-actions.js", "settings-health.js", "dash-orphans.js", "dash-night.js", "personas-pane.js", "dash-day.js", "library-pick.js", "feature-model-sheet.js", "status-panels.js", "phone-more.js", "gesture-kit.js", "load-failed.js", "reminder-edit.js", "reminder-triage.js", "image-layout.js", "obj-ref.js", "obj-order.js", "obj-drag.js", "obj-reorder.js", "obj-clip.js", "obj-carry.js", "obj-tray.js", "popup-glyph.js", "capture-card.js", "capture-card-more.js", "capture-stage.js", "attach-accept.js", "chat-docs.js", "chat-turn.js", "entry-menu.js", "answer-kit.js", "map-preview.js", "citation-peek.js", "space-swap.js", "table-block.js", "entry-card.js", "dash-art.js", "scroll-row.js", "confirmed-patterns.js", "value-field.js", "studio.js", "sync-folder.js")
+LAZY_PIECES = ("panel-movable.js", "notes-lazy.js", "lightbox-view.js", "edit-conflict.js", "categories-panel.js", "tag-manager.js", "chip-menus.js", "note-history.js", "ask-history.js", "settings-data.js", "meaning.js", "settings-find.js", "settings-models.js", "tag-suggest.js", "search-suggest.js", "chat-ghost.js", "reminder-triage.js", "composer-lint.js", "sketch-pad.js", "writing-desk.js", "attachment-actions.js", "ocr-engine.js", "quick-note.js", "quick-access.js", "field-clear.js", "date-field.js", "assistant-avatar.js", "suggestions-inbox.js", "entity-page.js", "link-types.js", "note-properties.js", "reveal-targets.js", "onboarding.js", "update-dialogs.js", "app-palette.js", "note-panels.js", "settings-controls.js", "settings-prefs.js", "note-edit-panels.js", "attach-to.js", "notes-rail-spy.js", "dash-boards.js", "model-bench.js", "web-clip.js", "app-import.js", "usage-ledger.js", "chord-guide.js", "note-templates.js", "atlas-motion.js", "atlas-micro.js", "help-chat.js", "mermaid-draw.js", "code-colour.js","settings-packages.js", "batch-space.js", "atlas-life.js", "companion-menu.js", "companion-settings.js", "drag-edge.js", "pick-row.js", "vault-unlock.js", "nav-history.js", "icon-picker.js", "note-pick-preview.js", "tour.js", "questions-view.js", "goals-view.js", "ask-compose.js", "meetings.js", "chat-edit.js", "quickadd.js", "search.js", "statistics.js", "utility-tools.js", "captions.js", "translate.js", "app-features.js", "chat-undo.js", "web-results.js", "chat-private.js", "chat-time.js", "notifications.js", "shared-intake.js", "undo-kit.js", "connections.js", "timeline-calendar.js", "timeline-cal-add.js", "timeline-detail.js", "task-steps.js", "chat-tasks.js", "improve-panel.js", "lightbox-actions.js", "settings-health.js", "dash-orphans.js", "dash-night.js", "personas-pane.js", "dash-day.js", "library-pick.js", "feature-model-sheet.js", "status-panels.js", "phone-more.js", "gesture-kit.js", "load-failed.js", "reminder-edit.js", "image-layout.js", "obj-ref.js", "obj-order.js", "obj-drag.js", "obj-reorder.js", "obj-clip.js", "obj-carry.js", "obj-tray.js", "popup-glyph.js", "capture-card.js", "capture-card-more.js", "capture-stage.js", "attach-accept.js", "chat-docs.js", "chat-turn.js", "entry-menu.js", "answer-kit.js", "map-preview.js", "citation-peek.js", "space-swap.js", "table-block.js", "entry-card.js", "dash-art.js", "scroll-row.js", "confirmed-patterns.js", "value-field.js", "studio.js", "sync-folder.js", "ndjson-read.js", "tool-consent.js", "chat-order.js", "doc-agent-review.js", "model-spec.js")
 
 
 @lru_cache(maxsize=1)
@@ -61,6 +61,19 @@ def _joined() -> str:
 def app_js_text() -> str:
     """The app's code: every file in `app_js_files()`, joined in load order."""
     return _joined()
+
+
+@lru_cache(maxsize=1)
+def index_html_text() -> str:
+    """index.html as written, one shared copy: 180 modules each held their own (2 MB a copy, a worker)."""
+    return INDEX_HTML.read_text(encoding="utf-8")
+
+
+@lru_cache(maxsize=1)
+def all_js_text() -> str:
+    """Every script in `frontend/js`, as written, joined in name order (one shared copy for the
+    modules that scan all of it)."""
+    return "\n".join(p.read_text(encoding="utf-8") for p in sorted(JS_DIR.glob("*.js")))
 
 
 #: Pieces moved out of a boot script into lazy files (2026-10-12, the gzip
@@ -80,7 +93,7 @@ MOVED_OUT = {
     "settings-panes.js": ("app-features.js",),
     "chat-attach.js": ("chat-turn.js", "answer-kit.js", "chat-docs.js"),
     "chat-agent.js": ("chat-turn.js", "answer-kit.js"),
-    "chat.js": ("chat-turn.js", "answer-kit.js"),
+    "chat.js": ("chat-web.js", "chat-model-panel.js", "chat-progress.js", "model-spec.js", "chat-turn.js", "answer-kit.js"),
     "capture-ask.js": ("ask-compose.js", "answer-kit.js", "citation-peek.js"),
     "agent-activity.js": ("answer-kit.js",),
     "status.js": ("status-panels.js", "answer-kit.js"),

@@ -1447,7 +1447,7 @@
    "backup" finds Import & export: which is the question people actually
    have. It sits at the top of the nav because that is where the eye starts. */
 /* The box was the full width of a nav that scrolls, so the scrollbar sat on
-   top of it: the placeholder read "🔎 Find a s" with a scrollbar where the
+   top of it: the placeholder read "Find a s" after its magnifier glyph with a scrollbar where the
    rest of the sentence should be, and the box's right-hand corners were cut
    off by it. Reported: "the settings search bar could be improved visually."
    `scrollbar-gutter` on the nav is the fix rather than a margin here, because

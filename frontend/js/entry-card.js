@@ -115,7 +115,7 @@ function renderInlineAction(entry) {
         try {
           if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
         } catch (error) {
-          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          if (!error.isLockout) toast(error.message || voiceLine("failed", "set that reminder"), true);
           return;
         }
         inlineAction = null;
@@ -194,6 +194,50 @@ function renderInlineAction(entry) {
 //: editor mounts only on a focus nobody gave it, a click on it losing its target. The
 //: form's row is kept here and handed back, unless the redraw is a fresh open (a focus
 //: request pending) or the form was closed since (`editingId` moved).
+
+//: **The dates a note mentions, said as mentions** (owner: the meta row is
+//: "a bit hard to read, especially in regards to the date parsing"). Two
+//: calendar chips beside "3 days ago" read as three dates of the same kind;
+//: they are different facts: when the note was written is at the card's
+//: corner, and the days its words point at are one labelled item here.
+function entryMentionedDatesChip(entry) {
+  const mentioned = [];
+  for (const when of entry.dates || []) {
+    const day = new Date(`${when.at}T00:00:00`);
+    const dayLabel = day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    //: UX-02: a clock said with the day, shown as written.
+    const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
+      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+      : "";
+    //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
+    //: "month of Nov 30" read as a date).
+    const label = clock
+      ? `${dayLabel}, ${clock}`
+      : when.precision === "month"
+        ? day.toLocaleDateString(undefined, { month: "short" })
+        : when.precision === "year"
+          ? String(day.getFullYear())
+          : when.precision === "week"
+            ? `week of ${dayLabel}`
+            : dayLabel;
+    //: The date alone, the phrase on hover (owner, with a screenshot of
+    //: "Tonight → 21 Sept on Friday → 25 Sept" in one meta line: "clean up
+    //: the notes metadata and badges a bit more"). What a reader scans for is
+    //: the day; the words the note used for it are the explanation.
+    mentioned.push({
+      label,
+      title: `“${when.phrase}” meant ${day.toLocaleDateString(undefined, {
+        weekday: "long", day: "numeric", month: "long", year: "numeric",
+      })}`,
+    });
+  }
+  if (!mentioned.length) return null;
+  const shown = mentioned.slice(0, 3).map((m) => m.label).join(", ");
+  const more = mentioned.length > 3 ? ` +${mentioned.length - 3}` : "";
+  const mark = chip(`ph:calendar-blank Mentions ${shown}${more}`, "when");
+  mark.title = `Dates this note mentions, not a reminder. ${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
+  return mark;
+}
 
 function entryItem(entry, options = {}) {
   if (entryItem.live?.dataset.id == entry.id) {
@@ -434,7 +478,7 @@ function entryItem(entry, options = {}) {
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
-      toast(err.message || "Couldn't remove that image.", true);
+      toast(err.message || voiceLine("failed", "remove that image"), true);
     }
   });
   if (glance) {
@@ -471,6 +515,14 @@ function entryItem(entry, options = {}) {
     });
     li.appendChild(more);
   } else {
+    //: A long note says what it is about before its clamped lines (CHAT_PLAN B22):
+    //: the gist is the server's (`composer_gist`), under 90 characters.
+    if (entry.gist && isLong) {
+      const gist = document.createElement("p");
+      gist.className = "entry-gist muted text-sm";
+      gist.textContent = entry.gist;
+      li.appendChild(gist);
+    }
     li.appendChild(content);
   }
   if (isLong) {
@@ -739,7 +791,7 @@ function entryItem(entry, options = {}) {
     //: span, and an offer that cannot be honoured is worse than none.
     //: Not on a private note: the route refuses it (sweep 1004 item 7), so the
     //: chip's only answer would be a refusal toast.
-    if (options.actions && !entry.is_private && (!modelStatus || modelStatus.ollama_running !== false)) {
+    if (options.actions && !entry.is_private && !aiIsOff(true)) {
       const askAtlas = chip("ph:sparkle Tag with Atlas", "untagged-ai", (event) => {
         event.stopPropagation();
         reevaluateEntry(entry);
@@ -818,7 +870,7 @@ function entryItem(entry, options = {}) {
         await api(`/documents/${doc.id}/notes/${entry.id}`, { method: "DELETE" });
         pushRoutePairUndo(`Detached from “${doc.title}”`, [`/documents/${doc.id}/notes`, "POST", { entry_id: entry.id }], [`/documents/${doc.id}/notes/${entry.id}`, "DELETE"], () => refreshEntries([entry.id]));
         await refreshEntries([entry.id]);
-        toast(`Detached from “${doc.title}”.`);
+        toast(voiceLine("done", `Detached from “${doc.title}”`));
       });
       makeUnlinkAccessible(unlink);
       mark.appendChild(unlink);
@@ -830,48 +882,9 @@ function entryItem(entry, options = {}) {
   // A chip rather than a mark inside the text: `renderNoteText` already
   // layers wiki links, inline markdown and filter highlighting through each
   // other, and a fourth pass over the same string is where that breaks.
-  //: **The dates a note mentions, said as mentions** (owner: the meta row is
-  //: "a bit hard to read, especially in regards to the date parsing"). Two
-  //: calendar chips beside "3 days ago" read as three dates of the same kind;
-  //: they are different facts: when the note was written is at the card's
-  //: corner, and the days its words point at are one labelled item here.
-  const mentioned = [];
-  for (const when of entry.dates || []) {
-    const day = new Date(`${when.at}T00:00:00`);
-    const dayLabel = day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
-    //: UX-02: a clock said with the day, shown as written.
-    const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
-      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
-      : "";
-    //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
-    //: "month of Nov 30" read as a date).
-    const label = clock
-      ? `${dayLabel}, ${clock}`
-      : when.precision === "month"
-        ? day.toLocaleDateString(undefined, { month: "short" })
-        : when.precision === "year"
-          ? String(day.getFullYear())
-          : when.precision === "week"
-            ? `week of ${dayLabel}`
-            : dayLabel;
-    //: The date alone, the phrase on hover (owner, with a screenshot of
-    //: "Tonight → 21 Sept on Friday → 25 Sept" in one meta line: "clean up
-    //: the notes metadata and badges a bit more"). What a reader scans for is
-    //: the day; the words the note used for it are the explanation.
-    mentioned.push({
-      label,
-      title: `“${when.phrase}” meant ${day.toLocaleDateString(undefined, {
-        weekday: "long", day: "numeric", month: "long", year: "numeric",
-      })}`,
-    });
-  }
-  if (mentioned.length) {
-    const shown = mentioned.slice(0, 3).map((m) => m.label).join(", ");
-    const more = mentioned.length > 3 ? ` +${mentioned.length - 3}` : "";
-    const mark = chip(`ph:calendar-blank Mentions ${shown}${more}`, "when");
-    mark.title = `Dates this note mentions, not a reminder. ${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
-    meta.appendChild(mark);
-  }
+  //: The dates a note mentions, said as mentions: one labelled chip (`entryMentionedDatesChip`).
+  const mentionedChip = entryMentionedDatesChip(entry);
+  if (mentionedChip) meta.appendChild(mentionedChip);
 
   //: **Which space this note is filed in (INBOX 1a/38)**, wherever the
   //: picker does not already say it. An empty `spacesCache` means "not
@@ -1438,8 +1451,8 @@ async function publishDraft(entry) {
     entry.is_draft = false;
     pushEntryPutUndo(entry.id, "Published a draft", { is_draft: true }, { is_draft: false });
     await refreshEntries([entry.id]);
-    toast("Published.");
+    toast(voiceLine("done", "Published"));
   } catch (error) {
-    toast(error.message || "Couldn't publish that draft.", true);
+    toast(error.message || voiceLine("failed", "publish that draft"), true);
   }
 }

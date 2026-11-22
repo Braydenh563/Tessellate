@@ -21,6 +21,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
@@ -116,7 +117,7 @@ process.stdout.write(JSON.stringify({ early, queued, mid, stillWaiting, late, af
 
 
 def test_the_rig_wake_looks_again_for_a_figure_that_waits() -> None:
-    motion = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
+    motion = unwrapped((ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8"))
     wake = re.search(r"^function atlasRigWake\(.*?^\}", motion, re.S | re.M)
     assert wake and "if (box?.atlasShow) atlasRigWake.after(box.atlasShow, 3);" in wake.group(0)
     # and no new observer or frame loop of atlas.js's own for it (test_frontend_wake_sources)

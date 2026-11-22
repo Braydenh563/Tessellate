@@ -16,7 +16,7 @@ import pytest
 import tests._seed_1030 as seed_1030
 from tessellate.ai import intent
 from tessellate.ai import composer_digest_sentences
-from tessellate.api import bounds, routes_chat
+from tessellate.api import bounds, chat_pool, chat_request, chat_said, chat_service
 
 
 @pytest.mark.parametrize("line", [
@@ -50,7 +50,7 @@ def test_the_closings_the_composer_says_are_claims(line):
 
 def test_the_words_only_swap_keeps_a_real_line():
     text = "You ran 10k twice.\n\nThis is the only time you ran 10k.\n\nIt's your only note on that so far."
-    said = routes_chat._with_words_only(text, {"search_mode": "keyword"}, {"grounding": True})
+    said = chat_said._with_words_only(text, {"search_mode": "keyword"}, {"grounding": True})
     assert "This is the only time you ran 10k." in said and "It's your only note on that so far." not in said, said
 
 
@@ -62,28 +62,28 @@ def notes(session):
 
 @pytest.mark.parametrize("question", ["what is my latest note about baking", "which is the newest baking note", "which is the oldest baking note"])
 def test_a_model_reads_the_searchs_notes_for_a_ranking(notes, question):
-    on_model = routes_chat._Found(detected=intent.NOTES, stats=None)
-    routes_chat._search_notes(notes, question, on_model, [], None, None, composed=False)
-    on_composer = routes_chat._Found(detected=intent.NOTES, stats=None)
-    routes_chat._search_notes(notes, question, on_composer, [], None, None, composed=True)
+    on_model = chat_pool._Found(detected=intent.NOTES, stats=None)
+    chat_service._search_notes(notes, question, on_model, [], None, None, composed=False)
+    on_composer = chat_pool._Found(detected=intent.NOTES, stats=None)
+    chat_service._search_notes(notes, question, on_composer, [], None, None, composed=True)
     assert len(on_model.entries) <= 1 or "oldest" in question, [e.id for e in on_model.entries]
     assert len(on_composer.entries) >= 3, [e.id for e in on_composer.entries]
 
 
 @pytest.mark.parametrize("pasted", ["def f():\n" + " " * 40 + "return 1", "\n" + " " * 60 + "print(x)", "a" + " " * 100 + "b"])
 def test_the_model_and_the_saved_turn_keep_their_blanks(notes, pasted):
-    body = routes_chat.ChatRequest(question=pasted)
+    body = chat_request.ChatRequest(question=pasted)
     assert body.question == bounds.squeeze_blanks(pasted) and len(body.question) < len(pasted)
-    question, _, whole = routes_chat._asked(body, notes, None)
+    question, _, whole = chat_service._asked(body, notes, None)
     assert whole == pasted and len(question) < len(pasted)
 
 
 def test_an_ordinary_question_has_no_raw_copy(notes):
-    body = routes_chat.ChatRequest(question="what is my newest note")
+    body = chat_request.ChatRequest(question="what is my newest note")
     assert body.raw_question is None
-    assert routes_chat._asked(body, notes, None)[2] is None
+    assert chat_service._asked(body, notes, None)[2] is None
 
 
 def test_a_client_cannot_send_a_raw_copy(notes):
-    body = routes_chat.ChatRequest(question="hello", raw_question="something else")
+    body = chat_request.ChatRequest(question="hello", raw_question="something else")
     assert body.raw_question is None

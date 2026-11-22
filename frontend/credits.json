@@ -11,6 +11,26 @@
    ]
   },
   {
+   "title": "In the server, installed with pip",
+   "rows": [
+    {
+     "name": "holidays",
+     "licence": "MIT",
+     "source": "https://github.com/vacanza/holidays"
+    },
+    {
+     "name": "inflect",
+     "licence": "MIT",
+     "source": "https://github.com/jaraco/inflect"
+    },
+    {
+     "name": "rapidfuzz",
+     "licence": "MIT",
+     "source": "https://github.com/rapidfuzz/RapidFuzz"
+    }
+   ]
+  },
+  {
    "title": "In the app",
    "rows": [
     {
@@ -134,6 +154,11 @@
      "source": "https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models"
     },
     {
+     "name": "Silero VAD v5.1.2",
+     "licence": "MIT",
+     "source": "https://github.com/snakers4/silero-vad"
+    },
+    {
      "name": "Live captions model, whisper.cpp tiny.en (q5_1)",
      "licence": "MIT",
      "source": "https://huggingface.co/ggerganov/whisper.cpp"
@@ -171,7 +196,7 @@
     {
      "name": "needle",
      "licence": "Apache-2.0",
-     "source": "https://huggingface.co/Cactus-Compute/needle3"
+     "source": "https://huggingface.co/Cactus-Compute/cactus, https://huggingface.co/Cactus-Compute/needle3"
     },
     {
      "name": "marian-nmt (inside the Bergamot WASM)",

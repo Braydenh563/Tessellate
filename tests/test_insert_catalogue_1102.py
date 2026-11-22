@@ -12,10 +12,11 @@ import re
 
 from tests._app_js import documents_text
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 DOCS = documents_text()
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
 ROWS = EDITOR[EDITOR.index("function editorBlockRows") : EDITOR.index("function editorBackOverTrail")]

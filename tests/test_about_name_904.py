@@ -2,9 +2,9 @@
 "Tessellate for short". About carries the long name as its heading and the
 short name in the line under it; the window title and the rest stay Tessellate."""
 
-from pathlib import Path
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).resolve().parent.parent / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_about_names_the_app_tessellate_notes_and_tessellate_for_short():

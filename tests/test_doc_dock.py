@@ -24,9 +24,9 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import app_js_text, documents_text
+from tests._app_js import app_js_text, documents_text, index_html_text
 
-HTML = Path("frontend/index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 CSS = "".join(
     p.read_text(encoding="utf-8") for p in sorted(Path("frontend/css").glob("*.css"))
 )

@@ -375,7 +375,8 @@ SNOOZE = [
 @pytest.mark.parametrize(("sentence", "about", "kind", "due"), SNOOZE)
 def test_snoozing_a_task_reads_the_name_and_the_time(sentence, about, kind, due):
     got = commands.read_typed(sentence, NOW)
-    assert got and got["intent"] == "snooze", got
+    # Intent moved (L-chat-47, f07a696ef): "move the X reminder to ..." and "reschedule ..." are the reschedule act, a sibling of snooze with the same slots.
+    assert got and got["intent"] == ("reschedule" if sentence.startswith(("move ", "reschedule ")) else "snooze"), got
     assert got["about"] == about and got.get("kind") == kind and got["due_at"] == due, got
 
 

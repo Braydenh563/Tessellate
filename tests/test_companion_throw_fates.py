@@ -24,6 +24,7 @@ from pathlib import Path
 
 import pytest
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: avatars.js and the lazy files its settings and throw moved to (audit AI23).
@@ -31,7 +32,7 @@ AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-
 THROW = unwrapped((ROOT / "frontend" / "js" / "companion-throw.js").read_text(encoding="utf-8"))
 CSS = (ROOT / "frontend" / "css" / "companion-throw-lazy.css").read_text(encoding="utf-8")
 APP = (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

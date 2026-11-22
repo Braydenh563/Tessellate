@@ -25,9 +25,10 @@ import pytest
 from tessellate.ai import extractor, no_model_text
 from tessellate.entry import manager
 from tessellate.entry import manager_links
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def _words(text: str) -> list[str]:

@@ -20,13 +20,14 @@ from pathlib import Path
 
 from tessellate.ai.help_topics_more import MORE_TOPICS
 from tests._app_js import frontend_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 FIRST = frontend_text("first-run.js")
 DASH = frontend_text("dashboard.js")
 CSS05 = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "first-run-lazy.css").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def _body(text: str, head: str) -> str:

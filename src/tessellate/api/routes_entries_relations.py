@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import event, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import backend_hint, learning, librarian, links, relations
+from tessellate.ai import backend_hint, learning, librarian, links, ollama_client, relations, unreachable
 from tessellate.ai import tensions as tensions_module
 from tessellate.api.routes_entries import _existing_entry, _preview, _to_out
 from tessellate.api.schemas import (
@@ -517,6 +517,15 @@ class LinkSuggestionReasonsBody(BaseModel):
     pairs: list[LinkSuggestionReasonPair]
 
 
+#: After the model is found down, "Why?" batches are not sent for this long: the owner's log
+#: (2026-11-22) had six back to back, the first waiting out the connect timeout, each one logged.
+REASONS_BACKOFF_SECONDS = 30.0
+
+
+def _model_down(exc: BaseException) -> bool:
+    return unreachable.server_unreachable(exc) or "not running" in str(exc)
+
+
 @router.post("/link-suggestions/reasons")
 def link_suggestion_reasons(
     body: LinkSuggestionReasonsBody, session: Session = Depends(get_session)
@@ -530,6 +539,8 @@ def link_suggestion_reasons(
     degrades to an empty list rather than an error the moment the model is
     down, so the caller can tell "nothing generated" from "everything
     genuinely had one already" without a special-cased response shape."""
+    if ollama_client.held_off("link-suggestion-reasons"):
+        return {"reasons": [], "ai_unavailable": True}
     reasons = []
     ai_unavailable = False
     for pair in body.pairs[:12]:  # same cap link_suggestions() itself uses
@@ -544,9 +555,13 @@ def link_suggestion_reasons(
                 deps.get_model_manager(),
                 deps.get_ollama(),
             )
-        except Exception as exc:  # noqa: BLE001  # model offline is the expected case, once per pair; the message is logged
-            logger.info("link suggestion reason skipped: %s", exc)
+        except Exception as exc:  # noqa: BLE001  # model offline is the expected case; the message is logged
             ai_unavailable = True
+            if _model_down(exc):
+                ollama_client.hold_off("link-suggestion-reasons", REASONS_BACKOFF_SECONDS)
+                logger.info("link suggestion reasons skipped for %.0f s: %s", REASONS_BACKOFF_SECONDS, exc)
+                break
+            logger.info("link suggestion reason skipped: %s", exc)
             continue
         reasons.append(
             {"source_id": pair.source_id, "target_id": pair.target_id, "reason": reason}

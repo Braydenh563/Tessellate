@@ -91,10 +91,10 @@
             }
             docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
             renderDocList();
-            toast("Reverted.");
+            toast(voiceLine("done", "Reverted"));
             dialog.close();
           } catch (error) {
-            toast(error.message || "Couldn't revert that.", true);
+            toast(error.message || voiceLine("failed", "revert that"), true);
           } finally {
             revertBtn.disabled = false;
           }

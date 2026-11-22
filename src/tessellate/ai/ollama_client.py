@@ -33,6 +33,7 @@ from tessellate.ai.provider import (
     _ThinkTagSplitter,
     _ToolTextGate,
     _ns_to_ms,
+    drop_tool_call_blocks,
     extract_text_tool_calls,
     is_transient_server_error,
     known_context,
@@ -177,6 +178,15 @@ def _is_down(base_url: str) -> bool:
         _down_until.pop(base_url, None)
         return False
     return True
+
+
+def hold_off(key: str, seconds: float) -> None:
+    """A caller's own back-off after finding the model down (`held_off`), kept in this map so one reset clears all."""
+    _down_until[f"hold:{key}"] = _clock() + seconds
+
+
+def held_off(key: str) -> bool:
+    return _is_down(f"hold:{key}")
 
 
 #: How long a server that accepted the connection and then never answered
@@ -762,6 +772,8 @@ class OllamaClient(Provider):
             "total_ms": _ns_to_ms(payload.get("total_duration")),
             "eval_ms": _ns_to_ms(payload.get("eval_duration")),
             "context_tokens": self.usable_context(model),
+            #: Why the window is that size, for the token pill's popover (L-chat-179).
+            "context_reason": self.context_explanation(model),
             # Ollama counts tokens itself, so these are measured rather than
             # guessed. The OpenAI path cannot always say the same, and the UI
             # marks an estimate as one.
@@ -997,7 +1009,8 @@ class OllamaClient(Provider):
                     {"function": {"name": c["name"], "arguments": c["arguments"]}}
                     for c in recovered
                 ]
-        held = gate.flush()
+        # An unparsed `<tool_call>` block in the held text is markup, not prose (L-general-65).
+        held = drop_tool_call_blocks(gate.flush())
         if held and not calls:
             # Gated text that turned out to be ordinary prose (a short answer
             # that merely started with "{"). Show it rather than lose it.

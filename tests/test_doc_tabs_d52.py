@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 from tests._app_js import documents_text
 
@@ -20,7 +21,7 @@ JS = ROOT / "frontend" / "js"
 APP = (JS / "app.js").read_text(encoding="utf-8")
 DOCS = documents_text()
 TABS = (JS / "documents-tabs.js").read_text(encoding="utf-8")
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_the_tabs_file_loads_in_the_library_bundle_after_documents_js() -> None:

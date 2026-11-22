@@ -46,3 +46,21 @@ def this_day_before(session: Session, today: date, limit: int = 10) -> list[Entr
         .order_by(Entry.created_at.desc())
         .limit(limit)
     ).all())
+
+
+def stale_plans(session: Session, before: date, limit: int = 20) -> list[Entry]:
+    """Notes written before `before` that still hold an unticked checklist
+    item, oldest first (the companion's drift remark, CHAT_PLAN P5)."""
+    return list(session.scalars(
+        select(Entry)
+        .where(*SHOWN, Entry.created_at < datetime.combine(before, datetime.min.time()), Entry.content.like("%- [ ]%"))
+        .order_by(Entry.created_at)
+        .limit(limit)
+    ).all())
+
+
+def by_ids(session: Session, ids: list[int]) -> list[Entry]:
+    """The shown notes among `ids` (a private or binned one is left out)."""
+    if not ids:
+        return []
+    return list(session.scalars(select(Entry).where(*SHOWN, Entry.id.in_(ids))).all())

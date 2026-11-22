@@ -110,7 +110,7 @@ SYSTEM_PROMPT = f"{DEFAULT_PERSONA} {GROUNDING}"
 # `GROUNDING` alone produces a perfectly grounded answer in the wrong *shape*:
 # it ends "Would you like me to…", because that is what a chat assistant does
 # and nothing had told this surface it isn't one. The results panel beside the
-# answer already offers every follow-up the user could want, opening a note,
+# answer already offers every next step the user could want, opening a note,
 # a similar note, the note's own links: so an offer to do more here is a
 # question the UI has already answered, taking up the space the overview
 # should be using.
@@ -197,6 +197,10 @@ def resolve_persona_prompt(name: str | None, config) -> str | None:
     chat routes, the dashboard greeting, and chat auto-naming, so the voice the
     user picked is used consistently everywhere.
     """
+    #: "Personas off" (L161 c, INBOX 1841): no persona's words reach a prompt
+    #: or pick the composer's voice; the app's own persona answers.
+    if config.get_preference("personas_off", False):
+        return None
     wanted = name or config.get_preference("active_persona", "Atlas")
     custom = config.get_preference("personas", [])
     #: A custom persona saved under the old name wins over the alias, so an
@@ -306,7 +310,7 @@ def length_hint(mode: str | None) -> str:
     return presets.resolve(mode).length_hint
 
 
-# Follow-up memory (Round 1): keep the conversation short enough that a
+# Memory of earlier turns (Round 1): keep the conversation short enough that a
 # small local model never runs out of context. Only recent turns matter,
 # and a long past answer gets clipped.
 MAX_HISTORY_TURNS = 4
@@ -335,7 +339,7 @@ def history_messages(history: list[dict] | None) -> list[dict]:
     """The recent turns as chat messages, oldest first.
 
     One clipping rule for every chat path, conversational, grounded and
-    agent: so a follow-up behaves the same wherever it lands: old answers
+    agent: so a later question behaves the same wherever it lands: old answers
     are clipped hard, the latest one travels nearly whole (see
     LAST_ANSWER_CHARS).
     """
@@ -388,7 +392,11 @@ UNTOOLED_NOTE_CHARS = 2_400
 #: Said once above the notes when the composer cut any of them
 #: (`composer.brief`), so the model knows what "…" means and that a note it
 #: sees in part has more to it.
-BRIEF_HEADER = "(Each note is cut to the parts on my question, in its own words; … marks text left out.)"
+BRIEF_HEADER = "(Notes cut to what I asked; … is a gap.)"
+#: L-chat-59: the composer's chosen sentences carry `[Sn]` ids; the model is
+#: asked, after the question, to write the id after a sentence that uses one (`cite_marks` takes
+#: them back out and grounds on them).
+CITE_HEADER = "After each sentence of yours, add the [S] mark of the note sentence it uses."
 
 
 #: A note that only arrived by a link did not match the question, so it goes in
@@ -634,6 +642,22 @@ def _match_info_hint(match_info: dict | None) -> str:
     return ""
 
 
+def _shown_hint(note: dict, notes: list[dict]) -> str:
+    """" (why shown: Has the word “skye”) (linked to note 3: same trip)": why the
+    note was shown and which other notes in this prompt it links to, by their
+    numbers here (L101, INBOX 1310). `chat_pool._frame_matches` works both
+    out; the composer said them and the model was never told."""
+    numbers = {n.get("id"): i for i, n in enumerate(notes, start=1)}
+    why = str((note.get("match_info") or {}).get("why") or "").strip()
+    out = f" (why shown: {why})" if why else ""
+    reasons = note.get("link_reasons") or {}
+    for other in note.get("linked_to") or []:
+        if other in numbers and other != note.get("id"):
+            reason = reasons.get(other) or reasons.get(str(other))
+            out += f" (linked to note {numbers[other]}{': ' + reason if reason else ''})"
+    return out
+
+
 def system_content(
     style: str = "friendly",
     profile: str = "",
@@ -719,6 +743,42 @@ def _app_help(question: str) -> str:
     return help_chat.help_block_for(question)
 
 
+def _note_line(i: int, note: dict, notes: list[dict], question: str) -> str:
+    """One numbered note of the librarian prompt, its hints first."""
+    return (
+        # A note the user attached by hand is flagged, so the model treats it
+        # as the subject rather than as one more search hit, and a note that
+        # arrived because it is *linked* to a hit is flagged too, for the
+        # opposite reason: it did not match, and an answer that presents it as
+        # though it did is telling the user their search found something it
+        # did not.
+        f"{i}.{category_hint(note)}"
+        # The day the note was written, when the caller knows it matters: a
+        # note that says "tonight" means the night it was written, and a
+        # model that cannot see that date reads it as tonight (the weekly
+        # digest, reported 2026-09-23). Optional, so every other caller's
+        # prompt is exactly what it was.
+        f"{_written_hint(note)}"
+        f"{_dates_hint(note)}"
+        f"{' (my newest note)' if note.get('newest') else ''}"
+        f"{_pictures_hint(note, i, bool(PICTURE_ASK.search(question or '')))}"
+        f"{' (attached by me)' if note.get('attached') else ''}"
+        f"{' (not a match: linked to one of the above)' if note.get('connected') else ''}"
+        f"{_match_info_hint(note.get('match_info'))}"
+        f"{_shown_hint(note, notes)}"
+        f"{_tags_files_hint(note)} "
+        # No tools on this path by definition, it is the plain librarian
+        # prompt: so notes get the larger allowance and an honest marker.
+        f"{note_for_prompt(note, UNTOOLED_NOTE_CHARS, can_fetch=False)}"
+    )
+
+
+def _brief_headers(notes: list[dict]) -> tuple[str, str]:
+    """The brief's header and the cite ask, each only when a note needs it."""
+    brief = " " + BRIEF_HEADER if any(note.get("briefed") for note in notes) else ""
+    return brief, " " + CITE_HEADER if any(note.get("marked") for note in notes) else ""
+
+
 def build_messages(
     question: str,
     notes: list[dict],
@@ -737,7 +797,7 @@ def build_messages(
     `history` is prior [{"question", "answer"}] turns, replayed as
     user/assistant messages so follow-ups ("and what about…") keep
     context. The freshly retrieved `notes` still ground the current
-    answer, so a follow-up searches the notebook anew.
+    answer, so a later question searches the notebook anew.
 
     `budget` is what stops this prompt overrunning the model's window.
     ``ai/context.py`` was written for exactly this and then only ever wired
@@ -778,32 +838,7 @@ def build_messages(
             lambda note: note_for_prompt(note, UNTOOLED_NOTE_CHARS, can_fetch=False),
         )
 
-    numbered = "\n".join(
-        # A note the user attached by hand is flagged, so the model treats it
-        # as the subject rather than as one more search hit, and a note that
-        # arrived because it is *linked* to a hit is flagged too, for the
-        # opposite reason: it did not match, and an answer that presents it as
-        # though it did is telling the user their search found something it
-        # did not.
-        f"{i}.{category_hint(note)}"
-        # The day the note was written, when the caller knows it matters: a
-        # note that says "tonight" means the night it was written, and a
-        # model that cannot see that date reads it as tonight (the weekly
-        # digest, reported 2026-09-23). Optional, so every other caller's
-        # prompt is exactly what it was.
-        f"{_written_hint(note)}"
-        f"{_dates_hint(note)}"
-        f"{' (my newest note)' if note.get('newest') else ''}"
-        f"{_pictures_hint(note, i, bool(PICTURE_ASK.search(question or '')))}"
-        f"{' (attached by me)' if note.get('attached') else ''}"
-        f"{' (not a match: linked to one of the above)' if note.get('connected') else ''}"
-        f"{_match_info_hint(note.get('match_info'))}"
-        f"{_tags_files_hint(note)} "
-        # No tools on this path by definition, it is the plain librarian
-        # prompt: so notes get the larger allowance and an honest marker.
-        f"{note_for_prompt(note, UNTOOLED_NOTE_CHARS, can_fetch=False)}"
-        for i, note in enumerate(notes, start=1)
-    )
+    numbered = "\n".join(_note_line(i, note, notes, question) for i, note in enumerate(notes, start=1))
     attached_hint = (
         " The notes marked \"attached by me\" are the ones I specifically chose "
         "for this question: focus on those."
@@ -822,13 +857,16 @@ def build_messages(
         if dropped_notes
         else ""
     )
+    brief, cite = _brief_headers(notes)
     user_message = {
         "role": "user",
         "content": (
-            f"{_app_help(question)}My notes:"
-            f"{' ' + BRIEF_HEADER if any(note.get('briefed') for note in notes) else ''}"
+            f"{_app_help(question)}My notes:{brief}"
             f"\n{numbered}{dropped_hint}\n\n"
             f"My question: {question}{attached_hint}"
+            #: After the question, where a 1.5B model acts on it: measured
+            #: 0 of 12 answers cited from a line above the notes, 3 of 5 here.
+            f"{cite}"
         ),
     }
     if images:

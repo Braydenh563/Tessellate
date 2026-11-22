@@ -10,7 +10,7 @@ this list.
 
 from __future__ import annotations
 
-from tessellate.ai import spelling
+from tessellate.ai import help_targets, spelling
 from tessellate.ai.help_topics_core_tail import TAIL_TOPICS
 from tessellate.ai.help_topics_more import MORE_TOPICS
 
@@ -52,7 +52,7 @@ HELP_TOPICS: list[dict] = [
             "Use a template, dictate with the microphone icon, sketch with the "
             'palette icon, or run "Improve" to proofread first, which needs no model (rewording does). '
             "A note's ... menu has Generate title, which with no model takes the title from the "
-            "note's first sentence and is named Title from its words. The Writing room has "
+            "note's first sentence and is named Title from its words. A long note's card opens with a one-line gist, its own first sentence under 90 characters. The Writing room has "
             '"Split into notes", which turns a block of pasted text into several '
             "notes, split by its headings, paragraphs and subjects with no model and by meaning, "
             "auto-linked, with one. A formatting toolbar, here or in a document, is one Tab stop: "
@@ -80,10 +80,10 @@ HELP_TOPICS: list[dict] = [
         "body": (
             '"Ask your notebook" (Notes tab) and the Chat tab both answer from '
             "saved notes, with the raw notes beside the answer, each saying why "
-            "it is there; in Ask, "
+            "it is there; "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its AI switch "
-            "picks who answers: off, the answer is From your notes, quoted from your "
+            "picks who answers: off, the answer is marked Atlas's assistant, from your notes, quoted from your "
             "notes' own sentences with no AI, and it is the answer when no model runs, "
             "in Ask and in Chat. "
             "They also see your tab and last actions, locally. "
@@ -97,7 +97,7 @@ HELP_TOPICS: list[dict] = [
             "A note's "
             "... menu, under Atlas, has Explain this note: read aloud, then what it links to "
             "and why. Agent mode "
-            "(a toggle in Chat) lets the assistant use its tools to search, link, "
+            "(a toggle in Chat) needs a model, and lets the assistant use its tools to search, link, "
             "tag, organise and create; changing or removing asks first, "
             "and after it reads a web page or a clipped or imported note, so "
             "does every change and web request. "
@@ -125,6 +125,7 @@ HELP_TOPICS: list[dict] = [
             "still run, read straight off your notes with no AI and labelled as such: Summarise my week, "
             "Daily review, Catch up on a topic, Find loose ends, Auto-tag my notes, Link related notes, "
             "Tidy suggestions, Notebook health check and Find notes worth combining. "
+            "Four of the others look back over your notebook: Prepare for a meeting, Monthly look back, Archive stale notes (it archives only the notes you pick) and Everything about a person. "
             "The others are greyed and marked (needs a model) in the Skills menu: they are unavailable while no model is connected."
         ),
         "badge": {"label": "Skills", "section": "skills"},
@@ -223,7 +224,7 @@ HELP_TOPICS: list[dict] = [
             "Most opened this month and Filings to check. The Digest widget is your day "
             "with no AI: what is due, open questions, what changed since "
             "yesterday and topics gone quiet, each line a count or a quote that "
-            "opens its note. The Digest's week, on request, is written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming. Customise, beside the search box, has Edit "
+            "opens its note. With a model running and Save power off, it rewords the counted lines once the page has shown, and only where every number and link stays the same; quotes are never reworded. The Digest's week, on request, is written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming. Customise, beside the search box, has Edit "
             "layout and Widgets to show, hide and rearrange them; the layout is "
             "remembered per user."
         ),
@@ -258,7 +259,8 @@ HELP_TOPICS: list[dict] = [
             "hand over. Events about private notes are left out of it. The "
             "Library's search reads the same filters as the Graph's: "
             '"connected to Harbor", "untouched since June", "tagged '
-            'work", "pinned", "filed under Cooking". Drop files anywhere in '
+            'work", "pinned", "filed under Cooking". A chat found by words inside '
+            'it opens at the message that has them. Drop files anywhere in '
             "the app to add them: pictures and PDFs go to Images, anything "
             "else becomes a document. On the Notes tab, .md and .txt "
             "files become notes instead, with Undo."
@@ -608,6 +610,8 @@ HELP_TOPICS: list[dict] = [
         "id": "storage",
         "keywords": (
             "backup",
+            "auto backup",
+            "backup setting",
             "storage",
             "data dir",
             "where is my",
@@ -690,14 +694,14 @@ HELP_TOPICS: list[dict] = [
             "Web results fold under the answer; press a title to read one there, "
             "as text, or the arrow to open it outside. "
             "Paste a link and ask to read it: with web search on and no model "
-            "the page is fetched and told back as its main points, key terms "
-            "and sections; with it off you are told so and given the setting. "
+            "the page comes back as its main points, key terms "
+            "and sections; with it off you are told and given the setting. "
             "If a web search cannot run because SearXNG is down, the reply and the Web panel offer "
             '"Start SearXNG" ("Install SearXNG" when absent; the reply also has "Set it up in '
-            'Settings", "Open the web panel" and "Use another provider"), and the panel '
+            'Settings", "Open the web panel", "Use another provider" and "Search my notes instead"), and the panel '
             "searches again once it answers; where this app cannot start it, it says why "
-            "and links Web search settings. Banter, slang or a single word is never sent to the web: "
-            "you are asked, with a chip for your notes and one for the web (also for a question both fit). To start it "
+            "and links Web search settings. Banter, slang, a single word or a question both fit "
+            "is never sent to the web unasked: Did you mean your notes or the web?, a chip for each. To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
             "With SearXNG chosen and no address saved, the reply says it is not "
@@ -748,7 +752,9 @@ HELP_TOPICS: list[dict] = [
             "Archiving keeps a note, chat or document but gets it out of your "
             "everyday lists: different from the bin, since nothing archived "
             "is ever auto-cleared or at risk of being deleted. The action is "
-            "in each item's own menu (next to Delete, not grouped with it); "
+            "in each item's own menu (next to Delete, not grouped with it), and "
+            "for notes Chat does it from a sentence, such as archive the old trip notes "
+            "(the card counts them first; Undo brings them back); "
             "everything archived is still reachable from the Library's "
             "Archived filter, where Unarchive brings it straight back."
         ),
@@ -853,7 +859,7 @@ HELP_TOPICS: list[dict] = [
             'who (a title like "Sync with Ana friday 2pm" fills When and '
             "Who from its chips), then opens the meeting as a note with Agenda, Notes, Decisions "
             "and Action items; Start and open recorder does the same and opens the "
-            'recorder, writing into its Notes; press Record there (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
+            'recorder, writing into its Notes; press Record in the recorder (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
             '@Sam by Friday": @Name is its owner, the plain words its due. '
             "The meeting chip on the note (or its ... menu, Meeting) opens the "
             "meeting sheet: Remind me makes an action item a reminder, asking "
@@ -936,8 +942,10 @@ HELP_TOPICS: list[dict] = [
             "while smart model routing is on, on the chat model while that is "
             "off, and Settings, Models can give the guide a model of its "
             "own. With no model running it still answers from the help: "
-            "Atlas's answer is put together for your question, and the From "
-            "the help tab above it shows the topic word for word. "
+            "the answer is put together for your question, and the Help "
+            "topic tab above it shows the topic word for word. "
+            "Advice questions (should I use categories or tags?) get a "
+            "recommendation first, then the topics it comes from. "
             "It cannot read your notes or documents (ask the "
             "Chat or Ask tab for those), and nothing said to it is saved: the "
             'conversation is gone on reload, and "New chat" clears it now. '
@@ -971,7 +979,10 @@ HELP_TOPICS: list[dict] = [
             "(Ctrl/Cmd+Shift+A): this one runs fixed commands, that one "
             "answers and acts on an open-ended request. Typed as a "
             'reminder ("remind me friday 9 dentist"), its first row is '
-            "that reminder, with its chips under the box."
+            "that reminder, with its chips under the box. A typed act "
+            '("merge these notes") gets a row that shows what it would do '
+            "before you run it. In the Today digest, the counts in each "
+            "sentence are links to the notes they count."
         ),
         "badge": {"label": "Keyboard shortcuts", "section": "shortcuts"},
     },
@@ -1061,6 +1072,8 @@ HELP_TOPICS: list[dict] = [
         "id": "document-history",
         "keywords": (
             "history",
+            "history of a document",
+            "document history",
             "version",
             "revision",
             "restore",
@@ -1189,7 +1202,7 @@ HELP_TOPICS: list[dict] = [
             "gets a question back with choices you can press; an instruction "
             "the app does not understand is matched to the closest things it can do. "
             "With no model running, an answer ends with a line pointing at what to do next, "
-            "from your newest note; the Length picker applies (Quick keeps the first line only, "
+            "from your newest note; the Length picker applies (Short keeps the first line only, "
             "Detailed keeps everything). A persona is an instruction for a model, so with no "
             "model it changes nothing: the app answers in its own voice."
         ),
@@ -1386,7 +1399,7 @@ HELP_TOPICS.extend(
                 "make it formal",
             ),
             "body": (
-                "Notes tab, Writing room: pick what to write (draft a note, "
+                "The Writing room (Notes tab) drafts, rewrites and translates: pick what to write (draft a note, "
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
                 "a diagram, or translate), add notes as sources if you want it grounded in "
                 "them (a note dropped or pasted from the Tray into Your thoughts is added "
@@ -1525,7 +1538,7 @@ HELP_TOPICS.extend(
                 "then picking it from the list. The link shows on both notes as a "
                 "connection, with a menu to add a reason, open or remove it. Atlas "
                 "also suggests links as you write, and every note's menu has Link "
-                "to. The Graph draws all of them. A note's menu also has Copy wiki "
+                "to. The Graph draws them. A note's menu also has Copy wiki "
                 "link (a [[link]] for another note) and Copy app link (an address "
                 "that opens the note in the app). Delete the [[name]] and its link "
                 "goes with it; rename a note and a toast offers to rename the "
@@ -1539,17 +1552,17 @@ HELP_TOPICS.extend(
                 "worth connecting with every reason (similar wording, people or "
                 "things both name, a note both link with, a rare tag both carry) "
                 "and how sure it is (Link all above 70% over the list links every pair at "
-                "least that sure, after asking, and the More menu beside it has Suggest reasons "
+                "least that sure, after asking, and the More menu has Suggest reasons "
                 "and Explain your existing links); Tensions, notes that may disagree; Names, one "
                 "person or thing named two ways, with Merge; and Link types, a link whose own "
                 'sentence says "for example" or "continues". Accepting or '
-                "dismissing any of them teaches it which reasons to trust in your "
-                "notebook, and a dismissed one does not come back. A link's ⋮ has "
+                "dismissing any of them teaches it which reasons to trust, "
+                "and a dismissed one does not come back. A link's ⋮ has "
                 "Kind and properties: a kind says what the link is (Supports, Part "
                 "of, your own) and reads from the other note by its other name "
-                "(Supported by, Has part); Kinds of link in the command palette "
+                "(Supported by, Has part); Supersedes marks the newer note, and the older one shows Superseded by. Kinds of link in the command palette "
                 "adds, renames and deletes your own. The assistant can link two "
-                "notes with any of these kinds too, yours included."
+                "notes with these kinds."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
@@ -2032,5 +2045,6 @@ HELP_TOPICS.extend(TAIL_TOPICS)
 #: (INBOX 430): the second half of the reference, in its own module
 #: (help_topics_more.py) so this one stays about how an answer is found.
 HELP_TOPICS.extend(MORE_TOPICS)
+help_targets.apply(HELP_TOPICS)  # each tab-level topic rings its own control (L51)
 # The speller reads the help text for the app's own vocabulary (see spelling.set_topic_source).
 spelling.set_topic_source(lambda: [*HELP_TOPICS, *MORE_TOPICS])

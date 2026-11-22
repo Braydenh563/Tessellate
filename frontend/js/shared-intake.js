@@ -46,7 +46,7 @@
     box.focus();
     //: app.js's door fetches the library bundle first; a bare mountNoteSurface is documents.js's, which may not be in yet.
     mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
-    toast("Shared to your notebook. Save it when it reads right.");
+    toast(voiceLine("done", "Shared to your notebook. Save it when it reads right"));
   }
 
   Object.assign(window, { takeSharedIntake });

@@ -639,7 +639,7 @@ const vm = require("vm");
 const fs = require("fs");
 const noop = () => {};
 const el = () => ({ setAttribute: noop, appendChild: noop, style: { setProperty: noop }, classList: { add: noop } });
-const ctx = { console, setInterval: noop, setTimeout: noop, clearInterval: noop, clearTimeout: noop, document: { addEventListener: noop, createElementNS: el, createElement: el, querySelectorAll: () => [], getElementById: () => null, documentElement: { hasAttribute: () => false, toggleAttribute: noop, dataset: {} } }, window: {} };
+const ctx = { console, onDomReady: noop, setInterval: noop, setTimeout: noop, clearInterval: noop, clearTimeout: noop, document: { addEventListener: noop, createElementNS: el, createElement: el, querySelectorAll: () => [], getElementById: () => null, documentElement: { hasAttribute: () => false, toggleAttribute: noop, dataset: {} } }, window: {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8") + "\n;globalThis.__L = ATLAS_LOOKS; globalThis.__at = atlasSegsAt;", ctx);
 const out = {};
@@ -973,7 +973,10 @@ def test_the_feminine_body_is_an_hourglass_that_flows_into_one_wide_tail(tmp_pat
     for gone in ("atl-sower-inner", "atl-sower-light", "atl-sower-sparkle", "atl-hem-edge", "atl-hem-glow", "sparkles: [[0.3, 0.32]"):
         assert gone not in ATLAS and gone not in CSS, gone
     # The masculine look keeps its own torso and trail.
-    assert "sower" not in _look("masculine") and "wisps:" not in _look("masculine")
+    masculine = _look("masculine")
+    # L742 (the owner's call, 2026-11-12; atlas-3 051bc2900): the masculine look now carries a pair of back wisps that wrap
+    # behind the body, so `wisps:` is no longer absent; they are the low back ones only, and it still has no sower tail.
+    assert "sower" not in masculine and masculine.count("{ low: true, seg:") == 2 and "wisps:" in masculine
 
 
 def test_the_feminine_look_has_astral_wisps_that_drift_on_a_box():
@@ -1062,7 +1065,7 @@ const vm = require("vm");
 const fs = require("fs");
 const noop = () => {};
 const el = () => ({ setAttribute: noop, appendChild: noop, style: { setProperty: noop }, classList: { add: noop } });
-const ctx = { console, setInterval: noop, setTimeout: noop, clearInterval: noop, clearTimeout: noop, document: { addEventListener: noop, createElementNS: el, createElement: el, querySelectorAll: () => [], getElementById: () => null, documentElement: { hasAttribute: () => false, toggleAttribute: noop, dataset: {} } }, window: {} };
+const ctx = { console, onDomReady: noop, setInterval: noop, setTimeout: noop, clearInterval: noop, clearTimeout: noop, document: { addEventListener: noop, createElementNS: el, createElement: el, querySelectorAll: () => [], getElementById: () => null, documentElement: { hasAttribute: () => false, toggleAttribute: noop, dataset: {} } }, window: {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8") + "\n;globalThis.__stem = atlasStem;", ctx);
 // A straight stem pointing down, 4 wide at its tip; and one pointing right.
@@ -1116,7 +1119,7 @@ const vm = require("vm");
 const fs = require("fs");
 const noop = () => {};
 const el = () => ({ setAttribute: noop, appendChild: noop, style: { setProperty: noop }, classList: { add: noop } });
-const ctx = { console, setInterval: noop, setTimeout: noop, clearInterval: noop, clearTimeout: noop, document: { addEventListener: noop, createElementNS: el, createElement: el, querySelectorAll: () => [], getElementById: () => null, documentElement: { hasAttribute: () => false, toggleAttribute: noop, dataset: {} } }, window: {} };
+const ctx = { console, onDomReady: noop, setInterval: noop, setTimeout: noop, clearInterval: noop, clearTimeout: noop, document: { addEventListener: noop, createElementNS: el, createElement: el, querySelectorAll: () => [], getElementById: () => null, documentElement: { hasAttribute: () => false, toggleAttribute: noop, dataset: {} } }, window: {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8") + "\n;globalThis.__L = ATLAS_LOOKS; globalThis.__path = atlasArmPath; globalThis.__hand = atlasArmHand; globalThis.__stem = atlasStem; globalThis.__segs = atlasArmSegs;", ctx);
 const out = {};
@@ -1173,7 +1176,7 @@ def test_the_arm_is_a_jointed_chain_that_the_rig_eases(tmp_path):
     assert "Math.max(ATLAS_EL_UP, Math.min(135, j.el.x))" in rig and "Math.max(-35, Math.min(35, j.wr.x))" in rig
     # Counter-phase swing, anticipation, the head's lag, and no loop at rest
     # or under reduced motion.
-    assert '(arm.side === "r" ? 0 : Math.PI)' in rig and "arm.antic = { until: now + 90" in rig
+    assert '(side === "r" ? 0 : Math.PI)' in rig and "arm.antic = { until: now + 90" in rig
     assert 'querySelectorAll(".atl-head-lag")' in rig
     assert "if (live && rig.still < 6) rig.raf = requestAnimationFrame" in rig
     assert ".nm-atlas .nmb-arm.atl-rigged { transition: opacity var(--motion-base) var(--ease-out) !important; animation-name: none !important; }" in CSS
@@ -1215,9 +1218,11 @@ def test_the_lower_body_takes_a_pose_for_what_it_is_doing():
         assert len(set(variants)) == len(variants), (state, "two variants alike")
         if state not in ("idle", "think", "sad"):
             assert 250 <= int(row.group(1)) <= 600, (state, "a change of state takes 300 to 600ms")
+    # L-chat-273: a pose names its curve in `NMB_CURVE` (avatars.js) instead of a literal; the overshoot rule reads the named curve.
     def curve(state):
-        found = re.search(rf'  {state}: \{{ ms: [0-9]+, ease: "cubic-bezier\(([^)]+)\)"', table)
-        return [float(v) for v in found.group(1).split(",")]
+        name = re.search(rf'  {state}: \{{ ms: [0-9]+, ease: "(\w+)"', table).group(1)
+        found = re.search(rf'\n\s*{name}: "cubic-bezier\(([^)]+)\)",', AVATARS)
+        return [float(v) for v in found.group(1).split(",")] if found else [0.42, 0, 0.58, 1]  # inOut
 
     assert curve("happy")[1] > 1 and curve("startle")[1] > 1, "a bouncy flick and a snap overshoot, then settle"
     assert curve("think")[1] <= 1, "a slow curl does not"
@@ -1231,7 +1236,7 @@ def test_the_lower_body_takes_a_pose_for_what_it_is_doing():
     # reduced motion sets the pose with none.
     for part in ("low.boxes", "low.wisps", "low.tails", "low.hair", "low.neb"):
         assert f"for (const el of {part}) go(el," in rig, part
-    assert 'el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${spec.ease} ${lag}ms` : "none";' in rig
+    assert 'el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${NMB_CURVE[spec.ease]} ${lag}ms` : "none";' in rig
     for state in ("idle", "walk", "sit", "lie", "gesture", "think", "happy", "sad", "startle"):
         assert f"{state}: [" in ATLAS[ATLAS.index("const ATLAS_HAIR_STATES"):ATLAS.index("function atlasRigLowerAttach(")], state
     assert ".atl-lw > .atl-lw-pose { position: absolute;" in CSS
@@ -1270,7 +1275,9 @@ def test_the_lower_body_moves_with_the_torso_and_turns_about_the_join():
     assert ATLAS.count("lowerPivot: [31, 55.5],") == 2 and "spec.lowerPivot || [31, 55.5];" in ATLAS
     assert ".atl-lw-lower { transform-origin: 31px 55.5px; }" in CSS
     assert ".nm-atlas.atl-layer-lower { transform-origin: 31px 55.5px;" in CSS
-    assert "for (const el of low.boxes) go(el, `skewX(${atlasFix((skew - rot) * way * 0.4)}deg) scale(1, ${(1 + (sy - 1) * 0.5).toFixed(3)})`);" in ATLAS
+    assert "for (const el of low.boxes) go(el, `skewX(${atlasFix((skew - rot) * way * shear)}deg) scale(1, ${(1 + (sy - 1) * stretch).toFixed(3)})`);" in ATLAS
+    # L173 (the owner's call): the shear and stretch come from the pose's `dress` gains, [0.4, 0.5] by default.
+    assert "const [shear, stretch] = spec.dress || [0.4, 0.5];" in ATLAS
     # Its idle loops shear about the join and never turn or slide there.
     for name in ("atl-hem-wind", "atl-skirt-idle", "atl-lower-sway", "atl-lower-sway-heavy", "atl-lower-flick"):
         frames = _keyframes(name).split("{", 1)[1]
@@ -1326,9 +1333,9 @@ def test_an_act_is_eased_into_as_well_as_out_of():
     # (lag 1111: `data-variant` is written first thing in `into`, so the page settles once after the hand-over's reads.)
     assert "const into = () => {\n    if (variant) buddy.dataset.variant = variant;\n    else delete buddy.dataset.variant;\n    buddy.classList.add(`nmb-act-${act}`, " in AVATARS
     # (INBOX 1634: the leave and the enter are one hand-over, the leave written inside the enter's change.)
-    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS and "into();\n  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);" in AVATARS
+    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS and "into();\n  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_CURVE.blend);" in AVATARS
     assert "const leave = () => {\n    if (easeOut) nameMarkBuddyEase(buddy, 1800);\n    buddy.classList.remove(`nmb-act-${was}`);" in AVATARS
-    ms = int(re.search(r"const NMB_BLEND_IN_MS = (\d+);", AVATARS).group(1))
+    ms = int(re.search(r"NMB_CURVE = \{\s*blend: (\d+),", AVATARS).group(1))
     assert 250 <= ms <= 500
 
 

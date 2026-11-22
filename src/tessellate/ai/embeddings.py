@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     # method that actually calls `np.*`, so importing this module (which
     # `core/deps.py` always does, to wire up the `EmbeddingService` class)
     # never pulls numpy into a process that has not embedded anything yet.
-    # Same shape as `_load_builtin_model`'s own deferred `fastembed` import
+    # Same shape as `_load_builtin_model`'s own lazy `fastembed` import
     # just below, one step further out.
     import numpy as np
 
@@ -166,7 +166,7 @@ def start_warmup(service: "EmbeddingService", session_factory=None) -> None:  # 
 
     The session factory is passed in rather than looked up. This module is
     imported by the dependency container, so reaching back into it would make
-    the import cycle real instead of merely deferred.
+    the import cycle real instead of merely loaded late.
     """
     if _warmup["started"]:
         return
@@ -1254,7 +1254,7 @@ class EmbeddingService:
                 return None  # don't re-stall every save while it's broken
         try:
             if self._st_model is None:
-                # Deferred so the app starts fast and still runs if the
+                # Loaded on first use so the app starts fast and still runs if the
                 # package is missing.
                 self._st_model = self._load_builtin_model()
                 self._was_loaded = True

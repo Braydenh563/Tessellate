@@ -220,6 +220,10 @@ def test_17_the_empty_chat_sidebar_is_the_empty_state_recipe():
     js = _js("sheets-selects.js")
     start = js.index("async function loadConversationList(")
     body = js[start : js.index("\n}\n", start)]
+    #: The empty state is drawn by `chatListEmptyState`, which the loader hands the list to.
+    assert "chatListEmptyState(empty, term)" in body
+    helper = js.index("function chatListEmptyState(")
+    body = js[helper : js.index("\n}\n", helper)]
     for part in ('icon.className = "empty-icon"', 'setLabel(icon, "ph:chats")', 'title.className = "empty-title"', 'start.dataset.emptyAction = "new-chat"', '"ph:plus New chat"'):
         assert part in body, part
     assert 'action === "new-chat"' in _js("navigation.js")

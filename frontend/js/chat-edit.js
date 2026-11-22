@@ -103,7 +103,7 @@ function editAndResend(bubble, text) {
         //: The copy is made before the cut, so a failed copy stops the edit (nothing is lost).
         if (keep?.checked) {
           await apiJson(`/conversations/${chatConv.id}/fork`, { method: "POST", body: JSON.stringify({ suffix: "before the edit" }) });
-          toast("Kept the earlier version as a copy in your chats.");
+          toast(voiceLine("done", "Kept the earlier version as a copy in your chats"));
         }
         const result = await apiJson(`/conversations/${chatConv.id}/truncate`, {
           method: "POST",
@@ -112,16 +112,18 @@ function editAndResend(bubble, text) {
         cut = result;
         if (result.conversation_deleted) chatConv.id = null;
       } catch (error) {
-        toast(`Couldn't edit that: ${error.message}`, true);
+        toast(voiceLine("failed", "edit that", error.message), true);
         return;
       }
     }
+    const answered = bubbles[bubbles.indexOf(bubble) + 1];
+    const priorVersions = answered?.classList.contains("assistant") ? assistantMessageActions.versionsOf(answered) : [];
     // Drop this bubble and everything after it, then ask again.
     for (const later of bubbles.slice(bubbles.indexOf(bubble))) dropChatBubble(later);
     chatConv.turns = chatConv.turns.slice(0, turnIndex);
     close();
     loadConversationList();
-    await sendChatMessage(edited);
+    await sendChatMessage(edited, { priorVersions });
     //: Once the new answer is in, so the step knows the chat it landed in.
     if (cut) chatWriteRecord("chatEditUndo", wasId, turnIndex, cut, chatConv.id);
   });
@@ -207,9 +209,10 @@ async function regenerateFrom(bubble, opts = {}) {
       });
       chatConv.turns = chatConv.turns.slice(0, turnIndex + 1);
     } catch (error) {
-      return toast(`Couldn't regenerate that: ${error.message}`, true);
+      return toast(voiceLine("failed", "regenerate that", error.message), true);
     }
   }
+  const versions = assistantMessageActions.versionsOf(bubble);
   //: The question stays; everything after it goes, including this answer.
   for (const node of kept.slice(from + 1)) dropChatBubble(node);
   //: How many times this question has been asked again, kept on its bubble:
@@ -217,7 +220,7 @@ async function regenerateFrom(bubble, opts = {}) {
   //: notes (audit 1028 E62; `attempt`, as `regenerateLast` sends it).
   const attempt = (Number(asked.bubble.dataset.attempt) || 0) + 1;
   asked.bubble.dataset.attempt = String(attempt);
-  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true, attempt, ...(opts.persona ? { persona: opts.persona } : {}) });
+  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true, attempt, priorVersions: versions, ...(opts.persona ? { persona: opts.persona } : {}), ...(opts.oneModel ? { oneModel: opts.oneModel } : {}) });
 }
 
 //: **An answer that changed the notebook is not re-run silently.** A composer
@@ -252,7 +255,7 @@ function chatTooLong(text, fromBox) {
         }
         sendChatMessage("Summarise this note.", { noteIds: [note.id] });
       } catch (error) {
-        toast(error.message || "Couldn't save that as a note.", true);
+        toast(error.message || voiceLine("failed", "save that as a note"), true);
       }
     },
   );
@@ -265,8 +268,10 @@ async function regenerateLast() {
   if (lastAssistant?.dataset.wrote && !(await confirmRerun(lastAssistant))) return;
   regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
   //: Put back by `sendChatMessage` if no new answer comes (audit 1029 H7).
+  const versions = assistantMessageActions.versionsOf(lastAssistant);
   if (lastAssistant) lastAssistant.remove();
   sendChatMessage(lastChatQuestion, {
+    priorVersions: versions,
     skipUserBubble: true,
     replaceLast: true,
     restore: lastAssistant,
@@ -306,7 +311,7 @@ async function renameConversationNow() {
   if (chatConv.id === null) {
     chatPendingTitle = next;
     $("chat-title").textContent = next;
-    toast("Named. It is saved with your first message.");
+    toast(voiceLine("done", "Named. It is saved with your first message"));
     return;
   }
   try {
@@ -318,6 +323,6 @@ async function renameConversationNow() {
     chatWriteRecord("chatTitleUndo", chatConv.id, current, next);
     loadConversationList();
   } catch (error) {
-    toast(error.message || "Couldn't rename this conversation.", true);
+    toast(error.message || voiceLine("failed", "rename this conversation"), true);
   }
 }

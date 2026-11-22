@@ -63,6 +63,8 @@ def test_its_focus_is_a_glow_from_the_keyboard_only() -> None:
 def test_the_reduce_hint_stops_atlas_figure_loops_and_keeps_acts() -> None:
     # Ledger 669, INBOX 772: under the system hint the figure's float, bob and
     # glide stop (they were slowed to 6s); an act, one gesture that ends, plays.
+    # Intent moved (ledger L741, the owner): the calm sway and glow loops now run under the system's hint
+    # (`data-atlas-calm`, tests/test_companion_live_1114.py); these stops are the walk and float ones, unchanged.
     assert "#nm-buddy:has(.atl-figure) .nm-buddy-char,\n" not in CSS, "the 6s slow-down is gone"
     block = CSS[CSS.index("ledger 669") :]
     block = block[: block.index("\n}\n")]

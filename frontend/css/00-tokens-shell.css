@@ -1826,7 +1826,7 @@ button.scroll-row-arrow[hidden] {
 /* An extra the app cannot use yet. The whole row is dimmed, not just its
    button: the point is that this is a row you can read and not act on, and
    dimming only the control leaves a full-brightness description of a feature
-   that is not there. The 🚧 line underneath keeps its own colour so the reason
+   that is not there. The roadworks line underneath keeps its own colour so the reason
    stays legible against the dimming. */
 .extras-row:has(.extras-soon) {
   opacity: 0.62;

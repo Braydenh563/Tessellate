@@ -46,7 +46,7 @@
       if (selected) wbSyncMapStrip(selected);
       return true;
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "change how this map draws" }), true);
+      toast(err.message || voiceLine("failed", "change how this map draws"), true);
       return false;
     }
   }
@@ -86,7 +86,7 @@
         ? `${nounCount(count, "topic")} back to following this map.`
         : "Every topic was already following this map.");
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "reset the topics" }), true);
+      toast(err.message || voiceLine("failed", "reset the topics"), true);
     }
   }
 
@@ -115,7 +115,7 @@
     other.data = { ...other.data, order: mine };
     await Promise.all([wbSaveObject(node), wbSaveObject(other)]);
     if (wbMapLayout() === "free") {
-      toast("Moved in the outline. This map's layout is Free, so the canvas stays as it is.");
+      toast(voiceLine("done", "Moved in the outline. This map's layout is Free, so the canvas stays as it is"));
     } else {
       await wbMapTidyBranch(node.parent_id ?? null);
     }
@@ -148,7 +148,7 @@
     const sorted = [...kids].sort((x, y) => dir * word(x).localeCompare(word(y), undefined, { numeric: true, sensitivity: "base" }) || x.id - y.id);
     sorted.forEach((kid, at) => { kid.data = { ...kid.data, order: at + 1 }; });
     await wbSaveMany(sorted.map((item) => ({ kind: "object", item })));
-    if (wbMapLayout() === "free") toast("Sorted in the outline. This map's layout is Free, so the canvas stays as it is.");
+    if (wbMapLayout() === "free") toast(voiceLine("done", "Sorted in the outline. This map's layout is Free, so the canvas stays as it is"));
     else await wbMapTidyBranch(id);
     renderWhiteboardNow();
     wbAnnounce(`Branches sorted ${dir > 0 ? "A to Z" : "Z to A"}.`);
@@ -178,7 +178,7 @@
       wbAnnounce(on ? "Branches numbered." : "Branches not numbered.");
       return true;
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "change the numbering" }), true);
+      toast(err.message || voiceLine("failed", "change the numbering"), true);
       wbSyncMapChrome();
       return false;
     }
@@ -331,7 +331,7 @@
         Object.assign(child, moved);
         history.push({ action: "reparent", kind: "object", id: childId, parentId });
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "move that topic under the new one" }), true);
+        toast(err.message || voiceLine("failed", "move that topic under the new one"), true);
       }
     }
     history.push({ action: "create", kind: "object", id: created.id });
@@ -505,7 +505,7 @@
       wbState.objects = (wbState.objects || []).filter((o) => o !== row);
       const step = wbStacks.undo.find((e) => e.action === "create" && e.id === tempId);
       if (step) wbDropUndoEntry(step);
-      toast(err.message || voiceLine("failed", { what: "add that node" }), true);
+      toast(err.message || voiceLine("failed", "add that node"), true);
       wbScheduleRender();
       return false;
     }
@@ -600,7 +600,7 @@
     selectWbItem("object", created.id);
     await wbMapTidyBranch(parentId);
     renderWhiteboardNow();
-    toast(`Added “${chosen.label}” to the map.`);
+    toast(voiceLine("done", `Added “${chosen.label}” to the map`));
     return created;
   });
 
@@ -672,7 +672,7 @@
       wbPushUndo(history.length === 1 ? history[0] : { action: "batch", entries: history });
       renderWhiteboardNow();
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "move that node" }), true);
+      toast(err.message || voiceLine("failed", "move that node"), true);
     }
   });
 
@@ -700,7 +700,7 @@
         gone.add(root.id);
         wbState.objects = (wbState.objects || []).filter((o) => !gone.has(o.id));
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "clear the map" }), true);
+        toast(err.message || voiceLine("failed", "clear the map"), true);
         return;
       }
     }
@@ -978,7 +978,7 @@
         }
       }
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "move that branch up" }), true);
+      toast(err.message || voiceLine("failed", "move that branch up"), true);
       return;
     }
     await wbMapDeleteSubtree(id);
@@ -1013,7 +1013,7 @@
       });
       Object.assign(node, moved);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "cut that topic free" }), true);
+      toast(err.message || voiceLine("failed", "cut that topic free"), true);
       return;
     }
     // A severed topic keeps the colour it had as part of the branch it left,
@@ -1104,11 +1104,11 @@
       });
       Object.assign(info.sketch, saved);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "turn that cross-link around" }), true);
+      toast(err.message || voiceLine("failed", "turn that cross-link around"), true);
       return;
     }
     renderWhiteboardNow();
-    toast("Turned the cross-link around.");
+    toast(voiceLine("done", "Turned the cross-link around"));
   }
 
   //: **A cross-link promoted to a branch** (§13c). The one action that teaches
@@ -1160,13 +1160,13 @@
     try {
       await apiJson(`/whiteboard/sketches/${sketchId}`, { method: "DELETE" });
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "cut that cross-link" }), true);
+      toast(err.message || voiceLine("failed", "cut that cross-link"), true);
       return;
     }
     wbState.sketches = (wbState.sketches || []).filter((x) => x.id !== sketchId);
     await wbRefreshMapState();
     renderWhiteboardNow();
-    toast("Cut the cross-link. Both topics kept their branches.");
+    toast(voiceLine("done", "Cut the cross-link. Both topics kept their branches"));
   }
 
   //: Turn a line around: the topic below becomes the one above.
@@ -1198,12 +1198,12 @@
       Object.assign(child, await move(child.id, grandparent));
       Object.assign(parent, await move(parent.id, child.id));
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "turn that line around" }), true);
+      toast(err.message || voiceLine("failed", "turn that line around"), true);
       return;
     }
     await wbMapTidy({ quiet: true });
     renderWhiteboardNow();
-    toast("Turned the line around.");
+    toast(voiceLine("done", "Turned the line around"));
   }
 
   //: Change the layout, then lay the map out in it. Changing a layout without
@@ -1236,7 +1236,7 @@
         ? "Layout set to Free, nodes stay where you put them."
         : `Laid out ${nounCount(moved, "node")}.`);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "change the layout" }), true);
+      toast(err.message || voiceLine("failed", "change the layout"), true);
     }
   }
 

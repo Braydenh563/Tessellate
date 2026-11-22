@@ -97,7 +97,7 @@ def _wordlist_path():  # noqa: ANN202
 
 
 @lru_cache(maxsize=1)
-def english() -> frozenset:
+def _english_all() -> frozenset:
     """The general English list (Brief 104, INBOX 895: "insanely" read as
     "in sanely", "expansive" as "expensive"): every alphabetic word of four
     letters or more. Shorter entries are left out on purpose: the list holds
@@ -109,6 +109,88 @@ def english() -> frozenset:
         return frozenset()
     with open(path, encoding="utf-8") as handle:
         return frozenset(w for w in (line.strip() for line in handle) if len(w) >= 4 and w.isalpha() and w.isascii())
+
+
+def is_english(word: str) -> bool:
+    """`word` (four letters or more) is in the shipped English list; a word of
+    fewer letters, or with the list missing, is never claimed (VC8)."""
+    return word.lower() in _english_all()
+
+
+#: A UK spelling and its US one, by the rule that made the pair: (uk, us, rule). `rule` is the
+#: index into `_RULES` ("ize" 0, "yze" 1, "our" 2, "re" 3 to 5, "ogue" 6, "ence" 7, "ae" 8 and 9),
+#: "ll" for the doubled l, "named" for the pairs no rule makes.
+_FAMILY_UK = frozenset({"uk", "au", "in"})
+#: Canada keeps Britain's -our, -re, -yse, -ogue, -ence and doubled l, and America's -ize.
+_CA_AMERICAN_RULES = frozenset({0})
+#: The US forms Britain uses as well, so the UK list keeps them: "practice" is the British noun,
+#: "program" a British computer program, "judgment" and "aging" are both used there.
+_BOTH_COUNTRIES = frozenset("practice practiced practicing practices program programs judgment aging".split())
+#: Pairs of two words that are not two spellings of one: a plural, which both countries write.
+_PLURALS = frozenset({"knives", "shelves", "loaves", "wives", "leaves"})
+_NAMED_AMERICAN_IN_CANADA = frozenset({"programme", "programmes", "aluminium"})
+
+
+def _pair_for(word: str, words: frozenset):
+    """The first rule (or the doubled l) that turns `word` into another word on the list, as (candidate, rule)."""
+    for index, ((pattern, replacement), guard) in enumerate(zip(_RULES, _GUARDS)):
+        if guard(word):
+            candidate = pattern.sub(replacement, word, count=1)
+            if candidate != word and candidate in words:
+                return candidate, index
+    double = _DOUBLE_L.match(word) if "ll" in word else None
+    if double and double.group(1) + "l" in words and double.group(1) + "ll" not in words:
+        candidate = double.group(1) + "l" + double.group(2)
+        if candidate in words:
+            return candidate, "ll"
+    return None
+
+
+@lru_cache(maxsize=1)
+def _spelling_pairs() -> tuple[tuple[str, str, object], ...]:
+    words = _english_all()
+    out: list[tuple[str, str, object]] = []
+    for word in sorted(words):
+        if len(word) < _MIN or word in _NOT_PAIRS:
+            continue
+        if found := _pair_for(word, words):
+            out.append((word, *found))
+    out.extend((uk, us, "named") for uk, us in NAMED if uk not in _PLURALS)
+    return tuple(out)
+
+
+#: A document's language tag to the dialect list (the client's `docProse.variantOf`, same table).
+_LANG_VARIANT = {"en-gb": "uk", "en-us": "us", "en-au": "au", "en-nz": "au", "en-ca": "ca", "en-in": "in"}
+
+
+def variant_of_lang(tag: str) -> str | None:
+    """The dialect a language tag names ("en-GB" is "uk"); "all" for a bare "en"; None for any
+    other language, which no English list is read against (L-chat-259)."""
+    low = str(tag or "").strip().replace("_", "-").lower()
+    if low == "en":
+        return "all"
+    return _LANG_VARIANT.get(low)
+
+
+@lru_cache(maxsize=8)
+def english(variant: str = "all") -> frozenset:
+    """The English list for one dialect (L-chat-236, D30): "us" without the British-only spellings,
+    "uk" (and "au", "in") without the American-only ones, "ca" with Britain's -our, -re and doubled l
+    and America's -ize, anything else ("all", "off", "auto") the whole list. The same stock either
+    way: a word the two countries share is in both, and a US form Britain also writes
+    ("practice", "program") stays in the British list."""
+    words = _english_all()
+    if variant == "us":
+        return words - {uk for uk, _us, _rule in _spelling_pairs() if uk not in _BOTH_COUNTRIES}
+    if variant in _FAMILY_UK:
+        return words - {us for _uk, us, _rule in _spelling_pairs() if us not in _BOTH_COUNTRIES and us in words}
+    if variant == "ca":
+        drop = set()
+        for uk, us, rule in _spelling_pairs():
+            american = rule in _CA_AMERICAN_RULES or (rule == "named" and uk in _NAMED_AMERICAN_IN_CANADA)
+            drop.add(uk if american else us)
+        return words - (drop - _BOTH_COUNTRIES)
+    return words
 
 
 @lru_cache(maxsize=1)

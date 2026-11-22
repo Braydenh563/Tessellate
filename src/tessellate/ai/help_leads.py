@@ -74,6 +74,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Asking Atlas
     "ask-chat": "Ask questions about your notes and get answers that show where they came from.",
     "answers-from-notes": "Get answers quoted from your own notes when the AI is off or not running.",
+    "ask-answerer": "Choose whether plain Ask uses your model or quotes your notes.",
     "chat-controls": "Send, stop and queue messages, attach notes and switch agent mode without the mouse.",
     "chat-context": "What happens when a long chat no longer fits in what the model can read.",
     "context-window": "Set how much text the chat model holds at once, or leave it on auto.",
@@ -86,6 +87,7 @@ TOPIC_LEADS: dict[str, str] = {
     "wrap-lines": "Make wide tables and code fit the window instead of scrolling sideways.",
     "slash-commands": "Type a short command for an exact answer from your notes, with no AI.",
     "chat-acts": "Set reminders, tag notes or move them by saying so in one sentence.",
+    "chat-acts-boards": "Draw, connect and move things on a board, or add map nodes, by saying so.",
     "tasks": "Add, tick off or cancel tasks by telling Chat in plain words.",
     "nicknames": "Call Atlas whatever you like and it still answers.",
     "follow-up-trail": "See the chain of questions behind a follow-up and jump back to any of them.",
@@ -103,6 +105,7 @@ TOPIC_LEADS: dict[str, str] = {
     "memory": "Review and forget the facts and preferences Atlas has picked up from you.",
     "learned": "See what Atlas worked out by itself from reading your notes.",
     "open-questions": "Find the questions your notes asked in passing and mark them answered or dropped.",
+    "goals-lists": "Track each goal or list as a card with its items and a bar for how far along it is.",
     # Documents and code
     "documents": "Write longer pieces and code in a full editor that renders as you type.",
     "documents-controls": "Format, find and move text in a document with keys, without reaching for the toolbar.",
@@ -110,6 +113,7 @@ TOPIC_LEADS: dict[str, str] = {
     "diagram-blocks": "Add shapes and connect them in a diagram's block list, with the picture beside it.",
     "diagram-reading": "How the block list orders a diagram so it reads the way the chart flows.",
     "diagram-kinds": "Switch a diagram to another kind and build it from that kind's own blocks.",
+    "chart-maker": "Paste values in the / menu's Chart and get a chart of seven kinds in the note.",
     "diagram-elsewhere": "Edit a diagram as blocks wherever it is drawn, and save it as a picture.",
     "diagram-ai": "Change a diagram by asking in words, take its suggestions, and compare its versions.",
     "diagram-lines": "Shape a diagram's arrows and spacing, export it, and move a picture too big for its pane.",
@@ -130,6 +134,7 @@ TOPIC_LEADS: dict[str, str] = {
     "documents-list-styles": "Pick dots, circles, squares or dashes, or number a list in digits or letters.",
     "documents-paste": "Choose how pasted text lands, such as plain text, a table or a checklist.",
     "documents-comments": "Leave remarks on words in a document, reply to them and resolve them.",
+    "documents-agent-edit": "Accept or reject each change Atlas suggests in the document you have open.",
     "documents-turn-into": "Reshape the lines you selected without retyping their markers.",
     "documents-to-note": "Turn selected text into a new note, or add it to one, with a link back.",
     "callouts": "Set off a note, tip or warning in a tinted box that can fold.",
@@ -232,6 +237,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Small tools
     "timer": "Time a task, run a stopwatch or set an alarm without leaving the app.",
     "calculator": "Work out a sum, convert units or write an equation in one dialog.",
+    "currency-rates": "Edit the dated table that currency conversions read, in Settings, Search and index.",
     "count-words": "Count the words, characters and reading time of any text you select.",
     "insert-template": "Drop one of your templates where the cursor is, in any editor.",
     # Look and feel

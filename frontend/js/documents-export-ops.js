@@ -423,6 +423,9 @@
     $("doc-title").value = saved.title || "";
     renderDocPreview();
     docDirty = false;
+    //: The write above reads as an edit and starts the autosave; the text is the server's own,
+    //: and a save of it after an Undo had changed it again was a false 409 (L-documents-41).
+    clearTimeout(docSaveTimer);
     $("doc-saved").textContent = "Saved";
     renderDocList();
   }

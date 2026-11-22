@@ -503,6 +503,7 @@ function docCmApplySpellcheck() {
 //: pipeline for typed and scripted edits alike.
 function docCmUpdate(update) {
   if (update.docChanged) {
+    docProse.paintLang();
     docHistoryStamp(update);
     runDocFacts.outlineSame = runDocFacts.outlineSame !== false && outlineNeutral();
     docSurfaceChanged();
@@ -707,6 +708,7 @@ function mountDocEditor(CM) {
   //: (decision 7), so it is taken down rather than left numbering a box
   //: nobody can see.
   applyDocGutter();
+  docProse.paintLang();
   wireDocSurfaceScroll(docSurface());
   docWatchAppearance();
   docGuardGlobalShortcuts(host);

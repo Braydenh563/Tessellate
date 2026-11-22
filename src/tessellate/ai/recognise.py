@@ -326,6 +326,10 @@ _MENTION_ISO = lazy_compile(rf"{_WD_PREFIX}\b(\d{{4}})-(\d\d)-(\d\d)(?=\b|t\d)")
 _MENTION_WD_DAY = lazy_compile(
     rf"\b({_WD_WORD})\.?,?\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b)(?!\s+(?!at\b|by\b|for\b|and\b|is\b|to\b|the\b)[a-z])"
 )
+#: "9 to 11 December 2026" and "December 9 to 11, 2026": a span of days in one month names both ends (L-chat-240).
+_RANGE = r"\s*(?:to|until|through|-|\u2013)\s*"
+_RANGE_DM = lazy_compile(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?{_RANGE}(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({_MO_WORD})\b{_YEAR_SUFFIX}")
+_RANGE_MD = lazy_compile(rf"\b({_MO_WORD})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?{_RANGE}(\d{{1,2}})(?:st|nd|rd|th)?\b(?![\d:])(?!\s*(?:am|pm)\b){_YEAR_SUFFIX}")
 #: (year or None, month or None, day, weekday or None)
 DateMention = tuple[int | None, int | None, int, int | None]
 
@@ -335,7 +339,8 @@ def date_mentions(text: str) -> list[DateMention]:
     "October 28, 2026"), an ISO date, or a weekday with a day number
     ("Thursday 29"). Clock times and spans are no dates; a day that no month
     has (31 Feb) is skipped. The caller decides what they must match."""
-    low = (text or "").lower()
+    low = _RANGE_MD.sub(lambda m: f"{m[1]} {m[2]} {m[4] or ''}, {m[1]} {m[3]} {m[4] or ''}", _RANGE_DM.sub(
+        lambda m: f"{m[1]} {m[3]} {m[4] or ''}, {m[2]} {m[3]} {m[4] or ''}", (text or "").lower()))
     found: list[DateMention] = []
 
     def add(year: str | None, month: int | None, day: str, weekday: str | None) -> None:
@@ -785,6 +790,15 @@ def recurring_schedule(sentence: str) -> bool:
 
 # --- the part of the day a note was about ------------------------------------------
 
+#: A "now" scope on the end of an ask ("what is most important today"), as regex source for the composer's
+#: plan asks (composer_plan `_PLAN`), so the day words stay in this file (tests/test_one_reader.py).
+_NOW_SCOPE = r"right now|now|today|at the moment|at present|this morning|this afternoon|tonight"
+_NOW_SCOPE_SHORT = r"right now|now|today"
+
+
+def now_scope(short: bool = False) -> str:
+    """The "now" scope words as regex source (`short`: only "right now", "now", "today")."""
+    return _NOW_SCOPE_SHORT if short else _NOW_SCOPE
 _EVENING_SAID = lazy_compile(r"\b(?:after work|in the evening|this evening|tonight|after dinner)\b", re.IGNORECASE)
 _MORNING_SAID = lazy_compile(r"\b(?:before work|in the morning|this morning|early morning|at dawn)\b", re.IGNORECASE)
 
@@ -1862,3 +1876,30 @@ def measures(text: str) -> list[Measure]:
             found.append(Measure(dimension, _figure(m.group(1)) * size, name, m.start(), m.end()))
     return sorted(found, key=lambda x: x[3])
 
+
+# --- readers lent to the act modules (decision 46: one reader of date words and units) ---
+
+#: "an hour", "half an hour", "30 mins", "2 days": an amount of time before
+#: something (anchor_acts' "remind me an hour before the dentist").
+_AMOUNT_BEFORE = r"(?P<n>an?|one|half an?|\d+(?:\.\d+)?)\s*(?P<unit>hours?|hrs?|h|minutes?|mins?|m|days?)"
+
+
+def amount_before() -> str:
+    """The source of `_AMOUNT_BEFORE`, for a pattern built around it (groups `n` and `unit`)."""
+    return _AMOUNT_BEFORE
+
+
+def amount_minutes(amount: str, unit: str) -> int:
+    """The minutes `_AMOUNT_BEFORE`'s two groups say ("half an", "hour": 30)."""
+    word = amount.lower()
+    n = 0.5 if word.startswith("half") else 1.0 if word in ("a", "an", "one") else float(word)
+    per = 1440 if unit.lower().startswith("d") else 60 if unit.lower().startswith("h") else 1
+    return round(n * per)
+
+
+_NAMES_A_TIME = lazy_compile(r"\b(?:week|day|today|tomorrow|weekend|month|morning|afternoon|evening|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b", re.I)
+
+
+def names_a_time(text: str) -> bool:
+    """True when `text` names a day, a part of one, a week or a month."""
+    return bool(_NAMES_A_TIME.search(text or ""))

@@ -241,7 +241,7 @@
     const hit = wbLockedItemAt(x, y);
     if (!hit) return;
     wbBoardState.lockHintSaid = true;
-    toast("Locked. Right-click to unlock it.");
+    toast(voiceLine("done", "Locked. Right-click to unlock it"));
   }
 
   //: The file's surface: what other files call (L286).

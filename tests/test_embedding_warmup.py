@@ -189,7 +189,9 @@ def test_a_cold_model_is_not_waited_for(monkeypatch):
     started = time.perf_counter()
     assert search_manager.query_vector(cold, "courses and study") is None
     assert time.perf_counter() - started < 0.1 and cold.loads == 0
-    assert queued == ["search-warm"]
+    #: One load, of kind "warm"; L-chat-242 dropped its dedupe key (the
+    #: service's own flag is the guard), so the kind is what is recorded.
+    assert queued == ["warm"]
 
 
 def test_a_loaded_or_fake_model_is_used_as_before(fake_embeddings):

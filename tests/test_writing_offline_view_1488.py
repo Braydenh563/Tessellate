@@ -18,9 +18,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 DESK = (ROOT / "frontend" / "js" / "writing-desk.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

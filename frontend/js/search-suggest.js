@@ -61,6 +61,17 @@
     return true;
   }
 
+  //: Counts kept on this device only, in prefs, so the accept rate can be read back (`searchSuggestAcceptRate`).
+  function searchSuggestTally(name) {
+    prefs.set(`searchSuggest:${name}`, String((Number(prefs.get(`searchSuggest:${name}`, "0")) || 0) + 1));
+  }
+
+  function searchSuggestAcceptRate() {
+    const offered = Number(prefs.get("searchSuggest:ghostOffered", "0")) || 0;
+    const taken = Number(prefs.get("searchSuggest:ghostTaken", "0")) || 0;
+    return { offered, taken, rate: offered ? taken / offered : 0 };
+  }
+
   function searchSuggestEnabled() {
     return prefs.get(SEARCH_SUGGEST_PREF, "on") !== "off";
   }
@@ -93,6 +104,24 @@
     const text = label.toLowerCase();
     if (text.startsWith(query)) return 0;
     return (` ${text}`).replace(/[^a-z0-9À-￿]+/g, " ").includes(` ${query}`) ? 1 : -1;
+  }
+
+  //: **And what means it** (L199, Brief 86): "trash" finds the "bin" tag,
+  //: "todo" a "tasks" category, after everything that starts with the words.
+  //: The words are meaning.js's (`meaningAlts`, loaded with this bundle), never
+  //: a copy; three letters at least, or every word one slip from a known one
+  //: would suggest something.
+  function searchSuggestMeant(query) {
+    if (query.length < 3 || /\s/.test(query) || typeof meaningAlts !== "function") return [];
+    const words = meaningAlts(query).flat().map((w) => String(w).toLowerCase());
+    return [...new Set(words)].filter((w) => w.length > 2 && w !== query);
+  }
+
+  //: `searchSuggestRank`, with a label one of `meant` starts ranked 2.
+  function searchSuggestRankMeant(label, query, meant) {
+    const rank = searchSuggestRank(label, query);
+    if (rank >= 0 || !meant.length) return rank;
+    return meant.some((w) => searchSuggestRank(label, w) >= 0) ? 2 : -1;
   }
 
   //: The last word of the box and what stands before it, with the operator the
@@ -174,8 +203,9 @@
     const wholeSingle = !/\s/.test(query);
     //: Titles complete the whole box; a typed operator means a tag or category was meant.
     if (!op) {
+      const meantAll = searchSuggestMeant(query);
       const titled = words.titles
-        .map((title) => ({ title, rank: searchSuggestRank(title, query) }))
+        .map((title) => ({ title, rank: searchSuggestRankMeant(title, query, meantAll) }))
         .filter((hit) => hit.rank >= 0 && !seen.has(hit.title.toLowerCase()))
         .sort((a, b) => a.rank - b.rank)
         .slice(0, SEARCH_SUGGEST_LIMITS.title);
@@ -186,10 +216,11 @@
     }
     const wantsTags = !op || op === "#" || /^tag:/i.test(op);
     const wantsCategories = !op || /^(cat|category):/i.test(op);
+    const meant = searchSuggestMeant(wanted);
     if (wantsTags && wanted && (wholeSingle || op || word)) {
       const hits = [...words.tags.entries()]
-        .filter(([tag]) => searchSuggestRank(tag, wanted) >= 0 && tag.toLowerCase() !== wanted)
-        .sort((a, b) => searchSuggestRank(a[0], wanted) - searchSuggestRank(b[0], wanted) || b[1] - a[1])
+        .filter(([tag]) => searchSuggestRankMeant(tag, wanted, meant) >= 0 && tag.toLowerCase() !== wanted)
+        .sort((a, b) => searchSuggestRankMeant(a[0], wanted, meant) - searchSuggestRankMeant(b[0], wanted, meant) || b[1] - a[1])
         .slice(0, SEARCH_SUGGEST_LIMITS.tag);
       for (const [tag, count] of hits) {
         items.push({ kind: "tag", label: tag, value: `${head}${op}${tag}`, about: `Tag, ${nounCount(count, "note")}` });
@@ -197,8 +228,8 @@
     }
     if (wantsCategories && wanted) {
       const hits = [...words.categories.entries()]
-        .filter(([name]) => searchSuggestRank(name, wanted) >= 0 && name.toLowerCase() !== wanted)
-        .sort((a, b) => searchSuggestRank(a[0], wanted) - searchSuggestRank(b[0], wanted) || b[1] - a[1])
+        .filter(([name]) => searchSuggestRankMeant(name, wanted, meant) >= 0 && name.toLowerCase() !== wanted)
+        .sort((a, b) => searchSuggestRankMeant(a[0], wanted, meant) - searchSuggestRankMeant(b[0], wanted, meant) || b[1] - a[1])
         .slice(0, SEARCH_SUGGEST_LIMITS.category);
       for (const [name, count] of hits) {
         const written = op && /\s/.test(name) ? `"${name}"` : name;
@@ -340,6 +371,11 @@
     //: The best completion: the first suggestion whose text continues what is typed.
     const typed = input.value.toLowerCase();
     state.ghostItem = typed ? items.find((item) => item.value.length > typed.length && item.value.toLowerCase().startsWith(typed)) || null : null;
+    //: Accept rate (CHAT_PLAN B20): a completion counts as offered once per distinct text, and as taken when it is.
+    if (state.ghostItem && state.ghostItem.value !== state.ghostCounted) {
+      state.ghostCounted = state.ghostItem.value;
+      searchSuggestTally("ghostOffered");
+    }
     const hasRecent = items.some((item) => item.kind === "recent");
     foot.classList.toggle("hidden", !hasRecent);
     state.box.classList.toggle("hidden", !items.length);
@@ -371,6 +407,7 @@
     if (!state) return;
     const { input } = state;
     state.accepting = true;
+    if (item === state.ghostItem) searchSuggestTally("ghostTaken");
     input.value = item.value;
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.setSelectionRange(input.value.length, input.value.length);

@@ -29,6 +29,8 @@ const smallButton = (label, _t, onClick) => {{ buttons[label] = onClick; return 
 const setLabel = () => {{}}, toolChip = mkEl, chatScrollToEnd = () => {{}}, toast = () => {{}};
 const chatHistoryToSend = {{ settle() {{}} }}, refreshAfterToolChanges = () => {{}}, pushUndo = () => ({{}}), settleUndoFromToast = () => {{}};
 const apiJson = async () => ({{ summary: "Done: made a note", undo: [] }});
+const applyThemeSteps = (_steps, result) => result;
+const actItemList = () => null;
 {match.group(0)}
 renderActCard(mkEl(), {{ type: "act", label: "Make a note", notice: "n", steps: [{{}}] }});
 const before = bubble.dataset.wrote || "";

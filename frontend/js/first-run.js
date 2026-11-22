@@ -137,7 +137,7 @@ async function firstStepsSample(host, add, event) {
       const gone = await apiJson("/help/sample-notebook", { method: "DELETE" });
       ids = gone.ids || [];
       //: In the bin, so the bin's Restore is the undo (rule 1.9: no new undo).
-      toast(`Moved ${gone.binned} sample notes to the bin.`);
+      toast(voiceLine("done", `Moved ${gone.binned} sample notes to the bin`));
     }
   } catch (err) {
     toast(`The sample notes could not be ${add ? "added" : "removed"}: ${err.message}`, true);

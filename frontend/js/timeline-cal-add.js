@@ -173,7 +173,7 @@
       timelineCal.url = "";
       paintTimeline();
       loadReminders();
-      toast(`Added “${made}” on ${TIMELINE_CAL_SHORT.format(due)}, ${TIMELINE_CAL_TIME.format(due)}.`);
+      toast(voiceLine("done", `Added “${made}” on ${TIMELINE_CAL_SHORT.format(due)}, ${TIMELINE_CAL_TIME.format(due)}`));
     } catch (error) {
       form.status.classList.add("error");
       form.status.textContent = error.message;

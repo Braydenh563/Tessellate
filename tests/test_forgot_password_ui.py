@@ -17,9 +17,10 @@ from tests import _js_scope
 
 from tests._app_js import app_js_text
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 #: account-recovery.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
 RECOVERY_JS = _js_scope.unwrapped((ROOT / "frontend" / "js" / "account-recovery.js").read_text(encoding="utf-8"))
 

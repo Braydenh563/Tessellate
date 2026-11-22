@@ -1,5 +1,5 @@
 // chat-attach.js: extract notes, attaching notes and images, the attach button,
-// follow-up chips, the answer timer. Moved out of app.js on 2026-09-26 as one
+// suggested-question chips (`.followups`), the answer timer. Moved out of app.js on 2026-09-26 as one
 // contiguous range (INBOX 426 cc, docs/roadmap/agent-remaining/appjs-split.md).
 // A classic script sharing app.js's globals, loaded in app.js's old order;
 // nothing in an earlier file calls into it while the page loads
@@ -175,10 +175,9 @@ async function attachChatFiles(files) {
 //: regenerate: because a person attaching a photo and a spreadsheet in one
 //: go should not find the app treating them as two different kinds of act.
 //:
-//: Unlike an image, removing one of these does *not* delete the document:
-//: `/documents/import` created a real document in the Documents tab and the
-//: toast said so, so deleting it out from under that promise would be the
-//: app taking back something it already told the user it had done.
+//: A file chosen here is staged (`file` set, no `id`) until the message is
+//: sent (`commitStagedDocuments`, chat-docs.js); one attached from the
+//: Documents tab already exists, and removing its chip never deletes it.
 let attachedDocuments = [];
 let lastChatDocumentAttachments = [];
 
@@ -316,15 +315,19 @@ function renderDocumentAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
+    const remove = {
+      removeTitle: `Don't send “${document_.name}” with this message`,
+      onRemove: () => {
+        //: A staged file was never sent to the server (`importChatDocuments`), so dropping it here leaves nothing behind.
+        attachedDocuments = attachedDocuments.filter((d) => d !== document_);
+        renderDocumentAttachments();
+        announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
+      },
+    };
     box.appendChild(
-      notebookCard({ kind: document_.kind || "document", id: document_.id, name: document_.name }, {
-        removeTitle: `Don't send “${document_.name}” with this message`,
-        onRemove: () => {
-          attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
-          renderDocumentAttachments();
-          announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
-        },
-      }),
+      document_.file
+        ? attachmentChip({ name: document_.name, size: document_.file.size, title: `${document_.name}: held here until you send, nothing is saved before that`, ...remove })
+        : notebookCard({ kind: document_.kind || "document", id: document_.id, name: document_.name }, remove),
     );
   }
 }
@@ -1045,6 +1048,14 @@ let chatTimerBox = null;
 function releaseChatComposer({ announce = true } = {}) {
   //: Called by every way out of a chat: the page it read is that chat's.
   chatWeb.lastUrl = null;
+  //: A file staged on the unsent message is that message's, not the next chat's (the hub, 2026-11-22:
+  //: switching chats with one staged must discard it and leave no document). It was carried to the
+  //: new chat and became a document on that chat's first send. It never reached the server, so
+  //: dropping the chip is the whole discard.
+  if (attachedDocuments.some((d) => d.file)) {
+    attachedDocuments = attachedDocuments.filter((d) => !d.file);
+    renderDocumentAttachments();
+  }
   if (!chatController || !chatStreaming) return;
   $("chat-messages").removeAttribute("aria-busy"); // this transcript is no longer the one streaming
   const input = $("chat-input");
@@ -1097,7 +1108,7 @@ function newChatConversation() {
   // A pending question belongs to the conversation that asked it, starting
   // a new one must not silently answering_agent-tag whatever gets typed first.
   chatAwaitingAgentAnswer = false;
-  // batch-a.md's "left open" item, its actual cause: `#chat-suggest` is on
+  // batch-a.md's last item, its actual cause: `#chat-suggest` is on
   // loan to `.chat-empty` (see `openConversation`'s own long comment below)
   // whenever the pane it is leaving was itself empty with suggestions
   // already shown. A bare `replaceChildren()` throws the loaned element away
@@ -1149,7 +1160,7 @@ async function deleteCurrentChat() {
     try {
       gone = await apiJson(`/conversations/${chatConv.id}`, { method: "DELETE" });
     } catch {
-      toast("Couldn't delete this chat.", true);
+      toast(voiceLine("failed", "delete this chat"), true);
       return;
     }
   }

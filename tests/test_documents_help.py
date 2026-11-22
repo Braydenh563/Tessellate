@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import re
 from html import unescape
-from pathlib import Path
+from tests._app_js import index_html_text
 
-INDEX = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 #: The one phrase the dock's help uses for each ⋯ menu row, by id.
 DOCK_MENU_WORDS = {

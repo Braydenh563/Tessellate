@@ -6,11 +6,11 @@ before; none after. This test holds the shape that gets there.
 """
 from __future__ import annotations
 
-from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _option_fn() -> str:

@@ -26,12 +26,13 @@ from pathlib import Path
 from tests._js_scope import unwrapped
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: avatars.js and the lazy files its settings and throw moved to (audit AI23).
 AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-settings.js"))
 MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _fn(name: str, src: str = AV) -> str:

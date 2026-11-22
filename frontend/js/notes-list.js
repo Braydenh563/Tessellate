@@ -3756,7 +3756,7 @@ function offerWikiRename(entryId, saved) {
       toast(`Updated ${nounCount(done.rewritten, "note")}.`);
       await loadEntries().catch(() => {});
     } catch (error) {
-      toast(error.message || "Couldn't update those links.", true);
+      toast(error.message || voiceLine("failed", "update those links"), true);
     }
   });
 }

@@ -49,7 +49,7 @@ Everything runs offline, with no Ollama and no models:
 ```bash
 bash scripts/gate.sh --changed   # lint set, node --check, ruff, and the tests that name your files
 ruff check .                     # lint (what CI runs)
-pytest -n auto                   # the whole suite: 13,300+ tests, under nine minutes on four cores
+pytest -n auto                   # the whole suite: 23,000+ tests, under nine minutes on four cores
 ```
 
 The full suite takes about 25 minutes serially, so run the gate while you work
@@ -106,6 +106,10 @@ Nothing else needs it. The script downloads only when you ask, no mode of
   and the guide's topics (`ai/help_chat.py`, `ai/help_topics_more.py`).
 - Copy is sentence case, with no em-dashes, no exclamation marks and no "Oops".
   Errors say what happened and what to do.
+- A new or upgraded dependency, Python or vendored, is a release at least 30
+  days old, so a compromised upload has time to be found and pulled before it
+  reaches the app. A security fix for a published advisory is the one
+  exception; say so in the PR.
 - If you touch the architecture (a new module, table or data flow), update
   `docs/ARCHITECTURE.md` in the same PR.
 - Add a bullet to `CHANGELOG.md` under "Unreleased", and copy the file to
@@ -126,8 +130,9 @@ Three rules keep that from happening:
 - **Reconcile before building.** Search for the feature first. If it exists,
   extend it, do not reimplement it. (Snooze, chat export, theming, the command
   palette, the skills bar and much more are already built.)
-- **Additive only.** Extend functions rather than replacing them, and never
-  delete a feature, widget or CSS rule to make room for a new one without asking.
+- **Replace, do not layer.** When a new path does the job, remove the old one
+  in the same change, unless persisted data or a public interface needs it. Never
+  delete a working feature, widget or CSS rule to make room for an unrelated one.
 - **One feature per commit.** After each commit, `git diff --stat` should list only
   the files that feature touches. An unexpectedly wide diff is the early warning
   sign of a regression.

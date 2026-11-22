@@ -54,15 +54,15 @@ def test_a_persona_sets_the_voice_unless_one_was_chosen(monkeypatch):
     from types import SimpleNamespace
 
     from tessellate.ai import librarian
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_service
 
-    monkeypatch.setattr(routes_chat, "_answer_voice", lambda: "natural")
-    pick = lambda prompt: routes_chat._chat_voice(SimpleNamespace(persona_prompt=prompt))  # noqa: E731
+    monkeypatch.setattr(chat_service, "_answer_voice", lambda: "natural")
+    pick = lambda prompt: chat_service._chat_voice(SimpleNamespace(persona_prompt=prompt))  # noqa: E731
     assert pick("You are a witty pirate who loves jokes.") == "playful"
     assert pick("A precise, formal archivist.") == "formal"
     assert pick(librarian.DEFAULT_PERSONA + "\n\nRemember: be brief.") == "natural"
     assert pick(None) == "natural" and pick("an ordinary helper") == "natural"
-    monkeypatch.setattr(routes_chat, "_answer_voice", lambda: "plain")
+    monkeypatch.setattr(chat_service, "_answer_voice", lambda: "plain")
     assert pick("You are a witty pirate who loves jokes.") == "plain"
 
 

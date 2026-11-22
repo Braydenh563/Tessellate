@@ -19,7 +19,6 @@ NOW = datetime(2026, 11, 8, 10, 0)
 
 @pytest.fixture(autouse=True)
 def _clock(monkeypatch):
-
     pin_clock(monkeypatch, NOW)
 
 

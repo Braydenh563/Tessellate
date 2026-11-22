@@ -49,7 +49,7 @@ EXPECTED = {
         '`Describing a file needs the local AI. ${AI_OFFLINE_HINT}.`',
     ],
     'capture-ask.js': [
-        '"Couldn\'t read the clipboard, so that part of the template is empty."',
+        'voiceLine("failed", "read the clipboard") + " That part of the template is empty."',
     ],
     'companion-menu.js': [
         '"Give the companion a name first."',
@@ -64,7 +64,7 @@ EXPECTED = {
         '`“${skill.name}” needs ${item.label || item.name}.`',
         '"The model returned nothing that time. Try again."',
     ],
-    'chat.js': [
+    'web-results.js': [
         '"Turn on Web search first, reading a page needs it."',
     ],
     'documents-code-format.js': [
@@ -351,7 +351,7 @@ FAULTS = {
         '"Couldn\'t reset that setting."': 'resetting a setting failed',
     },
     'reminder-triage.js': {
-        '"Couldn\'t load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
+        'voiceLine("failed", "load your reminders") + " Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
     },
@@ -359,25 +359,25 @@ FAULTS = {
         'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
     'whiteboard-textedit.js': {
-        'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
-        'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
+        'voiceLine("failed", "undo that")': 'undo threw an exception',
+        'voiceLine("failed", "redo that")': 'redo threw an exception',
     },
     'whiteboard-export.js': {
-        'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
+        'voiceLine("failed", "read that file")': 'reading the chosen file threw',
     },
     #: Moved with `wbDeleteFailed` out of whiteboard.js (L-whiteboard-52).
     'whiteboard-undo.js': {
-        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
+        'voiceLine("failed", "delete that")': 'the delete request failed (it offers Try again)',
     },
     #: Moved with the board list, item saves and the drag out of whiteboard.js (L634).
     'whiteboard-boards.js': {
-        'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
+        'voiceLine("failed", "add that note to the board", why)': 'creating the node on the server failed',
     },
     'whiteboard-items.js': {
-        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+        'voiceLine("failed", "save the move", "the item went back where it was")': "the move's save request failed (offline or the item is gone); it offers Reload the board",
     },
     'whiteboard-drag.js': {
-        'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
+        'voiceLine("failed", "save the move", "the item went back where it was")': "the move's save request failed (offline or the item is gone); it offers Reload the board",
     },
 }
 
@@ -441,10 +441,26 @@ def _calls(src: str):
     return out
 
 
+#: A failure said through the app's voice (decision 55, `voiceLine("failed", ...)`)
+#: is read as the sentence it makes, so FAULTS and EXPECTED keep naming the words.
+_VOICED = re.compile(r'voiceLine\("failed", (["`])(.*?)\1(?:, (.+?))?\)')
+
+
+def _said(text: str) -> str:
+    def plain(m):
+        if m.group(3):
+            return f"`Couldn't {m.group(2)}: ${{{m.group(3)}}}`"
+        return f"{m.group(1)}Couldn't {m.group(2)}.{m.group(1)}"
+
+    return _VOICED.sub(plain, text)
+
+
 def _all_calls():
     for path in sorted(JS.glob("*.js")):
         for line, args in _calls(path.read_text(encoding="utf-8")):
-            yield path.name, line, args
+            known = set(FAULTS.get(path.name, {})) | set(EXPECTED.get(path.name, ()))
+            #: Only a sentence the tables already name is read back; a voiced failure they never listed stays as written.
+            yield path.name, line, [_said(a) if _said(a) in known else a for a in args]
 
 
 def _flag(args):

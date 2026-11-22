@@ -1,0 +1,81 @@
+{
+ "skill": "Prepare for a meeting",
+ "small_class": false,
+ "cases": [
+  {
+   "id": "launch",
+   "notebook": [
+    {
+     "content": "Launch plan: freeze on the 14th",
+     "category": "Work",
+     "tags": []
+    },
+    {
+     "content": "Priya owns the launch checklist",
+     "category": "Work",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "agenda"
+    ]
+   },
+   "inputs": {
+    "people": "Priya",
+    "topic": "the launch"
+   }
+  },
+  {
+   "id": "budget",
+   "notebook": [
+    {
+     "content": "Budget review: travel is over by 300",
+     "category": "Work",
+     "tags": []
+    },
+    {
+     "content": "Sam wants the budget cut by 5%",
+     "category": "Work",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "agenda"
+    ]
+   },
+   "inputs": {
+    "people": "Sam",
+    "topic": "the budget"
+   }
+  },
+  {
+   "id": "one-on-one",
+   "notebook": [
+    {
+     "content": "Jo asked about a raise",
+     "category": "Work",
+     "tags": []
+    },
+    {
+     "content": "Jo's review is in March",
+     "category": "Work",
+     "tags": []
+    }
+   ],
+   "expect": {
+    "notes_kept": true,
+    "answer_mentions": [
+     "agenda"
+    ]
+   },
+   "inputs": {
+    "people": "Jo",
+    "topic": "her review"
+   }
+  }
+ ]
+}

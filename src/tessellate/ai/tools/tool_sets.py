@@ -15,14 +15,10 @@ from tessellate.ai.provider import set_write_tools
 # it but never called a write tool" safety net, and by the skill list to say
 # which skills act rather than answer, one list, so the two can't disagree.
 WRITE_TOOLS = {
-    "audit_link_reasons",
-    "check_learned",
-    "create_note",
-    "edit_note",
-    "tag_note",
-    "pin_note",
-    "link_notes",
-    "unlink_notes",
+    "audit_link_reasons", "restore_link_reasons",
+    "check_learned", "edit_chats", "edit_goals",
+    "create_note", "edit_note", "tag_note",
+    "pin_note", "archive_note", "link_notes", "unlink_notes",
     # `find_similar_notes` is NOT here, though it was added to this set once.
     # It only reads. Listing a read here has three consequences, all wrong: the
     # agent's "you claimed you saved it" net counts the turn as having written
@@ -37,7 +33,7 @@ WRITE_TOOLS = {
     "delete_tag",
     "save_skill",
     "delete_skill",
-    "create_document",
+    "create_document", "edit_document",
     "delete_document",
     "add_whiteboard_card",
     "add_whiteboard_link",
@@ -78,17 +74,19 @@ set_write_tools(WRITE_TOOLS)
 #: `tests/test_write_gate_h2.py` fails when a write tool is in none of them.
 CHANGE_TOOLS = frozenset({
     "check_learned",
-    "edit_note",
+    "edit_note", "edit_document",
     "unlink_notes",
     "rename_tag",
     "rename_category",
     "save_skill",
     "audit_link_reasons",
+    #: They rename, tick, move or remove things already there (undoable), so they ask first as an edit does.
+    "edit_chats", "edit_goals",
 })
 ADD_TOOLS = frozenset({
     "create_note",
     "tag_note",
-    "pin_note",
+    "pin_note", "archive_note",
     "link_notes",
     "restore_note",
     "set_reminder",
@@ -101,7 +99,7 @@ ADD_TOOLS = frozenset({
     "map_from_note",
     "add_map_node",
     "link_map_nodes",
-    "restore_board_item",
+    "restore_board_item", "restore_link_reasons",
     "add_board_shape",
     "place_library_item",
     "create_category",
@@ -228,7 +226,7 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
             "same kind of",
             # What the notebook's shape gets called when somebody asks about
             # it. "orphan" and "cluster" are the words the answer uses, so they
-            # are also the words the follow-up question uses.
+            # are also the words the next question uses.
             "structure", "shape", "cluster", "orphan", "unconnected",
             "disconnected", "isolated", "web", "map of",
             # "how are these two related" and its phrasings. `path_between` is
@@ -243,11 +241,11 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
         ),
     ),
     (
-        ("edit_note", "pin_note"),
+        ("edit_note", "pin_note", "archive_note"),
         (
             "edit", "change", "update", "rewrite", "fix", "correct", "amend",
             "append",
-            "pin", "unpin", "reword", "shorten", "expand",
+            "pin", "unpin", "archive", "unarchive", "reword", "shorten", "expand",
             # Filing one note is `edit_note`'s `category`, not a category
             # tool (H4, Qwen2.5-3B): "File the dentist note under Health" was
             # offered only the category tree's four tools and called
@@ -260,7 +258,7 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
         ("delete", "remove", "bin", "trash", "restore", "undelete", "recycle"),
     ),
     (
-        ("list_documents", "get_document", "create_document"),
+        ("list_documents", "get_document", "create_document", "edit_document"),
         (
             "document", "doc ", "docs", "write-up", "essay", "report", "chapter",
             # The words that mean "make me one", which cued nothing before
@@ -269,12 +267,13 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
         ),
     ),
     (
-        ("search_chat_history",),
+        ("search_chat_history", "edit_chats"),
         (
             "we talked", "we discussed", "you said", "earlier", "last time",
-            "previous", "conversation", "chat about", "mentioned before",
+            "previous", "conversation", "chat about", "mentioned before", "my chats", "the chats", "chat list", "sort chats", "group chats", "chats by", "pin the chat", "rename the chat", "chat folder",
         ),
     ),
+    (("list_goals", "edit_goals"), ("goal", "my lists", "the list", "a list", "checklist", "shopping list", "packing list", "progress")),
     (
         ("list_skills", "run_skill", "save_skill", "delete_skill"),
         ("skill", "shortcut", "what can you do", "your tools", "which tool", "what tools", "list the tools", "capabilities"),

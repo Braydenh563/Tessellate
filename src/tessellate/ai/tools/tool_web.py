@@ -112,7 +112,7 @@ def _read_url(session: Session, args: dict) -> dict:
         "domain": page.get("domain", ""),
         "text": text[:READ_URL_MAX_CHARS],
         # The article's own links, so an answer can cite where a claim leads
-        # and a follow-up read needs no second search. Capped tighter than
+        # and a later read needs no second search. Capped tighter than
         # the reader keeps them: every entry here is prompt tokens. These are
         # untrusted page text like everything above, following one goes
         # back through read_url's address checks; nothing is auto-fetched.

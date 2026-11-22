@@ -676,6 +676,15 @@
 
   $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
 
+  //: This document's language (L-chat-236): written into its properties block, so it goes wherever the text goes.
+  $("doc-language")?.addEventListener("change", (event) => {
+    const edit = docProse.withLang(docText(), event.currentTarget.value);
+    if (edit.start === edit.end && !edit.insert) return;
+    docReplaceRange(docSurface(), edit.start, edit.end, edit.insert);
+    docProse.paintLang();
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
   $("doc-spelling-variant")?.addEventListener("change", async (event) => {
     prefsCache = await apiJson("/preferences", {
       method: "PUT",

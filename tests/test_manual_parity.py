@@ -15,10 +15,11 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
-from tests._app_js import frontend_text, documents_text
+from tests._app_js import documents_text, frontend_text, index_html_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -40,9 +41,11 @@ MANUAL = {
     "edit_note": ("note-edit-panels.js", "base_hash: base", "a note's Edit form"),
     "tag_note": ("note-edit-panels.js", 'tagField.className = "tag-field note-edit-tags";', "a note's Edit form, Tags"),
     "pin_note": ("entry-card.js", 'button.classList.add("favourite-btn");', "a note's star"),
+    "archive_note": ("entry-menu.js", 'await apiJson(`/entries/${entry.id}/archive`, { method: "POST" });', "a note's ⋮ menu, Archive (and Unarchive)"),
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
     "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
+    "restore_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
     "check_learned": ("settings-controls.js", 'apiJson("/learned/audit/run"', "Settings, What it learned, Check what it learned"),
     "delete_note": ("note-cards.js", "async function binNoteWithUndo(entry)", "a note's menu, Move to bin"),
     "restore_note": ("note-cards.js", '/restore`, { method: "POST"', "the recycle bin, Restore"),
@@ -50,9 +53,12 @@ MANUAL = {
     "complete_reminder": ("shell-reminders.js", "before, { done: checkbox.checked });", "Reminders, the tick box"),
     "rename_tag": ("tag-manager.js", '"/tags/rename",', "Manage tags, Rename"),
     "delete_tag": ("tag-manager.js", '"/tags/delete", { names }', "Manage tags, Remove from all notes"),
+    "edit_goals": ("goals-view.js", 'send(`/${goal.id}/items`, "POST", { text })', "Notes, Goals, the add line on a card"),
+    "edit_chats": ("chat-order.js", "async function chatViewChange(change) {", "Chats list, the sort and group button"),
     "save_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Save"),
     "delete_skill": ("skills.js", "async function saveSkillList(skills) {", "Settings, Skills, Delete"),
     "create_document": ("documents.js", 'apiJson("/documents", {', "Library, Documents, New"),
+    "edit_document": ("documents.js", 'return apiJson(`/documents/${id}`, { method: "PUT", body: JSON.stringify(fields) });', "open the document and type"),
     "delete_document": ("documents.js", 'apiJson(`/documents/${doc.id}`, { method: "DELETE" });', "a document's menu, Delete"),
     "add_whiteboard_card": ("whiteboard.js", 'apiJson("/whiteboard/nodes", { method: "POST"', "a board, drag a note in from the sidebar's Notes tab"),
     "add_whiteboard_link": ("whiteboard.js", 'apiJson("/whiteboard/objects", { method: "POST"', "a board, draw a link between cards"),
@@ -93,7 +99,7 @@ def test_every_named_manual_path_still_exists():
 
 
 def test_the_categories_panel_is_reachable_from_the_sidebar_the_menu_and_settings():
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     #: The Settings button's listener is in settings-controls.js now.
     wiring = "\n".join((FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("wiring.js", "settings-controls.js"))
     # The panel moved to its own lazy piece (categories-panel.js).
@@ -135,7 +141,7 @@ UTILITIES = {
     "open the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", () => openClockPanel(utilityShown()?.kind', "the status bar's timer chip", "timer"),
     "clock panel": ("utility-tools.js", 'function openClockPanel(tab = "timer")', "the palette's Start a timer, Start a stopwatch and Set an alarm", "timer"),
     "alarm": ("settings-panes.js", 'id: "alarm", name: "Set an alarm"', "the palette's Set an alarm", "timer"),
-    "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
+    "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the Atlas's assistant, from your notes badge", "ask-chat"),
     "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work", { target = null } = {})', "the palette's Calculator and equations, or /calc", "calculator"),
     "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
     "equation": ("math-editor.js", "function mathEditorMount({", "Calculator and equations, Equation tab, Alt+=, or /equation", "equation-editor"),
@@ -177,7 +183,7 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     for label in ("Start a timer", "Start a stopwatch"):
         entry = next((block for block in tools.split("\n  },") if f'name: "{label}"' in block), "")
         assert "about:" in entry, f"the palette's {label} row has no line of help"
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert 'data-help-for="templates-help"' in html and "insert template" in html.split('id="templates-help"', 1)[1][:1200]
 
 
@@ -227,7 +233,7 @@ def test_the_manual_is_the_guides_topics_with_a_door_from_help_and_the_guide():
     #: One source: the Guide's own table, never a copy.
     assert 'apiJson("/help/topics")' in manual
     assert "window.print()" in manual and 'search.placeholder = "Search the manual";' in manual
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert 'id="help-open-manual"' in html
     find = unwrapped((FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert '$("help-open-manual")?.addEventListener("click", () => lazyScript("/js/manual.js")' in find
@@ -243,10 +249,13 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     named in the Guide and in Settings or the Timeline's own help."""
 
     text = help_chat_text() + help_more_text()
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
     assert "Dates beside the strip" in text and "Dates beside the strip" in html
+    # L587: the install bar's percentage and that closing the notice keeps the install going.
+    assert "bar with a percentage" in text and "bar with a percentage" in " ".join(html.split())
+    assert "Activity keeps" in text and "Activity keeps" in " ".join(html.split())
 
 
 def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so() -> None:
@@ -255,7 +264,7 @@ def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so()
     tells a reader that the sections have one."""
     from tessellate.ai.help_chat import HELP_TOPICS
 
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     for help_id in ("physics", "show", "display", "filter", "time", "groups", "minimap"):
         assert f'data-help-for="graph-{help_id}-help"' in html, f"Options has no '?' for {help_id}"
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-options-help"))
@@ -271,7 +280,7 @@ def test_the_graph_search_count_and_keys_are_in_the_guide() -> None:
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph"))
     assert "how many notes match" in body
     assert "Enter jumps to the next match" in body and "Shift and Enter" in body and "Esc clears the search" in body
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert 'id="graph-search-count"' in html
 
 
@@ -286,7 +295,7 @@ def test_the_board_zoom_keys_are_in_the_keys_sheet_and_the_guide() -> None:
     assert 'label: "Zoom to 100%", keys: "Ctrl+1"' in commands
     assert 'label: "Fit everything", keys: "Ctrl+0"' in commands
     assert '{ cmd: "zoom-fit", also: ["Shift+1"] }' in commands
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert "<span>Zoom to 100%</span><kbd>Ctrl+1</kbd>" in html
     assert "<span>Fit everything</span><kbd>Ctrl+0</kbd>" in html
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "whiteboard-controls"))
@@ -302,7 +311,7 @@ def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
     topic = next(t for t in help_chat.HELP_TOPICS if t["id"] == "learned")
     for words in ("Check what it learned", "retires", "Undo", "flags", "Background tasks", "joke, quote, fiction, test or draft"):
         assert words in topic["body"] or words.lower() in topic["body"].lower(), words
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     help_body = html[html.index('id="learned-help"') :][:3000]
     assert '"Check what it learned"' in help_body and "Undo" in help_body
     assert "Check what it learned</button>" in html
@@ -323,7 +332,7 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
         body = topic["body"].lower()
         assert "on the computer tessellate runs on" in body and "while the desktop app runs" in body, topic["id"]
         assert meta.get("path", "").startswith("On the computer Tessellate runs on"), topic["id"]
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     popover = html.split('id="desktop-companion-help"', 1)[1].split("</div>", 1)[0]
     assert "While the desktop app runs" in popover
     # BACKLOG 16 O4: the see-through figure that walks, and the words for it, in both places.
@@ -533,7 +542,7 @@ def test_confirmed_patterns_are_managed_where_the_guide_and_the_help_say():
     for words in ("Edit", "Not right", "Remove", "Undo", "Settings, What it remembers", "its tag still reaches it"):
         assert words in topics["patterns"], words
     assert "patterns you confirmed" in topics["memory"]
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     help_body = html[html.index('id="memory-help"') :][:2400]
     for words in ("Confirmed patterns", "Edit", "Remove", "Not right", "Undo", "its tag still"):
         assert words in help_body, words
@@ -595,8 +604,6 @@ def _listed_topics() -> list[dict]:
 
 
 def _lead_faults(lead: str, title: str) -> list[str]:
-    import re
-
     words = lead.split()
     return [
         reason
@@ -738,7 +745,7 @@ def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the
     centre out; the Guide says both in the controls' words."""
     commands = (FRONTEND / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
     assert 'keys: ["Alt+=", "Alt+-"]' in commands
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     assert "<span>Build up branch by branch</span>" in html
     text = help_chat_text() + help_more_text()
     assert "Alt+= and Alt+- show one more or one less level" in text
@@ -754,7 +761,7 @@ def test_the_format_panels_connection_point_rows_are_in_the_guide_in_the_control
     body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Format, Position and size lists a shape's connection points" in str(t["body"]))
     for words in ("On outline", "nudge it by pixels", "add one or remove the chosen one", "one Undo step", "draw.io file's points"):
         assert words in body, words
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     for words in ("Connection point", "On outline", "Add a connection point", "Remove the chosen connection point", "Nudge"):
         assert words in html, words
 
@@ -790,7 +797,7 @@ def test_sub_pages_are_in_the_guide_and_the_popovers_in_the_controls_words() -> 
     text = next(t["body"] for t in MORE_TOPICS if t["id"] == "document-subpages")
     for word in ("New sub-page", "Move under", "Move to the top level", "type /subpage", "its parents are shown after Documents", "cannot go under itself"):
         assert word in text, word
-    html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
+    html = index_html_text()
     for word in ("New sub-page and Move under", "its parents follow Documents", "/subpage makes a sub-page here"):
         assert word in html, word
 
@@ -805,3 +812,16 @@ def test_a_board_window_in_a_document_is_in_the_guide_in_its_buttons_words() -> 
     for label in ("Edit in place", "Refresh", "Edit here"):
         assert f"{label}" in js and label in body, label
     assert "zoom and pan" in body and "plus and minus" in body
+
+
+def test_answer_length_personas_off_supersedes_and_tools_are_in_the_guide_and_settings() -> None:
+    """L161 and L163: each control is in Settings with its `data-help-for`, and the Guide names it in the controls' words."""
+    html = index_html_text()
+    #: The Guide's bodies are split across adjacent string literals: join them.
+    guide = re.sub(r'"\s*\n\s*"', "", help_more_text() + help_chat_text())
+    for control, said in (
+        ("answer-length-help", "Short (one or two sentences)"),
+        ("personas-off-help", "Personas off makes every"),
+    ):
+        assert f'data-help-for="{control}"' in html and said in guide, control
+    assert "Supersedes marks the newer note" in guide and "/tools [n]" in (Path(__file__).resolve().parents[1] / "src/tessellate/ai/slash_table.py").read_text(encoding="utf-8")

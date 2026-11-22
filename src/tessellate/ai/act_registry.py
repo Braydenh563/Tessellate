@@ -71,8 +71,11 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
 #: (the owner, 2026-11-10, "any and all actions need the user's consent"). A
 #: typed yes confirms the card that waits (`ai/consent.py`), a typed no drops it.
 CONFIRM_INTENTS = frozenset({
-    "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
+    "reminder", "complete", "uncomplete", "cancel", "snooze", "reschedule", "archive", "unarchive", "tag_many", "make_board", "new_note", "meeting", "pin", "unpin",
     "delete", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
+    "delete_document", "delete_skill", "board_card", "make_map", "set_theme", "remember", "counter",
+    "board_shape", "board_library", "board_link", "board_move", "board_words", "board_remove", "map_node", "map_link", "make_diagram", "make_document", "make_skill", "check_learned",
+    "chat_sort", "chat_group", "chat_rename", "chat_pin", "chat_folder",
 })
 
 
@@ -99,6 +102,12 @@ class Act:
     def confirm(self) -> bool:
         return self.intent in CONFIRM_INTENTS
 
+    @property
+    def chip(self) -> str:
+        """The example as a button says it: a capital first (L-chat-35). The
+        example itself stays as typed, since prose quotes it mid-sentence."""
+        return self.example[:1].upper() + self.example[1:]
+
 
 #: In the order the capability line says them.
 _ACTS = (
@@ -112,8 +121,16 @@ _ACTS = (
         "cancel the dentist task", (), "restore_reminder", stem="Cancel the task "),
     Act("snooze", "snooze", "snooze a reminder", "Names a reminder and a new time; it moves after you confirm. Only reminders have a time, so a checklist line cannot be snoozed.",
         "snooze the dentist task until Friday", ("due_at",), "snooze_reminder", stem="Snooze the task "),
+    Act("reschedule", "snooze", "move a reminder to a new time", "Names a reminder and the new time; it moves after you confirm, the card says the old time too, and Undo puts the old time back.",
+        "move the dentist reminder to Friday at 9", ("due_at",), "snooze_reminder", stem="Move the reminder "),
     Act("tag", "tag", "tag notes", "Name the notes and the tags; the change waits for Confirm.",
         "tag the knife note with kitchen", ("tags",), "edit_note", stem="Tag the note about "),
+    Act("tag_many", "tag", "tag every note from a month", "Names a month, a week or a category and the tags; the card says how many notes it reaches before anything changes, and one Undo takes the tags off them all.",
+        "tag everything from March with spring", ("tags",), "edit_note", stem="Tag everything from "),
+    Act("archive", "archive", "archive notes", "Names the notes; they leave the lists after you confirm and stay in the Archive, and Undo brings them back. Several at once are counted on the card first.",
+        "archive the old trip notes", (), "archive_note", stem="Archive the note about "),
+    Act("unarchive", "unarchive", "bring notes back from the archive", "Names notes that are in the Archive; they come back after you confirm, and Undo archives them again.",
+        "unarchive the trip notes", (), "archive_note", stem="Unarchive the note about "),
     Act("untag", "untag", "take a tag off", "Name the tag and the notes; waits for Confirm.",
         "remove the tag urgent from the boiler note", ("tags",), "edit_note"),
     Act("move", "file", "move notes to a category", "Name the notes and the category; waits for Confirm.",
@@ -125,11 +142,11 @@ _ACTS = (
     Act("pin", "pin", "pin a note", "Pins one note to the top of the list after you confirm; Undo unpins it.",
         "pin the dentist note", (), "pin_note", stem="Pin the note about "),
     Act("unpin", "unpin", "unpin a note", "Takes one note's pin off after you confirm; Undo pins it again.",
-        "unpin the dentist note", (), "pin_note"),
+        "unpin the dentist note", (), "pin_note", stem="Unpin the note about "),
     Act("link", "link", "link two notes", "Names both notes; waits for Confirm, Undo unlinks them.",
         "link the gym note to the running note", (), "unlink_notes", stem="Link the note about "),
     Act("unlink", "unlink", "unlink two notes", "Names both notes; waits for Confirm, Undo links them again.",
-        "unlink the gym note from the running note", (), "link_notes"),
+        "unlink the gym note from the running note", (), "link_notes", stem="Unlink the note about "),
     Act("rename", "rename", "rename a note", "Names the note and its new heading; waits for Confirm.",
         "rename the gym note to Strength plan", ("title",), "edit_note", stem="Rename the note about "),
     Act("append", "add", "add a line to a note", "Names the words and the note; waits for Confirm.",
@@ -155,10 +172,61 @@ _ACTS = (
     Act("restore", "restore", "restore a note from the bin", "Names a note in the bin; waits for Confirm, Undo puts it back in the bin.",
         "restore the passport note", (), "delete_note", stem="Restore the note about "),
     Act("set_name", "call", "set your name", "Say what to call you; it is saved after you confirm, and Undo puts the old name back.",
-        "call me Sam", ("name",), "set_display_name"),
+        "call me Sam", ("name",), "set_display_name", stem="Call me "),
     Act("run_skill", "open", "run a skill", "Names a saved skill; the card asks before the run starts, and every change it makes can be undone.",
-        "run the daily review skill", ("name",), writes=False),
+        "run the daily review skill", ("name",), writes=False, stem="Run the skill "),
+    Act("delete_document", "delete", "delete a document", "Names the document; it goes to the bin after you confirm, and Undo brings it back.",
+        "delete the document Harbor report", ("name",), "restore_document"),
+    Act("delete_skill", "delete", "delete a saved skill", "Names one of your saved skills; it is deleted after you confirm, and Undo saves it again. Built-in skills stay.",
+        "delete the skill Weekly tidy", ("name",), "save_skill"),
+    Act("board_card", "add", "put a note on the whiteboard", "Names the note; it becomes a card on the board after you confirm, and Undo takes the card off (the note stays).",
+        "put the boiler note on the whiteboard", (), "delete_board_item"),
+    Act("make_map", "create", "make a mind map", "Names a note, or a title for an empty map; the map is made after you confirm, and Undo bins it.",
+        "make a mind map from the boiler note", (), "delete_note"),
+    Act("set_theme", "switch", "switch the theme", "Say light, dark or system; the app changes after you confirm, and Undo puts the earlier theme back.",
+        "switch to dark mode", ("name",), "set_theme"),
+    Act("counter", "add", "count with a counter", "Say add 1 to coffee; it adds a dated line to the note Counter: coffee after you confirm (the note is made the first time), and Undo takes the note or the line back out. Ask how many coffees this week to read it back.",
+        "add 1 to coffee", ("name", "n"), "delete_note", stem="Add 1 to "),
+    Act("remember", "add", "remember a preference", "Say remember that I prefer, like or want something; it is suggested after you confirm, and stays off until you accept it in Settings.",
+        "remember that I prefer short answers", ("preference",), "drop_preference", stem="Remember that "),
+    Act("make_board", "create", "start a board", "Names the board; an empty board is made after you confirm and read back to you, and Undo bins it.",
+        "start a board for the kitchen", ("title",), "delete_note", stem="Start a board for "),
+    Act("board_shape", "add", "draw a shape on the whiteboard", "Say the shape (rectangle, ellipse, diamond or frame) and the words in it; it is drawn on the whiteboard after you confirm, and Undo takes it off.",
+        "draw a rectangle that says Launch on the whiteboard", ("shape",), "delete_board_item"),
+    Act("board_library", "add", "place a library shape on the whiteboard", "Names a shape or symbol in the board library; one copy is placed on the whiteboard after you confirm, and Undo takes it off.",
+        "put a decision symbol from the library on the whiteboard", ("query",), "delete_board_item"),
+    Act("board_link", "link", "connect two whiteboard cards", "Names two cards on the whiteboard; a link is drawn between them after you confirm, and Undo removes the link.",
+        "connect the Boiler service card to the Gym log card on the whiteboard", ("a", "b"), "drop_board_link"),
+    Act("board_move", "move", "move a whiteboard item", "Names an item on the whiteboard and left, right, up or down; it moves a little after you confirm, and Undo moves it back.",
+        "move the Launch shape on the whiteboard to the right", ("name", "direction"), "move_board_item"),
+    Act("board_words", "rename", "reword a whiteboard item", "Names a shape, sticky, text box or frame on the whiteboard and the new words; it is changed after you confirm, and Undo puts the old words back.",
+        "change the Launch shape on the whiteboard to say Ship it", ("name", "text"), "edit_board_item"),
+    Act("board_remove", "delete", "take an item off the whiteboard", "Names a shape, sticky, text box, frame or card on the whiteboard; it comes off after you confirm, with its connectors, and Undo puts it back. A card's note stays.",
+        "take the Launch shape off the whiteboard", ("name",), "restore_board_item"),
+    Act("map_node", "add", "add a node to a mind map", "Names the node, optionally the node it hangs under, and the map; it is added after you confirm, and Undo takes it off.",
+        "add the node Beach under Paris on the Trips mind map", ("text", "map"), "drop_map_node"),
+    Act("map_link", "link", "cross-link two mind map nodes", "Names two nodes of one mind map; a link is drawn between them after you confirm, and Undo removes the link.",
+        "link Paris to Rome on the Trips mind map", ("a", "b", "map"), "drop_board_link"),
+    Act("make_diagram", "create", "draw a tree of new notes", "Names a root and what hangs under it; a note for each is made and laid out as a tree on the whiteboard after you confirm, and Undo takes the cards off and bins the notes.",
+        "draw a diagram of Trips with Paris, Rome and Oslo", ("root", "children"), "delete_board_item"),
+    Act("make_document", "create", "write a document", "Names the title and gives the text after a colon (write a document called Harbor report: the findings); it is saved after you confirm, and Undo bins it. With no text, Chat says writing one needs a model.",
+        "write a document called Harbor report: Findings for the harbor", ("title", "body"), "delete_document"),
+    Act("make_skill", "add", "save a skill", "Names the skill and what it does (save a skill called Weekly tidy that tidies my notes); it is saved after you confirm, and Undo deletes it.",
+        "save a skill called Weekly tidy that tidies my notes", ("name", "prompt"), "delete_skill"),
+    Act("check_learned", "open", "check what it learned", "Re-reads what the notebook has learned against its notes after you confirm; what no longer holds is retired, and Undo puts it back.",
+        "check what you have learned", (), "undo_learned_check"),
+    Act("chat_sort", "sort", "sort the chat list", "Say recent, oldest, name or most messages; the sidebar lists your chats that way after you confirm, and Undo puts the earlier order back.",
+        "sort my chats by name", ("sort",), "edit_chats"),
+    Act("chat_group", "group", "group the chat list", "Say day, week or folder (or ungroup my chats); the sidebar groups your chats that way after you confirm, and Undo puts the earlier grouping back.",
+        "group my chats by week", ("group",), "edit_chats"),
+    Act("chat_rename", "rename", "rename a chat", "Names a saved chat and its new name; it is renamed after you confirm, and Undo puts the old name back.",
+        "rename the chat about Paris to Trip plans", ("chat", "title"), "edit_chats"),
+    Act("chat_pin", "pin", "pin a chat", "Names a saved chat; it is pinned to the top of the list (or unpinned, with unpin) after you confirm, and Undo reverses it.",
+        "pin the chat about Paris", ("chat",), "edit_chats"),
+    Act("chat_folder", "move", "move a chat into a folder", "Names a saved chat and a folder; it is filed there after you confirm (a new name makes the folder), and Undo moves it back.",
+        "move the chat about Paris to the folder Trips", ("chat", "folder"), "edit_chats"),
     Act("find", "find", "find a note", "Lists the notes that match.", "find my note about the passport", (), writes=False),
+    Act("similar", "find", "find similar notes", "Lists the notes closest in meaning to the one named, from the notes.", "find notes similar to the boiler note", (), writes=False),
     Act("open", "open", "open a note", "Opens the one note named.", "open the note about the boiler", (), writes=False),
     Act("navigate", "open", "open a part of the app", "Goes to Settings, the graph, the timeline and the rest.",
         "open settings", ("surface",), writes=False),
@@ -174,8 +242,8 @@ ACTS: dict[str, Act] = {a.intent: a for a in _ACTS}
 def capability_line() -> str:
     """Agent mode with no model, for a sentence that is not an act: every
     write act the registry has, in order, and one example."""
-    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "delete", "link", "pin", "set_name")]
-    single = "pin, link, rename or delete a note, rename a tag or category, make a category, merge or delete one, delete a tag, replace a note\'s text, turn its open lines into reminders, restore a note from the bin (each after you confirm)"
+    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "delete", "link", "pin", "set_name", "delete_document", "delete_skill", "board_card", "make_map", "set_theme", "remember", "board_shape", "board_library", "board_link", "board_move", "board_words", "board_remove", "map_node", "map_link", "make_diagram", "make_document", "make_skill", "check_learned")]
+    single = "pin, link, rename or delete a note, rename a tag or category, make a category, merge or delete one, delete a tag, replace a note\'s text, turn its open lines into reminders, restore a note from the bin, delete a document or a saved skill, put a note on the whiteboard, draw, connect, move or take items off it, make a mind map and add or link its nodes, draw a tree of notes, write a document, save a skill, check what it learned, remember a preference, switch the theme (each after you confirm)"
     reads = "find or open a note"
     return (
         "With no model running I can do these myself: "
@@ -184,12 +252,18 @@ def capability_line() -> str:
     )
 
 
-#: Verbs only the app's own menus do (decision 42: archiving stays a UI
-#: action). A sentence that opens with one is an act said to the wrong place,
+def capability_short() -> str:
+    """One line for an out-of-domain answer (CHAT_PLAN step 11): three of the
+    registry's acts, the utilities, and the reminder's example to try."""
+    said = ", ".join(ACTS[i].label for i in ("reminder", "new_note", "tag"))
+    return f"I answer from your notes, and I can also {said}, work out sums and convert units. Try asking \u201c{ACTS['reminder'].example}\u201d."
+
+
+#: Verbs only the app's own menus do (archive and unarchive moved to Chat, L-chat-46). A sentence that opens with one is an act said to the wrong place,
 #: so it is answered "done in the app", never searched (audit 1029 C45).
 _APP_VERB = lazy_compile(
     r"^(?:(?:and|then|please|can you|could you|would you|just)\s+)*"
-    r"(?P<verb>archive|unarchive|restore|split|merge|duplicate|clone|combine)\s+(?:the|my|a|an|this|that|these|those|all|both|every|\w+)\b",
+    r"(?P<verb>restore|split|merge|duplicate|clone|combine)\s+(?:the|my|a|an|this|that|these|those|all|both|every|\w+)\b",
     re.IGNORECASE,
 )
 
@@ -210,8 +284,6 @@ def app_verb_line(verb: str) -> str:
     if verb == "clear":
         return composer_calendar.CLEAR_LINE
     where = {
-        "archive": "open the note and use Archive in its menu",
-        "unarchive": "open the Archive and use Restore on the note",
         "restore": "open the Bin, or the Archive, and use Restore on the note",
         "split": "open the note and use Split in its menu",
         "merge": "select the notes in the Notes tab and use Merge",
@@ -238,17 +310,37 @@ def palette_rows() -> list[dict]:
              "help": f"{a.help} For example: {a.example}."} for a in _ACTS]
 
 
+_BOARD_INTENTS = frozenset({
+    "board_shape", "board_library", "board_link", "board_move", "board_words", "board_remove", "map_node", "map_link",
+    "make_diagram", "make_document", "make_skill", "check_learned",
+})
+
+
 def guide_topic() -> dict:
     """The Guide's topic on acts, generated from the registry."""
-    lines = [f"{a.label[:1].upper() + a.label[1:]}: \"{a.example}\"." for a in _ACTS]
+    #: The examples alone: each says what it does, and the labelled list outgrew the Guide's reply budget.
+    lines = [f"\"{a.example}\"" for a in _ACTS if a.intent not in _BOARD_INTENTS and not a.intent.startswith("chat_")]
     return {
         "id": "chat-acts",
         "title": "Things Chat does for you",
         "keywords": ("what can chat do", "chat commands", "commands in chat", "do it for me", "acts", "an act",
                      "with no model running", "undo an act", "things chat does"),
         "badge": {"label": "Chat", "tab": "chat"},
-        "body": "Chat does these from one sentence, with no model. " + " ".join(lines)
-        + " Every one waits for Confirm: press it, or type yes or go ahead; Cancel or no drops it. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself.",
+        "body": "Chat does these from one sentence, with no model: " + "; ".join(lines) + "."
+        + " Every one waits for Confirm: press it, or type yes or go ahead; Cancel or no drops it. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself. More, for boards and maps, documents and skills, are under Boards, maps and documents by sentence.",
+    }
+
+
+def guide_topic_boards() -> dict:
+    """The second acts topic: the whiteboard, mind map, document and skill sentences (L-chat-60), split off to stay in the reply budget."""
+    lines = [f"\"{a.example}\"" for a in _ACTS if a.intent in _BOARD_INTENTS]
+    return {
+        "id": "chat-acts-boards",
+        "title": "Boards, maps and documents by sentence",
+        "keywords": ("draw a shape by sentence", "connect two cards", "move a card on the board", "add a node to a mind map", "write a document in chat",
+                     "save a skill in chat", "check what it learned", "board acts"),
+        "badge": {"label": "Chat", "tab": "chat"},
+        "body": "Say one sentence and a board, map or document changes with no model, and each waits for Confirm and has Undo: " + "; ".join(lines) + ".",
     }
 
 
@@ -258,10 +350,14 @@ def guide_topic() -> dict:
 #: its tool as well as its intent. "navigate" opens a part of the app and
 #: runs no tool.
 ACT_TOOLS: dict[str, str] = {
-    "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
+    "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "reschedule": "snooze_reminder", "archive": "archive_note", "unarchive": "archive_note", "tag_many": "tag_note", "make_board": "create_mindmap", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
     "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "create_category": "create_category", "delete_category": "delete_category", "merge_categories": "merge_categories", "delete_tag": "delete_tag", "edit_text": "edit_note", "to_reminders": "set_reminder", "run_skill": "run_skill", "restore": "restore_note", "append": "edit_note",
-    "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
+    "delete_document": "delete_document", "delete_skill": "delete_skill", "board_card": "add_whiteboard_card", "make_map": "map_from_note", "remember": "save_user_preference", "counter": "create_note",
+    "board_shape": "add_board_shape", "board_library": "place_library_item", "board_link": "add_whiteboard_link", "board_move": "move_board_item", "board_words": "edit_board_item", "board_remove": "delete_board_item", "map_node": "add_map_node", "map_link": "link_map_nodes",
+    "make_diagram": "generate_diagram", "make_document": "create_document", "make_skill": "save_skill", "check_learned": "check_learned",
+    "chat_sort": "edit_chats", "chat_group": "edit_chats", "chat_rename": "edit_chats", "chat_pin": "edit_chats", "chat_folder": "edit_chats",
+    "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "similar": "find_similar_notes", "open": "get_note", "summarise": "summarize_notes",
 }
 
 #: A utility's kind (`utilities.kind_of`) to the tool a model would call for it.
@@ -294,6 +390,7 @@ def _listing(nouns: str) -> str:
 TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("read_url", r"https?://"),
     ("web_search", r"\b(?:search|look up|google)\b.*\b(?:the web|online|internet)\b"),
+    ("edit_document", r"\b(?:rewrite|revise|edit) the document\b|\b(?:rewrite|edit|revise|change)\b.*\b(?:paragraph|section|line|sentence)s? (?:of|in) the .*document\b"),
     ("read_text", r"\bread the (?:dates|amounts|numbers|times|units)\b"),
     ("check_answer", r"\bcheck (?:this|that|the|my) (?:answer|draft|reply)\b"),
     ("propose_act", r"\bsuggest (?:something|an act|a change) to do\b"),
@@ -302,6 +399,10 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("compress_chat", r"\b(?:compress|shorten|condense) (?:this|the) (?:chat|conversation)\b"),
     ("make_plan", r"\bmake (?:me )?a plan\b|\bplan (?:the steps|out)\b"),
     ("search_chat_history", r"\b(?:earlier|previous|past|last|old) (?:chat|conversation)s?\b|\bwhat did we (?:talk|chat) about\b"),
+    #: The look-back tools (skill-only, so they have no model-facing name): reached by their own words here.
+    ("find_stale_notes", r"\bstale notes\b|\bnotes (?:i|that i) (?:haven't|have not|have never|didn't) (?:touched|opened|edited|looked at)\b|\buntouched for\b"),
+    ("count_month_figures", r"\b(?:month(?:'s)? figures|figures for (?:last|this) month|monthly look ?back)\b"),
+    ("get_person_page", r"\b(?:person|people) page\b|\bpage for (?:the person|my (?:friend|colleague|manager|mum|mom|dad|sister|brother))\b"),
     ("find_contradictions", r"\bcontradict|\bdisagree\b|\binconsisten"),
     ("check_learned", r"\b(?:check|audit|clean up|re-?read)\b.*\bwhat (?:you|it|atlas) (?:have |has |had )?learned\b|\bcheck what it learned\b"),
     ("audit_link_reasons", r"\b(?:audit|check|fix)\b.*\blink reasons?\b"),
@@ -318,8 +419,9 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("list_categories", r"\b(?:list|show|what are) (?:me )?(?:all )?my categories\b|" + _listing("categories|categorys|category")),
     #: "what tasks do I have", "whats due this week", "what is overdue": the
     #: reminders are the app's task list (decision 75: with a model up too).
-    #: A checklist on one note ("what is still open on X") is the composer's.
-    ("list_reminders", r"\b(?:what|which|list|show)\b.*\breminders\b|^any reminders\b"
+    #: A checklist on one note (the open-items ask, `composer_body._STILL_OPEN`) is the composer's.
+    #: "what can the reminders tab do": about the part, Help's (L-chat-256), not a list of them.
+    ("list_reminders", r"(?!.*\breminders? (?:tab|page|screen|section|feature)\b)\b(?:what|which|list|show)\b.*\breminders\b|^any reminders\b"
      r"|^(?:what|which|list|show)(?: me)?(?: are)?(?: all)? (?:my |the )?(?:open |outstanding )?(?:tasks|to-?dos)\b(?! (?:on|for|in|from|about) )"
      rf"|^(?:what(?:'s|s| is| are)?|which \w+|is (?:there )?anything|anything) (?:(?:is |are )?(?:still )?)?(?:over)?due{_WHEN}"
      rf"|^what (?:do|have) i (?:got |have )?(?:over)?due{_WHEN}"
@@ -327,6 +429,8 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
      #: categories already are (INBOX 1357, class B).
      r"|" + _listing("reminders?|tasks|to-?dos|to do list|todo list")),
     ("complete_reminder", r"\bmark\b.*\breminder\b.*\bdone\b|\btick off\b.*\breminder\b"),
+    ("list_goals", r"\bhow (?:far|am i)\b.*\bmy (?:goals?|lists?)\b|\bprogress (?:on|of|with) my (?:goals?|lists?)\b|\bgoals (?:and|&) lists\b"),
+    ("edit_goals", r"\b(?:make|create|start) (?:me )?an? (?:new )?(?:goal|list) (?:called|named)\b|\bto the .+ goal\b|\b(?:finish|delete|reopen) the .+ (?:goal|list)\b"),
     ("list_documents", r"^(?:list|show)(?: me)? (?:all )?my documents[?.]?$|" + _listing("documents|docs")),
     ("list_skills", r"\b(?:list|show) (?:me )?(?:all )?my skills\b|\bwhat skills\b|" + _listing("skills")),
     ("run_skill", r"\brun the .+ skill\b"),
@@ -341,6 +445,7 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("generate_diagram", r"\bdraw a (?:diagram|tree|flowchart) of\b"),
     ("add_board_shape", r"\bdraw an? (?:rectangle|ellipse|diamond|circle|frame|box)\b"),
     ("restore_board_item", r"\bput the \w+ back on the board\b"),
+    ("restore_link_reasons", r"\bput the (?:old )?link reasons? back\b|\bundo the link reason audit\b"),
     ("delete_board_item", r"\btake the \w+ off the board\b"),
     ("move_board_item", r"\bmove the (?:sticky|card|shape|frame|text box)\b.*\bboard\b"),
     ("edit_board_item", r"\bchange the (?:words|text|colour|color|fill) on the (?:sticky|card|shape|frame)\b"),
@@ -363,7 +468,7 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("create_document", r"\bwrite (?:a|me a) (?:document|report|essay|write-up)\b"),
     ("search_files", r"\bin my files\b|\b(?:my|the) (?:photos|scans|attachments|pdfs)\b"),
     ("read_file", r"\bread the .+ file\b|\btext in the .+ file\b"),
-    ("list_notes", r"^(?:list|show)(?: me)? (?:all )?my notes[?.]?$"),
+    ("list_notes", r"^(?:list|show)(?: me)? (?:all )?my notes(?: (?:as|in) (?:a )?table(?: form)?)?[?.]?$"),
     ("search_help", r"^how (?:do|can) i\b|^where (?:is|do i find)\b"),
 )
 
@@ -378,13 +483,15 @@ NO_MODEL_READS = frozenset({
 #: how-to that reads as one of these acts keeps its topic first, the act's
 #: own line next; one whose words reached another topic gets the act first.
 ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
-    "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "meeting": ("meetings", "voice"), "link": ("links",),
+    "chat_sort": ("chat-list",), "chat_group": ("chat-list",), "chat_rename": ("chat-list",), "chat_pin": ("chat-list",), "chat_folder": ("chat-list",),
+    "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "reschedule": ("reminders", "tasks"), "archive": ("archive",), "unarchive": ("archive",), "tag_many": ("tags-categories",), "make_board": ("whiteboard",), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",), "restore": ("undo-bin",),
     "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",), "create_category": ("tags-categories",), "delete_category": ("tags-categories",), "merge_categories": ("tags-categories",), "delete_tag": ("tags-categories", "tag-manager"), "edit_text": ("undo-bin",), "to_reminders": ("reminders",),
+    "delete_document": ("documents",), "delete_skill": ("skills",), "board_card": ("whiteboard",), "make_map": ("mind-maps",), "board_shape": ("whiteboard",), "board_library": ("whiteboard",), "board_link": ("whiteboard",), "board_move": ("whiteboard",), "board_words": ("whiteboard",), "board_remove": ("whiteboard",), "map_node": ("mind-maps",), "map_link": ("mind-maps",), "make_diagram": ("whiteboard",), "make_document": ("documents",), "make_skill": ("skills",), "check_learned": ("memory",), "set_theme": ("appearance",), "remember": ("memory",), "counter": ("capture",),
     #: Not pin: Favourites says what a pinned note is, not how to pin one, so
     #: the act's line leads "how do I pin a note" and Favourites follows.
-    "find": ("ask-chat",), "summarise": ("ask-chat",),
+    "find": ("ask-chat",), "similar": ("ask-chat",), "summarise": ("ask-chat",),
     "new_note": ("capture",),
 }
 

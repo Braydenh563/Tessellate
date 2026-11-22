@@ -255,7 +255,7 @@
           // render would use the old content and the edit would look discarded.
           await loadEntries();
         } catch (err) {
-          toast(err.message || voiceLine("failed", { what: "save that" }), true);
+          toast(err.message || voiceLine("failed", "save that"), true);
         }
       }
       // **Put the text back by hand, not by re-rendering.** Found live: after

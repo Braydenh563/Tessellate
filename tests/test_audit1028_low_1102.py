@@ -91,7 +91,7 @@ def _node(script: str) -> str:
 
 
 def test_e46_many_pinned_chats_leave_room_for_the_recent_ones():
-    source = _js_function("sheets-selects.js", "sortConversations")
+    source = _js_function("chat-order.js", "sortConversations")
     script = (
         source
         + ";"

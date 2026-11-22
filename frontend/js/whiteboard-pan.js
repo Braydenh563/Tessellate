@@ -221,7 +221,7 @@
         await refreshBoardList(board);
         wbBoardPutStep(`Renamed the board to \u201c${board.title}\u201d`, boardId, { title: current }, { title: board.title });
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "rename that board" }), true);
+        toast(err.message || voiceLine("failed", "rename that board"), true);
       }
     });
     $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
@@ -968,7 +968,7 @@
         });
         if (await wbSetBackground({ image: uploaded.url })) toast("Background image set.");
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "set that background image" }), true);
+        toast(err.message || voiceLine("failed", "set that background image"), true);
       }
     });
     wbApplyGrid();

@@ -29,8 +29,9 @@ def test_unchanged_rows_are_kept_and_the_step_swapped():
     assert "kept._packagesKey === key" in paint
     assert ".extras-install-progress-text" in paint and "textContent" in paint
     assert "innerHTML" not in paint
-    # The step text is not part of a row's identity, or every tick rebuilds it.
-    assert "const { step, ...rest } = extra;" in _body("packagesRowKey")
+    # The step text is not part of a row's identity, or every tick rebuilds it; nor,
+    # since L699's progress bar, is its fraction (intent unchanged).
+    assert "const { step, fraction, ...rest } = extra;" in _body("packagesRowKey")
 
 
 def test_progress_numbers_do_not_shift_the_line():

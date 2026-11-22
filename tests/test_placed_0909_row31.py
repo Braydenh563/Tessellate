@@ -13,10 +13,11 @@ from pathlib import Path
 from tests import _js_scope
 from tests._app_js import app_js_text
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = app_js_text()
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 JS = ROOT / "frontend" / "js"
 
 

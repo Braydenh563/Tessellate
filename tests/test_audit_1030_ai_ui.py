@@ -81,7 +81,7 @@ def test_a_rename_is_bounded_and_a_blank_one_cannot_be_saved_a33():
 
 def test_naming_with_atlas_speaks_once_a34():
     js = app_js_text()
-    assert "Kept the first question as the title." in js
+    assert 'voiceLine("done", "Kept the first question as the title")' in js
     assert "Used the first question as the title.\"," not in js
 
 

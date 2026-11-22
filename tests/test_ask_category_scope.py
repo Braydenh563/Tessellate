@@ -56,15 +56,15 @@ def test_widening_a_scoped_question_stays_in_the_category(session, fake_embeddin
     read as the topic "notes in Health", which matched a note in Ideas that
     only says "notes"); a question scoped to a category keeps its answer there
     (tests-e2e/specs/ask-search.spec.js, Ask's own suggestion)."""
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_pool
 
     health = _seed(session)
     stray = _note(session, "Notes about notes: keep each note small", "Ideas")
     question = "Summarise my notes in Health."
     found = search_manager.retrieve_detailed(session, question, fake_embeddings, limit=5)
     assert found.category == "Health"
-    widened = routes_chat._widened(session, question, found.entries, scope=found.category)
+    widened = chat_pool._widened(session, question, found.entries, scope=found.category)
     assert stray.id not in {e.id for e in widened}
     assert {e.id for e in health} <= {e.id for e in widened}
     # No scope, no change: an unscoped topic still widens.
-    assert stray.id in {e.id for e in routes_chat._widened(session, "notes about notes", [])}
+    assert stray.id in {e.id for e in chat_pool._widened(session, "notes about notes", [])}

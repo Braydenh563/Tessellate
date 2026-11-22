@@ -174,6 +174,54 @@
     }
     return mask;
   }
+  //: Long sentences, measured over the prose only. Code fences and headings
+  //: are skipped: a fenced block has no sentences, and a heading that runs
+  //: long is a heading, not a run-on.
+  //: Headings, list items and table rows are blanked first (same length, so
+  //: every offset holds): "- a, b and c" run together over a pasted list was
+  //: one 90-word sentence, and a list item is not a sentence anyway (K4b).
+  function docLongSentences(text, found) {
+    const sentences = docStructuralBlank(text);
+    const paragraphBreak = /\n[ \t]*\n/g;
+    const chunks = [];
+    let last = 0;
+    let split;
+    while ((split = paragraphBreak.exec(sentences)) !== null) {
+      chunks.push([last, split.index]);
+      last = split.index + split[0].length;
+    }
+    chunks.push([last, sentences.length]);
+    for (const [at, to] of chunks) {
+      const chunk = sentences.slice(at, to);
+      if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
+      //: A sentence ends at . ! ? and a space, or at 。！？ with none (L-chat-259), each piece keeping its own offset.
+      const ends = /(?<=[.!?])\s+|(?<=[。！？])\s*/g;
+      let cursor = 0;
+      const pieces = [];
+      let cut;
+      while ((cut = ends.exec(chunk)) !== null) {
+        if (cut[0] === "") ends.lastIndex += 1;
+        if (cut.index > cursor) pieces.push([cursor, cut.index]);
+        cursor = cut.index + cut[0].length;
+      }
+      if (cursor < chunk.length) pieces.push([cursor, chunk.length]);
+      for (const [from, to] of pieces) {
+        const sentence = chunk.slice(from, to);
+        const words = docProse.words(sentence);
+        if (words > DOC_LONG_SENTENCE_WORDS) {
+          found.push({
+            rule: "long-sentence",
+            message: `${nounCount(words, "word")} in one sentence`,
+            start: at + from,
+            end: at + to,
+            text: text.slice(at + from, at + to),
+            replacement: null,
+          });
+        }
+      }
+    }
+  }
+
   //: Findings, in document order, each with the exact span it is about so the
   //: panel can jump to it and the fix can replace it without searching for the
   //: text again (which would find the wrong occurrence in a document that says
@@ -222,7 +270,7 @@
     //: longer one: a regex over the whole list would flag "ot" inside "not".
     const word = /[A-Za-z']+/g;
     const dictionary = docDictionary();
-    const variants = docVariantLookup();
+    const variants = docVariantLookup(text);
     //: Off for a document whose `lang` is not English (`docProse.langOf`): see `docProse.langNote`.
     const checkWords = english;
     let hit;
@@ -237,7 +285,7 @@
       if (variant) {
         found.push({
           rule: "variant",
-          message: `${DOC_VARIANT_LABEL[docSpellingVariant()] || "US"} spelling: “${variant}”`,
+          message: `${DOC_VARIANT_LABEL[docSpellingVariant(text)] || "US"} spelling: “${variant}”`,
           start: hit.index,
           end: hit.index + hit[0].length,
           text: hit[0],
@@ -319,41 +367,8 @@
     //: Another language: its installed spelling pack answers in the worker (documents-spell.js, D30)
     //: and finds nothing until it has, or when no pack is installed.
     if (!english) found.push(...docSpell.packFindings(text, lang, skipped));
-    //: Long sentences, measured over the prose only. Code fences and headings
-    //: are skipped: a fenced block has no sentences, and a heading that runs
-    //: long is a heading, not a run-on.
-    //: Headings, list items and table rows are blanked first (same length, so
-    //: every offset holds): "- a, b and c" run together over a pasted list was
-    //: one 90-word sentence, and a list item is not a sentence anyway (K4b).
-    const sentences = docStructuralBlank(text);
-    const paragraphBreak = /\n[ \t]*\n/g;
-    const chunks = [];
-    let last = 0;
-    let split;
-    while ((split = paragraphBreak.exec(sentences)) !== null) {
-      chunks.push([last, split.index]);
-      last = split.index + split[0].length;
-    }
-    chunks.push([last, sentences.length]);
-    for (const [at, to] of chunks) {
-      const chunk = sentences.slice(at, to);
-      if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
-      let cursor = 0;
-      for (const sentence of chunk.split(/(?<=[.!?])\s+/)) {
-        const words = (sentence.match(/\S+/g) || []).length;
-        if (words > DOC_LONG_SENTENCE_WORDS) {
-          found.push({
-            rule: "long-sentence",
-            message: `${nounCount(words, "word")} in one sentence`,
-            start: at + cursor,
-            end: at + cursor + sentence.length,
-            text: text.slice(at + cursor, at + cursor + sentence.length),
-            replacement: null,
-          });
-        }
-        cursor += sentence.length + 1;
-      }
-    }
+    //: Long sentences, measured over the prose only (`docLongSentences`).
+    docLongSentences(text, found);
     return found
       .filter((finding) => !docProseIgnored.has(docProseKey(finding)))
       .sort((a, b) => a.start - b.start);
@@ -454,12 +469,77 @@
       const key = /^lang(?:uage)?:[ \t]*["']?([A-Za-z]{2,3})/m.exec(block[1]);
       return key ? key[1].toLowerCase() : "en";
     },
+    //: **The full tag** ("en-GB", "fr", "zh-Hans") of the same key, "" when the document names none
+    //: (L-chat-236). `langOf` is this one's primary subtag.
+    tagOf(text) {
+      const block = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text || "");
+      const key = block && /^lang(?:uage)?:[ \t]*["']?([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*)/m.exec(block[1]);
+      if (!key) return "";
+      const [first, ...rest] = key[1].split(/[-_]/);
+      return [first.toLowerCase(), ...rest.map((part) => (part.length === 2 ? part.toUpperCase() : part.length === 4 ? part[0].toUpperCase() + part.slice(1).toLowerCase() : part))].join("-");
+    },
+    //: The English dialect a document's tag names, null for any other tag. The writer's own choice
+    //: for this document, ahead of the Settings spelling preference (`docSpellingVariant`).
+    variantOf(text) {
+      return { "en-GB": "uk", "en-US": "us", "en-AU": "au", "en-NZ": "au", "en-CA": "ca", "en-IN": "in" }[this.tagOf(text)] || null;
+    },
+    //: Japanese, Chinese and Korean are not written in words split by spaces: no word list is
+    //: matched against them and no space-split pass is run (the count already reads a character
+    //: as a word, `wordCount`).
+    cjk(lang) {
+      return /^(ja|zh|ko|yue)$/.test(lang);
+    },
+    //: **Words of a sentence, CJK included** (L-chat-259; no checker pack exists for Japanese or Chinese, so
+    //: the browser's own `Intl.Segmenter`: no download, no licence). "週末のゴルフについての考え" is 6 words
+    //: (週末 の ゴルフ について の 考え), where splitting on spaces gives 1 and the shared `wordCount` gives 13
+    //: (a character a word, the server's twin has no segmenter). Text with no CJK is counted by its spaces.
+    words(sentence) {
+      if (!/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/.test(sentence) || typeof Intl !== "object" || typeof Intl.Segmenter !== "function") return (sentence.match(/\S+/g) || []).length;
+      docProse.segmenter ||= new Intl.Segmenter(undefined, { granularity: "word" });
+      let count = 0;
+      for (const part of docProse.segmenter.segment(sentence)) if (part.isWordLike) count += 1;
+      return count;
+    },
+    //: The edit that makes `tag` the document's language: replace or add the `lang` line of the
+    //: leading properties block, add the block, or take the line (and an empty block) away when
+    //: `tag` is "". `{start, end, insert}`, empty when nothing changes.
+    withLang(text, tag) {
+      const src = String(text || "");
+      const none = { start: 0, end: 0, insert: "" };
+      const block = /^---(\r?\n)([\s\S]*?)\r?\n---/.exec(src);
+      if (!block) return tag ? { start: 0, end: 0, insert: `---\nlang: ${tag}\n---\n` } : none;
+      const nl = block[1];
+      const body = block[2];
+      const at = 3 + nl.length;
+      const line = /^lang(?:uage)?:[^\r\n]*/m.exec(body);
+      if (tag) {
+        const next = `lang: ${tag}`;
+        if (!line) return { start: at + body.length, end: at + body.length, insert: `${nl}${next}` };
+        return line[0] === next ? none : { start: at + line.index, end: at + line.index + line[0].length, insert: next };
+      }
+      if (!line) return none;
+      if (body === line[0]) return { start: 0, end: block[0].length + (/^\r?\n/.exec(src.slice(block[0].length)) || [""])[0].length, insert: "" };
+      const from = at + line.index;
+      const last = line.index + line[0].length === body.length;
+      return last ? { start: from - nl.length, end: from + line[0].length, insert: "" } : { start: from, end: from + line[0].length + nl.length, insert: "" };
+    },
+    //: **The editor says its language** (L-chat-236): the `lang` attribute of the text area, so a screen
+    //: reader, the browser's own hyphenation and spellcheck and the font choice for Chinese and
+    //: Japanese read the document as it is written. Unset, the attribute is taken off and the page's
+    //: own language applies.
+    paintLang() {
+      const dom = docCmView && docCmView.contentDOM;
+      if (!dom) return;
+      const tag = this.tagOf(docText());
+      if ((dom.getAttribute("lang") || "") !== tag) tag ? dom.setAttribute("lang", tag) : dom.removeAttribute("lang");
+    },
     //: Why the checker is quiet for a non-English document: the English list would
     //: flag every word, and no pack for its language is installed (a30h-1102 step 4). With a
     //: pack (D30, documents-spell.js) spelling is checked and the note says so.
     langNote(text) {
       const lang = this.langOf(text);
       if (lang === "en") return "";
+      if (this.cjk(lang)) return `Spelling and grammar are off for this document: ${docSpell.langName(lang)} is not written in words split by spaces, so no word list is checked against it.`;
       return docSpell.packNote(lang) || `Spelling and grammar are off for this document: its language is set to ${docSpell.langName(lang)}, and only the English checks are installed.`;
     },
     hidden: false,
@@ -483,7 +563,7 @@
     dirty: false,
     nearMin: 8000,
     rules(part, again) {
-      const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(), docCheckLinkText(), docSpell.packKey()].join("|");
+      const key = [docProseIgnored.size, docWordlist ? docWordlist.size : -1, docDictionary().size, docSpellingVariant(part), docCheckLinkText(), docSpell.packKey()].join("|");
       const memo = this.memo;
       if (!((again || this.typing) && memo && memo.part === part && memo.key === key)) {
         const near = (this.typing || again) && memo && memo.key === key && part.length >= this.nearMin && memo.part !== part ? this.near(memo, part) : null;
@@ -1324,7 +1404,7 @@
     markDocDirty();
     box.dispatchEvent(new Event("input", { bubbles: true }));
     renderDocProse();
-    toast(`Fixed ${applied}. Ctrl+Z undoes it.`);
+    toast(voiceLine("done", `Fixed ${applied}. Ctrl+Z undoes it`));
   }
   const DOC_COMPLETE_MIN = 3; //: Below three characters almost anything matches.
   const DOC_COMPLETE_MAX = 6;

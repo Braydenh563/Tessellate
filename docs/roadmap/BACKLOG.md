@@ -73,11 +73,7 @@ support bundle** (an allowlist zip of the log buffer, scrubbed
   the user chooses whether to send it, which is the difference between this
   and the outside review's other suggestion (opt-in crash reporting),
   rejected in §30.
-- ~~**Confirm nothing is silently dropped.**~~ **Done.** `logbuffer.py`
-  tracks `_dropped`/`_dropped_since` (a full ring buffer counts what it
-  discards rather than losing the fact silently), and the frontend renders it
-  - "N earlier records … the oldest record still kept is from …", whenever
-  `stats().dropped` is nonzero.
+- Nothing silently dropped from the log: done, see [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built bullets)").
 
 ---
 
@@ -713,6 +709,14 @@ additive.
 
 ## 11. Performance, accuracy and AI efficiency
 
+### Real-model run: several tool calls in one reply (L-world-class-69)
+
+Built on a fake transport only (`tests/test_tool_calls_index_69.py`). Needs a real model: `bash scratchpad/llama-dev.sh serve`, export the two variables it prints, then `.venv/bin/python -m pytest -m evals tests/test_tool_calls_evals.py -s`. For Ollama's native dialect also export `TESSELLATE_EVALS_OLLAMA_URL`. Record the printed "replies with 2+ calls" and "well formed" counts out of 10 for each dialect and model (the 1.5B model chose the right tool 0 of 10 times, WORLD_CLASS_PLAN 779).
+
+### Cactus whistle and mirage: measured, not adopted (2026-11-14)
+
+On fixtures (L-chat-42, L-chat-45) both lost to the shipped path: whistle WER 9.15% against tiny.en 7.37% and 3.5 times slower, though a sixth of the size; mirage OCR CER 0.425 against RapidOCR 0.172. Needs a real model on a device: whistle on the owner's own voice notes, and mirage photo captions (6/8 subjects on fixtures) on real photos, before either is offered as a small-device extra.
+
 ### Headroom: evaluated, not adopted
 
 Asked: *"is it worth trying to analyse and implement something like headroom
@@ -1100,12 +1104,15 @@ written: `create_document`, `related_notes`, `find_similar_notes`,
 (the allowlisted setting), `unlink_notes`, and `create_category`,
 `rename_category`, `merge_categories` and `delete_category` (name-based, not
 id-based, since the model has never seen an id; see HISTORY.md for the three
-decisions behind the shape). **Still absent: `edit_document`, `move_notes`
+decisions behind the shape). `edit_document` built 2026-11-21 (L-world-class-181): a change that parks, its card a
+per-hunk suggestion. **Unverified with a real model:** whether a 3B to 8B model sends the whole new text in
+`content` (the tool refuses an empty one) and reads the document first; measure with `pytest -m evals` and a
+"change X to Y in my trip plan" case (0 runs so far). **Still absent: `move_notes`
 (bulk re-file), `merge_notes`, `export_notes`, `add_event` / `list_events`
 (§10) and `delete_reminder` (§21, the undo for a reminder change).
 (needs Opus)**: each new tool moves the README's tool count, the help topics
-and the schema budget together, and `merge_notes` and `edit_document` are
-destructive, so each wants its own confirm design.
+and the schema budget together, and `merge_notes` is
+destructive, so it wants its own confirm design.
 **Next:** checked 2026-10-05, the registry is 58 tools and none of these six exists. `merge_notes` and `move_notes` are WORLD_CLASS_PLAN B5's "pre/post conditions" example (both ids live; the category exists), so they belong to the harness agent; `add_event`/`list_events` need the `events` table (section 10); `delete_reminder` is two schemas and the Undo for `set_reminder` (`ai/tools/__init__.py:1556`). Each one moves `tests/test_readme_freshness.py`'s tool count.
 
 > ~~**⚠ The prompt budget is now the binding constraint on this section.**~~
@@ -1140,6 +1147,8 @@ palettes."
 - **Live preview** while hovering a theme, before committing. **Next:** `applySavedTheme` writes through `appearancePref`; a hover preview needs the same writes held in a scratch layer and reverted on `mouseleave`, with the hover disabled on touch; `settings.js:1933` is the tile.
 - ~~Fix the reported bug where individual controls resist change under a
   theme~~ done (§8, HISTORY.md).
+- **Desk hang acts** (found in L178, 2026-11-21): the catalogue's `act.sloth` and `act.hang_by_feet` are the app's (`sloth`, `feet`) and missing on the desk. They belong inside the desk's hang, played the way `hang_one_hand` is (`engine_deskacts.py`, `_let_one_go`), not in the Mind's table, and the head-down one needs a picture registered at the edge (a rotated frame's box is not the hang's). **Check:** `tests/test_companion_acts_l178.py`'s `IN_THE_HANG` empties and a desk render of each shows the hands or feet on the edge line.
+- **The desk Mind over-picks rare acts** (found in L178, 2026-11-21): its freshness term puts `act.facepalm`, `act.lantern` and `act.hiccup` in 12 of 12 seeded hours against the table's 4 to 6, so the L178 acts went in at weight 0.25 to hold the hour's distinct count to the table's (gap 1.5 against 3.6) and the idle wakes under 500 a minute. **Check:** a per-act count of `tests/test_companion_weights_1108.py`'s twelve hours has no act more than 4 hours off the table, with the L178 acts at 1.
 
 ---
 
@@ -1557,12 +1566,7 @@ Small, concrete, each seen in the running app:
   notes or history dominates, and only then trim the variable half. **(needs Opus)**: it needs a real
   3-turn chat on a real model.
   **Next:** `scratchpad/llama-dev.sh serve`, three turns through the agent, read the "prompt composition" log lines (`ai/agent.py`) for which part dominates before trimming anything; real model only.
-- ~~**A skill that writes skills.**~~ **Built**, "Build a skill" in
-  `ai/skills.py`'s `BUILTIN_SKILLS`, same `ask_user`-driven interview shape
-  as "Interview me about an idea": asks what the job should do, whether it
-  touches notes (decides the tool allowlist), what should be an input, drafts
-  the whole thing and confirms before calling `save_skill`, and checks
-  `list_skills` first so a near-duplicate ask reuses rather than doubling up.
+- A skill that writes skills: built, see [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built bullets)").
 - **Appearance settings page (§15).** **Next:** the audit is the section 15 list above, checked 2026-10-05 (fonts, line-height, palette import and export, hover preview are the gaps; saved looks are built). Asked whether it can be improved;
   nobody has audited it against §15 yet. The chat empty-state emblem now
   animates (same motion switch as the ai-mark), which was the one concrete
@@ -3073,22 +3077,7 @@ Audio" on Meetings, and a general "Create +" picker modal on "Everything",
 plus more general capability to rename and create things (tags, categories,
 chats) directly from the Library.
 
-**Built:** the button now matches the active chip for the four kinds with
-one unambiguous thing to create (Notes/Documents/Chats/Meetings:
-`LIBRARY_CREATE_BY_KIND`, library.js). Verified live: switching chips
-changes the label and the resulting action (Notes → Capture and focuses the
-box; Documents → the existing new-document flow; Chats → a fresh
-conversation; Meetings → the recorder). **Item 1 below is now also built**
-(re-asked for directly in a later session): "Everything" and every other
-ambiguous chip (Files, Tags, Drafts, Activity, the bin) now open a real
-"What would you like to create?" modal (`openLibraryCreatePicker`,
-library.js) instead of silently defaulting to "+ New note", a full overlay
-rather than a `kebabMenu()` dropdown, since the button isn't wrapped in
-`.menu-wrap` and `.library-view-section`'s own scroll-clipping is exactly
-the trap `wireEscapedActionMenu` exists to work around elsewhere; a modal
-sidesteps both rather than fighting them. Live-verified: opens on the
-default "Everything" chip, lists all four kinds plus Cancel, picking one
-runs it and closes, Escape and backdrop-click both cancel.
+**Built:** the create button follows the active chip, and the ambiguous chips open a create picker; the detail moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-21 (BACKLOG section 105)").
 
 **Not built: logged rather than rushed:**
 1. ~~**A "categories" section of the Library**~~ **Built as the Manage categories panel, see `frontend/js/categories-panel.js` (rename, merge, split, delete, new category; reachable from the palette, `palette.js:1383`, and the Notes sidebar); no Library chip was added.** It doesn't exist:
@@ -3125,40 +3114,7 @@ already visualises links coloured/filtered by category. What was genuinely
 missing: anywhere to save a link to the open web, and a fast textual outline
 distinct from the Graph's spatial one.
 
-**Built:**
-- **A `Bookmark` model and `/bookmarks` CRUD** (`core/database.py`,
-  `api/routes_bookmarks.py`), its own small table, not folded into `Entry`:
-  a bookmark has no body to search, file, or auto-categorise, so forcing it
-  through the note pipeline would solve a problem it doesn't have. URLs
-  typed without a scheme ("example.com") are normalised to `https://`.
-  Creating a URL that's already saved still creates the row and returns
-  `duplicate_of` the existing one: warn, don't block, since re-saving a
-  link by accident is normal, not a mistake worth refusing.
-- **Grouping**, asked about directly ("should they be groupable?"): a free-
-  text `group_name` column rather than a real folder table, a full nested-
-  folder model (a tree table, drag-to-move UI) is a lot of new machinery for
-  what a flat field mostly already buys. A "/" convention ("Work/Reading")
-  the frontend renders as a visual hierarchy, still just one string. Filter
-  chips above the list, a search box (client-side, matching the Image
-  Gallery's own filter), pin-to-top, and edit/move/delete actions round out
-  the Library → **Links** subtab.
-- **A note's References**: a note can now attach a saved bookmark
-  (`entry_bookmarks` join table, `POST/GET/DELETE /entries/{id}/bookmarks`),
-  shown live in the edit form right below the related-notes panel, with an
-  "Attach a link" picker. Its own small table and its own endpoint, not
-  folded into `EntryLink` (which connects two `Entry` rows) or into
-  `EntryOut`'s bulk-fetched `links` field, matching the precedent
-  `/entries/{id}/related` already set: only the editor needs this, so it
-  shouldn't grow a query on every paginated list render.
-- **Library → Contents**: a hyperlinked outline of the notebook, grouped by
-  category or by tag, click a note to jump straight to it. Built from
-  `allEntries` (already loaded for the Notes tab) grouped client-side, not a
-  new endpoint: refetched on every visit like every sibling Library subtab,
-  not cached, since a stale outline (a just-deleted note still listed) would
-  be a wrong answer, not just an old one. This is deliberately the *fast,
-  scannable* half of "visualised links between sections and tags"; the
-  *spatial* half is the Graph tab's job already, and Contents links out to
-  it rather than duplicating a second visualisation engine.
+**Built:** bookmarks, a note's References and Library Contents; the detail moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built blocks, base merge)").
 - Live-verified in Chromium: add/pin/edit/group/delete a bookmark, filter by
   group and by search text, the duplicate-URL toast, both Contents modes
   grouping correctly and jumping to a note, and attaching/detaching a
@@ -3399,24 +3355,7 @@ cosmetic, not chased given the session's remaining budget.
   07-whiteboard-misc.css) never set the property at all and inherited the
   bigger one by default. Now sets it explicitly too.
 
-**Built, asked for directly:**
-- **A "Clear" button for the AI Skills sidebar's own log list**,
-  `DELETE /audit?entity_type=...` (`entity_type` required, so this can
-  never be a way to wipe the *whole* audit trail, note edits/deletes are
-  real accountability history, not a scrollback buffer, only the one
-  filtered slice a caller names). The sidebar's sticky/full-height/
-  internal-scroll behaviour itself was **already built** in an earlier
-  stretch of this session (checked before touching anything, per this
-  file's own standing rule), only the clear action was actually missing.
-- **Suggested-link reasons, the thing "Explain your existing links" was
-  reported as not doing** (it never could: see that button's own long-
-  standing comment): a new "Suggest reasons" button next to it,
-  `POST /entries/link-suggestions/reasons`, fills each pending suggestion's
-  empty Why box with an AI guess (best-effort per pair, degrades to an
-  empty list rather than an error when the model is down). Kept the
-  original backfill button rather than replacing it, it's a real, working,
-  separate capability (reasons for links that already exist) the ask
-  didn't say to remove.
+**Built, asked for directly:** the audit Clear button and suggested-link reasons; the detail moved to [HISTORY.md](HISTORY.md) ("Moved from the plans, 2026-11-22 (BACKLOG built blocks, base merge)").
 
 **Bookmark URL editing**: re-checked after being reported again: the fix
 from earlier this session (`library.js`'s bookmark Edit action prompting
@@ -4335,13 +4274,7 @@ With the chat agent (a30e) in this order: 1561, 1569, 1570.
 
 ## Placed from INBOX, 2026-11-03b
 
-725. **The owner, 2026-10-06, verbatim**: "can you like maximise the application
-     responses and sentence concatenation and responses?? I want it soooo good it is
-     almost like a chat bot. make them something the world hasnt seen before like
-     stringing sentences together based off meaning, similarity etc. idk im just
-     throing stuff out there. I want the app to be really impressive". The
-     no-model composer (`ai/composer.py`, INBOX 688). Placed: Opus agent, as a
-     CHAT_PLAN phase row.
+725. **The owner, 2026-10-06, verbatim**: "can you like maximise the application responses and sentence concatenation and responses?? I want it soooo good it is almost like a chat bot. make them something the world hasnt seen before like stringing sentences together based off meaning, similarity etc. idk im just throing stuff out there. I want the app to be really impressive". The no-model composer (`ai/composer.py`, INBOX 688). Placed: Opus agent, as a CHAT_PLAN phase row.
      Owner: CHAT_PLAN Phase 5 and Phase 6, Brief 39 and Briefs 65 to 68 (the engine agent runs on 39); built so far in composer725-1006.md and composer-voice-1006.md (first line answers 25 of 25, joining phrases 27 to 44).
 
 1508. **Owner, 2026-11-01 (pasted server log):** typing in Chat logged `settings-panes.js #document.onkeydown 144ms (forced layout 142ms)` plus `phone-shell.js write 70ms (forced layout 70ms)`, input 328 ms on `#chat-input`; `settings-panes.js ResizeObserverCallback 59ms (forced layout 59ms)`; the Dashboard tab click 161 ms (`phone-shell.js`, forced layout 103 ms); the first Chat open after boot waited `/chat/suggestions` 4.5 s, `/preferences` 4.4 s, `/search/warm` 3.3 s. Recommendation taken: a document keydown handler that belongs to a Settings pane returns at once unless Settings is open, and reads no layout on a key; phone-shell reads layout only at phone widths and batches its writes in one frame; `/preferences` and `/chat/suggestions` never wait on the warm-up (measured before and after). Measured at 4x CPU, focus in `#chat-input`: the `settings-panes.js` entries are the app's own Ctrl +/- zoom. Its document keydown takes 6 ms and reads no layout; the composer's ResizeObserver forced 75 to 118 ms of layout a step and saved the zoomed height as a dragged one. Fixed: it acts only while a pointer is down on the box (0 ms, tests/test_composer_resize_zoom_1508.py). Left: the zoom frame itself is 240 to 430 ms at 4x, a relayout of the whole shell (INBOX 1501's node count; `content-visibility` on hidden surfaces is the lever); the Dashboard tab click frame is 185 to 239 ms with no script; `/search/warm` (3.3 s) likely starves `/preferences` and `/chat/suggestions` of the GIL on the first Chat open after boot: move its work off the request or chunk it. **Partly fixed cf81635, d80c2d9 (perf-1101).** The zoom frame was two whole-document style passes; the second was the top bar's `--header-h` rewritten in px each step, now written in rem (style at 4x 155 to 200 ms became 57 to 106; whole frame, LoAF median 230 ms became 135). The Dashboard reveal skips the year heatmap off-screen (796 to 422 elements, style plus layout 55 to 63 ms became 38 to 45); the rest of its 185 to 239 ms is the art loop (`scene`, dashboard.js, 82 ms a click at 4x) and the widgets' later passes. `phone-shell.js` reads layout on touch only. First Chat open: browser queueing measured 1 to 5 ms and the three requests 6 to 35 ms here (no model, fake transport), also with six heavy requests running, so it is not connection queueing or GIL starvation by the app's own routes; the focus-asked model load now waits for the burst to go quiet. Left: confirm with a real model and the owner's log.
@@ -4350,17 +4283,7 @@ With the chat agent (a30e) in this order: 1561, 1569, 1570.
 
 1547. **Owner, 2026-11-02, verbatim:** "also highlighting text and going on and off rendered diagrams on the document editor is kinda trippy with it rendering and then unrendering. can you also popish and expand and improve all the rendering and interactivity and ux and utility and stuff for codemirror, any and all document features, any featrues that are missing like formatting and tools and functionality that should be there add them. imporve the rendering and design etc. make it really simple and easy to understand and use and quick and really useful". Recommendation: first the flicker: in Live, a rendered block (a mermaid diagram, an equation, a table, an image) stays rendered while a selection merely passes over or includes it; it turns to source only when the caret is placed inside it to edit (a click on it, or arrow keys into it), with its height kept so nothing below jumps (measured: no block toggles while a drag selection crosses it; layout shift 0). Then a deep audit of the documents surface (the deep-audit-docs agent) against Word, Google Docs, Notion and Obsidian, its findings ranked and built in batches (formatting, tools, rendering, design), each measured. **Flicker fixed 2026-11-02:** a rendered widget (diagram, equation, image, embed, icon, TOC, comment) shows its source only while a selection starts in it; `flicker1547.js` drag across: 12 of 12 steps toggled and the text below jumped 147px before, 0 and 0 after. **Audit done 2026-11-02:** `audit-1102-docs.md` (git history), 32 findings (DX1 high: typing at 4x CPU p95 12.5 s). Building: DX1 and DX5 (a29e), quick wins in two batches (a29c, a29d); then DX6, DX9, DX12, DX13, DX24 to DX31. Left: tables keep the line rule.
 
-737. **The owner, 2026-10-06, verbatim**: "can the debugging run for other languages
-     as well?? also error messages, syntax errors, code suggestions and more". Then:
-     "are there any more repos we can vendor??" Today: JS runs (sandboxed), syntax
-     checks cover js, ts and css (`DOC_CHECK_TREE`), completion covers js, ts, py,
-     css and html. Vendored: codemirror, d3, emmet, harper, p5, phosphor, wordlist.
-     Candidates, all to be checked for licence (AGPL-compatible inbound) and size,
-     lazy-loaded, offline: Pyodide (Python in the browser, large), mermaid.js
-     (already decided, BACKLOG steps 8 to 13), KaTeX (maths), a Lua or Ruby WASM
-     runner, a linter per language (eslint-linter-browserify, ruff-wasm). For
-     DOCUMENTS_PLAN: errors pinned to their line, syntax errors for py and html,
-     a run for Python first.
+737. **The owner, 2026-10-06, verbatim**: "can the debugging run for other languages as well?? also error messages, syntax errors, code suggestions and more". Then: "are there any more repos we can vendor??" Today: JS runs (sandboxed), syntax checks cover js, ts and css (`DOC_CHECK_TREE`), completion covers js, ts, py, css and html. Vendored: codemirror, d3, emmet, harper, p5, phosphor, wordlist. Candidates, all to be checked for licence (AGPL-compatible inbound) and size, lazy-loaded, offline: Pyodide (Python in the browser, large), mermaid.js (already decided, BACKLOG steps 8 to 13), KaTeX (maths), a Lua or Ruby WASM runner, a linter per language (eslint-linter-browserify, ruff-wasm). For DOCUMENTS_PLAN: errors pinned to their line, syntax errors for py and html, a run for Python first.
      Owner: DOCUMENTS_PLAN 23 decisions D1 to D9, Briefs 69 to 71; the vendoring candidates are Brief 75.
 
 1534. **Owner, 2026-11-02 (pasted server log, Windows):** **Tab clicks checked 2026-11-02:** Dashboard, Chat, Timeline and Notes clicks at 1440 and 4x CPU take 7 to 13 ms with no forced layout over 17 ms (scratchpad tabprof.js), against the logged 117 to 246 ms; that part is stale. `Lag: frame 351ms on dashboard: theme-boot.js 8ms` at boot; on notes `avatars.js TimerHandler:setTimeout 231ms (forced layout 32ms)` and `166ms (forced layout 71ms)`; on reminders `frame 252ms: 198ms of script with no source file`, `246ms`, `211ms`, `input 304ms: pointerout on div.nm-viewer-stage`, `frame 436ms: companion-menu.js shut 51ms (forced layout 46ms); avatars.js nameMarkBuddyTempo 41ms (forced layout 41ms)`; Chat tab `phone-shell.js BUTTON#tab-btn-chat.onclick 132ms (forced layout 116ms)`. Recommendation: avatars' timer and name mark read layout once per frame from a cache (no read after write); the companion menu's shut writes only; the viewer stage's pointerout does no work when nothing is hovered; the Chat tab click reads no layout at desktop widths (1508 made phone-shell read on touch only: check what still reads); the no-source script on reminders traced with a profile. Later the same evening: `icon-picker.js` onload 874ms (forced layout 861ms) and `math-editor.js` onload 245ms (forced layout 209ms) on first open; `mermaid-frame.js` onmessage 226ms; opening a document `Response.json.then` 299ms (forced layout 221ms) plus CodeMirror `requestMeasure` 52ms; `pointerout` on `.cm-content` 304ms and on an icon picker tile 416ms; the Timeline and Chat tab clicks `phone-shell.js` onclick 133ms (forced layout 117ms) at desktop width; Settings, Appearance, `#motion-seg` click `settings-controls.js` 284ms (forced layout 261ms); `avatars.js nameMarkBuddyKeepUp` and `nameMarkBuddyDodge` loops on every page. Then at 8:10 to 8:17 pm: `pointerup` on `#status-agent` 448ms, `#status-guide` 376ms, `#command-palette-overlay` 560ms (483ms frame of script with no source file); `keydown` on `#chat-input` 384ms; `avatars.js Promise.resolve` 150ms (forced layout 97ms) and `TimerHandler:setTimeout` 146 to 191ms; tab clicks `phone-shell.js` onclick on Dashboard 344ms (forced layout 246ms), Chat 157ms, Notes 98ms, with `navigation.js revealTab` 36ms forced layout. The class: a handler that writes then reads layout; each one found by a 4x CPU profile and made to read first or not at all. **More, 11:26Z:** frame 396ms on dashboard (theme-boot.js); atlas.js TimerHandler:setTimeout 156ms (forced layout 52ms); input 656ms pointerout on a canvas in #dash-grid; frame 1402ms (avatars.js nameMarkBuddyTempo 24ms forced layout; apiJson /read qaFetch, /models/status, /tasks); avatars.js nameMarkBuddyBeat 224ms (forced layout 31ms); keydown on body 456ms; shell-reminders.js ResizeObserverCallback 19ms.
@@ -4411,6 +4334,14 @@ Owner, verbatim: "make sure that the ai and the composer cna give specialised mo
 - **Stored:** each briefing is kept as a chat conversation (or a note; decide at design time) so it can be read again later.
 - **Build on what exists first** (CLAUDE.md section 1): the dashboard greeting, the reminders' due stamp (`GET /reminders/due`), the composer's date readers and digest, and the lean-workflow `brief` view as a model of the shape.
 
+## Reminders: details, extraction and importance (owner idea, 2026-11-22; backlog, "add this to the backlog")
+
+Owner, verbatim: "I want to be able to add details such as descriptions and locations as well as relevant people once the address book us added to reminders and also if I use magic add or the composer agent or ai to add a new reminder it should be able to distinguish when the reminder times are who the relevant people are, the description with key facts and more etc from what the user writes. add this to the backlog. oh also I want to be able to give each reminder a level of importance and have the ai and composer able to dynamically set it and do it if the user specifically asks."
+
+- **Fields:** a reminder takes a description, a location and people; people link to the address book once it lands (Contact book, above).
+- **Extraction:** magic add, the composer and the AI agent parse free text into the time or times, the people, the location and a description of the key facts.
+- **Importance:** a level per reminder, set by hand, set dynamically by the AI and the composer, and set when the user asks.
+
 ## llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog")
 
 Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at end of backlog". State: llama.cpp already works through `llama-server` pointed at from Settings, Models (OpenAI-compatible; `n_ctx` read from `/props`, `ai/openai_client.py`); the in-process `localllm` extra (`llama-cpp-python`, `core/extras.py`) is listed but not built.
@@ -4418,6 +4349,12 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **One click, like the captions helper (INBOX 1777):** download a pinned `llama-server` per platform and accelerator (CPU first; Vulkan, CUDA, Metal where the release ships one), verified by sha256, run and stopped by the app on a localhost port, and set as the Models backend with a small default GGUF the owner picks.
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
+
+- **Composer eval, hybrid re-capture (needs a real embedder):** re-capture `tests/fixtures/composer/showcase_725.json` retrieval with embeddings on, then read the 25 answers (`scratchpad/llama-dev.sh serve`, `pytest -m evals`). The keyword-only capture passes unchanged (CHAT_PLAN Phase 5 e, closed), so this only refreshes which notes a hybrid search picks.
+
+- **Chat acts, check that needs a real model (acts2, 2026-11-12; chatui drove the browser part the same night):** the quality bar of the composer's Improve writing and Generate title against a real model's output (O7, L220; `scratchpad/llama-dev.sh serve`, `pytest -m evals`): `tests/test_composer_ai_actions.py` covers the no-model path only. "Switch to dark mode" is driven (Confirm, Undo, typed yes, Ctrl+Z, redo: `colorScheme` light, dark, light, dark, light, dark, dark).
+- **Chat, checks that need a model that writes or the owner's device (chatui, 2026-11-12):** (1) the Chat plan card and the edit diff (`#chat-plan` is `data-needs-model`; the fake servers never emit a write tool), run with `scratchpad/llama-dev.sh serve`; (2) the next-question chips with a real model's text (L224; the no-model path returns none by design); (3) touch parts of the chat sidebar and message menu on a phone or tablet (L76: hover and long-press need the owner's device).
+- **Chat, L97's other languages (needs a fluent reader or a real model):** the professional chip and citation variants exist in English (`tests/test_voice_variants_l97.py`); their wording in other languages is not written by guess.
 
 ## Device and owner checks from the mindmap plan (2026-11-12)
 
@@ -4438,6 +4375,54 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L912, the Timeline tab to first rows under 300 ms, on the owner's idle hardware.** Headless on a loaded or idle sandbox cannot stand in for the owner's machine. With the notebook at about 96 notes, open the dashboard, click the Timeline tab, and read the time to the first row (DevTools Performance, or the 10-run method in the L912 HISTORY line); under 300 ms is the bar.
 - **L913, the look of the OS notification on real Windows and macOS.** The page's calls are measured with a stubbed `Notification` and a stubbed worker registration; how Windows (Action Center, Focus Assist) and macOS (Notification Center, Do Not Disturb) draw the "Reminder" title, the body, the Done and Snooze 10 minutes buttons, and the 12 s auto-close is the check left. On each: allow notifications, make a reminder due in a minute with the app in the background, and read what appears and whether the buttons act.
 - **L914, Firefox and Safari permission help, and a real webview's denied state.** Chromium is measured (denied shows "Notifications are blocked." with its five help lines; a hidden tab still fires; Los Angeles and Kolkata see 3:00 PM on 20 Nov). Still to check by eye: in Firefox and in Safari (macOS and iOS), refuse the permission and see that the Reminders and Settings help lines (icon left of the address, Websites then Notifications) match what that browser shows; and in the desktop app's webview, where `Notification.permission` may stay `default` or throw, see whether the blocked line and a toast alone appear.
+
+## Device and owner checks from the chat plan (2026-11-14)
+
+Each row is the one step that needs the owner's own machine, a device, a human rater or a model this sandbox cannot serve; everything that runs here was built and tested first (L744 and L745 wait on the owner's CPU numbers and recording, as decided 2026-11-12).
+
+- **L744, Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%).** From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers. Measured 2026-11-14 headless (Playwright CDP Performance.getMetrics, 30 s idle, 30 s pointer moving, software rendering so absolute CPU is inflated, restyles are the robust figure): desk page at 1280x800 idle 43.3% CPU, moving 65.1%, 3366 / 3592 restyles per minute, 69 running animations; at 390x844 idle 28.4%, moving 34.7%, 3452 / 3606 restyles per minute. Found and fixed: the desk page threw `afterFrames is not defined` (it lived in dashboard.js, which the desk page does not load; now in prefs.js, test_desk_page_globals_l744.py). Over budget by two orders: the desk figure has no rest or calm rule (atlas-life rest and `.is-calm` do not apply there). Rest rule built 2026-11-14 (atlas-life.js `atlasTailCalm.host`: the desk pet stands in for `#nm-buddy`, rests after 2 s without input unless motion at rest is `always`, a calm tail act holds 3x as long, look beat 1 s; tests/test_companion_live_1114.py desk test): headless 1280x800 idle 43.3% to 1.7% CPU (90 s), restyles 3366 to 341 a minute, running animations 69 to 0 to 1, JS about 12 ms in 25 s; blank page floor 0.25%. Remaining: idle is still over the <1% budget headless (the rest is browser raster of blinks and the tail act change, software rendering; the 112x152 window could not boot headless, so the real pywebview window is the owner's check), and moving is not built: pointer-moving wakes every loop (37% CPU, 3,978 restyles a minute headless, budget 3%).
+- **L745, Patting over Atlas's head must not lift it 30 px.** From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later. Swept 2026-11-14 (pointer moves over the head, getBoundingClientRect top delta): figure top delta 0 px at 1280, 1920, 2560 and 390 widths; head part max delta 19.4 / 1.9 / 12.5 / 20.7 px (the intended pat nudge, inside the figure, under 30); inner wrapper max 3.4 px. Not reproduced; waits on the owner recording.
+- **L823, Run blind panel rating against a 1-3B model (decision 40).** From OPEN.md:844. Evidence: Needs the owner as human rater and a real model Genuine 2026-11-14: a rating is a human's judgement of answers; nothing here stands in for a rater.
+- **L833, Keyboard and screen-reader pass on icon-only chat-dock toggles and phone sheet.** From OPEN.md:741; OPEN.md:3522. Evidence: Needs a human with a screen reader; titles/text only checked Genuine 2026-11-14: "a screen reader (NVDA or VoiceOver) is a human with assistive technology; the row says titles and text only were checked".
+- **L834, Paste the 15 s /chat/followups log from a real model run.** From OPEN.md:4373. Evidence: Needs the owner's real log from a real model run; w34-fix2-1111.md unverifiable Genuine 2026-11-14: the row asks for the owner's own 15 s log from their machine and model; a 1.5B on four shared cores has a different latency, so its log would prove nothing about theirs.
+- **L835, Check real model path, screen reader on chip and non-en-US locale.** From OPEN.md:633. Evidence: Real model and screen reader Genuine 2026-11-14: the screen reader (NVDA or VoiceOver) announcing the chip is assistive technology on a real device; the non-en-US locale half is emulable (browser locale option) but the row closes only with the reader.
+- **L843, Run blind panel rating (decision 40) against the 1-3B model.** From OPEN.md:3635. Evidence: Needs a human rater and a real small model Genuine 2026-11-14: a rating is a human's judgement of answers (same need as L823); nothing here stands in for a rater.
+- **L845, Reproduce why a uni note was filed under About Tessellate (needs the model and history).** From INBOX.md:904 B32. Evidence: Not reproducible from code; needs the model that filed it and its history Genuine 2026-11-14: "needs the model that filed it and the owner's history".
+- **L846, Real screen-reader check of the settled status; 320 px calculator title.** From calc1530-1102.md. Evidence: NVDA/VoiceOver needs a human; title shortening only if owner asks Genuine 2026-11-14: "NVDA/VoiceOver needs a human".
+- **L847, Check Windows Hello at localhost, companion lag on a real desktop and real-model model-facts rows.** From w34-fix2-1111.md Not verified. Evidence: Needs Windows and a real model Genuine 2026-11-14: "Needs Windows (Windows Hello at localhost, companion lag on a real desktop)".
+- **L848, Verify real model greeting in new hero layout, desktop window and RTL.** From OPEN.md:3529. Evidence: Needs a real model, the Windows desktop window and RTL rater. Genuine 2026-11-14: "needs the Windows desktop window and an RTL rater".
+- **L850, Evals breadth: ten cases at 3B and 4B, first call over 30 prompts, CHAT gate on a real model.** From OPEN.md:1001; OPEN.md:3470. Evidence: Needs real 3B/4B models; row notes W34 unverifiable Genuine 2026-11-14: "Needs real 3B/4B models; only this 1.5B is served".
+- **L851, atlas-motion.js 582 ms frame on dashboard; atlasRigFrame 21 calls/s on graph.** From INBOX.md:1726. Evidence: atlasmotion-1111: not reproduced on Linux (2.4-2.8 ms/call); needs owner's Windows trace Genuine 2026-11-14: "needs owner's Windows trace; not reproduced on Linux".
+- **L852, nameMarkBuddyTempo flush during stream; keydown #chat-input 456 ms not reproduced.** From chatspasm-1108.md Left. Evidence: Source: not verified on owner's machine or a real model Genuine 2026-11-14: a 456 ms keydown seen on the owner's Windows desktop; CDP 4x CPU throttle here measured it not reproducing, the same finding as L982 and L983.
+- **L853, Verify Brief 34 arm angle and 104px faces on real WebView2/WebKitGTK.** From OPEN.md:607; OPEN.md:2890. Evidence: Needs real webviews and a human eye on faces (core/overlay/faces.py exists) Genuine 2026-11-14: "Needs real webviews and a human eye on faces".
+- **L854, Companion should sit on windows; desk window scan lists 0 standable windows.** From OPEN.md:4400; INBOX.md:1716. Evidence: Needs real window list on Windows desk (feature build); w34-gap4-1111.md:17 Genuine 2026-11-14: "Needs real window list on Windows desk".
+- **L855, Verify phone fixes on a real iPhone/LAN: keyboard, pinch, picker, flick, compact graph.** From OPEN.md:424; OPEN.md:578; OPEN.md:579; OPEN.md:580 (+1). Evidence: Needs touch hardware (real phone); sweep cannot reproduce Genuine 2026-11-14: "Needs touch hardware (real phone); sweep cannot reproduce".
+- **L856, Companion toss by swipe on a real phone untried.** From OPEN.md:737; OPEN.md:3012. Evidence: Needs real touch device; throttle test exists (tests/test_unlock_throttle_per_client.py) Genuine 2026-11-14: "Needs real touch device".
+- **L858, Companion ScrollTimeline WebKitGTK fallback not driven in desktop window.** From OPEN.md:1065; OPEN.md:2300. Evidence: Needs the owner's Windows desktop (WebView2) and a GTK window Genuine 2026-11-14: "Needs the owner's Windows desktop (WebView2) and a GTK window".
+- **L859, Windows desk overlay owner check: polished default, shown, transparent, no focus stolen, CPU under 2%.** From OPEN.md:4415; OPEN.md:4417; overlay-1104.md Remaining. Evidence: Built (CHANGELOG.md:1100, HISTORY.md:53914 overlay-1104) but polish and default need the owner's Windows desk to judge Genuine 2026-11-14: "need the owner's Windows desk to judge".
+- **L860, Desk companion: no flicker or jolt, sits cleanly.** From OPEN.md:4346. Evidence: W34 hardware-only (w34-unv2-1111.md); needs owner's desktop. Genuine 2026-11-14: "needs owner's desktop".
+- **L861, Win+arrow snap resets to the unmaximised window.** From OPEN.md:4372. Evidence: Needs the owner's Windows desktop; w34-unv2-1111.md says hardware-only Genuine 2026-11-14: "Needs the owner's Windows desktop".
+- **L862, Closing with X leaves a tray icon; companion over Wallpaper Engine.** From OPEN.md:4374. Evidence: Windows tray and Wallpaper Engine only; w34-unv2-1111.md hardware-only Genuine 2026-11-14: "Windows tray and Wallpaper Engine only".
+- **L863, Desk look repaints at once (N20).** From OPEN.md:4377. Evidence: Layered-window repaint on Windows; w34-unv2-1111.md hardware-only Genuine 2026-11-14: "Layered-window repaint on Windows".
+- **L864, Overlay wins over the card; twenty toggles (N22).** From OPEN.md:4378. Evidence: Windows overlay behaviour; w34-unv2-1111.md hardware-only Genuine 2026-11-14: "Windows overlay behaviour".
+- **L865, Every motion drawn every frame; in-app p95 under 8 ms at 4x CPU.** From OPEN.md:4399. Evidence: Per-frame hardware measurement; w34-unv1-1111.md hardware-only, w34-gap4-1111.md:17 Genuine 2026-11-14: "Per-frame hardware measurement".
+- **L866, Nebula stops flickering on the desk.** From OPEN.md:4420. Evidence: Windows desk render; w34-unv2-1111.md hardware-only Genuine 2026-11-14: "Windows desk render".
+- **L867, Companion 0.3-0.9 unit sliver visibility.** From OPEN.md:3842. Evidence: Needs the owner's eyes at large view Genuine 2026-11-14: "Needs the owner's eyes at large view".
+- **L868, Desk overlay hid/showed four times in three seconds (window away flips).** From INBOX.md:1726. Evidence: Needs a Windows desktop and its window list; lag-1110 says true blocker Genuine 2026-11-14: "Needs a Windows desktop and its window list".
+- **L869, Desk bust 20/28 px and live companion not swept; light-theme p10 contrast 2.6.** From atlasf1696-1108c.md. Evidence: Needs real desk/Windows render and a sweep Genuine 2026-11-14: "Needs real desk/Windows render".
+- **L870, Windows: foot offsets, hang on a real title bar, z-order vs taskbar, UpdateLayeredWindow.** From desk-1670.md Remaining. Evidence: Source: unverified on Windows; fakes only Genuine 2026-11-14: "unverified on Windows".
+- **L871, Linux desk: real window manager z-order, _NET_WORKAREA, suspend/resume, per-monitor scale.** From desk-1670.md Remaining. Evidence: Xvfb has no WM; needs a real Linux desktop Genuine 2026-11-14: "Xvfb has no WM; needs a real Linux desktop".
+- **L-chat-4, Desk companion reaction to media playing: needs the Windows audio session; the catalogue refuses an in-app-only entry.** From ledger-1112 I17. Genuine 2026-11-14: "needs the Windows audio session".
+- **L-chat-12, Check the wider desk frame canvas, crop and window size on a real Windows desktop (hardware).** From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1550. Evidence: The wider desk-frame canvas (masculine 289x304, feminine 275x298) changed the crop, the wave reach and the 100 percent window size. None of it has been checked on a real desktop. The nearest rows are  Genuine 2026-11-14: "check on a real Windows desktop (hardware)".
+- **L164b, Web search against a real engine: needs the owner's network.** From L164 part (b). Evidence: measured 2026-11-14 from the sandbox, html.duckduckgo.com answered HTTP 200 but served an "anomaly" bot-challenge page to 9 of 10 automated queries (1 result page of 8 parsed rows for "python fastapi lifespan", 1 ReadTimeout); `websearch._search_duckduckgo` reports it as rate-limiting. Run 5 queries from the owner's own network and check each source row (title, host, link).
+- **L138 and L231, Atlas idle cost on mains power (670 restyles and 130 layouts a minute): the rest left is owner decision 55.** From OPEN.md:2865, OPEN.md:1068. Evidence: re-measured 2026-11-14 (companion, headless, loaded 4-core container, scratchpad/ui-sweeps/companionperf.js IDLE=1, 20 s, two runs): 1,395 to 1,461 layouts and 1,974 to 2,565 restyles a minute, script 957 to 999 ms a minute; a 10 s trace puts the restyles in main-thread animations on SVG and HTML children, and a pause-by-group bisect moved the numbers less than the run-to-run spread (styles a second 36 to 66). Cutting it further means pausing the ring and orbit animations on mains power, which reverses decision 55; the owner's call, then a trace on the real Windows browser.
+- **L232, Mood blend read 75 to 280 ms and the 400 ms first graph draw: needs Windows numbers.** From a31b-1103.md. Evidence: tests/test_atlas_cost_live_1114.py measures 65 to 149 ms at 4x on Linux headless (105 to 122 ms in one UpdateLayoutTree inside nameMarkBuddyBlend); the gcResize deferral was refused because the cost cannot be seen without the real machine.
+- **L172, Graph and companion long tasks to the zero target.** From OPEN.md:671. Evidence: the desk window idles at 1.7% of a core headless against the 1% budget and the floor is browser compositing (script 12 ms in 25 s); the real 112x152 window needs hardware, and graph REST_BUDGET in frames.js waits on that number.
+- **L255, Hold still, carry over, tail pull, toss up, pointer chase and drag skid desk acts: need new desk frames and a human rater.** From ledger-1112 I21. Evidence: the catalogue refuses one-sided acts, so each needs a frame drawn and judged by a person; engine.py and engine_input.py are at their line caps, so the hook lives in extras.py.
+- **L152b, Presence spells in the app are Atlas-only; the other companions only sit and wait.** From L152 (A4). Evidence: `NMB_SPELLS` weights `decide` for the act names Atlas has; the prop slots (`.nmp-*`) belong to the Atlas figure, so a captured or generated companion draws none of them. Check: set the companion to 'You, from your name', call `nameMarkBuddyDecide` 600 times at 20:00 and count the NMB_SPELLS acts (0 today; the desk draws them for every companion once its frames are captured).
+- **L185b, Companions made from the person's own figure have no perch pictures (dangle, kick, hang with one hand, meditate).** From L185 (verify). Evidence: `capture.CAPTURED` leaves out `sprites.EXTRA_FRAMES`, so the engine falls back to `sit` and `hang` for them (`EXTRA_FALLBACK`); measured 2026-11-21 the page draws 54 frames of 'You, from your name' and none of the five. Check: add the five poses to `DESK_FRAME_SPECS` (classes `nmb-act-dangle`, `nmb-act-lounge`...), capture, and `tests/test_overlay_non_atlas_l151.py` counts them in `CAPTURED`.
+- **L145b, The first tea throw on a cold page showed no tipped cup.** From L145 (app). Evidence: measured 2026-11-21 on a fresh profile, the first throw after load showed no tip and the next ones did; a lazy-load race (the `nmb-tip-tea` rule not yet in `atlas-lazy.css`) is suspected, not proven. Check: on a fresh data dir, grab the companion mid-tea, throw it, and `nmb-tip-tea` is on `#nm-buddy` within 3 s of the release, the first time.
+- **L177b, The in-app companion has no clock or window-corner look.** From L177 (app side). Evidence: the desk's clock trip ends in `look_around` or `ponder` at the screen's bottom-right corner and its window-top peer is `peek_down`; the app has no clock and its ledges (`nameMarkBuddyLedges`) are the page's own edges and `peekdown` carries no ledge weight (not measured). Check: on a ledge the share of `peekdown` in 600 `nameMarkBuddyDecide` calls is at least three times the floor's.
 
 ## Whiteboard, parked 2026-11-13
 
@@ -4467,7 +4452,6 @@ Each row is the one step that needs the owner's own machine, a device or a real 
   - A real phone: L884: Verify phone selection menus and selection bar placement with a real finger on iOS and Android. From OPEN.md:738; OPEN.md:3122; OPEN.md:3861. Evidence: iOS/Android native selection UI; cannot be emulated headless. Blocked: needs a real finger on iOS and Android native selection UI, which no headless browser reproduces. | L-documents-93: Device check: a real phone keyboard IME with autocorrect on, composing in the editor, and a genuinely blocked network request. From L883, L885. Evidence: CDP composition events pass (hw883.js); autocorrect guard tested | L-documents-95: Device check: Ctrl+V of real Word clipboard content and a paste on a real phone. From L890. Evidence: synthetic Word-shaped HTML paste passes (hw890.js)
   - A real desktop, browser or Word: L-documents-91: Device check: run panel and touch in the desktop webview (WebView2 or WebKitGTK), dark theme, a large SQL result. From L880. Evidence: dark rows, 200-row result and emulated touch pass in hw880.js; no webview here | L-documents-92: Device check: open an exported .docx in real Microsoft Word, and press Ctrl+Shift+7/8/9 on a real non-US keyboard. From L882. Evidence: python-docx and LibreOffice open the export and read the text back (hw882.js); list chords fixed by event.code | L891: Device check: a real print dialog, Safari, Firefox (not installed here: /opt/pw-browsers has only Chromium), a screen reader and a phone IME over the documents editor. From L891. Evidence: Measured 2026-11-14 in Chromium: an image pasted through the real clipboard with Ctrl+V lands as an attachment 4/4 (hw891.js); Harper p2-harper.js 16/16, cold first lint 1,797 ms, warm 111 ms for 1,401 words, nothing at boot | L894: Device check: ClearType greyscale on a real Windows display. From L894. Evidence: The CodeMirror per-key cost is measured and tracked in L-documents-26; only the Windows display is left
   - A person with a screen reader, or real inference: L887: Run a screen reader over aria-current=location in the documents outline. From OPEN.md:1483; OPEN.md:3402. Evidence: Needs a human with a screen reader; documents-comments.js:438 sets aria-current. Blocked: needs a human with a screen reader; documents-comments.js:438 sets aria-current but speech cannot be checked headless. | L893: Device check: the diagram builder with real inference, on Windows, and under a screen reader. From L893. Evidence: Measured 2026-11-14 at 390 light with CDP touch (diagram-touch.js, rewritten for the Add split and the phone's Blocks sheet): Add menu 10 rows 44 px hit-tested, a block added, pinch to 5x, zoom kept on redraw, pan 264 px, double tap fits; light contrast 8 of 8 texts at 4.5 or more; 40 blocks open 2.5 s, an added block repaints in 483 ms (long tasks 114 and 115 ms on a loaded box, see the new row); print to PDF one page with all four labels and no chrome
-
 ## Placed from IDEAS.md, 2026-11-14
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
@@ -4482,6 +4466,17 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L704, the companion's Tempo look flushes the style other code dirtied.** `nameMarkBuddyTempo`'s `getAnimations` still shows 3 to 11 forced style flushes per tab-flip run (median 17 ms, max 46 ms at 4x). Measured with invalidation tracking: the dirt is the tab's own (timeline rows' class and rule changes, 168 elements in the 21 ms one) plus running animations, not the companion's writes. Three variants changed nothing (look taken inside the idle callback: median 25.7 ms; looks every 4 s when the last found nothing: 30.5 ms; idle callback held while `nmb.pageAt` is under 300 ms old: 38.1 ms, all against 17.4 ms before, n=6 each), so none was kept. **The check:** `scratchpad/w`-style trace (CPU 4, `disabled-by-default-devtools.timeline.stack`), five tab clicks, `UpdateLayoutTree` events whose top frame is `nameMarkBuddyTempo`; the fix must come from the pages that dirty (batch the timeline rows' class writes) or from listing the figure's animations without `getAnimations`.
 - **L707, the companion adds layouts to a tab switch that no listener of its own causes.** With the Atlas companion on, a tab click to chat counts a median 102 Layout events against 25 with it off, reminders 136 against 7 (4x CPU, six fresh loads each). A traced chat switch (four loads) splits 355 Layouts into 266 unforced, the figure's own frame-stepped drawing and walk, and 89 forced, the largest being `atlasRigRead` 10, `check@:7321` 8, the composer's `autoGrow` 20, `nameMarkBuddySupported` 5. Swallowing `transitionrun`, `transitionend`, `transitioncancel`, `animationstart` and `animationend` before the keep-up sees them gave 387 Layouts (305 unforced), so the keep-up is not the cause and no change to it was made. **The check:** `scratchpad/ui-sweeps/companionperf.js`-style trace (CPU 4, stack category), tab clicks with `prefs.set('avatar-buddy','atlas')` against `'off'`, count `Layout`; the fix must come from stepping the figure's layers on the compositor or from the forced readers above (`atlasRigRead`, `nameMarkBuddyBlend`, `rect@avatars.js:5484`).
 - **L708, the phone tab click and the document open: measured, nothing safe to cut.** At 390x844, 4x CPU, companion off: the click on `#tab-btn-dashboard` has 12 to 14 forced layouts totalling 29 ms median (n=10), none above 9 ms: `scrollRowArrows` placement (13 ms), `syncSelectionPopup` (6), `revealTab`'s `tabIndex` write on the focused button (5, ordered first already), `settle@notes-list.js` (4). With the companion on the same click is 468 ms forced (`nameMarkBuddyBlend` 113, `check@:7321` 48, `nameMarkBuddyGo` 35, `atlasRigRead` 31, `nameMarkBuddyTempo` 28, `rect@avatars.js:5484` 27: the candidates listed above). One try, placing the arrows' offsets at the frame, gave click dispatch 113 ms against 71 and was not kept (n=10 each). `openDocument` steady is 30 ms forced (19 to 42), the first one 185 ms, 30 of it `readSelectionRange` inside the vendored CodeMirror and 16 `fitDocToolbarRow`, which measures the strip by design. **The check:** `l708.js`-style trace of the click and `openDocument(id)` at 390 px, forced `Layout` by top frame; a fix would memoise `fitDocToolbarRow` on the strip's width and item signature as `ocrFitDock` does, or fold the companion rows above. The OCR dock is the hardware row (blocked-hardware, plan general).
+- **L827b, L828b, L829b, A 1.5B model does not plan, call Calculate or ask a one-option question: needs a larger model.** From L827, L828, L829 (real-model run 2026-11-21). Evidence: Qwen2.5-1.5B-Instruct Q4_K_M on llama-server: `test_a_model_plans_calculates_proposes_and_asks_without_a_dead_end` printed plan 0 of 2 sentences made a plan, calculate 0 of 2 called the tool (both ended in words), ask_user 0 of 2 called it, propose_act 1 of 1 ended in a card; `test_harness_evals` printed engine took 5 of 10 act sentences before the model, tool choice 3 of 10, finished 0 of 10, argument validity 3 of 5 (get_note ids). The Needle engine was not run (no Needle model here). Check: serve a 7B instruct GGUF (Qwen2.5-7B-Instruct Q4_K_M) with `scratchpad/llama-dev.sh serve`, then `TESSELLATE_EVALS_URL=... TESSELLATE_EVALS_MODEL=... pytest -m evals tests/test_chat_model_evals.py tests/test_harness_evals.py`; the bar is plan 2 of 2, calculate 2 of 2, ask_user 2 of 2 with one option drawn. Needs hardware with the memory for a 7B model.
+- **L160b, The noisy-question set needs a human-written set and a human rater.** From L160 (2026-11-21). Evidence: `tests/fixtures/composer/noise_741.json` grew from 85 to 119 questions, all 119 read as intended by `question_noise` (one real miss, btwn, betw and b/w, fixed); the 1.5B cannot grade its own noise and the set was written by the model that built the reader. Check: ask a person to type twenty questions as they would on a phone, add them to the fixture, run `pytest tests/test_question_noise.py`; a miss is a reader bug until shown otherwise.
+- **L-chat-11b, A reopened Ask answer that drops citation markers under a heading list: needs the owner's notebook.** From L-chat-11 (2026-11-21). Evidence: the fake-model reproduction in `tests/test_citation_after_heading.py` keeps the markers and the report came from a notebook that is not here, so the cause is unproven. Check: read the stored `grounding` and `raw_result_ids` of that answer from `/ask-history/{id}` and compare with a fresh `/chat/stream` of the same question; a stored answer with fewer marks than its `raw_result_ids` points at the reopen path.
+- **L821b, L842b, The composer with a real embedder, a screen reader and another locale.** From L821, L842 (2026-11-21). Evidence: the real 1.5B was driven in the browser at 390, 560, 820, 1024, 1180, 1366 and 1440 wide (no horizontal overflow at any, `scrollWidth` equal to `clientWidth`); the embedder half needs an embedding GGUF (`llama-server --embedding`), none is present; a screen reader and a second locale need a person and the software. Check: serve an embedding GGUF, set it in Settings, ask a question and read the filing hit rate with `pytest -m evals tests/test_filing_certainty_evals.py -s`; with NVDA or VoiceOver read the answer, its marks and the Stop button; set the browser locale to de-DE and read the dates in a reply.
+- **L841b, Tablet layout on a physical tablet.** From L841 (2026-11-21). Evidence: headless Chromium with touch at 820x1180, 1024x768, 1180x820 and 1366x1024 showed no horizontal overflow on Chat, Ask or Notes and the chat input inside the viewport; touch targets, the on-screen keyboard and the real pixel density are not simulated. Check: open the app on an iPad and an Android tablet, type in Chat with the keyboard up and confirm the input stays visible and Send is reachable.
+- **L826b, In Agent mode an act sentence waits for the model before the card appears.** From L826 (2026-11-21). Evidence: with `use_tools` on, `Remind me on Friday to call mum` took 110 s alone (511 to 547 s under load) on the 1.5B before the engine card appeared, while the model wrote a false "I set it" in prose that the card then replaced (`answer_final`: That is not done yet. Confirm the card below and it will be.); with tools off the engine card comes in 0.0 s. `_plan_turn` in `api/routes_chat.py` turns an act into notes when a model is up, by decision "an act is the agent's". Check: on a tiny or small tier, keep the act on the engine path, measure the sentence under 1 s in the palette, and confirm a large model still gets the agent path (`tests/test_chat_acts_*`).
+- **L830b, L849b, L250b, The real-model skill runs: 26 built-in skills and 78 fixture cases are hours of a quiet machine.** From L830, L849, L250 (2026-11-21). Evidence: the cause of the L250 stall is fixed and seen on the wire (a skill step that must call a tool now sends `tool_choice required` on round one: `REQ tools ['audit_link_reasons'] choice required`; before it the 1.5B wrote "I ran it" in prose three attempts running), but no whole skill finished here: llama-server generated at 0.27 to 0.32 tokens a second on four cores shared with six agents (load 7 to 8), one `test_the_built_in_skills_finish_with_no_invalid_call` run of one skill passed 80 minutes unfinished, and the probe's step failed with "Ollama isn't reachable" after a kernel out-of-memory kill. Check, on a quiet machine: `TESSELLATE_EVALS_URL=http://127.0.0.1:8791/v1 TESSELLATE_EVALS_MODEL=<gguf> TESSELLATE_EVALS_RATES=skill_rates.json pytest -m evals tests/test_skill_evals.py -k built_in -p no:xdist` (bar: 0.8 finished, no invalid call), then `pytest -m evals tests/test_skills_evals.py -k fixture` (78 cases; the nine small-class skills must pass all three), and the four L250 skills first: Audit link reasons, Clean up my tags, Reorganise my categories, Fix my links (each was 0 of 1 before the fix). Write `skill_rates.json` from the run (L830) and set the calls-per-step defaults from it.
+- **L587b, The package-download progress on a real Windows install.** From L587 (2026-11-21). Evidence: Setup no longer downloads extras (`installer.iss` writes `pending-extras.txt`; the app installs them with a bar, a percentage from `extra_downloads._fetch`, Stop, and Activity), and the launcher splash has Minimise and Close (`splash.ps1:440`); both are tested here only against fakes (`tests/test_installer_progress_l587.py`), and pwsh is not available. Check on Windows 11: tick Documents in Setup, finish, and watch Settings, Packages and the Activity panel show a moving percent for the pinned downloads; press Minimise and Close on the splash during a cold start and confirm Close cancels the launch. Record: percent steps seen, Close result.
+- **L915b, L974b, L975b, Printed manual on paper, iOS zoom, and the real-model eval rates.** From L915, L974, L975 (2026-11-21). Evidence: the print block is proved by a Chromium PDF (`tests/test_manual_print_output.py`, 20 pages) and the runner script is parse-checked (`tests/test_skills_evals.py`), but paper, iOS Safari and a model are not here. Check: (1) Manual, Print on a real printer or PDF from Safari/Chrome: pages past the first and no app chrome; (2) on an iPhone, focus the name field (13.6 px before the coarse-pointer field-size block in `10-responsive.css`, guarded by `tests/test_phone_layout.py`) and confirm the page does not zoom; (3) `scratchpad/llama-dev.sh serve`, then `eval "$(scratchpad/llama-dev.sh env)"; pytest -m evals -p no:xdist`: bars 0.8 of skills with zero invalid calls and the 70-note loose-ends set; record the rates and the model file name.
+- **L691b, Silero VAD on real recordings: the WER and the listening pair need a real Whisper run and a human ear.** From L691. Evidence: `ai/vad.py` and the `vad` bundle are built and the real model (v5.1.2, sha256 2623a295...) ran once on a synthetic clip, finding bursts at 1.0 to 3.0 s and 4.5 to 6.5 s as (962, 3038) and (4674, 6526) ms. **Remainder:** (1) `TESSELLATE_SILERO_VAD=<silero_vad.onnx> pytest tests/test_vad_87.py` on the owner's machine after Install; (2) on three real recordings (a quiet room, a café, a phone call) run `ai.vad.speech_in` and record the speech share and segment count; (3) transcribe the same three with `voice_skip_silence` on and off and record the WER against a typed reference, expecting fewer invented words on the silent edges with it on; (4) the listening pair: the trimmed clip against the original, a human rating of any clipped first or last word (the pad is `PAD_MS` 30, tune it if a word edge is lost). Record the numbers in the CHANGELOG line.
+
 
 ## Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21
 

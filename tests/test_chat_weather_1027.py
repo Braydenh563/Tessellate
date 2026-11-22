@@ -11,7 +11,7 @@ from types import SimpleNamespace
 import pytest
 
 from tessellate.ai import composer_digest, utilities
-from tessellate.api import routes_chat
+from tessellate.api import chat_service, chat_web
 from tests._clock import pin_clock
 
 
@@ -36,25 +36,25 @@ def test_a_local_question_carries_the_persons_place_and_no_other(asked: str, pla
 )
 def test_the_place_is_the_timezones_city(zone: str, place: str) -> None:
     config = SimpleNamespace(get_preference=lambda key, default=None: zone if key == "timezone" else default)
-    assert routes_chat._home_place(config) == place
+    assert chat_web._home_place(config) == place
 
 
 @pytest.mark.parametrize(("running", "web"), [(True, False), (False, True), (True, True)])
 def test_the_weather_is_no_worked_answer_with_a_model_or_the_web(monkeypatch, running: bool, web: bool) -> None:
-    monkeypatch.setattr(routes_chat.deps, "get_ollama", lambda: SimpleNamespace(is_running=lambda: running))
+    monkeypatch.setattr(chat_service.deps, "get_ollama", lambda: SimpleNamespace(is_running=lambda: running))
     monkeypatch.setattr(utilities, "web_on", lambda: web)
-    detected, stats = routes_chat._worked_out("What's the weather like today?")
+    detected, stats = chat_service._worked_out("What's the weather like today?")
     assert stats is None
-    assert detected == routes_chat.intent.NOTES
+    assert detected == chat_service.intent.NOTES
 
 
 def test_with_neither_the_composer_says_it_cannot(monkeypatch) -> None:
-    monkeypatch.setattr(routes_chat.deps, "get_ollama", lambda: SimpleNamespace(is_running=lambda: False))
+    monkeypatch.setattr(chat_service.deps, "get_ollama", lambda: SimpleNamespace(is_running=lambda: False))
     monkeypatch.setattr(utilities, "web_on", lambda: False)
     #: A fixed clock and no config: the composer needs only the day.
-    monkeypatch.setattr(routes_chat.deps, "get_config", lambda: None)
+    monkeypatch.setattr(chat_service.deps, "get_config", lambda: None)
     pin_clock(monkeypatch, datetime(2026, 10, 27, 9, 30))
     utilities._kind_of_cached.cache_clear()
-    detected, stats = routes_chat._worked_out("What's the weather like today?")
-    assert detected == routes_chat.intent.UTILITY
+    detected, stats = chat_service._worked_out("What's the weather like today?")
+    assert detected == chat_service.intent.UTILITY
     assert "weather" in stats.text

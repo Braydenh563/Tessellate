@@ -7,12 +7,13 @@ from __future__ import annotations
 
 from tests._app_js import frontend_text
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 WB = frontend_text("whiteboard.js")
 INTER = (JS / "whiteboard-interchange.js").read_text(encoding="utf-8")
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 SOURCE = "flowchart TD\n  A[Start] --> B[Done]"
 
 

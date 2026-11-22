@@ -880,7 +880,7 @@ def _propose_act(session: Session, args: dict) -> dict:
 
 def _summarize_notes(session: Session, args: dict) -> dict:
     """Gather recent notes (optionally by category / time window) so the model
-    can summarise them in its answer. Read-only."""
+    can summarise them in its answer."""
     from tessellate.core.database import utcnow
 
     query = select(Entry).where(*_visible())

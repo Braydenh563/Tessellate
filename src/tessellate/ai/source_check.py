@@ -41,6 +41,8 @@ _NOT_NAMES = frozenset(
         "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
         "mon", "tue", "tues", "wed", "thu", "thur", "thurs", "fri", "sat", "sun",
         "today", "tomorrow", "yesterday", "i", "i'm", "i've", "i'll", "i'd", "ok", "okay",
+        #: "Atlas's answer" is the fallback note's own name for the assistant (z69 on CI).
+        "atlas's", "tessellate",
         "ai", "atlas", "memorymap", "notes", "note", "chat", "graph", "library",
         "settings", "timeline", "whiteboard", "documents", "document", "reminders",
         "reminder", "inbox", "ask", "agent", "skills", "skill", "tags", "tag",

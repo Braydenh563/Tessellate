@@ -303,7 +303,7 @@ async function saveBackupCopyDir(value) {
     toast(value ? `Each backup is also copied to ${prefsCache.backup_copy_dir}` : "Backups stay on this computer only.");
   } catch (error) {
     input.value = prefsCache?.backup_copy_dir || "";
-    toast(error.message || "Couldn't use that folder.", true);
+    toast(error.message || voiceLine("failed", "use that folder"), true);
   }
 }
 
@@ -390,7 +390,7 @@ async function renderBackups() {
           try {
             await apiJson(`/backups/${item.name}`, { method: "DELETE" });
           } catch (error) {
-            toast(error.message || "Couldn't delete that backup.", true);
+            toast(error.message || voiceLine("failed", "delete that backup"), true);
           }
           renderBackups();
         },
@@ -848,7 +848,7 @@ async function renderSettingsClear() {
           `Restored “${item.label}”: it can be offered again.`
         );
       } catch (error) {
-        toast(error.message || "Couldn't restore that suggestion.", true);
+        toast(error.message || voiceLine("failed", "restore that suggestion"), true);
       }
     }
   }
@@ -952,7 +952,7 @@ $("clear-dismissed")?.addEventListener("click", async () => {
       `Cleared ${settingsClearCount(done.cleared, "dismissed suggestion", "dismissed suggestions")}: they can be offered again.`
     );
   } catch (error) {
-    toast(error.message || "Couldn't clear the dismissed suggestions.", true);
+    toast(error.message || voiceLine("failed", "clear the dismissed suggestions"), true);
   }
 });
 
@@ -1236,7 +1236,7 @@ async function settingsHistoryUndo(change) {
     settleUndoFromToast(action);
     toast(`Undone: ${change.label}`);
   } catch (error) {
-    toast(error.message || "Couldn't undo that setting change.", true);
+    toast(error.message || voiceLine("failed", "undo that setting change"), true);
   }
 }
 
@@ -1249,7 +1249,7 @@ async function settingsHistoryRedo(change) {
     renderUndoBar();
     toast(`Done again: ${change.label}`);
   } catch (error) {
-    toast(error.message || "Couldn't do that again.", true);
+    toast(error.message || voiceLine("failed", "do that again"), true);
   }
 }
 

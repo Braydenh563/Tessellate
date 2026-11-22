@@ -144,7 +144,7 @@
       //: retrying every pause must not stack a toast each time.
       if (!docSaveFailedSaid) {
         docSaveFailedSaid = true;
-        toast(voiceLine("failed", { what: "save the document", why: `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.` }), true, {
+        toast(voiceLine("failed", "save the document", `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.`), true, {
           action: ["Try again", () => saveDocument({ silent: false })],
         });
       }

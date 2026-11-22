@@ -9,9 +9,10 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _fn(js: str, head: str) -> str:

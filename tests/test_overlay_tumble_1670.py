@@ -70,7 +70,10 @@ def test_a_curling_throw_turns_against_a_straight_one_the_other_way() -> None:
         return e.omega
 
     assert omega(0.0) > 0 and omega(-0.4) < omega(0.0)  # a counter-clockwise curl takes from it
-    assert omega(0.4) > omega(0.0)  # a clockwise curl adds to a rightward throw's turn
+    # Re-registered (L150): at 0.4 rad a step the six steps turn the path 2.4 rad, so the throw ends leftward and its
+    # sign flips (0.4 gave 2.83 against 2.87 straight on the new 145 px figure; 0.2 gives 3.22), so the clockwise curl
+    # is the gentle one that is still a rightward throw.
+    assert omega(0.2) > omega(0.0)  # a clockwise curl adds to a rightward throw's turn
 
 
 def test_a_wall_bounce_changes_the_turn_and_a_slow_flight_rights_itself_eased() -> None:

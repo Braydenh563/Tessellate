@@ -85,7 +85,51 @@ def summary(data_dir: Path, known: list[str] | None = None, today: date | None =
     return {"features": rows, "unused": unused, "unused_days": UNUSED_DAYS}
 
 
+OFFER_EVERY_DAYS = 7
+
+
+def _offers(data_dir: Path) -> Path:
+    return Path(data_dir) / "usage_offer.json"
+
+
+def _older_than_window(ledger: dict, day: date) -> bool:
+    """A new notebook has "used" nothing yet, so it is offered nothing."""
+    firsts = [str(v.get("first") or "") for v in ledger.values() if v.get("first")]
+    return bool(firsts) and min(firsts) < (day - timedelta(days=UNUSED_DAYS)).isoformat()
+
+
+def _offer_state(data_dir: Path) -> dict:
+    try:
+        return json.loads(_offers(data_dir).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def weekly_offer(data_dir: Path, known: list[str], today: date | None = None) -> str | None:
+    """The one unused feature to offer this week (CHAT_PLAN section 9 row 5), or
+    None: not within seven days of the last offer, not while the ledger is
+    younger than the ninety-day window (a new notebook has "used" nothing), and
+    never one already offered until every unused one has been. Names only."""
+    day = today or clock.today()
+    ledger = read(data_dir)
+    if not _older_than_window(ledger, day):
+        return None
+    state = _offer_state(data_dir)
+    if state.get("on") and (day - date.fromisoformat(state["on"])).days < OFFER_EVERY_DAYS:
+        return None
+    unused = sorted(n for n in summary(data_dir, known, day)["unused"])
+    if not unused:
+        return None
+    given = [n for n in state.get("given", []) if n in unused]
+    fresh = [n for n in unused if n not in given] or unused
+    name = fresh[0]
+    with _lock:
+        atomic_write_text(_offers(data_dir), json.dumps({"on": day.isoformat(), "given": ([] if fresh is unused else given) + [name]}))
+    return name
+
+
 def clear(data_dir: Path) -> None:
     with _lock:
         #: Nothing counted yet is already clear.
         _path(data_dir).unlink(missing_ok=True)
+        _offers(data_dir).unlink(missing_ok=True)

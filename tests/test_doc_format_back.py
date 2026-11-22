@@ -13,11 +13,11 @@ from __future__ import annotations
 from tests._help_text import help_chat_text
 
 from pathlib import Path
-from tests._app_js import documents_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = documents_text()
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 HELP = help_chat_text()
 
 

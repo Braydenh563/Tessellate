@@ -21,10 +21,11 @@ from pathlib import Path
 from tests._js_scope import unwrapped
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
-INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 BODY_JS = (FRONTEND / "js" / "settings-body.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

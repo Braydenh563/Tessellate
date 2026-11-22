@@ -13,10 +13,11 @@ from pathlib import Path
 
 from tessellate.ai import help_topics_more
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 LAZY = (JS / "private-spaces.js").read_text(encoding="utf-8")
 
 

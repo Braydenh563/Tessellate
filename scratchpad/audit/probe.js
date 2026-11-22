@@ -15,7 +15,7 @@ const SUSPECTS = [
   ['notes', '#semantic-search-toggle'],
   ['library', '#library-semantic-toggle'],
   ['library', '#library-show-binned'],
-  ['chat', '#chat-sidebar-sort'],
+  ['chat', '#chat-sidebar-view .kebab-opener'],
   ['reminders', '#reminder-priority'],
   ['reminders', '#reminder-recurring'],
   ['reminders', '#reminders-page-size'],

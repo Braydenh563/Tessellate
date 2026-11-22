@@ -25,5 +25,6 @@ TABLE: tuple[tuple[str, str, str, str], ...] = (
     ('calc', '/calc <sum>', 'a sum worked out exactly, with + - * / % ^ and brackets.', '/calc 15 * 80 / 100'),
     ('stats', '/stats', 'how many notes, words, tags and days of writing you have.', '/stats'),
     ('orphans', '/orphans', 'the notes that link to no other note.', '/orphans'),
+    ('tools', '/tools [n]', 'the assistant\'s last tool calls and what came back.', '/tools 5'),
     ('help', '/help [command]', 'these commands, or how to type one.', '/help made'),
 )

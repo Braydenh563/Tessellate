@@ -8,7 +8,11 @@ unlock like every route, and at `/api/v1/read` for an outside client.
 
 from __future__ import annotations
 
+import logging
+
+import json
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
@@ -163,3 +167,148 @@ def act_rows() -> dict:
     from tessellate.ai import acts
 
     return {"rows": acts.palette_rows(), "capability": acts.capability_line()}
+
+
+@router.get("/read/act")
+def act_preview(
+    q: str = Query("", max_length=MAX_CHARS),
+    tz_offset_minutes: int = Query(0, ge=-14 * 60, le=14 * 60),
+    now: str = Query("", max_length=40),
+    session: Session = Depends(get_session),
+) -> dict:
+    """What a typed sentence would do as an act, written nowhere (CHAT_PLAN B24:
+    "remind me Tuesday 9am lecture" in the palette shows its card before Chat
+    runs it). `act` is None for a sentence that is not an act, or one that
+    still lacks its time (Chat asks that, once); the line is the one Chat
+    would say, the label the card's, and the steps are counted, never run."""
+    from tessellate.ai import acts
+
+    clock = _clock(tz_offset_minutes, now).replace(tzinfo=None)
+    parsed = acts.parse(q, clock, [])
+    if parsed is None or (parsed["intent"] == "reminder" and not parsed.get("time_given") and not parsed.get("on_list")):
+        return {"act": None}
+    try:
+        planned = acts.preview(session, parsed, None)
+    except Exception:  # noqa: BLE001
+        #: A plan that fails is logged in full and answered as no act: an exception's own text
+        #: (a path, a query) never reaches the page (CodeQL py/stack-trace-exposure).
+        logging.getLogger(__name__).exception("act preview failed")
+        return {"act": None}
+    card = planned.get("card") or {}
+    line, label = str(planned.get("line") or ""), str(card.get("label") or "")
+    return {"act": {"intent": str(parsed["intent"]), "line": line, "label": label, "steps": len(card.get("steps") or [])}}
+
+
+@router.get("/read/answer")
+def find_answer(
+    q: str = Query("", max_length=MAX_CHARS),
+    tz_offset_minutes: int = Query(0, ge=-14 * 60, le=14 * 60),
+    now: str = Query("", max_length=40),
+    session: Session = Depends(get_session),
+) -> dict:
+    """The one line above Find anything's results when the query is a question
+    (CHAT_PLAN "composer everywhere" row 4): the composer's own first line over
+    the best-matching notes, with the notes it came from. `answer` is None for
+    words to find, or when the notes hold nothing to quote."""
+    from tessellate.ai import composer_voice
+    from tessellate.repo import visible_notes
+    from tessellate.search import engine
+
+    if not composer_voice.asks(q):
+        return {"answer": None}
+    hits = engine.search(session, q, limit=8, kinds=["note"])
+    ids = [h.ref_id for h in hits if h.kind == "note"]
+    rows = visible_notes.written(session, ids) if ids else {}
+    notes = [{"id": i, "content": rows[i][0], "written": rows[i][1]} for i in ids if i in rows]
+    if not notes:
+        return {"answer": None}
+    said = composer_voice.one_line(q, notes, today=_clock(tz_offset_minutes, now).date())
+    if not said:
+        return {"answer": None}
+    return {"answer": {"text": said["text"].strip(), "sources": said["sources"]}}
+
+
+@router.get("/read/flashcards")
+def answer_flashcards(title: str = Query("Answer", max_length=200), text: str = Query("", max_length=8000)) -> dict:
+    """The question and answer cards an answer's own words hold (CHAT_PLAN B12),
+    as the deck's markdown, for the Ask answer's "Make flashcards"; written
+    nowhere, the page saves it as a document with an undo. `count` 0 says the
+    answer holds nothing to ask about."""
+    from tessellate.ai import composer_study, study
+
+    deck = study.cards(text)
+    return {"count": len(deck), "text": composer_study.deck_text_titled(title.strip() or "Answer", deck) if deck else ""}
+
+
+class EditBody(BaseModel):
+    op: str = Field(pattern="^(tighten|summarise|continue)$")
+    text: str = Field(max_length=20000)
+
+
+@router.post("/read/edit")
+def edit_selection(body: EditBody) -> dict:
+    """A document edit with no model (CHAT_PLAN B26): the text tightened, summarised or its list
+    continued, written nowhere. `same` is true when the edit changes nothing, so the page says so
+    and leaves the document alone; the page applies a change as one undoable edit."""
+    from tessellate.ai import composer_edit
+
+    work = {"tighten": composer_edit.tighten, "summarise": composer_edit.summarise, "continue": composer_edit.continue_list}[body.op]
+    made = work(body.text)
+    return {"text": made, "same": not made.strip() or (body.op != "continue" and made.strip() == body.text.strip())}
+
+
+class RateBody(BaseModel):
+    question: str = Field("", max_length=500)
+    answer: str = Field(..., max_length=8000)
+    good: bool = True
+
+
+def _gold_path():
+    return Path(get_config().data_dir) / "answer_gold.jsonl"
+
+
+@router.post("/read/rate")
+def rate_answer(body: RateBody) -> dict:
+    """Rate an answer (CHAT_PLAN B40): a good one joins the local gold set, a line
+    in `answer_gold.jsonl` that never leaves the folder; a bad one is logged the
+    same way with `good` false, so the weekly gallery shows both."""
+    row = {"at": utcnow().isoformat(), "question": body.question.strip(), "answer": body.answer.strip(), "good": body.good}
+    path = _gold_path()
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return {"ok": True, "at": row["at"]}
+
+
+@router.delete("/read/rate")
+def unrate_answer(at: str = Query(..., max_length=64)) -> dict:
+    """Undo one rating by its timestamp."""
+    path = _gold_path()
+    if not path.exists():
+        return {"ok": True}
+    kept = [line for line in path.read_text(encoding="utf-8").splitlines() if f'"at": {json.dumps(at)}' not in line]
+    path.write_text("".join(line + "\n" for line in kept), encoding="utf-8")
+    return {"ok": True}
+
+
+@router.get("/read/gallery")
+def answer_gallery(days: int = Query(7, ge=1, le=90)) -> dict:
+    """The rated answers of the last `days` days as one markdown page, newest
+    first, for the weekly look at what the notebook answered well and badly."""
+    path = _gold_path()
+    cutoff = (utcnow() - timedelta(days=days)).isoformat()
+    rows = []
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            if row.get("at", "") >= cutoff:
+                rows.append(row)
+    rows.sort(key=lambda r: r["at"], reverse=True)
+    parts = [f"# Answer gallery, last {days} days", ""]
+    for row in rows:
+        parts += [f"## {'Good' if row.get('good') else 'Not good'}: {row.get('question') or 'Answer'}", "", row.get("answer", ""), ""]
+    if not rows:
+        parts.append("No answers rated yet.")
+    return {"count": len(rows), "text": "\n".join(parts).strip() + "\n"}

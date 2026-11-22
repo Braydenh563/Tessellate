@@ -17,7 +17,7 @@ from tessellate.search import query as query_understanding
 #: `composer_voice.TITLE_WORDS`, repeated here so importing this module does
 #: not load the composer; `title_for` itself is imported where it is used.
 TITLE_WORDS = 7
-#: A part this short is a scrap ("Notes:", "TODO"), not a note: it joins its neighbour.
+#: A part this short is a scrap ("Notes:", a bare marker word), not a note: it joins its neighbour.
 SCRAP_WORDS = 4
 
 # Prefixes only, each bounded: the rest of the line is trimmed in Python, so

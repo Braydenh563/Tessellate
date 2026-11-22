@@ -207,7 +207,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
           }
         );
       } catch (err) {
-        toast(err.message || "Couldn't delete that reading.", true);
+        toast(err.message || voiceLine("failed", "delete that reading"), true);
       } finally {
         self.disabled = false;
       }
@@ -1107,7 +1107,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       a.click();
       a.remove();
     } catch {
-      toast("Couldn't save that file.", true);
+      toast(voiceLine("failed", "save that file"), true);
     }
   }, topActions);
   //: "Open in": the browser's own viewer, in a tab of its own, for a file
@@ -1266,12 +1266,12 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       lightboxEditTarget.text = saved.text || "";
       setLightboxEditing(false);
       lightboxLoadExtractedText?.();
-      toast("Saved.");
+      toast(voiceLine("done", "Saved"));
     } catch (error) {
       //: A 409 is the server declining to overwrite (`docview.editability`),
       //: and its `detail` is written to be read by a person, so it is shown
       //: rather than replaced with a generic failure.
-      toast(error.message || "Couldn't save that file.", true);
+      toast(error.message || voiceLine("failed", "save that file"), true);
     } finally {
       button.disabled = false;
     }
@@ -1303,7 +1303,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       const extension = kind === "markdown" ? "md" : "txt";
       await saveFile(`${stem}.${extension}`, new Blob([text], { type: "text/plain" }));
     } catch (error) {
-      toast(error.message || "Couldn't export that text.", true);
+      toast(error.message || voiceLine("failed", "export that text"), true);
     } finally {
       button.disabled = false;
     }
@@ -1529,7 +1529,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
               item.filename = updated.original_name;
               renderInfo(item, true);
             } catch (err) {
-              toast(err.message || "Couldn't rename that image.", true);
+              toast(err.message || voiceLine("failed", "rename that image"), true);
             }
           },
         },
@@ -1548,7 +1548,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
               }
               show(index);
             } catch (err) {
-              toast(err.message || "Couldn't delete that image.", true);
+              toast(err.message || voiceLine("failed", "delete that image"), true);
             }
           },
         },

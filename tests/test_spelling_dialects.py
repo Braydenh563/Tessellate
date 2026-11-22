@@ -17,10 +17,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
-HTML = (FRONTEND / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 DOCS = frontend_text("documents.js")
 
 DIALECTS = ["us", "uk", "au", "ca", "in"]

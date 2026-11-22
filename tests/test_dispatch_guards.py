@@ -16,7 +16,7 @@ from tessellate.ai.agent_turn import _TurnState
 
 
 def _plan(permitted=None, barred=()):
-    return SimpleNamespace(permitted=permitted, barred=set(barred), budget=SimpleNamespace(tool_result_chars=100_000))
+    return SimpleNamespace(permitted=permitted, barred=set(barred), messages=[], budget=SimpleNamespace(tool_result_chars=100_000))
 
 
 def _dispatch(session, plan, state, call):

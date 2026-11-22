@@ -34,7 +34,7 @@ finished. It removes the confirmed fact (soft delete) and records a
 "dismiss_insight" of reason "done", so the plan and its variants never show
 again, said once as "Marked done". A later note sharing the plan's words
 (the rule `drift` already uses) retires a confirmed drift fact the same way
-(`retire_followed`), so "still open" is not said after the owner wrote it was done.
+(`retire_followed`), so a plan is not called unfinished after the owner wrote it was done.
 """
 
 from __future__ import annotations
@@ -114,7 +114,7 @@ def _week(day: date) -> tuple[int, int]:
 
 
 #: "want to see Kyoto and Nara" is a verb phrase; "no later note picks up want to see ..." reads broken (audit 1030 Z7).
-_PLAN_LEAD = re.compile(r"^(?:(?:i|we)(?:'m|'re| am| are)?\s+)?(?:(?:want|wants|wanted|plan|plans|planned|hope|hopes|hoped|intend|intends)\s+to|(?:am |are |is )?going to)\s+(?=\S)", re.I)
+_PLAN_LEAD = re.compile(r"^(?:(?:i|we)(?:'m|'re| am| are)?\s+)?(?:(?:want|wants|wanted|plan|plans|planned|planning|hope|hopes|hoped|hoping|intend|intends|need|needs|needed|have|has)\s+to|(?:should|must)|(?:am |are |is )?going to)\s+(?=\S)", re.I)
 
 
 def _plan_phrase(plan: str, shown: str) -> str:
@@ -578,7 +578,7 @@ def done(session, body: dict) -> dict:  # noqa: ANN001
 
 
 def retire_followed(session, notes: list[dict], today: date) -> int:  # noqa: ANN001
-    """A confirmed "still open" plan that a later note now follows up (the
+    """A confirmed open-items plan that a later note now follows up (the
     words `drift` matches on) is no longer said: its fact is removed. Needs
     the plan's own note among `notes`, so a limited window never retires it."""
     known = memory(session)
@@ -632,7 +632,7 @@ def shown_confirmed(session, fact_id: int | None = None) -> list:  # noqa: ANN00
 
 
 def removed_confirmed(session, fact_id: int):  # noqa: ANN001, ANN201
-    """A removed confirmed fact on a note the person can still open: Undo's way back."""
+    """A removed confirmed fact on a note the person can reach: Undo's way back."""
     found = _confirmed_rows(session, removed=True, fact_id=fact_id)
     return found[0] if found else None
 

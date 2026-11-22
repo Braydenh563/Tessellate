@@ -107,7 +107,7 @@ def test_request_models_in_the_busy_routes_bound_every_text_and_list_field():
     from pathlib import Path
 
     unbounded = []
-    for name in ("routes_chat", "routes_files", "routes_graph"):
+    for name in ("routes_chat", "chat_service", "routes_files", "routes_graph"):
         path = Path("src/tessellate/api") / f"{name}.py"
         for cls in ast.walk(ast.parse(path.read_text())):
             if not isinstance(cls, ast.ClassDef) or cls.name.endswith(("Out", "Response")):

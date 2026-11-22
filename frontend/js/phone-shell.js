@@ -2282,9 +2282,13 @@ async function quitApp() {
     "<p>Your notes are saved. You can close this tab.</p></div>";
 }
 $("quit-btn")?.addEventListener("click", quitApp);
-for (const button of document.querySelectorAll("#chat-mode-seg button")) {
-  button.addEventListener("click", () => setChatMode(button.dataset.chatMode));
-}
+//: When the chat surface is built, not at load: at load it is still a template, the query found no
+//: button, and Ask could not be chosen (the owner, 2026-11-22: "clicking it does nothing").
+onSurface("chat", () => {
+  for (const button of document.querySelectorAll("#chat-mode-seg button")) {
+    button.addEventListener("click", () => setChatMode(button.dataset.chatMode));
+  }
+});
 
 // ROADMAP item C: "several extras only take effect on restart and the app
 // says so without offering one." This is that offer, a plain restart, not
@@ -2344,7 +2348,7 @@ async function renderExportsList() {
         const response = await api(`/files/exports/${encodeURIComponent(file.filename)}`);
         downloadBlob(await response.blob(), file.filename);
       } catch (error) {
-        toast(error.message || `Couldn't fetch ${file.filename}.`, true);
+        toast(error.message || voiceLine("failed", `fetch ${file.filename}`), true);
       }
     });
     get.classList.add("ghost");

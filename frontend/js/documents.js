@@ -110,7 +110,7 @@ async function expandNoteIntoDocument(entry) {
     offerCreateUndo(doc);
     switchTab("documents");
     await loadDocuments(doc.id);
-    toast(`Started a document from this note, the note itself is untouched.`);
+    toast(voiceLine("done", "Started a document from this note, the note itself is untouched"));
   } catch (error) {
     toast(error.message, true);
   }

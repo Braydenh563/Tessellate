@@ -28,6 +28,12 @@ function chatPinUndo(id, pinned) {
   offerUndo(pinned ? "Pinned a chat" : "Unpinned a chat", pinned ? "Pinned." : "Unpinned.", pin(!pinned), pin(pinned));
 }
 
+//: Filing a chat in a folder, or out of one (`folder` "" is no folder).
+function chatFolderUndo(id, before, after) {
+  const file = (folder) => chatRepaint(() => chatPut(`${id}/folder`, { folder }));
+  offerUndo(after ? `Moved a chat to “${after}”` : "Took a chat out of its folder", after ? `Moved to “${after}”.` : "Out of its folder.", file(before), file(after));
+}
+
 function chatArchiveUndo(id, title) {
   offerUndo(`Archived “${title}”`, "Archived. Find it in Library, Archived.", chatRepaint(() => chatPut(`${id}/unarchive`)), chatRepaint(() => chatPut(`${id}/archive`)));
 }
@@ -62,9 +68,13 @@ function chatTurnUndo(id, index, gone) {
   const back = gone.conversation_deleted
     ? () => apiJson("/conversations/restore", { method: "POST", body: JSON.stringify(gone.restore) })
     : () => apiJson(`/conversations/${id}/turns/${index}/restore`, { method: "POST", body: JSON.stringify({ messages: gone.removed }) });
+  //: What the chat now counts, beside what it did (L-chat-19): the figure falls with nothing else saying why.
+  const left = Number(gone.tokens) || 0;
+  const took = (gone.removed || []).reduce((sum, m) => sum + (Number(m.tokens) || 0), 0);
+  const said = took && !gone.conversation_deleted ? ` This chat now counts ${formatTokens(left)} tokens, down from ${formatTokens(left + took)}.` : "";
   offerUndo(
     "Deleted a message",
-    "Message deleted.",
+    `Message deleted.${said}`,
     async () => { await back(); await reopen(); loadConversationList(); },
     async () => {
       await apiJson(`/conversations/${id}/turns/${index}`, { method: "DELETE" });

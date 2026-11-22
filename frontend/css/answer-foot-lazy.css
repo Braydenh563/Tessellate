@@ -163,3 +163,61 @@
 :where(:root[data-motion="reduced"]) .answer-foot-chip::after {
   transition: none;
 }
+
+/* A chat answer's version pager (L165) and a skill run's budget line: drawn only in a chat answer, so they ride this sheet, not boot. */
+.answer-version-pager {
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.skill-budget {
+  margin-top: 0.4rem;
+  font-size: var(--text-sm);
+}
+
+/* The agent asking before a change (L-world-class-181, tool-consent.js): drawn only in a chat
+   turn, so it rides this sheet. The suggested edit is `docRenderDiff`'s; the few rules the
+   library sheet gives it elsewhere are repeated here under the card, which loads no library. */
+.tool-consent-why {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+}
+.tool-consent-head {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-sm);
+}
+.tool-consent-diff {
+  max-height: min(16rem, 50vh);
+  overflow-y: auto;
+  margin-bottom: var(--space-2);
+}
+.tool-consent .doc-diff .diff-removed {
+  margin-bottom: 0;
+  background: var(--error-soft);
+  text-decoration: none;
+}
+.tool-consent .doc-diff .diff-added {
+  background: var(--ok-soft);
+}
+.tool-consent .doc-diff-hunk-head:first-child {
+  margin-top: 0;
+  border-top: none;
+}
+.tool-consent .doc-diff-line.is-skipped {
+  opacity: 0.45;
+}
+.tool-consent-actions {
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.tool-consent-instead {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+.tool-consent-instead input {
+  flex: 1 1 auto;
+  min-width: 0;
+}

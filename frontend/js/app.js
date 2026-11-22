@@ -941,12 +941,12 @@ function startApp() {
           // The lock screen already said what happened; a toast under it
           // repeating "Couldn't X: Locked" for every parallel step is noise
           // about one state dressed up as several failures.
-          if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+          if (!error.isLockout) toast(voiceLine("failed", label, error.message), true);
         });
       }
       return Promise.resolve(result);
     } catch (error) {
-      if (!error.isLockout) toast(`Couldn't ${label}: ${error.message}`, true);
+      if (!error.isLockout) toast(voiceLine("failed", label, error.message), true);
       return Promise.resolve();
     }
   };
@@ -1533,15 +1533,22 @@ const LAZY_MODULES = {
   //: The menus a note card's category and tag chips open: see chip-menus.js.
   chipMenus: ["/js/chip-menus.js"],
   noteHistory: ["/js/note-history.js"],
+  //: The chart maker and the ```chart block it saves (ask-chart.js, `drawAskChart.maker`).
+  chartMaker: ["/css/utilities-lazy.css", "/js/ask-chart.js"],
   askHistory: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-history.js", "/js/ask-chart.js"],
   //: The Ask box's Use AI switch (ask-compose.js), preloaded below.
-  askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js"],
+  askCompose: ["/css/ask-compose-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/ask-compose.js", "/js/ask-browser.js"],
   //: Notes, Questions (questions-view.js), behind two stand-ins.
   questionsView: ["/css/questions-lazy.css", "/js/questions-view.js"],
+  //: Notes, Goals (goals-view.js, Brief 98), loaded by showNotesSection.
+  goalsView: ["/css/goals-lazy.css", "/js/goals-view.js"],
   settingsData: ["/js/settings-data.js"],
   settingsUi: ["/js/meaning.js", "/js/settings-find.js", "/js/settings-models.js"],
   tagSuggest: ["/js/tag-suggest.js"],
-  searchSuggest: ["/js/search-suggest.js"],
+  //: The NDJSON stream reader (L170): only a streamed answer needs it, so it is not boot code.
+  ndjson: ["/js/ndjson-read.js"],
+  //: meaning.js first: the suggestions take its words for what was typed (L199, Brief 86).
+  searchSuggest: ["/js/meaning.js", "/js/search-suggest.js"],
   //: The writing desk's model passes (compose, title, save as note); see writing-desk.js.
   writingDesk: ["/css/writing-desk-lazy.css", "/js/writing-desk.js"],
   //: An attachment card's click (INBOX 440 (2)): attachment-actions.js.
@@ -1551,7 +1558,7 @@ const LAZY_MODULES = {
   //: The "needs an optional package" notice (INBOX 1748): extra-notice.js.
   extraNotice: ["/js/extra-notice.js"],
   //: Quick note and the note outbox (INBOX 434): see quick-note.js. router-overlays.js rides with the quick note: Back closes an open overlay first, and Settings' close settles the address. Both preloaded below; boot code is at its cap.
-  quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
+  quickNote: ["/js/quick-note.js", "/js/router-overlays.js", "/js/chat-ghost.js", "/js/composer-lint.js"],
   fieldClear: ["/js/field-clear.js"],
   //: A date or time field's panel (Phase 12): see date-field.js.
   dateField: ["/js/date-field.js"],
@@ -1611,8 +1618,6 @@ const LAZY_MODULES = {
   undoKit: ["/js/undo-kit.js"],
   //: Settings, Tasks (chat-tasks.js's header).
   sharedIntake: ["/js/shared-intake.js"],
-  //: Settings, Packages: the extras, their bundles and bulk actions (INBOX 595).
-  packages: ["/js/settings-packages.js"],
   //: Settings, Search and index's embedding models (INBOX 700, embed-choices.js).
   embedChoices: ["/js/embed-choices.js"],
   //: The panel the "m" chord opens: chord-guide.js says why it is preloaded.

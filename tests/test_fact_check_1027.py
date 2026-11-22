@@ -1,5 +1,5 @@
 """The check on a model's words in a facts turn (`ai/fact_check.py`,
-`routes_chat._fact_events`), from the second review of 2026-10-27: each case
+`chat_service._fact_events`), from the second review of 2026-10-27: each case
 here was a miscount the check kept, or a right answer it refused, measured
 through `/chat/stream` with a fake model and a fixed clock.
 """

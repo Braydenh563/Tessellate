@@ -439,5 +439,5 @@ def test_a_browser_download_says_so():
     save = skills[skills.index("async function saveFile(") :]
     save = save[: save.index("\n}\n")]
     browser_half = save[save.index("downloadBlob(blob, filename)") :]
-    assert "toast(`Downloaded ${filename}" in browser_half
+    assert "toast(voiceLine(\"done\", `Downloaded ${filename}" in browser_half
 

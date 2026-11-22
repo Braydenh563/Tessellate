@@ -82,6 +82,8 @@ ON_THE_GRAMMAR = {
     #: sketch-pad.js builds it, and test_sketch_pad.py plus the pad sweep
     #: check it.
     "notes",
+    #: The Notes tab's Goals sub-tab (goals-view.js, Brief 98).
+    "goals",
     "timeline",
     "reminders",
     # The Notes tab's Writing room sub-tab (WORLD_CLASS_PLAN D16): its head

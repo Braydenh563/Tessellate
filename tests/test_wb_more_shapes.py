@@ -14,11 +14,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = frontend_text("whiteboard.js")
 COMMANDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 WANTED = {"rounded", "ellipse", "hexagon", "parallelogram", "star", "cylinder", "cloud", "callout", "block-arrow"}
 
 

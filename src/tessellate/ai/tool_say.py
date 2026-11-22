@@ -27,7 +27,7 @@ import re
 from collections.abc import Callable
 from datetime import date, datetime
 
-from tessellate.ai import note_recency, recognise
+from tessellate.ai import note_recency, realise, recognise
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.realise import count_noun, cut_title, join_items, named_lead
 
@@ -41,6 +41,7 @@ SKILLS = "#/library/skills"
 FILES = "#/library/files"
 DOCUMENTS = "#/docs"
 CHATS = "#/chat"
+GOALS = "#/notes/goals"
 
 
 def note_at(note_id: object) -> str:
@@ -132,7 +133,7 @@ def _when(raw: object) -> str:
     except ValueError:
         return ""
     clock = f"{moment.hour % 12 or 12}{f':{moment.minute:02d}' if moment.minute else ''}{'am' if moment.hour < 12 else 'pm'}"
-    return f"{moment.strftime('%A')} {moment.day} {moment.strftime('%B')} at {clock}"
+    return realise.localised_days(f"{moment.strftime('%A')} {moment.day} {moment.strftime('%B')} at {clock}")
 
 
 def _plain(label: object) -> str:
@@ -386,6 +387,21 @@ def _rows_under(heading: str, notes: list[dict]) -> str:
 
 def count_word_of(n: int) -> str:
     return count_noun(n, "x").rsplit(" ", 1)[0]
+
+
+def _list_notes_table(result: dict, args: dict) -> Said:
+    """"show my notes as a table" (L-chat-253): the notes `_list_notes` says, drawn as a table."""
+    lead, body, chips = _list_notes(result, args)
+    notes = [n for n in result.get("notes") or [] if isinstance(n, dict)][:8]
+    if not notes:
+        return lead, body, chips
+    rows = [[link(_name(n.get("content") or n.get("preview") or n.get("title")), note_at(n.get("id") or n.get("note_id"))),
+             str(n.get("category") or "").strip(), str(n.get("created_at") or n.get("written") or "")[:10]] for n in notes]
+    return lead, _table(["Note", "Category", "Written"], rows), chips
+
+
+def _list_notes_said(result: dict, args: dict) -> Said:
+    return (_list_notes_table if args.get("table") else _list_notes)(result, args)
 
 
 def _documents(result: dict, args: dict) -> Said:
@@ -674,6 +690,38 @@ def _pinned(result: dict, args: dict) -> Said:
     return lead, "", _chips(("Open it", at))
 
 
+def _archived(result: dict, args: dict) -> Said:
+    ids = [i for i in result.get("archived") or [] if _number(i)]
+    on = result.get("now_archived", args.get("archived", True))
+    lead = f"{'Archived' if on else 'Brought back'} {count_noun(len(ids), 'note')}" + ("." if on else " from the Archive.")
+    body = "\n".join(f"- {link(f'Note {i}', note_at(i))}" for i in ids[:10])
+    return lead, body, _chips(("Open the first one", note_at(ids[0])) if ids else ("Open your notes", NOTES))
+
+
+def _listed_notes(rows: list, limit: int = 8) -> str:
+    return "\n".join(f"- {link(str(r.get('title') or 'Untitled note'), note_at(r.get('id')))}" + (f" ({r['last_touched']})" if r.get("last_touched") else "") for r in rows[:limit] if isinstance(r, dict))
+
+
+def _stale(result: dict, args: dict) -> Said:
+    rows, total = result.get("notes") or [], int(result.get("total_stale") or 0)
+    if not total:
+        return f"No note has sat untouched for {result.get('days')} days.", "", _chips(("Open your notes", NOTES))
+    return _sentence(f"{count_noun(total, 'note')} untouched for {result.get('days')} days, oldest first."), _listed_notes(rows), _chips(("Open your notes", NOTES))
+
+
+def _month(result: dict, args: dict) -> Said:
+    spent = (result.get("spent") or {}).get("text") or "nothing recorded as spent"
+    lead = f"{result.get('period')}: {count_noun(int(result.get('notes_written') or 0), 'note')} written and {count_noun(int(result.get('reminders_finished') or 0), 'reminder')} finished."
+    body = f"- Spent: {spent}\n" + _listed_notes([{"id": i, "title": f"Note {i}"} for i in result.get("written_ids") or []])
+    return lead, body.strip(), _chips(("Open your notes", NOTES))
+
+
+def _person(result: dict, args: dict) -> Said:
+    rows = result.get("mentioned_in") or []
+    lead = f"{result.get('name')} is named in {count_noun(int(result.get('mentioned_total') or 0), 'note')}, with {count_noun(len(result.get('open_reminders') or []), 'open reminder')}."
+    return lead, _listed_notes(rows), _chips(("Open the first one", note_at(rows[0].get("id"))) if rows else ("Open your notes", NOTES))
+
+
 def _linked(result: dict, args: dict) -> Said:
     ids = [i for i in result.get("linked") or result.get("unlinked") or [] if _number(i)]
     joined = " and ".join(link(f"note {i}", note_at(i)) for i in ids[:2])
@@ -689,6 +737,13 @@ def _audit(result: dict, args: dict) -> Said:
     if not n:
         return "Every link already says why it is there; I changed none.", "", _chips(("Open the graph", GRAPH))
     return f"Rewrote the reasons on {count_noun(n, 'link')} to say why the notes connect.", "", _chips(("Open the graph", GRAPH))
+
+
+def _audit_restored(result: dict, args: dict) -> Said:
+    n = int(result.get("restored") or 0)
+    if not n:
+        return "Nothing to put back: those reasons were edited since.", "", ()
+    return f"Put back the old reasons on {count_noun(n, 'link')}.", "", _chips(("Open the graph", GRAPH))
 
 
 def _learned_checked(result: dict, args: dict) -> Said:
@@ -727,12 +782,21 @@ def _created_document(result: dict, args: dict) -> Said:
     return f"Created the document {link(result.get('title') or 'Untitled', at)}, {count_noun(int(result.get('words') or 0), 'word')}.", "", _chips(("Open it", at))
 
 
+def _edited_document(result: dict, args: dict) -> Said:
+    at = document_at(result.get("id"))
+    if not result.get("changed"):
+        return f"The document {link(result.get('title') or 'Untitled', at)} already said that, so nothing changed.", "", _chips(("Open it", at))
+    return f"Edited the document {link(result.get('title') or 'Untitled', at)}; its history keeps the version before.", "", _chips(("Open it", at))
+
+
 def _deleted_document(result: dict, args: dict) -> Said:
-    return f"Deleted the document “{result.get('title') or 'Untitled'}”.", "", _chips(("Open Documents", DOCUMENTS))
+    return f"Moved the document “{result.get('title') or 'Untitled'}” to the bin.", "", _chips(("Open Documents", DOCUMENTS))
 
 
 def _mindmap_made(result: dict, args: dict) -> Said:
     at = board_at(result.get("board_id"))
+    if args.get("kind") == "board":
+        return f"Made the board {link(result.get('title') or args.get('title') or 'Untitled', at)}.", "", _chips(("Open the board", at))
     return f"Made the mind map {link(result.get('title') or args.get('title') or 'Untitled', at)}" + (f", starting from “{args['root_text']}”." if args.get("root_text") else "."), "", _chips(("Open the map", at))
 
 
@@ -831,6 +895,25 @@ def _skill_saved(result: dict, args: dict) -> Said:
     return f"{verb} the skill “{result.get('name') or args.get('name')}”" + (f", {count_noun(steps, 'step')}." if steps else "."), "", _chips(("Open Skills", SKILLS))
 
 
+def _chats_edited(result: dict, args: dict) -> Said:
+    label = str(result.get("label") or "").split(" ", 1)[-1] if str(result.get("label") or "").startswith("ph:") else str(result.get("label") or "")
+    return (label.rstrip(".") + "." if label else "Changed the chat list."), "", _chips(("Open Chat", CHATS))
+
+
+def _goals_edited(result: dict, args: dict) -> Said:
+    label = str(result.get("label") or "")
+    label = label.split(" ", 1)[-1] if label.startswith("ph:") else label
+    return (label.rstrip(".") + "." if label else "Changed your goals."), "", _chips(("Open Goals", GOALS))
+
+
+def _goals_listed(result: dict, args: dict) -> Said:
+    rows = [g for g in result.get("goals") or [] if isinstance(g, dict)]
+    if not rows:
+        return "You have no goals or lists yet.", "", _chips(("Open Goals", GOALS))
+    lines = [f"- {g.get('title')}: {g.get('progress')} done" + (f", by {g['target']}" if g.get("target") else "") for g in rows]
+    return f"Your goals and lists ({len(rows)}):", "\n".join(lines), _chips(("Open Goals", GOALS))
+
+
 def _skill_deleted(result: dict, args: dict) -> Said:
     return f"Deleted the skill “{result.get('name') or args.get('name')}”.", "", _chips(("Open Skills", SKILLS))
 
@@ -858,7 +941,7 @@ def _compress(result: dict, args: dict) -> Said:
 
 
 SAYERS: dict[str, Callable[[dict, dict], Said]] = {
-    "get_current_time": _time, "calculate": _calculate, "count_notes": _count, "list_notes": _list_notes,
+    "get_current_time": _time, "calculate": _calculate, "count_notes": _count, "list_notes": _list_notes_said,
     "search_notes": _search_notes, "get_note": _get_note, "find_similar_notes": _similar, "related_notes": _related,
     "path_between": _path, "find_contradictions": _contradictions, "summarize_notes": _summary,
     "list_tags": _named_counts("tags", "tag"), "list_categories": _named_counts("categories", "category"),
@@ -867,18 +950,18 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "search_chat_history": _chat_history, "search_files": _files, "read_file": _read_file, "read_text": _read_text,
     "read_whiteboard": _whiteboard, "search_whiteboard": _search_board, "read_mindmap": _mindmap,
     "list_library": _library, "check_answer": _check, "propose_act": _propose, "web_search": _web, "read_url": _read_url,
-    "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned,
+    "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned, "archive_note": _archived, "find_stale_notes": _stale, "count_month_figures": _month, "get_person_page": _person,
     "link_notes": _linked, "unlink_notes": _linked, "audit_link_reasons": _audit, "check_learned": _learned_checked,
     "create_category": _category, "rename_category": _category, "merge_categories": _category, "delete_category": _category,
-    "rename_tag": _tag, "delete_tag": _tag, "create_document": _created_document, "delete_document": _deleted_document,
+    "rename_tag": _tag, "delete_tag": _tag, "create_document": _created_document, "edit_document": _edited_document, "delete_document": _deleted_document,
     "create_mindmap": _mindmap_made, "map_from_note": _map_from_note, "move_notes": _moved, "add_map_node": _map_node, "link_map_nodes": _map_link,
     "add_whiteboard_card": _board_card, "add_whiteboard_link": _board_write("Linked the two cards"),
     "add_board_shape": _board_write("Drew the shape"), "edit_board_item": _board_write("Changed it"),
     "move_board_item": _board_write("Moved it"), "delete_board_item": _board_write("Took it off the board"),
-    "restore_board_item": _board_write("Put it back on the board"), "generate_diagram": _diagram,
+    "restore_board_item": _board_write("Put it back on the board"), "restore_link_reasons": _audit_restored, "generate_diagram": _diagram,
     "place_library_item": _placed, "set_reminder": _reminder_set, "complete_reminder": _reminder_done,
     "delete_note": _note_deleted, "restore_note": _note_restored, "save_user_preference": _preference,
-    "save_skill": _skill_saved, "delete_skill": _skill_deleted, "ask_user": _ask, "make_plan": _plan,
+    "edit_chats": _chats_edited, "edit_goals": _goals_edited, "list_goals": _goals_listed, "save_skill": _skill_saved, "delete_skill": _skill_deleted, "ask_user": _ask, "make_plan": _plan,
     "run_skill": _run_skill, "compress_chat": _compress,
 }
 
@@ -889,7 +972,7 @@ _SCREENS = {
     "skill": ("Skills", SKILLS), "file": ("Files", FILES), "link": ("the graph", GRAPH), "path": ("the graph", GRAPH),
     "related": ("the graph", GRAPH), "chat": ("Chat", CHATS), "help": ("Help", settings_at("help")),
     "web": ("Settings, Web search", settings_at("websearch")), "url": ("Settings, Web search", settings_at("websearch")),
-    "preference": ("What it remembers", settings_at("memory")),
+    "goal": ("Goals", GOALS), "preference": ("What it remembers", settings_at("memory")),
 }
 #: The argument names an error may quote, as words.
 _ARG_WORDS = {
@@ -928,6 +1011,11 @@ def _error(tool: str, message: str, args: dict) -> Said:
     text = text.replace("{", "(").replace("}", ")").replace("→", "to")
     text = re.sub(r"\[\d+\]", "", text)
     return f"That did not work: {_lower_first(_sentence(text))}", f"Try again with different words, or do it by hand in {name}.", _chips((f"Open {name}", at))
+
+
+def form_args(tool: str, asked: str) -> dict:
+    """The arguments a question's wish for a table adds: only the notes' list has a table form."""
+    return {"table": True} if tool == "list_notes" and re.search(r"\b(?:as|in) (?:a )?table\b", asked, re.I) else {}
 
 
 def say(tool: str, result: object, args: dict | None = None, today: date | None = None) -> dict:

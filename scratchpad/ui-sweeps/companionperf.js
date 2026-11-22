@@ -22,6 +22,8 @@ const KINDS = (process.env.KINDS || 'off,me,atlas').split(',');
 const TAB = process.env.TAB || 'dashboard';
 const OUT = process.env.OUT || `${os.tmpdir()}/companion-perf.json`;
 const MS = Number(process.env.MS || 4000);
+// VW and VH: the viewport (L184's 390 px fps re-measure is VW=390 VH=844); fps is frames over secs per phase.
+const VIEW = { width: Number(process.env.VW || 1440), height: Number(process.env.VH || 900) };
 
 async function metrics(cdp) {
   const { metrics: m } = await cdp.send('Performance.getMetrics');
@@ -87,7 +89,7 @@ async function phase(page, cdp, browser, name, act) {
   const top = Object.entries(self).sort((x, y) => y[1] - x[1]).slice(0, 8).map(([k, v]) => `${k} ${v.toFixed(1)}ms`);
   const d = (k) => b[k] - a[k];
   return {
-    phase: name, secs: +secs.toFixed(2), frames,
+    phase: name, secs: +secs.toFixed(2), frames, fps: +(frames / secs).toFixed(1),
     scriptMsPerSec: +(d('ScriptDuration') * 1000 / secs).toFixed(2),
     scriptMsPerFrame: +(d('ScriptDuration') * 1000 / Math.max(1, frames)).toFixed(3),
     taskMsPerSec: +(d('TaskDuration') * 1000 / secs).toFixed(1),
@@ -103,14 +105,14 @@ async function idleRun() {
   const rows = [];
   for (const spec of KINDS) {
     const [kind, state] = spec.split(':');
-    const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, reducedMotion: state === 'reduced' ? 'reduce' : undefined });
+    const { browser, page } = await boot({ viewport: VIEW, reducedMotion: state === 'reduced' ? 'reduce' : undefined });
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Performance.enable');
     await page.evaluate(([k, st]) => {
       localStorage.removeItem('nm-buddy-spots');
       if (st === 'appreduce') { localStorage.setItem('motion', 'reduced'); document.documentElement.dataset.motion = 'reduced'; }
       if (st === 'animoff') { localStorage.setItem('avatar-motion', 'off'); document.documentElement.dataset.avatarMotion = 'off'; }
-      const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
+      prefs.set('avatar-buddy', k); syncNameMarkBuddy();
     }, [kind, state || '']);
     await page.evaluate((t) => revealTab(t), TAB);
     await page.waitForTimeout(6000);
@@ -150,10 +152,10 @@ async function idleRun() {
   if (process.env.IDLE) return idleRun();
   const results = [];
   for (const kind of KINDS) {
-    const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+    const { browser, page } = await boot({ viewport: VIEW });
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Performance.enable');
-    await page.evaluate((k) => { const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, kind);
+    await page.evaluate((k) => { prefs.set('avatar-buddy', k); syncNameMarkBuddy(); }, kind);
     await page.evaluate(() => localStorage.removeItem('nm-buddy-spots'));
     await page.evaluate((t) => revealTab(t), TAB);
     await page.waitForTimeout(6000);

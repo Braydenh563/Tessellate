@@ -294,7 +294,7 @@
     try {
       res = await apiJson(`/whiteboard/boards/${window.currentBoardId ?? 0}/paste`, { method: "POST", body: JSON.stringify({ items: wire }) });
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "make that copy" }), true);
+      toast(err.message || voiceLine("failed", "make that copy"), true);
       return [];
     }
     wbState.objects.push(...res.objects);

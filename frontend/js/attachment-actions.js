@@ -120,7 +120,7 @@
     } catch {
       const src = source.file ? "" : await source.src;
       const link = src && !/^(?:blob|data):/.test(src) ? new URL(src, location.href).href : "";
-      if (link && (await copyToClipboard(link))) toast("Copied the image's link: this picture cannot be copied as an image.");
+      if (link && (await copyToClipboard(link))) toast(voiceLine("done", "Copied the image's link: this picture cannot be copied as an image"));
       else toast("This picture cannot be copied.", "info");
     }
   }
@@ -167,7 +167,7 @@
               const name = spec.name || "image";
               await saveFile(blob.type === "image/png" && !/\.png$/i.test(name) ? name.replace(/\.[A-Za-z0-9]{1,5}$/, "") + ".png" : name, blob);
             } catch (error) {
-              toast(error.message || "Couldn't save that picture.", true);
+              toast(error.message || voiceLine("failed", "save that picture"), true);
             }
           },
         },
@@ -214,7 +214,7 @@
       try {
         await saveFile(attachmentLabel(spec), await attachmentBlob(spec));
       } catch (error) {
-        toast(error.message || `Couldn't save “${attachmentLabel(spec)}”.`, true);
+        toast(error.message || voiceLine("failed", `save “${attachmentLabel(spec)}”`), true);
       }
     },
 
@@ -247,9 +247,9 @@
             pushRequestUndo("Renamed a file", `/media/${upload.id}`, "PUT", { original_name: label }, { original_name: next });
           }
         }
-        toast(`Renamed to “${next}”.`);
+        toast(voiceLine("done", `Renamed to “${next}”`));
       } catch (error) {
-        toast(error.message || "Couldn't rename that file.", true);
+        toast(error.message || voiceLine("failed", "rename that file"), true);
       }
     },
 
@@ -271,7 +271,7 @@
         }
         toast(row.caption ? `Description: ${row.caption}` : "No description came back.");
       } catch (error) {
-        toast(error.message || "Couldn't describe that file.", true);
+        toast(error.message || voiceLine("failed", "describe that file"), true);
       }
     },
 
@@ -290,7 +290,7 @@
           : await apiJson(`/media/${current.id}/caption`, { method: "POST", body: JSON.stringify({ text: typed }) });
         toast(row.caption ? "Description saved." : "Description cleared.");
       } catch (error) {
-        toast(error.message || "Couldn't save that description.", true);
+        toast(error.message || voiceLine("failed", "save that description"), true);
       }
     },
 
@@ -301,7 +301,7 @@
         const blob = await attachmentBlob(spec);
         await openSketch({ image: blob, caption: `Notes on ${attachmentLabel(spec)}` });
       } catch (error) {
-        toast(error.message || "Couldn't open that picture for drawing.", true);
+        toast(error.message || voiceLine("failed", "open that picture for drawing"), true);
       }
     },
 
@@ -310,7 +310,7 @@
     copy: async (spec) => {
       const bang = attachmentKind(spec.name, spec.url) === "image" ? "!" : "";
       const markdown = `${bang}[${attachmentLabel(spec)}](${spec.url})`;
-      if (await copyToClipboard(markdown)) toast("Copied. Paste it into any note or document.");
+      if (await copyToClipboard(markdown)) toast(voiceLine("done", "Copied. Paste it into any note or document"));
     },
 
     //: **Out of the text at once, with an Undo; off the disk only once nothing
@@ -332,7 +332,7 @@
           pushTokenUndo(`Deleted “${label}”`, [{ del: [`/files/${id}`, "DELETE"], restore: "/files/restore", token: gone.undo_token }], () => spec.onChange?.(), `Deleted “${label}”.`);
           spec.onChange?.();
         } catch (error) {
-          toast(error.message || `Couldn't delete “${label}”.`, true);
+          toast(error.message || voiceLine("failed", `delete “${label}”`), true);
         }
         return;
       }

@@ -27,10 +27,11 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import help_chat
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 DASH = (JS / "dashboard.js").read_text(encoding="utf-8")
 CSS = re.sub(
     r"/\*.*?\*/", "", "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css"))), flags=re.S

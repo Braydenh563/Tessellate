@@ -56,6 +56,7 @@ from tessellate.ai.provider import (
     _ThinkTagSplitter,
     _ToolTextGate,
     context_from_catalog_entry,
+    drop_tool_call_blocks,
     extract_text_tool_calls,
     is_transient_server_error,
     known_context,
@@ -64,6 +65,12 @@ from tessellate.ai.provider import (
     split_thinking,
 )
 from tessellate.core import activity
+
+
+def _label(value: object) -> str | None:
+    """A catalogue field shown as a word. llama-server's `architecture` is an
+    object of modalities and its `size` a byte count; neither is a label."""
+    return value.strip() or None if isinstance(value, str) else None
 
 
 def _fill_null_content(payload: dict) -> bool:
@@ -391,9 +398,9 @@ class OpenAICompatClient(Provider):
         loaded = entry.get("loaded_context_length")
         return {
             "name": model,
-            "family": entry.get("arch") or entry.get("architecture"),
-            "parameters": entry.get("parameter_size") or entry.get("size"),
-            "quantisation": entry.get("quantization") or entry.get("quantization_level"),
+            "family": _label(entry.get("arch") or entry.get("architecture")),
+            "parameters": _label(entry.get("parameter_size") or entry.get("size")),
+            "quantisation": _label(entry.get("quantization") or entry.get("quantization_level")),
             "context_length": self.context_length(model),
             "usable_context": self.usable_context(model),
             "context_reason": self.context_explanation(model),
@@ -674,6 +681,7 @@ class OpenAICompatClient(Provider):
             "total_ms": round((time.monotonic() - started) * 1000),
             "eval_ms": None,
             "context_tokens": self.usable_context(model),
+            "context_reason": self.context_explanation(model),
             "usage_source": "real" if measured else "estimated",
         }
 
@@ -960,7 +968,8 @@ class OpenAICompatClient(Provider):
             return
 
         calls, raw_calls, clean = self._settle_calls(buckets, content, tools)
-        held = gate.flush()
+        # An unparsed `<tool_call>` block in the held text is markup, not prose (L-general-65).
+        held = drop_tool_call_blocks(gate.flush())
         if held and not calls:
             # Gated text that turned out to be ordinary prose (a short answer
             # that merely started with "{"). Show it rather than lose it.

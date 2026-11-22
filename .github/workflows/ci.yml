@@ -35,6 +35,22 @@ jobs:
       - name: Lint
         run: ruff check .
 
+  dockerfile:
+    # L-general-5: the Dockerfile is never built in CI (no image is published),
+    # so this is the check a first real build would otherwise be. The official
+    # action, at its default threshold.
+    name: Lint (hadolint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: docker/Dockerfile
+
   test:
     # Two legs per Python version, split by test file (tests/_shard.py: heaviest file to the lightest leg, the ratchets
     # together in leg 1): one leg of the 48,000 tests took 44 to 50 minutes on 3.11 and 3.12 (W24).

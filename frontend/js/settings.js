@@ -1261,7 +1261,7 @@ async function clearLogs() {
     const cleared = await api("/logs", { method: "DELETE" }).then(
       () => true,
       (error) => {
-        toast(error.message || "Couldn't clear the server log.", true);
+        toast(error.message || voiceLine("failed", "clear the server log"), true);
         return false;
       }
     );
@@ -1287,7 +1287,7 @@ async function downloadSupportBundle() {
     await saveFile("tessellate-support-bundle.zip", await response.blob());
     toast("Support bundle saved. Have a look inside before you send it.");
   } catch (error) {
-    toast(error.message || "Couldn't build the support bundle.", true);
+    toast(error.message || voiceLine("failed", "build the support bundle"), true);
   } finally {
     setBusy(button, false);
   }
@@ -2123,7 +2123,7 @@ settingsLook.lookFile = (() => {
     toastAction(message, "Undo", () => {
       settleUndoFromToast(action);
       restoreLook(before);
-      toast("Put your look back.");
+      toast(voiceLine("done", "Put your look back"));
     });
   }
 
@@ -2199,7 +2199,7 @@ async function saveCurrentLook() {
   if (prefsCache) prefsCache.custom_themes = next;
   input.value = "";
   renderCustomThemes();
-  toast(`Saved “${name}”.`);
+  toast(voiceLine("done", `Saved “${name}”`));
 }
 
 function applySavedTheme(theme, announce = true) {
@@ -2216,7 +2216,7 @@ function applySavedTheme(theme, announce = true) {
   // The same functions startup uses, so a restored look is applied by exactly
   // the path that would have applied it on a fresh load.
   settingsLook.lookFile.repaint();
-  if (announce) toast(`Applied “${theme.name}”.`);
+  if (announce) toast(voiceLine("done", `Applied “${theme.name}”`));
 }
 
 async function deleteSavedTheme(name) {
@@ -2227,7 +2227,7 @@ async function deleteSavedTheme(name) {
   });
   if (prefsCache) prefsCache.custom_themes = next;
   renderCustomThemes();
-  toast(`Deleted “${name}”.`);
+  toast(voiceLine("done", `Deleted “${name}”`));
 }
 
 function renderCustomThemes() {
@@ -3769,7 +3769,8 @@ const GUIDE_TITLE = `${GUIDE_NAME} guide`;
 //: 63px tall against the agent activity panel's 37. Thirty characters says
 //: the same thing and fits with room to spare; the CSS still ellipsises it,
 //: so a longer translation cannot put the second line back.
-const GUIDE_LINE = "Answers from the app's own help";
+//: Short enough for the head's 172 px at the default width (L-chat-36: the longer line ended in an ellipsis).
+const GUIDE_LINE = "The app's own help";
 
 //: The header's '?' became the status bar's Guide slot with INBOX 207;
 //: app.js binds that one, because the status bar is its markup and it can

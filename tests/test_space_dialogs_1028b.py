@@ -7,9 +7,9 @@ a visible label, not by the hidden input (which has no accessible name).
 from __future__ import annotations
 
 import re
-from pathlib import Path
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def test_each_space_dialog_has_a_form_its_fields_and_button_belong_to():

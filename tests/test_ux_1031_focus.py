@@ -18,9 +18,10 @@ def _src(name: str) -> str:
 
 def test_the_pair_lives_in_app_js_and_skips_body_and_hidden_openers():
     app = _src("sheets-selects.js")
-    body = app.split("function focusBackTo", 1)[1].split("function focusFirstIn", 1)[0]
+    body = app.split("function focusBackTo", 1)[1].split("\n}\n", 1)[0]
     assert "document.body" in body and "getClientRects" in body and "inert" in body
-    assert "function focusFirstIn(root, preferred = null)" in app
+    #: L-chat-255: focusFirstIn moved to notifications.js (its one caller) to win boot bytes back.
+    assert "function focusFirstIn(root, preferred = null)" in _src("notifications.js")
 
 
 def test_notifications_take_focus_on_open_and_give_it_back_on_close():

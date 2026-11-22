@@ -46,8 +46,8 @@ test("Ask with no model answers from the notes, with numbered citations that ope
   // With no model the answer is composed from the notes (INBOX 688): marked
   // as such, every sentence the notes' own.
   await expect(answer).toHaveClass(/answer-composed/);
-  // The chip over the answer says where it came from (CHAT_PLAN decision 36).
-  await expect(page.locator("#answered-by")).toHaveText("From your notes");
+  // The chip over the answer says where it came from (CHAT_PLAN decision 36; renamed for Atlas by L737).
+  await expect(page.locator("#answered-by")).toHaveText("Atlas's assistant, from your notes");
   await expect(answer).toContainText("2h50");
   // Numbered citations in the answer, and the numbered sources under it.
   const cites = answer.locator(".answer-citation-link");

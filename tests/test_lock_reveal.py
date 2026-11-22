@@ -7,8 +7,9 @@ and the field is padded equally on both sides. Measured in Chromium: padding
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import index_html_text
 
-HTML = Path("frontend/index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 CSS = Path("frontend/css/01-forms-settings.css").read_text(encoding="utf-8")
 JS = Path("frontend/js/settings-wiring.js").read_text(encoding="utf-8")
 

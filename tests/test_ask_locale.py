@@ -14,7 +14,7 @@ def test_whats_on_3_4_reads_by_locale(session, fake_embeddings):
 
 
 def test_chat_request_carries_the_locale():
-    from tessellate.api.routes_chat import ChatRequest
+    from tessellate.api.chat_request import ChatRequest
 
     assert ChatRequest(question="x", locale="en-US").locale == "en-US"
     assert ChatRequest(question="x").locale is None

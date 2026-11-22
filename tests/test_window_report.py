@@ -27,7 +27,8 @@ from tests.fakes_http import FakeResponse, sse
 # --- the window travels with the counts -------------------------------------
 
 
-def test_ollama_reports_the_window_it_budgeted_against():
+def test_ollama_reports_the_window_it_budgeted_against(app_state):
+    """`app_state`: `usable_context` reads the config, whose default is the repo's `data/` (L-general-71)."""
     c = OllamaClient(base_url="http://127.0.0.1:1")
     c._context_lengths = {"m": 8192}
     stats = c._stats_from({"prompt_eval_count": 3900, "eval_count": 120}, "m")

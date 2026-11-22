@@ -136,7 +136,7 @@
         } else await loadDocuments(currentDoc?.id);
       }
       mentionUndo();
-      toast(`Linked from ${row.title}.`);
+      toast(voiceLine("done", `Linked from ${row.title}`));
     } catch (error) {
       toast(error.message, true);
     } finally {

@@ -144,13 +144,16 @@ _QUESTION_RANGES: list[tuple[str, object]] = [
         r"eleven|twelve|few|couple of)\s+(day|week|fortnight|month|year)s?",
         "back",
     ),
+    #: The first or last seven days of a month ("the start of the month", "the end of last month").
+    (r"\b(?:at\s+)?the\s+(?:start|beginning)\s+of\s+(?:the|this)\s+month\b", "month_start"),
+    (r"\b(?:at\s+)?the\s+end\s+of\s+last\s+month\b", "last_month_end"),
     #: "last week" is the week before this one, Monday to Sunday, as everywhere else (the owner's Q24); "past week" rolls.
-    (r"(?:in|over|during)?\s*(?:the\s+)?last\s+week\b", "last_week"),
+    (r"(?:in|over|during)?\s*(?:the\s+)?last\s+week\b(?!\s+of\b)", "last_week"),
     (r"(?:in|over|during)?\s*(?:the\s+)?past\s+(week)\b", "back"),
     (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(month)\b", "back"),
     (r"(?:in|over|during)?\s*(?:the\s+)?(?:last|past)\s+(year)\b", "back"),
     (r"\btoday\b", "today"),
-    (r"\byesterday\b", "yesterday"),
+    (r"(?<!before )\byesterday\b", "yesterday"),
     (r"\bthis\s+week\b", "this_week"),
     (r"\bthis\s+month\b", "this_month"),
     (r"\bthis\s+year\b", "this_year"),
@@ -197,6 +200,12 @@ def _range_for(kind: str, match: re.Match, today: date) -> tuple[date, date]:
         return monday, monday + timedelta(days=6)
     if kind == "this_month":
         return today.replace(day=1), today
+    if kind == "month_start":
+        first = today.replace(day=1)
+        return first, first + timedelta(days=6)
+    if kind == "last_month_end":
+        last = today.replace(day=1) - timedelta(days=1)
+        return last - timedelta(days=6), last
     if kind == "this_year":
         return today.replace(month=1, day=1), today
     return today - timedelta(days=RECENT_DAYS), today  # "recent"
@@ -301,8 +310,12 @@ def capitalise_names(text: str) -> str:
 _HOW_MANY = r"^(?:how (?:many|long) (?P<unit>days|weeks|months)?|(?:the )?(?:number of |count of )?(?P<bare>days|weeks|months)|countdown)"
 _DAYS_UNTIL = lazy_compile(_HOW_MANY + r"\s*(?:is it |are there |left )?(?:until|till|til|to|before)\s+(?P<what>.+)$", re.I)
 _DAYS_SINCE = lazy_compile(_HOW_MANY + r"\s*(?:has it been |is it |ago was |have passed |)?(?:since)\s+(?P<what>.+)$", re.I)
+_N_UNIT = r"(\d{1,3}|a|an|" + NUMBER_WORD_PATTERN + r")\s+(days?|weeks?|months?|years?)"
+#: "what date is it in 3 weeks" and "what is the date in 10 days" (the prefix, the suffix optional), or the bare
+#: "10 days from today" (no prefix, so the suffix is required); a real model run found both read as other questions.
 _DATE_FROM_NOW = lazy_compile(
-    r"^what (?:day|date)(?: of the week)? (?:is|will it be|was)\s+(?:it\s+)?(?:(?:gonna|going to) be\s+)?(?:in\s+)?(\d{1,3}|a|an|" + NUMBER_WORD_PATTERN + r")\s+(days?|weeks?|months?|years?)(?:\s+(from now|from today|ago))?$",
+    r"^(?:what (?:(?:day|date)(?: of the week)? (?:is|will it be|was|is it (?:gonna|going to) be)\s+(?:it\s+)?|(?:is|was) the (?:day|date)\s+)(?:in\s+)?" + _N_UNIT
+    + r"(?:\s+(from now|from today|ago))?|" + _N_UNIT + r"\s+(from now|from today|ago))$",
     re.I,
 )
 
@@ -337,9 +350,21 @@ def offset_question(text: str) -> tuple[str, str, bool] | None:
     found = _DATE_FROM_NOW.match(text)
     if not found:
         return None
-    amount = found.group(1)
+    amount, unit, tail = (found.group(1), found.group(2), found.group(3)) if found.group(1) else (found.group(4), found.group(5), found.group(6))
     spelt = number_word_value(amount)
-    return (str(spelt) if spelt else amount), found.group(2), not (found.group(3) or "from").startswith("from")
+    return (str(spelt) if spelt else amount), unit, not (tail or "from").startswith("from")
+
+
+_AGE_OF = lazy_compile(r"^how (?:old|long ago) (?:is|was) (?:the date |the day )?(\S.*\b\d{4})$", re.I)
+
+
+def age_question(text: str) -> str | None:
+    """The dated phrase of "how old is 3 March 1990" or "how long ago was
+    1 May 2020", else None. The frame is read here, the one reader of
+    date words, so `utilities` holds no pattern with "ago" in it."""
+    found = _AGE_OF.match(text)
+    return found.group(1) if found else None
+
 
 #: Any sentence that may carry a day, wider than `looks_dated`: abbreviated
 #: months and weekdays, "21st", "3/11", "due". A cheap test before the

@@ -93,11 +93,11 @@ def test_through_the_route_with_no_model_the_reply_is_the_needs_a_model_line(cli
 
 
 def test_with_a_model_running_a_generative_ask_goes_to_chat(monkeypatch):
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_service
 
     class _Running:
         def is_running(self):
             return True
 
-    monkeypatch.setattr(routes_chat.deps, "get_ollama", lambda: _Running())
-    assert routes_chat._worked_out("write me an essay intro on WW1") == (intent.SMALLTALK, None)
+    monkeypatch.setattr(chat_service.deps, "get_ollama", lambda: _Running())
+    assert chat_service._worked_out("write me an essay intro on WW1") == (intent.SMALLTALK, None)

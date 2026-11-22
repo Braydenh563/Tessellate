@@ -309,7 +309,7 @@
              toast("Cross-link made: it joins two branches without changing the tree.");
            }
          } catch (err) {
-           toast(voiceLine("failed", { what: "connect those", why: err.message }), true);
+           toast(voiceLine("failed", "connect those", err.message), true);
          }
       }
       d.linkSourceAnchor = null;
@@ -349,7 +349,7 @@
         delete d._unsaved;
         if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
         wbScheduleRender();
-        toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+        toast(voiceLine("failed", "save the move", "the item went back where it was"), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
         return;
       }
       //: The whole drag is one undo step now, carried members and Alt copies

@@ -10,10 +10,11 @@ import re
 from pathlib import Path
 
 from tessellate.core import extras
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _read(name: str) -> str:

@@ -21,7 +21,7 @@ SIDE_EFFECT_ASSERT = re.compile(r"^\s*assert (?:ai_)?client\.(?:delete|post|put|
 
 #: The count on 2026-10-05, after the new ones were rewritten. Lower it when
 #: you rewrite more; never raise it.
-SIDE_EFFECT_ASSERTS_CAP = 226
+SIDE_EFFECT_ASSERTS_CAP = 225
 
 
 def test_no_new_request_inside_an_assert():

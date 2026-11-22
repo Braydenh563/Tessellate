@@ -116,7 +116,7 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     found = reminder(f"remind me to {words} {tail}".strip())
     if not found:
         return None
-    #: "to my todo" names a list, so a task without a time is a line on it (R3-33).
+    #: "to my to-do list" names a list, so a task without a time is a line on it (R3-33).
     return {**found, "task": True, "asked": asked, **({"on_list": words} if _ON_LIST.search(text) and not tail else {})}
 
 
@@ -215,7 +215,7 @@ def plan_into_list(session: Session, parsed: dict, card) -> dict | None:  # noqa
     for item in new:
         content = act_steps.appended(content, item)
     label = f"Add {', '.join(f'“{i}”' for i in new)} to your {name} note"
-    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name])}
+    return {"line": f"{label}.", "card": card(label, [act_steps.locked_edit(note.id, note.content, content)], items=[name])}
 
 
 def _complete_rest(text: str) -> str | None:
@@ -293,9 +293,9 @@ _MARK_UNDONE = re.compile(rf"^(?:mark|set|flag)\s+(?P<rest>.+?)\s+(?:as |to be |
 
 
 def read_uncomplete(text: str) -> dict | None:
-    """The done task a sentence reopens ("untick bread", "mark the passport as
-    not done"), as {"intent": "uncomplete", "about", "kind"?}, or None. Read
-    before `read_complete`, whose "mark X ... done" would take "not done" as
+    """The done task a sentence reopens ("untick bread", or a mark with a negated state
+    ), as {"intent": "uncomplete", "about", "kind"?}, or None. Read
+    before `read_complete`, whose "mark X ... done" would take the negation as
     the end of the name."""
     found = _UNTICK.match(text.strip()) or _MARK_UNDONE.match(text.strip())
     if not found:
@@ -421,7 +421,8 @@ def read_snooze(text: str, resolve) -> dict | None:  # noqa: ANN001
     verb = found.group("verb").lower()
     if (verb == "move" and not said) or not (verb == "snooze" or said or due is not None):
         return None
-    read = _task_found("snooze", about, said)
+    #: "reschedule" and "move" name a new time for the reminder, said as a move from the old one (L-chat-47); "snooze" and the rest keep the snooze.
+    read = _task_found("reschedule" if verb in ("reschedule", "move") else "snooze", about, said)
     return {**read, "due_at": due, "said": said_when} if read else None
 
 
@@ -626,6 +627,8 @@ def _each_label(head: str, tail: str, items: list[dict]) -> str:
 def _each_steps(items: list[dict], reminder_step, rewrite) -> list[dict]:  # noqa: ANN001
     """One step per reminder, and one edit per note that holds checklist lines: two
     lines on one note are changed in one edit, or the second would undo the first."""
+    from tessellate.ai import act_steps
+
     steps: list[dict] = []
     edits: dict[int, dict] = {}
     for item in items:
@@ -634,7 +637,7 @@ def _each_steps(items: list[dict], reminder_step, rewrite) -> list[dict]:  # noq
             continue
         step = edits.get(item["id"])
         if step is None:
-            step = edits[item["id"]] = {"name": "edit_note", "arguments": {"note_id": item["id"], "content": item["content"]}}
+            step = edits[item["id"]] = act_steps.locked_edit(item["id"], item["content"], item["content"])
             steps.append(step)
         step["arguments"]["content"] = rewrite(step["arguments"]["content"], item["line"])
     return steps
@@ -701,7 +704,12 @@ def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None
     when = said_when(due)
     #: "for 2 hours, at 2pm", never "to in 2 hours" (audit 1029 C47).
     label = f"Snooze “{item['text']}” " + (f"for {when[3:]}" if when.startswith("in ") else f"to {when}")
+    if parsed["intent"] == "reschedule":
+        #: The old time is said, and is the undo's (the step's `was`).
+        label = f"Move “{item['text']}” from {said_when(item['due'].replace(tzinfo=None)).removeprefix('on ')} to {when.removeprefix('on ')}"
     arguments = {"reminder_id": item["id"], "due_at": due.isoformat(), "was": item["due"].isoformat()}
+    if parsed["intent"] == "reschedule":
+        arguments["moved"] = True
     return {"line": f"{label}.", "card": card(label, [{"name": "snooze_reminder", "arguments": arguments}])}
 
 
@@ -740,8 +748,8 @@ def run_step(session: Session, name: str, args: dict) -> dict:
         rr.update_reminder(reminder_id, rr.ReminderUpdate(due_at=due, restore=True), session)
     except HTTPException as exc:
         return {"error": str(exc.detail)}
-    back = {"reminder_id": reminder_id, "due_at": args["was"], "was": args["due_at"]} if args.get("was") else None
-    return {"label": f"Snoozed reminder {_named(session, reminder_id)}", "undo": {"tool": "snooze_reminder", "arguments": back} if back else None}
+    back = {"reminder_id": reminder_id, "due_at": args["was"], "was": args["due_at"], **({"moved": True} if args.get("moved") else {})} if args.get("was") else None
+    return {"label": f"{'Moved' if args.get('moved') else 'Snoozed'} reminder {_named(session, reminder_id)}", "undo": {"tool": "snooze_reminder", "arguments": back} if back else None}
 
 
 def undo_step(name: str, args: dict) -> dict | None:
@@ -753,12 +761,12 @@ def undo_step(name: str, args: dict) -> dict | None:
 
 
 
-#: A note a "todo" is added to: its title, as a person names the list.
+#: A note a to-do item is added to: its title, as a person names the list.
 _TODO_TITLE = re.compile(r"^(?:my |the )?(?:to-?do|to do|tasks?|check-?list)(?: list)?s?$", re.IGNORECASE)
 
 
 def todo_note(session: Session):  # noqa: ANN201
-    """The newest note called todo, to-do, tasks or checklist, or None."""
+    """The newest note titled by one of `_TODO_TITLE`'s names, or None."""
     from tessellate.core.database import Entry
 
     rows = session.scalars(
@@ -768,7 +776,7 @@ def todo_note(session: Session):  # noqa: ANN201
 
 
 def plan_task_line(session: Session, parsed: dict, card, title, confirm) -> dict:  # noqa: ANN001
-    """"add buy stamps to my todo": a checklist line on the note called todo,
+    """The add-to-my-to-do ask: a checklist line on the to-do note,
     run at once with Undo; no such note is offered, never a reminder time asked
     (R3-33). `card` is `commands._card`, `confirm` its Confirm line."""
     from tessellate.ai import act_steps
@@ -787,7 +795,7 @@ def plan_task_line(session: Session, parsed: dict, card, title, confirm) -> dict
     last = next((x for x in reversed(body.split("\n")) if x.strip()), "")
     content = act_steps.appended(body, item) if re.match(r"\s*[-*+]\s+\[[ xX]\]", last) else f"{body}\n\n- [ ] {item}"
     label = f"Add “{item}” to your {name} note"
-    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name])}
+    return {"line": f"{label}.", "card": card(label, [act_steps.locked_edit(note.id, note.content, content)], items=[name])}
 
 
 _ORDINAL_WORDS = {"first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10, "last": -1}

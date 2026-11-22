@@ -232,7 +232,7 @@ function filedByText(saved) {
     //: UX-17 (audit 2026-10-05): with no model known to be running, the
     //: background filing is by the notes already filed, so it says so rather
     //: than promising the AI the status bar says is off.
-    return modelStatus?.ollama_running
+    return modelStatus?.model_ready
       ? "Saved. Filing it in the background, keep writing."
       : "Saved. Filing it by your other notes, keep writing.";
   }
@@ -457,7 +457,7 @@ async function noteTemplateForUse(template) {
     try {
       clipboard = (await navigator.clipboard.readText()) || "";
     } catch {
-      toast("Couldn't read the clipboard, so that part of the template is empty.", "info");
+      toast(voiceLine("failed", "read the clipboard") + " That part of the template is empty.", "info");
     }
   }
   const full = noteTemplateText(raw, clipboard);
@@ -1397,7 +1397,7 @@ function showAskAsOf(on) {
 // --- capture templates (Wave B) ---------------------------------------------------
 
 const BUILTIN_TEMPLATES = [
-  { name: "Journal", content: "Journal: {date}\n\nToday I " },
+  { name: "Journal", content: "Journal: {weekday} {date}\n\nToday I " },
   { name: "Recipe", content: "Recipe: \n\nIngredients:\n- \n\nSteps:\n1. " },
   { name: "Contact", content: "Contact: \nPhone/email: \nWhere we met: \nNotes: " },
   { name: "Meeting", content: "---\ntype: Meeting\n---\n## Agenda\n\n1. {{cursor}}\n\n## Notes\n\n## Decisions\n\n- \n\n## Action items\n\n- [ ] \n" },

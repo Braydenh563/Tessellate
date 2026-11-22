@@ -78,15 +78,18 @@
   //: owner finding the select first. Anything not English, or a tag with no
   //: dialect of its own, is "off" (no preference); the rest of the English-
   //: speaking world that spells the British way reads as British.
-  function docSpellingVariant() {
+  function docSpellingVariant(text) {
+    //: The document's own language tag (en-GB, en-US) is the writer's choice for it: it wins.
+    const own = text ? docProse.variantOf(text) : null;
+    if (own) return own;
     const set = (prefsCache && prefsCache.spelling_variant) || "auto";
     if (set !== "auto") return set;
     const tag = String((typeof navigator === "object" && navigator && navigator.language) || "").toLowerCase();
     const byTag = { "en-au": "au", "en-nz": "au", "en-gb": "uk", "en-us": "us", "en-ca": "ca", "en-in": "in" };
     return byTag[tag] || (/^en-(ie|za|sg|my)$/.test(tag) ? "uk" : "off");
   }
-  function docVariantLookup() {
-    const variant = docSpellingVariant();
+  function docVariantLookup(text) {
+    const variant = docSpellingVariant(text);
     if (docVariantFor === variant && docVariantMap) return docVariantMap;
     docVariantFor = variant;
     docVariantMap = new Map();

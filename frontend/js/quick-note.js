@@ -514,7 +514,7 @@
     try {
       text = ((await navigator.clipboard.readText()) || "").trim();
     } catch {
-      toast("Couldn't read the clipboard here. Paste into Capture instead.", "info");
+      toast(voiceLine("failed", "read the clipboard here. Paste into Capture instead"), "info");
       return;
     }
     if (!text) return toast("There is no text on the clipboard to save.", "info");
@@ -523,7 +523,7 @@
       return null;
     });
     if (!result) return;
-    if (result.queued) return toast("Saved here; it is sent when the app's server is back.");
+    if (result.queued) return toast(voiceLine("done", "Saved here; it is sent when the app's server is back"));
     const id = result.saved.id;
     refreshEntries([id]);
     const bin = async () => {
@@ -572,7 +572,7 @@
         openDocument(doc.id);
       }, { go: { open: "doc", id: doc.id } });
     } catch (error) {
-      toast(error.message || "Couldn't save that document.", true);
+      toast(error.message || voiceLine("failed", "save that document"), true);
     }
   }
 
@@ -596,7 +596,7 @@
       await openWhiteboardBoard(board.id);
       chatProposalBar(board);
     } catch (error) {
-      toast(error.message || "Couldn't make a mind map from this chat.", true);
+      toast(error.message || voiceLine("failed", "make a mind map from this chat"), true);
     }
   }
 
@@ -616,7 +616,7 @@
     keep.textContent = "Keep the map";
     keep.addEventListener("click", () => {
       bar.remove();
-      toast(`Kept \u201c${board.title}\u201d.`);
+      toast(voiceLine("done", `Kept \u201c${board.title}\u201d`));
     });
     const drop = document.createElement("button");
     drop.type = "button";
@@ -651,7 +651,7 @@
         body: JSON.stringify({ content, tags: ["chat"], is_draft: true, defer_filing: true }),
       });
       pushEntryCreateUndo(made, "Saved a chat answer as a note");
-      toast("Saved as a draft note.");
+      toast(voiceLine("done", "Saved as a draft note"));
       // Unconditional, not gated on the Notes tab being the one currently
       // open. Reported: a note saved from Chat "didn't show up in the
       // drafts" - it *was* saved, but `entries` (the in-memory list Notes
@@ -661,7 +661,7 @@
       // already calls this with no such guard, for the same reason.
       loadEntries();
     } catch (error) {
-      toast(error.message || "Couldn't save that note.", true);
+      toast(error.message || voiceLine("failed", "save that note"), true);
     }
   }
 
@@ -694,7 +694,7 @@
         return flashReminder(reminder.id);
       }, { go: { open: "reminder", id: reminder.id } });
     } catch (error) {
-      toast(error.message || "Couldn't set a reminder.", true);
+      toast(error.message || voiceLine("failed", "set a reminder"), true);
     }
   }
 

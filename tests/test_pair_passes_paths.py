@@ -30,7 +30,7 @@ class Judge:
     def __init__(self) -> None:
         self.asked: list[str] = []
 
-    def chat(self, model, messages):  # noqa: ANN001, ANN201
+    def chat(self, model, messages, mode=None):  # noqa: ANN001, ANN201
         system = messages[0]["content"]
         self.asked.append(system)
         if "disagree" in system:

@@ -740,7 +740,7 @@
         await wbSaveMany(rows);
       });
       wbAnnounce("Unlinked from the library.");
-      toast("Unlinked. The copy stays as it is.");
+      toast(voiceLine("done", "Unlinked. The copy stays as it is"));
       return true;
     },
   };

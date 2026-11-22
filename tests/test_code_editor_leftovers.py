@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
-from tests._app_js import documents_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
@@ -24,7 +24,7 @@ DOCS_JS = documents_text()  # documents.js and its wrapped pieces (documents-vie
 PRINT_JS = (FRONTEND / "js" / "documents-print.js").read_text(encoding="utf-8")
 CODEKIT_JS = _js_scope.unwrapped((FRONTEND / "js" / "documents-codekit.js").read_text(encoding="utf-8"))
 SETTINGS_JS = (FRONTEND / "js" / "settings-wiring.js").read_text(encoding="utf-8")
-INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
 
 

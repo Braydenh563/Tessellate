@@ -163,7 +163,8 @@ def test_z11_the_note_about_a_person_leads_and_a_list_line_keeps_its_list():
     the search ranked it first; the Sara note came second."""
     said = composer_digest.answer("who is Sara", _SARA, today=_N.date())["text"]
     lines = [x for x in said.split("\n") if x.strip()]
-    assert lines[1] == "Sara is your sister.", said
+    # The notes' lines read as one paragraph since L210; the Sara note still leads it.
+    assert lines[1].startswith("Sara is your sister. "), said
     assert "Your Gift ideas note has Sara: a jazz record." in said, said
 
 

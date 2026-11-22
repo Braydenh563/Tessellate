@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 from tests import _js_scope
-from tests._app_js import documents_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -33,7 +33,7 @@ PICKER = _js_scope.unwrapped((JS / "icon-picker.js").read_text(encoding="utf-8")
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
 DOCS = documents_text()
 FEATURES = (JS / "app-features.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
 

@@ -2188,7 +2188,7 @@ async function wbMapTransplant(d, targetId, alone, { via = "drag", before = null
     }
     Object.assign(d, await move(d.id, targetId));
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "move that branch" }), true);
+    toast(err.message || voiceLine("failed", "move that branch"), true);
     return false;
   }
   if (d.data?.pinned) {
@@ -2894,7 +2894,7 @@ async function wbMapCreateNode({ parentId = null, kind = "topic", text = WB_MAP_
     wbPushUndo({ action: "create", kind: "object", id: created.id });
     return created;
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "add that node" }), true);
+    toast(err.message || voiceLine("failed", "add that node"), true);
     return null;
   }
 }
@@ -3025,7 +3025,7 @@ async function wbMapPasteText(text) {
       body: JSON.stringify({ parent_id: node ? node.id : null, text: text.slice(0, 200000) }),
     });
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "paste that onto the map" }), true);
+    toast(err.message || voiceLine("failed", "paste that onto the map"), true);
     return 0;
   }
   wbState.objects = [...(wbState.objects || []), ...made];
@@ -3104,7 +3104,7 @@ async function wbMapCopyBranchOutline(id) {
   try {
     tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "read this map" }), true);
+    toast(err.message || voiceLine("failed", "read this map"), true);
     return false;
   }
   const find = (list) => {
@@ -3119,7 +3119,7 @@ async function wbMapCopyBranchOutline(id) {
   if (!node) return false;
   const { title, body } = wbMapTreeMarkdown([node]);
   const copied = await copyToClipboard(body ? `# ${title}\n\n${body}\n` : `# ${title}\n`);
-  if (copied) toast(`Copied “${title}” and its branch as an outline.`);
+  if (copied) toast(voiceLine("done", `Copied “${title}” and its branch as an outline`));
   return copied;
 }
 
@@ -3151,7 +3151,7 @@ async function wbMapWriteDocument() {
     if (isMap) tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
     else draft = await apiJson(`/whiteboard/boards/${boardId}/draft`, { method: "POST" });
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: isMap ? "read this map" : "read this board" }), true);
+    toast(err.message || voiceLine("failed", isMap ? "read this map" : "read this board"), true);
     return null;
   }
   //: The index may predate a map made a moment ago; it is refreshed once.
@@ -3167,13 +3167,13 @@ async function wbMapWriteDocument() {
       body: JSON.stringify({ title: title.slice(0, 200), content: `${boardEmbedMarkdown(board)}\n\n${body}\n` }),
     });
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "make that document" }), true);
+    toast(err.message || voiceLine("failed", "make that document"), true);
     return null;
   }
   pushBinPairUndo(`Wrote “${title}” as a document`, `/documents/${doc.id}`, `/documents/${doc.id}/restore`, true, () => (typeof loadDocuments === "function" ? loadDocuments() : null));
   switchTab("documents");
   await openDocument(doc.id);
-  toast(`Wrote “${title}” as a document.`);
+  toast(voiceLine("done", `Wrote “${title}” as a document`));
   return doc;
 }
 
@@ -3387,7 +3387,7 @@ async function wbMapInsertParent(id) {
     });
     Object.assign(node, moved);
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "move that topic" }), true);
+    toast(err.message || voiceLine("failed", "move that topic"), true);
   }
   await wbMapTidyBranch(parentId);
   //: Undo runs these in order: the topic goes back before its new parent goes.
@@ -3620,7 +3620,7 @@ async function wbMapDeleteSubtree(id) {
     deleted = Array.isArray(res.deleted) ? res.deleted : [];
     links = Array.isArray(res.links) ? res.links : [];
   } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "delete that" }), true);
+    toast(err.message || voiceLine("failed", "delete that"), true);
     return;
   }
   const gone = new Set(deleted.map((row) => row.id));
@@ -3723,7 +3723,7 @@ async function wbMapRestoreRows(rows, links = []) {
       if (!remap.has(row.parent_id) || row.parent_id == null) tops.push(made.id);
       wbState.objects.push({ ...made, ...full, parent_id: made.parent_id });
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "restore that node" }), true);
+      toast(err.message || voiceLine("failed", "restore that node"), true);
       break;
     }
   }
@@ -3763,7 +3763,7 @@ async function wbMapRestoreRows(rows, links = []) {
       wbState.sketches = wbState.sketches || [];
       wbState.sketches.push(made);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "restore a link" }), true);
+      toast(err.message || voiceLine("failed", "restore a link"), true);
     }
   }
   wbRemapUndoIds(remap, linkRemap);
@@ -5855,7 +5855,7 @@ function wbMapStudyMark(knew) {
   }
   const tally = wbMapStudyTally(wbStudy.steps, wbStudy.marks);
   wbStopPresenting();
-  toast(`Recalled ${tally.knew} of ${tally.of} branches.`);
+  toast(voiceLine("done", `Recalled ${tally.knew} of ${tally.of} branches`));
 }
 
 //: Called by `wbStopPresenting`: the map draws whole again.

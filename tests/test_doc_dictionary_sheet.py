@@ -13,12 +13,14 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 #: The sheet's code is documents-dictionary.js (DOCUMENTS_PLAN L327), fetched on the first press.
 DOCS = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8") + (ROOT / "frontend" / "js" / "documents-dictionary.js").read_text(encoding="utf-8")
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
+CSS = css_glob_text()
 
 
 def _dialog() -> str:

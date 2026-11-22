@@ -81,7 +81,7 @@ function featureCatalog() {
       //: INBOX 691: the tidying tools, each findable here (the owner: "no use
       //: having them if the user doesnt know about them").
       { name: "Tidy", desc: "Reviews with no AI: weak links, stray tags, notes without a category, duplicates, old reminders.", reveal: "tidy" },
-      { name: "Specific link reasons", desc: "Name what two linked notes share, a tag, a name or a week, instead of “similar in meaning”.", reveal: "tidy-links" },
+      { name: "Specific link reasons", desc: "Name what two linked notes share, a tag, a name, a week or a sentence each, instead of “similar in meaning”.", reveal: "tidy-links" },
       { name: "Find duplicates", desc: "Notes that say much the same thing, merged into one with nothing lost.", reveal: "tidy-duplicates" },
       { name: "Manage tags", desc: "Rename, merge or remove tags across every note.", reveal: "tag-manager" },
       { name: "Filings to check", desc: "Notes Atlas filed with little certainty, each with Accept, Refile and Split.", reveal: "notes-review" },
@@ -323,6 +323,21 @@ function renderToolShortcutList(list) {
   }
 }
 
+//: The palette's filter rows: the fastest route to "the notes I mean" without remembering the operator syntax (`paletteCommands`).
+function paletteFilterRows() {
+  return [
+    ["ph:star Show favourites", "is:favourite"],
+    ["ph:tag Show untagged notes", "is:untagged"],
+    ["ph:lock Show private notes", "is:private"],
+    ["ph:link Show linked notes", "is:linked"],
+    ["ph:check-square Show filings to check", "is:review"],
+  ].map(([label, query]) => ({
+    label,
+    about: `The notes list, filtered to ${query}.`,
+    act: () => showNotesFilter(query),
+  }));
+}
+
 //: **The palette's registry, and the Quick access row that reads it** (boot diet
 //: 3, 2026-11-01): `paletteCommands` and the dashboard's Quick access draw were
 //: 5 KB and 3 KB gzipped of boot script that only a dashboard draw, the palette
@@ -513,20 +528,11 @@ function paletteCommands() {
     },
     // Filters as commands: the fastest route to "the notes I mean" without
     // remembering the operator syntax.
-    ...[
-      ["ph:star Show favourites", "is:favourite"],
-      ["ph:tag Show untagged notes", "is:untagged"],
-      ["ph:lock Show private notes", "is:private"],
-      ["ph:link Show linked notes", "is:linked"],
-      ["ph:check-square Show filings to check", "is:review"],
-    ].map(([label, query]) => ({
-      label,
-      about: `The notes list, filtered to ${query}.`,
-      act: () => showNotesFilter(query),
-    })),
+    ...paletteFilterRows(),
     //: UX-08: places Ctrl+K could not reach (tests/test_palette_synonyms.py).
     { label: "ph:trash Open the bin", reveal: "library-bin", keywords: "bin trash deleted binned restore recover", about: "Everything you threw away, in the Library, ready to restore." },
     { label: "ph:question Questions your notes ask", reveal: "notes-questions", keywords: "questions open questions", about: "The open questions found in your notes." },
+    { label: "ph:target Goals and lists", reveal: "notes-goals", keywords: "goals lists checklist shopping packing progress", about: "Goals with steps and progress, and lists you tick off." },
     { label: "ph:chat-text Ask your notes", reveal: "notes-ask", keywords: "ask question answer search my notes", about: "An answer quoted from your own notes, with or without a model." },
     //: The Guide had no row: "guide" found the tour (CHAT_PLAN 9 row 3).
     { label: "ph:question Ask the Guide", reveal: "atlas-help", keywords: "guide help how do i how does where is question", about: "Ask how anything in the app works; it answers from the app's own help." },
@@ -572,6 +578,8 @@ function paletteCommands() {
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
+    //: The panel's second tab, one chord away: from Chat's ⋯ it was four clicks deep (L-world-class-780, reach.js).
+    { label: "ph:clock-counter-clockwise Activity history", keywords: "past agent runs history log clear finished", about: "The agent's past runs, with their log.", act: () => openActivity("runs") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
     { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
     { label: "ph:tree-evergreen Settings, Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },

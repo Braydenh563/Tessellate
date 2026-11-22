@@ -18,12 +18,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import unwrapped, nmb_curve_js
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
-MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
+MOTION = nmb_curve_js() + (JS / "atlas-motion.js").read_text(encoding="utf-8")
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 CSS08 = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 
@@ -135,7 +135,7 @@ def test_the_tail_eases_home_without_reading_the_style() -> None:
     if not shutil.which("node"):
         pytest.skip("node not installed")
     life = unwrapped((JS / "atlas-life.js").read_text(encoding="utf-8"))
-    src = "const atlasFix = (v) => +v.toFixed(2);\n" + _fn(life, "atlasTailRest") + "\n" + _fn(life, "atlasTailUnrest")
+    src = nmb_curve_js() + "const atlasFix = (v) => +v.toFixed(2);\n" + _fn(life, "atlasTailRest") + "\n" + _fn(life, "atlasTailUnrest")
     script = r"""
 const vm = require("vm");
 const made = [];

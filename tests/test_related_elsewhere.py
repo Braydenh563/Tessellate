@@ -12,7 +12,7 @@ much the app actually holds.
 
 from __future__ import annotations
 
-from tessellate.api.routes_chat import _related_elsewhere
+from tessellate.api.chat_said import _related_elsewhere
 from tessellate.core.database import Conversation, Document, Reminder
 from tessellate.core import deps
 import pytest
@@ -119,16 +119,16 @@ def test_the_stream_offers_related_items_when_no_note_matched(ai_client, monkeyp
     finally:
         session.close()
 
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_service
 
-    real_prepare = routes_chat._prepare
+    real_prepare = chat_service._prepare
 
     def _no_notes(*args, **kwargs):
         prepared = real_prepare(*args, **kwargs)
         prepared["notes"] = []
         return prepared
 
-    monkeypatch.setattr(routes_chat, "_prepare", _no_notes)
+    monkeypatch.setattr(chat_service, "_prepare", _no_notes)
 
     response = ai_client.post(
         "/chat/stream",
@@ -154,16 +154,16 @@ def test_the_stream_offers_related_items_when_no_note_matched(ai_client, monkeyp
 
 
 def test_no_related_event_when_nothing_else_matches_either(ai_client, monkeypatch):
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_service
 
-    real_prepare = routes_chat._prepare
+    real_prepare = chat_service._prepare
 
     def _no_notes(*args, **kwargs):
         prepared = real_prepare(*args, **kwargs)
         prepared["notes"] = []
         return prepared
 
-    monkeypatch.setattr(routes_chat, "_prepare", _no_notes)
+    monkeypatch.setattr(chat_service, "_prepare", _no_notes)
     response = ai_client.post(
         "/chat/stream",
         json={
@@ -189,7 +189,7 @@ def test_one_query_per_kind_however_many_words_the_question_has(session, monkeyp
     """
     from sqlalchemy import event
 
-    from tessellate.api.routes_chat import _related_elsewhere
+    from tessellate.api.chat_said import _related_elsewhere
 
     statements: list[str] = []
 

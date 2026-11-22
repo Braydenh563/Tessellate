@@ -163,11 +163,13 @@ Open a section for the detail.
   model, reading your notes, thinking, writing, or the tool in use.
 - Questions collects the questions your notes ask in passing, and marks one
   answered when a later note answers it.
-- In Agent mode the assistant has 73 tools to search, link, organise and act on
+- Goals keeps your goals and lists as cards with a progress bar and items you
+  tick off; Chat can make, tick and finish them too.
+- In Agent mode the assistant has 82 tools to search, link, organise and act on
   your notebook. Anything destructive asks first, as does any change or web
   request after it has read a web page or an imported note. Every step is
   shown.
-- 22 built-in skills (and your own) run multi-step jobs as a visible
+- 27 built-in skills (and your own) run multi-step jobs as a visible
   checklist. Small models are first-class: a small-model mode gives a 4B model
   one step and one tool at a time.
 - A command palette (`Ctrl`/`Cmd`+`K`) runs any command or goes to any place
@@ -415,7 +417,21 @@ later; until then search uses keywords. To avoid the download, pull
 - **To run it:** the Windows installer and the Linux tarball need nothing else.
   From source you need Python 3.11 or newer (CI runs 3.11 to 3.13).
 - **For the AI:** [Ollama](https://ollama.com) or any OpenAI-compatible server.
-  The app is useful without one.
+  The app is useful without one. Each way in is run against a fake transport
+  by the test suite; a real model is run only when you point
+  `TESSELLATE_EVALS_URL` at one (`pytest -m evals`), and the table says which.
+
+| Server | Dialect | Tool calling | Streaming | Fake transport last run | Real model last run |
+| --- | --- | --- | --- | --- | --- |
+| Ollama | native | probed per model | yes | 2026-11-14 | the author's own setup |
+| Ollama, OpenAI-compatible | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| LM Studio | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| llama.cpp `llama-server` | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| Any other OpenAI-compatible server | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| No model | none | not needed | not needed | 2026-11-14 | not needed |
+
+A model that cannot call tools is probed once and then asked in plain
+questions and answers, and the app says so in one line.
 - **Optional extras.** Settings, Packages installs each one from inside the
   app, with no terminal. None is needed for the core.
 
@@ -439,6 +455,8 @@ later; until then search uses keywords. To avoid the download, pull
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
 | Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |
+| Speech detection, engine (onnxruntime) | Finds where speech is in a recording, on this computer; the Speech detection bundle installs it with its model in one click |
+| Speech detection, model (Silero VAD) | The small model that tells speech from silence; a pinned 2.3 MB download kept in the data folder; works offline |
 | Natural voice, voice (LJ Speech) | The public-domain US English voice the engine speaks with; a pinned 64 MB download kept in the data folder; works offline |
 
 ## Privacy
@@ -534,7 +552,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 23,000+ tests, fully offline, every AI call faked
+pytest -n auto                  # 24,000+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

@@ -196,7 +196,7 @@ async function runDocReplace() {
   try {
     await docWriteContents(after, hashes, true);
   } catch (error) {
-    return toast(error.message || "Couldn't replace. Nothing was changed.", true);
+    return toast(error.message || voiceLine("failed", "replace. Nothing was changed"), true);
   }
   docReplaceDisarm();
   $("doc-replace-dialog").close();

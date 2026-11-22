@@ -26,7 +26,7 @@ def test_a_composed_answer_says_each_stage_with_its_time():
     assert _texts(rows) == [
         "Read the question as a question about your notes.",
         "Searched your notes by meaning and keywords: 6 notes matched.",
-        "Atlas wrote it from your notes, with no model: every line comes from a note it cites.",
+        "Atlas's assistant wrote it from your notes, with no model: every line comes from a note it cites.",
         "Shaped as an overview, grouped by when you wrote each note.",
         "Cited 4 of the 6; the rest are in the column beside it.",
         "Done in 0.05 s of work here; the time under the answer is the whole wait.",

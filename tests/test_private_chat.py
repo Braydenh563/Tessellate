@@ -153,7 +153,7 @@ def test_the_learned_stores_are_not_read(ai_client, fake_ollama, beans, monkeypa
 
 
 def test_the_ledger_names_the_run_without_the_question(ai_client, fake_ollama, beans):
-    from tessellate.api import routes_chat
+    from tessellate.api import chat_said
 
     class _Req:
         class body:  # noqa: N801
@@ -167,5 +167,5 @@ def test_the_ledger_names_the_run_without_the_question(ai_client, fake_ollama, b
     from tessellate.core import private_turn
 
     with private_turn.scope(True):
-        assert routes_chat._run_title(_Req) == "Private chat"
-    assert "my secret question" in routes_chat._run_title(_Req)
+        assert chat_said._run_title(_Req) == "Private chat"
+    assert "my secret question" in chat_said._run_title(_Req)

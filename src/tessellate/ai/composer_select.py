@@ -43,6 +43,25 @@ RELATIVE_FLOOR = 0.3
 #: more when the heading holds every one of them: "Harbor launch plan" is the
 #: note about the Harbor launch plan, whatever its sentences repeat.
 TITLE_WEIGHT = 1.0
+#: A note named for the subject lends its name to every sentence, so a long
+#: dated list under it would fill the answer (INBOX 1544): of the sentences
+#: that score on the name alone, this many are kept from one note.
+TITLE_ONLY_PER_NOTE = 2
+#: Only a dated line is a list entry in that sense ("Crown fitting on 2 June");
+#: an undated sentence under the name is a fact about it ("Rent is $1,200").
+_DATED = re.compile(
+    r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|\b\d{1,2}(?:st|nd|rd|th)\b|\b\d{4}-\d\d-\d\d\b",
+    re.I,
+)
+
+
+def _note_is_full(s: Sentence, counts: Counter[int], by_name: Counter[int], per_note: int) -> bool:
+    return counts[s.note_id] >= per_note or (_lent_by_name(s) and by_name[s.note_id] >= TITLE_ONLY_PER_NOTE)
+
+
+def _lent_by_name(s: Sentence) -> bool:
+    """A dated line that scores on its note's name alone (the list the cap keeps short)."""
+    return not s.own and bool(_DATED.search(s.text))
 
 
 #: A note holding no more than this share of the question's words is about
@@ -220,7 +239,9 @@ class _Scorer:
         if hits is None:
             hits = self.headings[view.id] = _heading_hits(view, self.stems, self.term_weight)
         title_hits, filed_hits = hits
-        relevance = self.bm25(s) + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
+        own = self.bm25(s)
+        s.own = own > 0
+        relevance = own + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
         if self.stems and title_hits == self.whole_title:
             relevance += TITLE_WEIGHT
         return relevance
@@ -275,6 +296,21 @@ def _jaccard(a: list[str], b: list[str]) -> float:
     return len(sa & sb) / len(sa | sb) if sa and sb else 0.0
 
 
+def _covering(stems: set[str], views: list[NoteView]) -> list[NoteView]:
+    """The notes that hold more than `NOTE_COVERAGE` of the question's words; every note when none does
+    (a question the notes only half answer). A question met only on everyday words is
+    `composer_empty.stray_match`'s, after the choice (CHAT_PLAN item 3)."""
+    if len(stems) < 2:
+        return views
+    covering = [
+        v for v in views
+        if sum(1 for t in stems if _holds(t, v.words | v.title_words | v.filed_words)) / len(stems) > NOTE_COVERAGE
+    ]
+    #: None covering is a question the notes only half answer: every note
+    #: stays in, and the closing line says which words none of them hold.
+    return covering or views
+
+
 def select(
     shape: str,
     terms: list[str],
@@ -293,14 +329,7 @@ def select(
     notes say it. `said` is an earlier answer's text ("tell me more"): a
     sentence it already quoted is left for something new."""
     stems = {_stem(t) for t in terms}
-    if len(stems) >= 2:
-        covering = [
-            v for v in views
-            if sum(1 for t in stems if _holds(t, v.words | v.title_words | v.filed_words)) / len(stems) > NOTE_COVERAGE
-        ]
-        #: None covering is a question the notes only half answer: every note
-        #: stays in, and the closing line says which words none of them hold.
-        views = covering or views
+    views = _covering(stems, views)
     scored = sorted(_score(shape, terms, views), key=lambda s: (-s.score, s.rank, s.order))
     if said:
         scored = [s for s in scored if not _was_said(s, said)]
@@ -310,6 +339,7 @@ def select(
     floor = scored[0].score * RELATIVE_FLOOR
     chosen: list[Sentence] = []
     counts: Counter[int] = Counter()
+    by_name: Counter[int] = Counter()
     for s in scored:
         if s.score < floor:
             break
@@ -321,10 +351,11 @@ def select(
             if s.note_id != twin.note_id and s.note_id not in {e.note_id for e in twin.echoes}:
                 twin.echoes.append(s)
             continue
-        if len(chosen) >= limit or counts[s.note_id] >= per_note:
+        if len(chosen) >= limit or _note_is_full(s, counts, by_name, per_note):
             continue
         chosen.append(s)
         counts[s.note_id] += 1
+        by_name[s.note_id] += _lent_by_name(s)
     return chosen
 
 
@@ -338,8 +369,10 @@ MEANING_POOL = 24
 #: Two sentences this alike say the same thing (cosine over the embedder's
 #: vectors). Above the paraphrase line of the small sentence models, below
 #: the near-identical: "The launch is on the 14th" and "We launch on the
-#: 14th" are one claim, said twice.
-SAME_COSINE = 0.9
+#: 14th" are one claim, said twice. Measured with bge-small (L-chat-63,
+#: tests/test_composer_cosine_evals.py): one-claim pairs 0.904 to 0.991,
+#: same-subject different claims at most 0.813; 0.86 is the gap's middle.
+SAME_COSINE = 0.86
 
 
 #: ...and share at least this much of their words (token Jaccard over stems):
@@ -349,7 +382,9 @@ SAME_WORDS = 0.34
 
 #: Two sentences this alike are about the same thing, the line between
 #: "also" and "separately" (cosine, then token Jaccard over the words that are
-#: not the question's own, which every candidate shares).
+#: not the question's own, which every candidate shares). Measured with
+#: bge-small (L-chat-63): different subjects at most 0.538, one subject from
+#: 0.433; 0.539 to 0.565 all misread 4 of 28 pairs, the fewest, so 0.55 stays.
 TOPIC_COSINE = 0.55
 
 

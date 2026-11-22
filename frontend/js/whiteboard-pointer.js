@@ -1172,7 +1172,7 @@
         });
         await wbPlaceImageUrl(uploaded.url, x, y);
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+        toast(err.message || voiceLine("failed", "add that image"), true);
       }
     }
 
@@ -1191,7 +1191,7 @@
         const { width, height } = wbPasteImageSize(naturalSize.w, naturalSize.h, vx1 - vx0, vy1 - vy0);
         await wbCreateObject("image", { url }, x - width / 2, y - height / 2, width, height);
       } catch (err) {
-        toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+        toast(err.message || voiceLine("failed", "add that image"), true);
       }
     }
 

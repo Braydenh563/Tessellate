@@ -192,6 +192,36 @@ def _keep_due_day(rest: str, cut_words: list[str]) -> str:
     return f"{rest} {day[0].upper() + day[1:]}" if day[0].isalpha() else f"{rest} {day}"
 
 
+#: "between 8 and 10", "from 8pm to 10pm": a window of the clock. Bare numbers
+#: count only when the sentence ends there or at a day word, so "between 1 and
+#: 5 October" stays a date range.
+_CLOCK_WINDOW = lazy_compile(
+    r"\b(?:between|from)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s+(?:and|to|until|till)\s+(\d{1,2})(?::\d{2})?\s*(am|pm)?\b",
+    re.I,
+)
+_WINDOW_ENDS = lazy_compile(r"\s*(?:[,.;!?]|\Z|(?:tonight|tomorrow|today|morning|evening|night)\b)", re.I)
+
+
+def window_start(text: str) -> str:
+    """A clock window said as the time it opens ("plumber thursday between 8
+    and 10" is "plumber thursday at 8"): a reminder is due when the window
+    starts, not at the day's default (audit G10). An end with am or pm lends
+    its half of the day to a bare start, unless that would put the start
+    after the end ("11 to 1pm" opens at 11am)."""
+    found = _CLOCK_WINDOW.search(text)
+    if found is None:
+        return text
+    hour, minute, half, end_hour, end_half = found.group(1), found.group(2), found.group(3), found.group(4), found.group(5)
+    #: "read pages from 3 to 5 tomorrow" is pages, not a time: a bare "from"
+    #: window is never a clock (as `commands._clock_window` reads it, L207).
+    if not (half or end_half or minute) and (found[0].lower().startswith("from") or not _WINDOW_ENDS.match(text, found.end())):
+        return text
+    if not half and end_half:
+        half = end_half if int(hour) <= int(end_hour) or int(hour) == 12 else ("am" if end_half.lower() == "pm" else "pm")
+    start = f"{hour}:{minute}" if minute else hour
+    return f"{text[:found.start()]}at {start}{half or ''}{text[found.end():]}"
+
+
 def parse_reminder_text(
     text: str, now: datetime, *, locale: str | None = None, known: dict | None = None, tense: str = "future"
 ) -> dict | None:
@@ -203,6 +233,7 @@ def parse_reminder_text(
     the sentence's own words minus the time; a sentence that was only a time
     keeps itself, since an empty reminder is worse than a redundant one.
     """
+    text = window_start(text)
     spans = [s for s in recognise(text, now=now, locale=locale, tense=tense, known=known, bare_hours=True) if s.rank == 0]
     repeat = next((s for s in spans if s.kind == "recurrence"), None)
     at = _reminder_instant(text, now, locale, tense, spans, repeat)
@@ -277,3 +308,18 @@ def _repeat_and_alert(parsed: dict, repeat: Span | None, spans: list) -> None:
     alert = next((s for s in spans if s.kind == "alert"), None)
     if alert is not None:
         parsed["alert_minutes"] = alert.value
+
+
+# --- a bare event: "lunch with my friend at noon today" ---------------------
+#: What, its clock time and its day, with no verb ahead: the shape a reminder is offered for
+#: (`composer_calendar.restate`). The date words are read here, in the one reader.
+_BARE_EVENT = lazy_compile(
+    r"^(?P<what>[a-z][a-z' ]{3,50}?)\s+(?:at|around)\s+(?P<at>noon|midnight|\d{1,2}(?::\d\d)?\s?(?:am|pm)?)\s+(?P<day>today|tomorrow|tonight)$",
+    re.IGNORECASE,
+)
+
+
+def bare_event(sentence: str) -> tuple[str, str, str] | None:
+    """(what, clock time, day) of a verbless event with a time and a day, else None."""
+    found = _BARE_EVENT.match(sentence)
+    return (found.group("what"), found.group("at"), found.group("day")) if found else None

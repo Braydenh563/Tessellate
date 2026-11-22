@@ -29,11 +29,10 @@ imports them all and re-exports every name that anything else reads, so
 
 from __future__ import annotations
 
-from . import _common, contracts, verify  # noqa: F401
+from . import _common, contracts, files, verify, whiteboard  # noqa: F401
 from ._common import DOCUMENT_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, ToolError, ToolSpec, _READ_MORE  # noqa: F401
 from .whiteboard import MAX_DIAGRAM_NODES  # noqa: F401
 from tessellate.entry import manager  # noqa: F401
-from . import files, whiteboard  # noqa: F401
 from tessellate.ai.tools.tool_read import GRAPH_PREVIEW_CHARS, MAX_GRAPH_NOTES, _count_notes, _graph_neighbours, _list_notes, _related_notes, _scope_filters, _search_notes, _suggested_neighbours  # noqa: F401  (moved; re-exported)
 from tessellate.ai.tools import tool_skills  # noqa: F401
 from tessellate.ai.tools.tool_write import LINK_TYPE_DESCRIPTION_CHARS, PRIVATE_REMINDER, private_note_ids  # noqa: F401  (moved; re-exported)
@@ -45,4 +44,5 @@ from tessellate.ai.tools.tool_table import TOOLS, call_example  # noqa: F401  (m
 from tessellate.ai.tools.tool_handoff import HANDOFFS, RUN_STARTERS, handoff_event, validate_run_skill  # noqa: F401  (moved; re-exported)
 from tessellate.ai.tools.tool_focus import adds_to_a_named_note, focus_detail, focus_for, is_follow_through, needs_confirm  # noqa: F401  (moved; re-exported)
 from tessellate.ai.tools.tool_schema import COMPACT_DESCRIPTION_CHARS, COUNTING_TOOLS, ORCHESTRATION_TOOLS, SMALL_WINDOW_CHARS, asks_for_plan, budget_for_window, compact_schemas, keep_first_for, ollama_tools, rank_tools, ranking_line, schema_chars, tool_catalog, with_relation_types, within_budget  # noqa: F401  (moved; re-exported)
-from tessellate.ai.tools.tool_run import _ai_actor, _coerce, check_arguments, confirm_label, example_arguments, execute_tool  # noqa: F401  (moved; re-exported)
+from tessellate.ai.tools.tool_run import _ai_actor, _coerce, check_arguments, confirm_label, example_arguments  # noqa: F401  (moved; re-exported)
+from tessellate.ai.tools.tool_door import execute_tool  # noqa: F401  (`tool_run.execute_tool`, each call kept for `/tools`)

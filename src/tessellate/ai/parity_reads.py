@@ -28,7 +28,7 @@ from tessellate.repo import relations as relations_repo
 
 _LEAD = r"^(?:(?:please|pls|hey|ok|okay|so|and|then|can you|could you)\s+)*"
 _BIN = re.compile(
-    _LEAD + r"(?:(?:what(?:'s|’s| is)|what do i have)(?: in)?|show(?: me)?(?: what(?:'s|’s| is) in)?|list|open|see|check)\s+"
+    _LEAD + r"(?:what(?:'s|’s| is) in|what do i have(?: in)?|show(?: me)?(?: what(?:'s|’s| is) in)?|list|open|see|check)\s+"
     r"(?:(?:in )?(?:my|the) )?(?:bin|trash|recycle bin|rubbish bin|deleted notes)\W*$"
     r"|" + _LEAD + r"what (?:have i|did i) (?:deleted?|binned|thrown away)(?: recently| lately)?\W*$",
     re.I,
@@ -53,7 +53,7 @@ _CONTRADICTION = re.compile(
     re.I,
 )
 _DOCUMENT = re.compile(
-    _LEAD + r"(?:make|create|write|draft|start|put together)(?: me)? (?:a |an )(?:new )?(?:long )?(?:document|doc|report|essay|write-up|writeup)\b.*$",
+    _LEAD + r"(?:make|create|write|draft|start|put together)(?: me)? (?:a |an )(?:new )?(?:long )?(?:document|doc|report|essay|write-up|writeup)\b[^:]*$",  # a colon gives the text: the document act (board_acts) saves it
     re.I,
 )
 _EXPORT = re.compile(

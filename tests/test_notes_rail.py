@@ -20,13 +20,14 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text
-from tests._css_paths import CSS_DIR
+from tests._app_js import index_html_text
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parent.parent
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 LIST_JS = (ROOT / "frontend" / "js" / "notes-list.js").read_text(encoding="utf-8")
 CONNECTIONS_JS = (ROOT / "frontend" / "js" / "connections.js").read_text(encoding="utf-8")
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css")))
+CSS = css_glob_text()
 
 
 def _rail_markup() -> str:

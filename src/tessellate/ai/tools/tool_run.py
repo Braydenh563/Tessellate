@@ -40,7 +40,7 @@ _CONFIRM_LABELS = {
     "move_board_item": lambda a: f"Move {a.get('kind', 'item')} #{a.get('item_id', '?')} on the board",
     "edit_board_item": lambda a: f"Change {a.get('kind', 'item')} #{a.get('item_id', '?')} on the board",
     "delete_board_item": lambda a: f"Take {a.get('kind', 'item')} #{a.get('item_id', '?')} off the board",
-    "edit_note": lambda a: f"Change note #{a.get('note_id', '?')}",
+    "edit_note": lambda a: f"Change note #{a.get('note_id', '?')}", "edit_document": lambda a: f"Change document #{a.get('document_id', '?')}",
     "create_note": lambda a: "Make a new note",
     "save_skill": lambda a: f"Save the skill “{a.get('name', '?')}”",
     "set_reminder": lambda a: "Set a repeating reminder" if str(a.get("recurring") or "none").lower() in ("daily", "weekly", "monthly") else "Set a reminder",
@@ -211,7 +211,7 @@ def execute_tool(
     if not tool_enabled(name):
         return {"error": f"The '{name}' tool is turned off in Settings, Tools it can use"}
     #: Stop landed while the model call that chose this write was in flight:
-    #: the write is discarded, not done late (the stream only sees Stop between
+    #: the write is discarded, not run late (the stream only sees Stop between
     #: yields, `activity.bind`). Reads are harmless and still run.
     if name in WRITE_TOOLS and activity.current_stopped():
         return {"error": "You stopped this run before this step ran, so nothing was changed."}

@@ -357,7 +357,7 @@
               body: JSON.stringify({ overrides: samplingState.overrides }),
             });
           } catch {
-            toast("Couldn't save that setting.", true);
+            toast(voiceLine("failed", "save that setting"), true);
           }
           await loadSamplingSettings();
         }, 400);
@@ -402,7 +402,7 @@
             body: JSON.stringify({ overrides: samplingState.overrides }),
           });
         } catch {
-          toast("Couldn't reset that setting.", true);
+          toast(voiceLine("failed", "reset that setting"), true);
         }
         await loadSamplingSettings();
       });

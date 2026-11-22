@@ -13,9 +13,10 @@ import contextvars
 import re
 from datetime import date
 
-from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec, recognise_windows
+from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, realise, recognise as rec, recognise_windows
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_ask import _holds, _stem, user_today
+from tessellate.ai.composer_help import _result
 from tessellate.ai.composer_intent import _ACT_VERBS, _RECALL_VERBS, Plan
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
@@ -225,7 +226,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
         return EMPTY_NOTEBOOK if voice in ("natural", "professional") else lead
 
     def day(d: date) -> str:
-        return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
+        return realise.localised_days(f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}")
 
     if window and window[0] > last:
         ago = (today - last).days
@@ -295,6 +296,14 @@ def _nothing_parts(out: "_Answer", register: str, absent: list[str]) -> list[tup
         parts += [("template", PHRASES["open_quote"]), ("asked", word), ("template", PHRASES["close_quote"])]
     parts += [("template", PHRASES["stop"]), ("template", PHRASES["space"]), ("template", tail.text if tail else PHRASES[out.voiced("nothing_ask")])]
     return parts
+
+
+def refusal(refused: tuple, question: str, shape: str) -> dict:
+    """The answer that says the word asked about is one the notes are kept
+    from (a filter refused it)."""
+    key, word = refused
+    return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
+                    ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], shape)
 
 
 def _act_verb(word: str) -> bool:
@@ -419,10 +428,13 @@ def stray_reply(out: _Answer, question: str, shape: str, terms: list[str], views
     placed 2026-10-30, item 3). None otherwise. An act's own verb no note
     holds ("i need cleaning added"), or a verb of the notebook's own ("what
     have I saved about lectures"), is not a topic the notes lack."""
-    if not chosen or said:
+    if said:
         return None
+    #: Said missing whether or not a note was chosen: the stricter select finds none for "the meeting with my boss".
     if person := _unknown_person(question, views) or _reserving(question, terms, views):
         return _nothing(shape, unsure, voice, person, out)
+    if not chosen:
+        return None
     stray = [w for w in stray_match(terms, views) if topic_word(w) and w.lower() not in _RECALL_VERBS and not _act_verb(w)]
     if not stray or (len(stray) == 1 and _modifies(stray[0], question, terms)):
         return None

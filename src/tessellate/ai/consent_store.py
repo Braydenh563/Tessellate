@@ -8,14 +8,20 @@ after a press runs nothing twice)."""
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 import secrets
 import threading
 import time
+from pathlib import Path
+
+_logger = logging.getLogger(__name__)
 
 TTL_SECONDS = 1800
 MAX_PARKED = 64
 
-_lock = threading.Lock()
+_lock = threading.RLock()
 _parked: dict[str, tuple[float, dict]] = {}
 #: Ids already spent, kept for the same life: an expired id and a spent one both find nothing in
 #: `_parked`, but only the spent one must not run again from the steps a page sends.
@@ -27,6 +33,64 @@ _spent: dict[str, float] = {}
 _results: dict[str, tuple[float, dict]] = {}
 #: Spent ids that were turned down (a typed no, Cancel): they reopen as cancelled, never as done.
 _declined: dict[str, float] = {}
+
+
+#: The last pressed card's label and Undo steps: what "undo that" says back for an act whose old value is
+#: not in its sentence (a rename's old title, a move's old category; L-chat-29). One person, one chat.
+_latest: tuple[float, str, list[dict]] | None = None
+
+
+#: Kept past a restart and past the next act (L-chat-33): for each rename or move the card ran, the note's
+#: id and the title and category it had, newest last. Only that, never the body, in a file beside the
+#: database (a private note is never touched from Chat), so "undo the rename of X" finds its own old value.
+LOG_MAX = 12
+LOG_DAYS = 3
+
+
+def _log_path() -> Path:
+    from tessellate.core.config import resolved_data_dir
+
+    return resolved_data_dir() / "chat_undo.json"
+
+
+def _read_log() -> list[dict]:
+    try:
+        rows = json.loads(_log_path().read_text("utf-8"))
+    except (OSError, ValueError):
+        return []
+    cutoff = time.time() - LOG_DAYS * 86400
+    return [r for r in rows if isinstance(r, dict) and isinstance(r.get("at"), (int, float)) and r["at"] > cutoff] if isinstance(rows, list) else []
+
+
+def log_undo(undo: list[dict] | None, title: str) -> None:
+    """Add the note a rename or move changed (from the `edit_note` Undo step) to the on-disk log."""
+    from tessellate.ai.composer_frame import note_title  # the name reader itself: commands would close an import cycle
+
+    rows = []
+    for step in undo or []:
+        args = step.get("arguments") or {}
+        if step.get("name") == "edit_note" and args.get("note_id"):
+            rows.append({"at": time.time(), "note_id": args["note_id"], "title": note_title(str(args.get("content") or ""), size=120), "category": args.get("category") or "", "label": title})
+    if not rows:
+        return
+    with _lock:
+        keep = (_read_log() + rows)[-LOG_MAX:]
+        path = _log_path()
+        tmp = path.with_name(path.name + ".tmp")
+        try:
+            #: Born 0600 and swapped in whole: never readable by others, never half-written.
+            fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(json.dumps(keep))
+            os.replace(tmp, path)
+        except OSError:
+            tmp.unlink(missing_ok=True)  # a log that cannot be written only costs the undo-by-sentence of older acts
+
+
+def undo_log() -> list[dict]:
+    """The renames and moves kept on disk, newest first (the last card's in-process steps are not needed here)."""
+    with _lock:
+        return list(reversed(_read_log()))
 
 
 def _now() -> float:
@@ -94,6 +158,28 @@ def remember(key: str | None, result: dict) -> dict:
     return result
 
 
+def note_latest(label: str, undo: list[dict] | None) -> None:
+    """Keep the Undo steps of the card just run, for the sentence that takes it back."""
+    global _latest  # noqa: PLW0603
+    with _lock:
+        _latest = (_now() + TTL_SECONDS, label, list(undo or []))
+
+
+def take_latest() -> tuple[str, list[dict]]:
+    """(label, Undo steps) of the last card run, once: a second ask finds nothing to take back."""
+    global _latest  # noqa: PLW0603
+    with _lock:
+        held, _latest = _latest, None
+    return (held[1], held[2]) if held is not None and held[0] > _now() and held[2] else ("", [])
+
+
+def latest_undo() -> list[dict]:
+    """The Undo steps of the last card run, or [] when none or past its life."""
+    with _lock:
+        held = _latest
+    return held[2] if held is not None and held[0] > _now() else []
+
+
 def result_of(key: str | None) -> dict | None:
     """What the pressed card `key` did, or None (never pressed, or past its life)."""
     with _lock:
@@ -126,7 +212,14 @@ def was_spent(key: str | None) -> bool:
 
 
 def reset_for_tests() -> None:
+    global _latest  # noqa: PLW0603
     with _lock:
+        _latest = None
+        try:
+            _log_path().unlink()
+        except (OSError, ImportError):
+            #: No log file yet (or no data dir in this test): nothing to clear.
+            _logger.debug("consent log not cleared", exc_info=True)
         _parked.clear()
         _spent.clear()
         _results.clear()

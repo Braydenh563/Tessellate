@@ -14,11 +14,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 BOARD = frontend_text("whiteboard.js")
 LIBRARY = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def _function(source: str, name: str) -> str:
@@ -86,7 +87,7 @@ def test_a_locked_item_answers_the_pointer() -> None:
     assert "wbPaintLockBadges();" in _function(BOARD, "wbPaintLocks")
     assert "wbPaintLockHover" not in BOARD and "wbOnLockHoverMove" not in BOARD
     assert 'wbInstances.on("pointerdown", wbOnLockPress, true)' in BOARD
-    assert "Locked. Right-click to unlock it." in BOARD
+    assert "Locked. Right-click to unlock it" in BOARD
     assert "Unlock this item" in BOARD
     hit = _function(BOARD, "wbLockedItemAt")
     assert "wbItemHidden(" in hit, "a hidden item is not under the pointer"

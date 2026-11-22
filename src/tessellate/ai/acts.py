@@ -33,13 +33,14 @@ from tessellate.ai.act_registry import (
     ask_line,
     capability_line,
     guide_topic,
+    guide_topic_boards,
     palette_rows,
 )
 
 #: The table and its text are read through this module too (routes_chat,
 #: the tests), so the re-exports are named rather than incidental.
 __all__ = [
-    "ACTS", "CONFIRM_INTENTS", "Act", "_ACTS", "ask_line", "capability_line", "guide_topic", "palette_rows",
+    "ACTS", "CONFIRM_INTENTS", "Act", "_ACTS", "ask_line", "capability_line", "guide_topic", "guide_topic_boards", "palette_rows",
     "parse", "missing", "preview", "run", "inverse", "propose",
     "BOARD_ACTS", "BOARD", "board_parse", "board_label",
 ]
@@ -76,7 +77,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
 
 def ticked_line(card: dict, frame) -> str:  # noqa: ANN001
     """What a confirmed tick says ("ticked off “a” and “b”"), then the names
-    left out ("Not done: ..."). `frame` words the done part."""
+    left out (`commands.not_done`'s line). `frame` words the done part."""
     if " not done" in card["label"]:
         #: An untick is said as itself (R9-12), not as the edit it is under the card.
         return re.sub(r"^Mark (“.*?”) not done( \(in )?", lambda m: f"Unticked {m.group(1)}" + (" (" if m.group(2) else ""), card["label"]) + "." + (f" {commands.not_done(card.get('skipped') or [])}" if card.get("skipped") else "")
@@ -105,7 +106,7 @@ def run_said(session: Session, label: str, steps: list[dict], skipped: list[dict
     """`run` for a confirmed card, in the composer's own words (the ones the card was
     drawn with): "Done: I saved that to Shopping.", "I will remind you on Friday at 9:
     call the dentist.", "ticked off “Sunscreen”". `say` is `{mood, intent}`, None for plain."""
-    from tessellate.ai import composer_compose
+    from tessellate.ai import composer_checklist, composer_compose
 
     say = say or plain_say(label)
     mood = say["mood"]
@@ -114,6 +115,9 @@ def run_said(session: Session, label: str, steps: list[dict], skipped: list[dict
         done["summary"] = composer_compose.frame("act_card", mood, what=f"{label[:1].lower()}{label[1:]}")
     elif done["ok"] and say["intent"] in ("complete", "uncomplete"):
         done["summary"] = ticked_line({"label": label, "skipped": skipped or []}, lambda what: composer_compose.frame("act_done", mood, what=what))
+        #: The tick that finishes a list is remarked on (CHAT_PLAN C9).
+        finished = [composer_checklist.remark(str(s.get("arguments", {}).get("content") or "")) for s in steps if s.get("name") == "edit_note"] if say["intent"] == "complete" else []
+        done["summary"] = " ".join([done["summary"], *(r for r in finished if r)])
     return done
 
 
@@ -123,6 +127,9 @@ def run_confirmed(session: Session, steps: list[dict], skipped: list[dict], cons
     parked = consent_store.take(consent_id)
     if parked and parked.get("steps"):
         done = run_said(session, parked["label"], parked["steps"], parked["skipped"], parked.get("say"))
+        if done["ok"]:
+            consent_store.note_latest(parked["label"], done.get("undo"))
+            consent_store.log_undo(done.get("undo"), parked["label"])
         return consent_store.remember(consent_id, done) if done["ok"] else done
     return run(session, steps, skipped)
 
@@ -147,7 +154,7 @@ def propose(session: Session, text: str, now: datetime, note_ids: list[int] | No
     planned = preview(session, parsed, note_ids)
     planned.pop("run", None)
     if planned.get("card"):
-        planned["card"] = {**planned["card"], "proposed": True}
+        planned["card"] = {**planned["card"], "proposed": True, "label_said": False}
     return planned
 
 

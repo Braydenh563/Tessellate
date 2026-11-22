@@ -434,7 +434,7 @@
         const done = await apiJson("/entries/tensions/accept", { method: "POST", body: ids });
         pushTensionLinkUndo(tension.earlier_id, tension.later_id, "accept", done?.created !== false);
       } catch (error) {
-        toast(error.message || "Couldn't link these notes.", true);
+        toast(error.message || voiceLine("failed", "link these notes"), true);
         return;
       }
       tensionResolve(card, "Linked as contradicting.");
@@ -448,7 +448,7 @@
         await apiJson("/entries/tensions/dismiss", { method: "POST", body: ids });
         pushTensionLinkUndo(tension.earlier_id, tension.later_id, "dismiss");
       } catch (error) {
-        toast(error.message || "Couldn't dismiss this pair.", true);
+        toast(error.message || voiceLine("failed", "dismiss this pair"), true);
         return;
       }
       tensionResolve(card, "Dismissed: this pair won't come back.");
@@ -596,7 +596,7 @@
         if (!done) return;
         if (done.filled) toast(`Filled in ${nounCount(done.filled, "reason")}.`);
         else if (done.result.ai_unavailable) toast("Atlas isn't running, so no reasons could be guessed.", "info");
-        else toast("Couldn't guess a reason for any of these.");
+        else toast(voiceLine("failed", "guess a reason for any of these"));
       },
     };
     //: **Every sure one at once** (WORLD_CLASS_PLAN, Placed 2026-09-09 item

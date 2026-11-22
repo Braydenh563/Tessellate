@@ -10,9 +10,10 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 FIND = (ROOT / "frontend/js/settings-find.js").read_text(encoding="utf-8")
 
 

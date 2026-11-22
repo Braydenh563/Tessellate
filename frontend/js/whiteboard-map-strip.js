@@ -974,7 +974,7 @@
       await wbMapSetNodeStyle(node, { image: uploaded.url });
       renderWhiteboardNow();
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "add that picture" }), true);
+      toast(err.message || voiceLine("failed", "add that picture"), true);
     }
   }
 

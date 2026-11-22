@@ -31,7 +31,9 @@ def installed(lang: str) -> bool:
 def files(lang: str, kind: str) -> Path | None:
     """The installed `.aff` or `.dic` of a language, or None for an unknown language or file or
     a pack that is not installed."""
-    if lang not in NAMES or kind not in KINDS:
+    #: The name is read from the module's own tables, never the request's string (CodeQL path injection).
+    lang, kind = next((k for k in NAMES if k == lang), None), next((k for k in KINDS if k == kind), None)
+    if lang is None or kind is None:
         return None
     folder = extras.download_ready(extra_id(lang))
     if folder is None:

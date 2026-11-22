@@ -6,10 +6,10 @@
 //: count or words quoted from one note or reminder, and a quote opens where
 //: it came from. The model's week stays below, on request.
 (() => {
-  async function renderDayDigest(box) {
+  async function renderDayDigest(box, refined = false) {
     let day;
     try {
-      day = await apiJson("/insights/day", { silent: true });
+      day = await apiJson(refined ? "/insights/day?refine=1" : "/insights/day", { silent: true });
     } catch {
       box.replaceChildren();
       return;
@@ -69,6 +69,52 @@
       return;
     }
     box.replaceChildren(list);
+    //: **The model refines after the first paint** (L-chat-200, decision 53): the
+    //: engine's lines show at once; with a model running (and Save power off) the
+    //: count lines are reworded by it only where every number and link survived,
+    //: so a slow model never holds the dashboard back.
+    if (!refined && !box.dataset.refined) {
+      box.dataset.refined = "1";
+      renderDayDigest(box, true);
+    }
+    //: **One feature you have not used, once a week** (CHAT_PLAN section 9 row 5): the
+    //: server picks it (`/usage/offer`: ninety days unused, never again within seven
+    //: days) and this says it under the day's lines with a way in and a way out.
+    //: The pick is kept on the box so a re-render shows it again, never a second ask.
+    async function offerUnused() {
+      await ensureModule("usageLedger");
+      const labels = await usageLabels();
+      if (box.dataset.offer === undefined) {
+        const query = Object.keys(labels).map((n) => `known=${encodeURIComponent(n)}`).join("&");
+        box.dataset.offer = (await apiJson(`/usage/offer?${query}`, { silent: true })).name || "";
+      }
+      const name = box.dataset.offer;
+      if (!name || !labels[name] || box.querySelector(".digest-offer")) return;
+      const line = document.createElement("p");
+      line.className = "muted text-sm digest-offer";
+      line.append(`You have not used ${labels[name]} in a while. `);
+      const act = (label, run) => {
+        const link = document.createElement("a");
+        link.href = "#";
+        link.className = "digest-day-open";
+        link.textContent = label;
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          line.remove();
+          run();
+        });
+        return link;
+      };
+      const open = () => {
+        if (name.startsWith("tab:")) return switchTab(name.slice(4));
+        //: The palette's rows are in a lazy bundle (app-features.js), loaded first as Find anything does.
+        ensureModule("appPalette").then(() => paletteCommands().find((c) => usageFeatureName(c.label) === name)?.run());
+      };
+      line.append(act("Try it", open), " or ", act("not now", () => {}), ".");
+      box.appendChild(line);
+    }
+    //: Asked once, in the pass that stays on screen (the first pass hands over to it).
+    if (refined) offerUnused().catch(() => {});
   }
 
   function digestSaidLine(line, opens) {
@@ -77,20 +123,34 @@
     li.dataset.kind = line.kind;
     li.dataset.part = line.part;
     const text = String(line.text || "");
-    const name = line.part === "quiet" ? String(line.category || "") : "";
-    if (!name || !text.startsWith(name)) {
+    //: Every counted phrase opens the list it counted (B23: "every number links
+    //: to its list"); the sentence around it stays text (INBOX 904 B83), so the
+    //: link is the words that hold the number, never the row.
+    const spans = [];
+    for (const phrase of line.links || []) {
+      const at = text.toLowerCase().indexOf(String(phrase).toLowerCase());
+      if (at !== -1 && !spans.some((s) => at < s.end && at + phrase.length > s.at)) spans.push({ at, end: at + phrase.length });
+    }
+    spans.sort((a, b) => a.at - b.at);
+    if (!spans.length) {
       li.textContent = text;
       return li;
     }
-    const link = document.createElement("a");
-    link.href = "#";
-    link.className = "digest-day-open";
-    link.textContent = name;
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-      opens.quiet(line);
-    });
-    li.append(link, document.createTextNode(text.slice(name.length)));
+    let from = 0;
+    for (const { at, end } of spans) {
+      li.appendChild(document.createTextNode(text.slice(from, at)));
+      const link = document.createElement("a");
+      link.href = "#";
+      link.className = "digest-day-open";
+      link.textContent = text.slice(at, end);
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        opens[line.part](line);
+      });
+      li.appendChild(link);
+      from = end;
+    }
+    li.appendChild(document.createTextNode(text.slice(from)));
     return li;
   }
 

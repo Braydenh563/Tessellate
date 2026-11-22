@@ -186,7 +186,7 @@
         Promise.resolve()
           .then(run)
           .catch((error) => {
-            if (!error?.isLockout) toast(`Couldn't load ${label}: ${error.message}`, true);
+            if (!error?.isLockout) toast(voiceLine("failed", `load ${label}`, error.message), true);
           })
       )
     );
@@ -244,7 +244,7 @@
     try {
       await refreshActiveTab();
     } catch (error) {
-      toast(`Couldn't load this tab: ${error.message}`, true);
+      toast(voiceLine("failed", "load this tab", error.message), true);
     }
   }
 

@@ -84,15 +84,14 @@ const phone = W < 600;
       await page.screenshot({ path: `${OUT}/gl1005-chathead-${W}-${process.env.THEME || "light"}-${width}.png`, clip: { x: 0, y: 0, width: 700, height: 260 } });
     }
   }
-  // The sort still works from the head: pick A-Z and read the stored choice.
+  // The sort still works from the head: pick Name in the menu and read the stored view.
   out.sortWorks = await page.evaluate(async () => {
-    const sel = document.getElementById("chat-sidebar-sort");
-    sel.value = "alpha";
-    sel.dispatchEvent(new Event("change", { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 300));
-    const ok = localStorage.getItem("chatSidebarSort") === "alpha" || Object.keys(localStorage).some((k) => /sort/i.test(k) && localStorage.getItem(k) === "alpha");
-    sel.value = "recent";
-    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    document.querySelector("#chat-sidebar-view .kebab-opener").click();
+    const row = [...document.querySelectorAll("#chat-sidebar-view .menu-item")].find((b) => /Name/.test(b.textContent));
+    row.click();
+    await new Promise((r) => setTimeout(r, 400));
+    const ok = (await (await fetch("/conversations/view")).json()).sort === "name";
+    await fetch("/conversations/view", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort: "recent" }) });
     return ok;
   });
   const bad = [];

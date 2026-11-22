@@ -74,6 +74,10 @@ VERDICT = {
     "src/tessellate/ai/parity_acts.py": "not a reader: `_REMINDERS` and `_REMINDERS_FROM` are a mask that cuts the time part off 'make reminders from the Harbor note for tomorrow'; the cut words go to when unread",
     "src/tessellate/ai/study.py": "not a reader: `_WHEN` is a mask-like cue that ranks a sentence with a day, month or clock time above a bare number; it turns no word into a value, recognise reads the window",
     "frontend/js/onboarding.js": "not a reader: the week_start options (monday, saturday, sunday) of a setting, as in routes_settings",
+    # 2026-11-14 (verify-d): tables the ratchet found, judged.
+    "src/tessellate/ai/composer_edit.py": "not a reader: day and month names to write a heading back in the person's own order; no word becomes a value",
+    "src/tessellate/ai/composer_entity.py": "not a reader: day and month names kept out of a who answer's names (a stop list)",
+    "src/tessellate/ai/composer_graph.py": "not a reader: the spelling a quoted figure's unit is labelled with on a chart axis; no value is converted, the figure is the note's own",
 }
 
 WEEKDAYS = "monday|tuesday|wednesday|thursday|friday|saturday|sunday"

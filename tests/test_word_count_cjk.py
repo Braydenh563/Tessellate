@@ -16,6 +16,7 @@ import pytest
 
 from tessellate.ai import utilities
 from tessellate.core import cjk
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -61,3 +62,19 @@ def test_no_surface_splits_a_note_on_spaces_to_count_it():
         ("settings-wiring.js", r"const words = \(value\.match"),
     ):
         assert not re.search(pattern, (JS / name).read_text(encoding="utf-8")), name
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not available")
+def test_the_segmenter_counts_cjk_words_for_per_word_logic():
+    """L-chat-259: no checker pack for ja/zh; the browser's Intl.Segmenter counts words for per-word logic."""
+    source = documents_text()
+    start = source.index("  words(sentence) {")
+    end = source.index("\n  },", start) + 5
+    script = "const docProse = {" + source[start:end] + "};\nconsole.log(JSON.stringify(process.argv.slice(1).map((t) => docProse.words(t))));"
+    texts = ["one two  three", "週末のゴルフについての考え", "Harbor 計画 plan"]
+    out = subprocess.run(["node", "-e", script, *texts], capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    got = json.loads(out.stdout)
+    assert got[0] == 3
+    assert 3 <= got[1] < 13  # words, not the 13 characters the shared count gives
+    assert got[2] >= 3

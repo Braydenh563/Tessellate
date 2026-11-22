@@ -34,7 +34,6 @@ def _ask(client, question: str) -> str:
 
 @pytest.fixture()
 def clock(monkeypatch):
-
     pin_clock(monkeypatch, SUNDAY)
 
 

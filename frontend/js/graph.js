@@ -1384,6 +1384,7 @@ const GRAPH_LINK_TYPES = [
   ["supports", "Supports", "This is evidence for that"],
   ["contradicts", "Contradicts", "These disagree"],
   ["example_of", "Example of", "This is an instance of that"],
+  ["supersedes", "Supersedes", "Replaces it"],
 ];
 
 // Ask what kind of link this is before making it. Resolves to
@@ -2748,7 +2749,7 @@ function openGraphLinkPeek(edge, event, nodes) {
       try {
         await apiJson(`/entries/${sourceId}/links/${edge.id}`, { method: "PATCH", body: JSON.stringify({ two_way: next }) });
       } catch (error) {
-        toast(error.message || "Couldn't change the link's direction.", true);
+        toast(error.message || voiceLine("failed", "change the link's direction"), true);
         return;
       }
       pushRequestUndo(
@@ -2892,7 +2893,7 @@ function openGraphLinkPanel(edge, nodes) {
       method: "PUT",
       body: JSON.stringify({ reason: textarea.value.trim() || null }),
     }).catch((e) => toast(e.message, true));
-    toast("Saved.");
+    toast(voiceLine("done", "Saved"));
     close();
     renderGraph();
   });
@@ -4021,7 +4022,7 @@ async function exportGraphPng() {
     await saveFile("graph.png", blob);
     toast("Graph exported as PNG.");
   } catch (error) {
-    toast(error.message || "Couldn't export the graph.", true);
+    toast(error.message || voiceLine("failed", "export the graph"), true);
   }
 }
 
@@ -4854,7 +4855,7 @@ async function graphSaveCurrentView() {
   views.push({ name, ...graphCaptureView() });
   prefs.set(GRAPH_VIEWS_KEY, JSON.stringify(views));
   renderGraphViews();
-  toast(`Saved the view “${name}”.`);
+  toast(voiceLine("done", `Saved the view “${name}”`));
 }
 
 function graphApplyView(view) {
@@ -5506,7 +5507,7 @@ for (const id of ["graph-unpin-all", "graph-unpin-all-menu"]) document.getElemen
       () => graphUnpinAllNow()
     );
   } catch (error) {
-    toast(error.message || "Couldn't unpin the graph.", true);
+    toast(error.message || voiceLine("failed", "unpin the graph"), true);
   }
 });
 
@@ -5651,7 +5652,7 @@ onSurface("graph", () => {
     recordTabVisit("graph", null);
     $("graph-focus-clear").classList.add("hidden");
     renderGraph();
-    toast("Exited Focus Mode.");
+    toast(voiceLine("done", "Exited Focus Mode"));
   });
   $("graph-highlight-clear").addEventListener("click", () => {
     graphHighlightIds = null;

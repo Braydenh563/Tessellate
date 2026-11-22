@@ -28,6 +28,7 @@ from pathlib import Path
 from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
@@ -4686,8 +4687,8 @@ def test_the_chat_sidebar_head_is_one_quiet_row():
     """INBOX 578, the owner: "this section in the chat sidebar looks awkward"
     (a filled 81px "+ New" in the head and a 144px "Recent" sort field alone
     on a row under it). The Notes sidebar's shape: the title, then quiet icon
-    controls in the one head row. The sort is the icon-and-caret picker
-    (`data-select-icon`), New chat a ghost icon button, so the tab's one
+    controls in the one head row. The sort and grouping are one `kebabMenu`
+    (`#chat-sidebar-view`, chat-order.js), New chat a ghost icon button, so the tab's one
     filled action stays Send; and the row under the head is the list.
     `scratchpad/ui-sweeps/gl1005-chathead.js` measures it."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -4698,7 +4699,8 @@ def test_the_chat_sidebar_head_is_one_quiet_row():
     #: 2026-10-10: "should that no chats text be at the top not the bottom??").
     between = aside[aside.index('<div id="conv-empty"') : aside.index('<ul id="conversation-list">')]
     assert between.rstrip().endswith("</div>") and between.count("<") == 2
-    assert 'id="chat-sidebar-sort"' in head and 'data-select-icon="ph-sort-descending"' in head
+    #: The sort became a `kebabMenu` that also groups (chat-order.js, L-world-class-180): its slot, not a native select.
+    assert 'id="chat-sidebar-view"' in head and "<select" not in head
     new = re.search(r'<button id="chat-new"[^>]*>', head).group(0)
     assert 'class="ghost small icon-only"' in new and 'aria-label="New chat"' in new
     assert head.rstrip().endswith("</div>")
@@ -7739,7 +7741,7 @@ def test_a_diagram_change_is_one_marked_picture() -> None:
 
 
 # --- A lock toggle (INBOX 1736) ------------------------------------------------
-_LT_HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+_LT_HTML = index_html_text()
 _LT_CSS = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
 _LT_DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
@@ -8015,3 +8017,36 @@ def test_the_overdue_triage_is_a_sheet_with_one_undo_per_act() -> None:
     assert 'createElement("dialog")' not in js and "modal-overlay" not in js
     assert js.count("pushUndo(") == 3  # the outcome append, the one triage act (a row or all rows), clear done
     assert ".style." not in js and "style=" not in js
+
+
+def test_the_agent_asks_in_one_card_and_a_suggested_edit_is_the_document_diff() -> None:
+    """L-world-class-181: the agent's request is drawn by tool-consent.js alone (what, why, Allow,
+    Allow always, Decline), and a suggested edit is `docRenderDiff` with per-hunk toggles, never a
+    second diff. "Allow always" is never offered for a removal."""
+    js_dir = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    consent = (js_dir / "tool-consent.js").read_text(encoding="utf-8")
+    assert "docRenderDiff(view, ops, { hunks, skipped, onToggleHunk" in consent
+    assert "diff-removed" not in consent and "diff-added" not in consent
+    assert "if (!event.removes) row.appendChild(" in consent
+    assert "skip_hunks: skip" in consent
+    others = [p.name for p in js_dir.glob("*.js") if p.name != "tool-consent.js" and "/chat/tools/execute\", {" in p.read_text(encoding="utf-8") and "Allow always" in p.read_text(encoding="utf-8")]
+    assert others == []
+    kit = (js_dir / "answer-kit.js").read_text(encoding="utf-8")
+    body = kit[kit.index("function renderToolConfirm(") :]
+    body = body[: body.index("\n}\n")]
+    assert 'lazyScript("/js/tool-consent.js")' in body and "smallButton(" not in body
+    assert ".style." not in consent and "style=" not in consent
+
+
+def test_an_agent_edit_in_the_open_document_is_the_card_s_press() -> None:
+    """L-documents-41: the in-editor review draws the card's own hunks with the suggestion mode's
+    marks, and never saves on its own: every way out of it is the card's Allow or Decline."""
+    js_dir = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    review = (js_dir / "doc-agent-review.js").read_text(encoding="utf-8")
+    consent = (js_dir / "tool-consent.js").read_text(encoding="utf-8")
+    assert 'ins.className = "cm-suggest-ins"' in review and 'class: "cm-suggest-del"' in review
+    assert "docRenderDiff(" not in review and "docDiffLines(" not in review
+    assert "/chat/tools/execute\", {" not in review.split("saved(result, ran)")[0]
+    assert "if (all === false) onReject();\n      else onAccept();" in review
+    assert "onAccept: () => allow(false), onReject: decline" in consent
+    assert "CM.state.EditorState.readOnly.from(f" in review

@@ -19,7 +19,7 @@ from tests._app_js import with_pieces
 def test_the_run_undo_settles_the_stack_entries_and_the_rows():
     source = with_pieces("chat-agent.js")
     assert "undoSkillRun(span, all, settleRun)" in source
-    settle = re.search(r"const settleRun = \(\) => \{.*?\n          \};", source, re.S)
+    settle = re.search(r"const settleRun = \(\) => \{.*?\n\s+\};", source, re.S)
     assert settle, "settleRun is gone"
     body = settle.group(0)
     assert "agentUndoActions.get(JSON.stringify(change.undo))" in body

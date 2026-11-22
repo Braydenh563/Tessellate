@@ -17,14 +17,14 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import unwrapped, nmb_curve_js
 
 ROOT = Path(__file__).resolve().parents[1]
 MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
-VIEWER = MENU[MENU.index("const NM_VIEWER_POKED") : MENU.index("//: **Under reduced motion, a blink now and then**")]
+VIEWER = nmb_curve_js() + MENU[MENU.index("const NM_VIEWER_POKED") : MENU.index("//: **Under reduced motion, a blink now and then**")]
 
 
 @needs_node

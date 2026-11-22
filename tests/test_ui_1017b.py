@@ -9,9 +9,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_b01_first_steps_stay_reachable_in_a_menu_and_the_bell():

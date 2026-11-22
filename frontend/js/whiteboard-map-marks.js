@@ -57,7 +57,7 @@
         reminderMadeUndo(made);
         toast(`Reminder set for ${wbMapDueWords(parts.due, null, parts.dueTime).words}${parts.dueTime ? "" : ", 9:00"}.`);
       } catch (error) {
-        toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
+        toast(error.message || voiceLine("failed", "set that reminder"), true);
       }
     });
     wrap.append(remind);
@@ -545,7 +545,7 @@
         body: JSON.stringify({ format: "markdown", content: outline, name: (doc.title || "Untitled document").slice(0, 100) }),
       });
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "make that map" }), true);
+      toast(err.message || voiceLine("failed", "make that map"), true);
       return null;
     }
     try {

@@ -39,6 +39,8 @@ _BINARY = {
 #: `\s*[?=.]*\s*$` was quadratic on a run of whitespace (CodeQL).
 _ASK = lazy_compile(r"^\s*(?:what(?:'?s| is)|calculate|compute|work out)\s+(?P<expr>\S.*)$", re.I)
 _ALLOWED = lazy_compile(r"^[\d\s.+\-*/%()^x×÷]+$")
+#: "1,000" is a thousand: a comma between a digit and three more is grouping (L-chat-22).
+_GROUPED = lazy_compile(r"(?<=\d),(?=\d{3}(?!\d))")
 
 
 class NotArithmetic(ValueError):
@@ -69,7 +71,7 @@ def _walk(node: ast.AST) -> float:
 
 def evaluate(expression: str) -> float:
     """The value of `expression`, or `NotArithmetic`."""
-    text = (expression or "").strip()
+    text = _GROUPED.sub("", (expression or "").strip())
     if not text or len(text) > MAX_CHARS or not _ALLOWED.match(text):
         raise NotArithmetic("not a sum")
     text = text.replace("×", "*").replace("x", "*").replace("÷", "/").replace("^", "**")

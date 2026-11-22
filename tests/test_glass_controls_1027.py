@@ -17,10 +17,11 @@ import re
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "glass-controls-lazy.css").read_text(encoding="utf-8")
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 GUARD = ':root:not([data-glass="off"])[data-glass-controls="on"] '
 
 

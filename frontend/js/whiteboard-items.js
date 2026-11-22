@@ -275,7 +275,7 @@
     await wbSaveObject(item);
     wbPushUndo({ action: "move", kind: "object", id: item.id, before });
     wbScheduleRender();
-    toast("Fitted to the picture.");
+    toast(voiceLine("done", "Fitted to the picture"));
   }
 
   async function wbFitToText(el) {
@@ -318,7 +318,7 @@
       await wbSaveObject(item);
       wbPushUndo({ action: "move", kind: "object", id: item.id, before });
       wbScheduleRender();
-      toast("Sized to its text.");
+      toast(voiceLine("done", "Sized to its text"));
       return;
     }
     //: **The card's own `scrollHeight` is not the answer for a note card.**
@@ -372,7 +372,7 @@
     else await wbSaveObject(item);
     wbPushUndo({ action: "move", kind: isNode ? "node" : "object", id: item.id, before });
     wbScheduleRender();
-    toast("Sized to its text.");
+    toast(voiceLine("done", "Sized to its text"));
   }
 
   //: `boardId` is read when the save starts: a caller that awaited first (wbSaveMany) passes the one it began on.
@@ -826,7 +826,7 @@
         delete d._unsaved;
         if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
         wbScheduleRender();
-        toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+        toast(voiceLine("failed", "save the move", "the item went back where it was"), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
         return;
       }
       const primary = moveBefore && reallyMoved

@@ -11,13 +11,14 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text, with_pieces
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = app_js_text()
 SHEETS = with_pieces("sheets-selects.js")
 CSS = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
 SETTINGS_JS = with_pieces("settings.js")
-INDEX_HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX_HTML = index_html_text()
 
 
 def _function(source: str, name: str) -> str:

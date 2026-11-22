@@ -61,3 +61,8 @@ def test_setting_an_alarm_is_the_reminder_act(said):
 
 def test_a_question_about_the_alarm_code_is_left_alone():
     assert composer_calendar.restate("what is the alarm code at the office") == "what is the alarm code at the office"
+
+
+def test_a_bare_event_with_a_time_and_a_day_is_a_reminder():
+    assert composer_calendar.restate("lunch with my friend at noon today") == "remind me to lunch with my friend at noon today"
+    assert composer_calendar.restate("is lunch at noon today") == "is lunch at noon today"

@@ -35,6 +35,7 @@ REVIEWED = {
     ".md-grip:hover": "a drag handle, drawn in the accent",
     ".library-activity:hover": "a spine rule with no ground of its own",
     ".ocr-region-text-empty:hover": "ground is `none`",
+    "#conversation-list li.conv-group:hover": "ground is `none`: a folder heading in the chat list is not a row",
     ".library-file-rows .library-image-tile .library-read-open:hover": "ground is `none`",
     ".doc-prop-btn:hover": "ground is `none`",
     ".timeline-table tbody tr:hover td": "a collapsed-border table row: radius does not apply to cells there",

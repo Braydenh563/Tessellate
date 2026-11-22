@@ -389,7 +389,7 @@
     try {
       await wbBinBoard(id, true);
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "delete that board" }), true);
+      toast(err.message || voiceLine("failed", "delete that board"), true);
       return false;
     }
     const action = pushUndo(`Deleted "${title}"`, () => wbBinBoard(id, false), () => wbBinBoard(id, true));
@@ -427,7 +427,7 @@
     wbScheduleRender();
     await refreshBoardList();
     const left = wbState.nodes.length + wbState.sketches.length + (wbState.objects?.length || 0);
-    toast(left ? voiceLine("failed", { what: "clear the whole board; what is left is shown" }) : "Board cleared.", Boolean(left));
+    toast(left ? voiceLine("failed", "clear the whole board; what is left is shown") : "Board cleared.", Boolean(left));
   }
 
   // whiteboard-export.js: whiteboard-export.js: the board and map export (SVG, PNG, PDF, copy as image, th (moved out, L286).

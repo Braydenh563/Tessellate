@@ -41,6 +41,19 @@ def recent(session: Session, *, limit: int) -> list:
     return session.execute(select(Entry.id, Entry.content).where(*_visible()).order_by(Entry.id.desc()).limit(limit)).all()
 
 
+def content_of(session: Session, note_id: int) -> str | None:
+    """The text of one visible note (not a board either: the note tools' floor), or None."""
+    return session.scalar(
+        select(Entry.content).where(Entry.id == note_id, *_visible(), Entry.is_board == False)  # noqa: E712
+    )
+
+
+def written(session: Session, ids: Iterable[int]) -> dict[int, tuple[str, object]]:
+    """`{id: (content, created_at)}` for the visible notes among `ids`, for a quoted answer's sources."""
+    rows = session.execute(select(Entry.id, Entry.content, Entry.created_at).where(Entry.id.in_(list(ids)), *_visible()))
+    return {row.id: (row.content or "", row.created_at) for row in rows}
+
+
 def matching(session: Session, like: str, *, limit: int) -> list[Entry]:
     """Visible notes whose text matches the escaped LIKE pattern `like`, newest first.
 

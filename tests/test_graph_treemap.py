@@ -16,12 +16,13 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
 GRAPH = (JS / "graph.js").read_text(encoding="utf-8")
 CANVAS = (JS / "graph-canvas.js").read_text(encoding="utf-8")
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 D3 = ROOT / "frontend" / "vendor" / "d3.v7.min.js"
 
 

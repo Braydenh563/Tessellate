@@ -860,7 +860,7 @@
     renderDocCounts();
     //: Says where it went rather than only that it happened: the remark is gone
     //: from the text and the undo that brings it back is the ordinary one.
-    toast("Resolved. Ctrl+Z puts it back, or Show resolved lists it.");
+    toast(voiceLine("done", "Resolved. Ctrl+Z puts it back, or Show resolved lists it"));
   }
 
   //: The remark goes back into the text and the thread with it; the
@@ -875,7 +875,7 @@
     renderDocComments();
     scheduleDocPreview();
     renderDocCounts();
-    toast("Reopened. Ctrl+Z puts it back.");
+    toast(voiceLine("done", "Reopened. Ctrl+Z puts it back"));
   }
 
   function docEditReply(thread, index, text) {

@@ -427,8 +427,11 @@ def known_feature(feature: str) -> Feature:
 class ModelManager:
     """Reads/writes the active-model preferences."""
 
-    def __init__(self, config: ConfigManager, feature: str | None = None) -> None:
+    def __init__(self, config: ConfigManager, feature: str | None = None, once: str = "") -> None:
         self._config = config
+        #: One turn's model, named by the person's regenerate-with choice (L165);
+        #: wins over the feature's own override and the app's chat model.
+        self._once = once
         #: Which feature's work this manager is answering for, or None for the
         #: app's own preferences. A *view*, not a mode: `for_feature` hands
         #: back a second manager over the same config rather than setting a
@@ -441,10 +444,14 @@ class ModelManager:
         #: it the view for its own surface and the right model arrives.
         self._feature = feature
 
+    def for_model(self, name: str) -> "ModelManager":
+        """This view, answering with `name` for the one turn that asked."""
+        return ModelManager(self._config, self._feature, (name or "").strip())
+
     def for_feature(self, feature: str) -> "ModelManager":
         """This manager, answering as one feature (decision 1)."""
         known_feature(feature)
-        return ModelManager(self._config, feature)
+        return ModelManager(self._config, feature, self._once)
 
     def _override_for_role(self, role: str) -> str:
         """This view's override, if it replaces *this* role.
@@ -561,7 +568,7 @@ class ModelManager:
         return rows
 
     def chat_model(self) -> str:
-        return self._override_for_role("chat") or self._config.get_preference(
+        return self._once or self._override_for_role("chat") or self._config.get_preference(
             "chat_model", "llama3.2"
         )
 
@@ -1129,6 +1136,20 @@ def _check_room(client: OllamaClient, wanted: int) -> None:
         raise OllamaError(f"Not enough free space: free up {diskspace.human_bytes(short)} and try again.")
 
 
+#: Called with a model's name once its download has finished. The API layer
+#: registers the filing model's warm-up here (`routes_models._warm_after_pull`):
+#: `janitor` imports this module, so this module cannot import it back.
+AFTER_PULL: list = []
+
+
+def same_model_name(a: str, b: str) -> bool:
+    """`llama3.2` and `llama3.2:latest` are one model, as Ollama resolves them."""
+    def bare(name: str) -> str:
+        return name[: -len(":latest")] if name.endswith(":latest") else name
+
+    return bool(a) and bare(a) == bare(b)
+
+
 def _run_pull(client: OllamaClient, name: str, job: Job) -> None:
     started = time.monotonic()
     try:
@@ -1159,6 +1180,11 @@ def _run_pull(client: OllamaClient, name: str, job: Job) -> None:
             name=name,
             duration_ms=(time.monotonic() - started) * 1000,
         )
+        for hook in AFTER_PULL:
+            try:
+                hook(name)
+            except Exception:  # noqa: BLE001  # a warm-up that fails must not turn a finished download into an error
+                logging.getLogger("tessellate.models").info("after-pull hook failed for %s", name, exc_info=True)
     except OllamaError as exc:
         # Surface the failure so the UI can offer a retry, never leave
         # a half-download looking installed (§6.5).

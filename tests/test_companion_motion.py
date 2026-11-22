@@ -31,6 +31,7 @@ from pathlib import Path
 import pytest
 from tests._app_js import app_js_text, frontend_text, with_pieces
 from tests._js_scope import unwrapped
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
@@ -38,7 +39,7 @@ ROOT = Path(__file__).resolve().parents[1]
 AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")) for name in ("avatars.js", "companion-menu.js", "companion-settings.js", "companion-throw.js"))
 APP = app_js_text()
 SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
-HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 
 
 def _fn(name: str, src: str = AV) -> str:
@@ -463,7 +464,7 @@ def test_a_walk_is_paced_too() -> None:
     assert 'const busy = (!!nmb.act && !NMB_RESTING_ACTS.has(nmb.act)) || buddy.classList.contains("nm-buddy-dragging") || !!nmb.visit;' in tempo
     assert "nmb-walking" not in tempo[tempo.index("const busy") : tempo.index("const still")]
     move = _fn("nameMarkBuddyGo")
-    walk = move[move.index('nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);') :]
+    walk = move[move.index('nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);') :]
     assert "nmbTempo.seen = 0;" in walk[:300] and "setTimeout(nameMarkBuddyTempo, 0)" in walk[:400]
 
 
@@ -629,7 +630,7 @@ def test_it_sets_off_and_lands_and_eases_between_poses():
     assert "delay: setOff, fill: \"backwards\"" in AV
     assert "nameMarkBuddySquash(char, duration + setOff, underway);" in AV
     squash = _fn("nameMarkBuddySquash")
-    assert '.map((frame) => ({ ...frame, easing: "ease-in-out" })), { duration: total });' in squash
+    assert '.map((frame) => ({ ...frame, easing: NMB_CURVE.inOut })), { duration: total });' in squash
     assert "a instanceof CSSTransition" in AV
     assert "#nm-buddy :is(.nmb-leg, .nmb-arm, .nmb-hold, .atl-lower) { transition: transform calc(var(--motion-slow) * 2) var(--ease-spring)" in CSS08
 
@@ -711,7 +712,7 @@ def test_every_change_of_place_is_travelled_by_its_body() -> None:
     # (INBOX 1463: never "across the screen ... on a new page").
     for way in ("if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
                 "if (route === \"float\") {", "if (d < size * NMB_HOP_SIZES && !poseChanged)",
-                'nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);'):
+                'nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_CURVE.blend);'):
         assert way in go, way
     # Distances are in its own size, not pixels.
     assert "const size = NMB_W * Math.max(0.7, nmb.scale || 1);" in go
@@ -900,7 +901,7 @@ def test_the_larger_faces_have_a_life_of_their_own() -> None:
     assert "NM_IDLE_MIN" in tick and "if (!big.length) return;" in tick
     assert "nameMarkIdleQuiet()" in tick and "nameMarkIdleQuiet()" in _fn("nameMarkIdleAct")
     quiet = _fn("nameMarkIdleQuiet")
-    assert 'root.dataset.avatarMotion === "off"' in quiet and 'nameMarkBuddyActions() === "off"' in quiet
+    assert 'root.dataset.avatarMotion === "off"' in _fn("nameMarkMotionStill") and "nameMarkMotionStill()" in quiet and 'nameMarkBuddyActions() === "off"' in quiet
     viewer = _fn("openNameMarkViewer")
     assert '"Its own face, read from its name"' in viewer and '"A face of its own"' not in viewer
     assert "nameMarkIdleWake();" in viewer
@@ -1569,7 +1570,8 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     keyframe, since a lone keyframe is the end), off the pacer, and not
     under reduced motion; the companion's expressions cross over 0.6s."""
     blend = _fn("nameMarkBuddyBlend")
-    assert "nameMarkIdleQuiet()" in blend and "{ ...moved, offset: 0 }" in blend
+    # L184: "not under reduced motion" is asked of motion alone (`nameMarkMotionStill`), not of actions off.
+    assert "nameMarkMotionStill()" in blend and "{ ...moved, offset: 0 }" in blend
     assert 'id: "nmb-blend"' in blend
     # (INBOX 1589: the hand-over also takes `nmb-arms` off with the last act that moves the arms.)
     # (INBOX 1634: the leave is written inside the enter's change, one hand-over for both.)
@@ -1678,7 +1680,7 @@ def test_inbox_669_an_ended_move_is_never_replayed_by_the_pacer() -> None:
 
 
 def test_inbox_669_no_rig_joint_turns_over_four_degrees_a_frame() -> None:
-    motion = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
+    motion = unwrapped((ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8"))
     spring = _fn("atlasRigSpring", motion)
     assert "const ATLAS_RIG_MAX_SPEED = 200;" in motion
     assert 200 / 60 < 4
@@ -1819,7 +1821,10 @@ def test_atlas_changes_face_on_its_own_and_on_more_events() -> None:
     atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
     drift = _fn("atlasDrift", atlas)
     assert 'atlasMoodNow !== "calm"' in drift and "data-atlas-hidden" in drift
-    assert "atlasDriftState.recent" in drift and "35000 + Math.random() * 40000" in drift
+    #: L180 moved the gap to a per-phase pace (at least 3 moods a minute at rest), so the
+    #: drift reads its gap from `atlasDriftState.gap`, 20 to 40 s before the phase's pace.
+    assert "atlasDriftState.recent" in drift and "atlasDriftState.gap(phase)" in drift
+    assert "atlasDriftState.gap = (phase) => (20000 + Math.random() * 20000) * atlasDriftState.pace[phase];" in atlas
     on = _fn("atlasOn", atlas)
     assert 'event === "done"' in on and 'event === "found" || event === "nothing"' in on
     js = ROOT / "frontend" / "js"

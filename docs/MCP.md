@@ -51,6 +51,7 @@ With default settings the server offers **28 tools**, all of them reads (of 73 i
 | `add_whiteboard_card` | write | Place an existing note as a card on a whiteboard board. |
 | `add_whiteboard_link` | write | Draw a link between two cards already on a whiteboard board (add_whiteboard_card first). |
 | `audit_link_reasons` | write | Audits vague graph link reasons (like 'similar in meaning') and rewrites them by deducing a specific reason based on both notes. |
+| `restore_link_reasons` | write | Put back link reasons an audit rewrote. Pass the log_id its undo gave; only for undoing an audit. |
 | `check_learned` | write | Check what the app learned about the user: re-read every claim and question it worked out against its note as written now, retire what no longer holds (note edited or deleted, a joke, quote or draft, marked wrong, repeated) and flag what needs a look (two notes disagree, a date that has passed). The retired ones can be undone in Settings, What it learned. |
 | `complete_reminder` | write | Mark a reminder done, or open again. |
 | `create_category` | write | Make a new category. |
@@ -62,6 +63,10 @@ With default settings the server offers **28 tools**, all of them reads (of 73 i
 | `link_map_nodes` | write | Draw a cross-link between two existing nodes on one mindmap, what a tree can't express ('this depends on that'); read_mindmap gives their ids. |
 | `link_notes` | write | Connect a note to one or more related notes. |
 | `map_from_note` | write | Make a mind map from one note in one call, for 'turn this note into a map': its title is the centre, its headings and lists the branches. |
+| `archive_note` | write | Archive notes, or bring them back (archived false). Archived notes are kept, never deleted. |
+| `find_stale_notes` | read | Notes not written, edited or opened for a span, oldest first. Favourites and archived notes are left out. |
+| `count_month_figures` | read | A month in numbers: notes written, reminders finished, what the notes record as spent, each with its note ids. |
+| `get_person_page` | read | Everything the notes hold about one person: the notes naming them, the notes linked to those, and open reminders that name them. |
 | `pin_note` | write | Add a note to Favourites (or remove it). |
 | `place_library_item` | write | Place a library item (a ref from list_library) on a board, centred at x, y. |
 | `rename_category` | write | Rename a category; merges if the new name is already taken. |

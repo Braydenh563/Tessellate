@@ -124,7 +124,7 @@
       wbAnnounce("Polygon added.");
       return res;
     } catch (err) {
-      toast(voiceLine("failed", { what: "save that shape", why: err.message }), true);
+      toast(voiceLine("failed", "save that shape", err.message), true);
       return null;
     }
   }

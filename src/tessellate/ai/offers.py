@@ -19,7 +19,7 @@ from datetime import date, datetime, time
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import arithmetic, lexical_filing, recognise
+from tessellate.ai import arithmetic, lexical_filing, realise, recognise
 
 #: The row under the editor holds this many; more is a list nobody reads.
 LIMIT = 5
@@ -262,7 +262,7 @@ def date_chip(text: str, *, now: datetime, locale: str | None = None) -> dict | 
             continue
         value = span.value
         day = value.date() if isinstance(value, datetime) else value
-        short = f"{day:%a} {day.day} {day:%b}" + (f", {value:%H:%M}" if isinstance(value, datetime) else "")
+        short = realise.localised_days(f"{day:%a} {day.day} {day:%b}") + (f", {value:%H:%M}" if isinstance(value, datetime) else "")
         offer = next(iter(_reminders(text, [span], now, quoted)), None)
         return {"said": span.text, "short": short, "read_as": span.read_as, "start": span.start, "end": span.end,
                 "reminder": offer["value"] if offer else None}

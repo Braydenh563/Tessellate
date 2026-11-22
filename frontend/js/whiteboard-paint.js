@@ -58,7 +58,7 @@
       if (String(window.currentBoardId ?? "") !== String(id)) return false;
       wbState.background = out.background || {};
     } catch (err) {
-      toast(err.message || voiceLine("failed", { what: "change the background" }), true);
+      toast(err.message || voiceLine("failed", "change the background"), true);
       wbApplyBackground();
       return false;
     }

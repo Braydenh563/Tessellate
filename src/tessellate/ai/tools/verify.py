@@ -26,8 +26,12 @@ from typing import Callable
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
+from tessellate.core import chat_view, deps
 from tessellate.core.database import (
+    AuditLog,
+    Conversation,
+    Goal,
+    GoalItem,
     Document,
     Entry,
     EntryLink,
@@ -76,8 +80,19 @@ def _document_created(session: Session, args: dict, result: dict) -> str | None:
 
 
 def _document_deleted(session: Session, args: dict, result: dict) -> str | None:
-    if _row(session, Document, args.get("document_id")) is not None:
+    document = _row(session, Document, args.get("document_id"))
+    if document is not None and document.deleted_at is None:
         return f"document {args.get('document_id')} is still there"
+    return None
+
+
+def _document_edited(session: Session, args: dict, result: dict) -> str | None:
+    """The text saved is the text the call (or its narrowed press) sent."""
+    document = _row(session, Document, result.get("id") or args.get("document_id"))
+    if document is None:
+        return f"no document with id {args.get('document_id')}"
+    if result.get("changed") and document.content != str(args.get("content") or ""):
+        return f"document {document.id} does not hold the text the edit sent"
     return None
 
 
@@ -104,6 +119,8 @@ def _diagram_placed(session: Session, args: dict, result: dict) -> str | None:
 def _mindmap_created(session: Session, args: dict, result: dict) -> str | None:
     if _row(session, Entry, result.get("board_id")) is None:
         return f"map {result.get('board_id')} was not saved"
+    if result.get("root_id") is None:
+        return None  # a plain board (kind "board") starts with nothing on it
     root = _row(session, WhiteboardObject, result.get("root_id"))
     if root is None or root.board_id != result.get("board_id"):
         return f"the map's root topic {result.get('root_id')} is not on it"
@@ -180,6 +197,15 @@ def _links_audited(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _links_restored(session: Session, args: dict, result: dict) -> str | None:
+    restored = result.get("restored")
+    row = session.get(AuditLog, int(args.get("log_id") or 0))
+    held = len((row.payload or {}).get("links") or []) if row is not None and row.action == "audited" else 0
+    if not isinstance(restored, int) or restored < 0 or restored > held:
+        return f"it claims {restored} put back and that audit held {held}"
+    return None
+
+
 def _learned_checked(session: Session, args: dict, result: dict) -> str | None:
     from tessellate.ai import learned_audit_run
 
@@ -209,11 +235,54 @@ def _skill_deleted(session: Session, args: dict, result: dict) -> str | None:
     return None
 
 
+def _archive_state(session: Session, args: dict, result: dict) -> str | None:
+    """Each id the call says it moved is there and on the side it names."""
+    wanted = bool(result.get("now_archived", True))
+    for note_id in result.get("archived") or []:
+        entry = _row(session, Entry, note_id)
+        if entry is None:
+            return f"note {note_id} is not there"
+        if bool(entry.archived_at) != wanted:
+            return f"note {note_id} is {'not in' if wanted else 'still in'} the Archive"
+    return None
+
+
+def _chats_edited(session: Session, args: dict, result: dict) -> str | None:
+    """The sort or grouping it names is the stored view, or the chat it names has the title, pin or folder it says."""
+    if isinstance(result.get("view"), dict):
+        stored = chat_view.read(deps.get_config())
+        return None if all(stored.get(k) == v for k, v in result["view"].items()) else "the chat list is not in the view it says"
+    chat = _row(session, Conversation, result.get("id"))
+    if chat is None:
+        return f"chat {result.get('id')} is not there"
+    for key, got in (("title", chat.title), ("pinned", chat.pinned), ("folder", chat.folder or "")):
+        if key in result and result[key] != got:
+            return f"chat {chat.id} has {key} {got!r}, not {result[key]!r}"
+    return None
+
+
+def _goals_edited(session: Session, args: dict, result: dict) -> str | None:
+    """The goal it names is there (or gone, for a delete), with the tick or finish it says."""
+    goal = _row(session, Goal, result.get("id"))
+    if result.get("deleted"):
+        return f"goal {result.get('id')} is still there" if goal is not None else None
+    if goal is None:
+        return f"goal {result.get('id')} is not there"
+    if "item" in result:
+        item = _row(session, GoalItem, result["item"])
+        if item is None or (item.done_at is not None) != bool(result.get("done")):
+            return f"line {result['item']} is not {'ticked' if result.get('done') else 'unticked'}"
+    elif "done" in result and (goal.done_at is not None) != bool(result["done"]):
+        return f"goal {goal.id} is not {'finished' if result['done'] else 'open'}"
+    return None
+
+
 #: The write tools `contracts.py` does not cover, each with the read that
 #: proves its result. A tool in both would be checked twice; the lint keeps
 #: the two tables apart.
 VERIFIERS: dict[str, Verifier] = {
     "create_document": _document_created,
+    "edit_document": _document_edited,
     "delete_document": _document_deleted,
     "add_whiteboard_card": _card_placed,
     "add_whiteboard_link": _link_drawn,
@@ -229,7 +298,11 @@ VERIFIERS: dict[str, Verifier] = {
     "delete_board_item": _item_removed,
     "place_library_item": _library_placed,
     "audit_link_reasons": _links_audited,
+    "restore_link_reasons": _links_restored,
     "check_learned": _learned_checked,
+    "archive_note": _archive_state,
+    "edit_chats": _chats_edited,
+    "edit_goals": _goals_edited,
     "save_skill": _skill_saved,
     "delete_skill": _skill_deleted,
 }

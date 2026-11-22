@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 #: The helpers stay in phone-shell.js; the button's own listener moved to
 #: settings-controls.js with every other listener inside the Settings window
 #: (2026-10-05, the boot gzip budget), so the two are read as one text.

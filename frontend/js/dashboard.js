@@ -1988,13 +1988,6 @@ async function renderDashboard({ refresh = false } = {}) {
   }));
 }
 
-//: `fn` once `count` animation frames have passed: the first has painted what
-//: was just changed. The one frame loop for "after it has drawn" in this file
-//: (tests/test_frontend_wake_sources.py counts them).
-function afterFrames(fn, count = 2) {
-  requestAnimationFrame(() => (count > 1 ? afterFrames(fn, count - 1) : fn()));
-}
-
 //: **While the grid fills unseen, its outline shows** (INBOX 596, the owner:
 //: "some skeleton loaders are missing like on the dashboard"). The grid is
 //: hidden until its widgets settle (`.dash-filling`, so the cards do not move
@@ -2721,28 +2714,15 @@ function generateDigest(onDelta) {
   return digestPromise;
 }
 
+//: `streamDigest.source` is the caption the last streamed digest came with ("" when a model wrote it).
 async function streamDigest(onDelta) {
   const response = await api("/insights/digest/stream", { method: "POST" });
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
   let text = "";
   let cacheable = true;
+  streamDigest.source = "";
   // NDJSON: one JSON object per line, same shape as the chat stream.
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      let event;
-      try {
-        event = JSON.parse(line);
-      } catch {
-        continue; // a partial line: the next chunk completes it
-      }
+  await ensureModule("ndjson");
+  await api.ndjson(response, (event) => {
       if (event.type === "answer") {
         text += event.delta;
         if (onDelta) onDelta(text);
@@ -2754,9 +2734,11 @@ async function streamDigest(onDelta) {
         if (onDelta) onDelta(text);
       } else if (event.type === "done") {
         cacheable = event.cacheable !== false;
+      } else if (event.type === "source") {
+        //: With no model the server says so ("Your notes, no AI", CHAT_PLAN P7).
+        streamDigest.source = event.label || "";
       }
-    }
-  }
+  }, { label: "Digest stream" });
   return { text, cacheable };
 }
 
@@ -2774,11 +2756,7 @@ async function renderDigestWidget(outer) {
   //: there, under the card's fold, and its first line was the source caption at body size, so the
   //: one line in view read as the whole answer. Now "This week" labels it, the caption is a muted
   //: footnote, and a click scrolls the card to the week.
-  const weekParts = (text) => {
-    const source = "From your notes.";
-    const trimmed = String(text || "").trimStart();
-    return trimmed.startsWith(source) ? { words: trimmed.slice(source.length).trimStart(), source } : { words: trimmed, source: "" };
-  };
+  const weekParts = (text) => ({ words: String(text || "").trimStart(), source: streamDigest.source || "" });
   const weekHead = () => {
     const head = document.createElement("p");
     head.className = "eyebrow";
@@ -3924,7 +3902,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
   try {
     plan = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ actor, since }) });
   } catch (error) {
-    toast(error.message || "Couldn't read what would be undone.", true);
+    toast(error.message || voiceLine("failed", "read what would be undone"), true);
     return;
   }
   const undoable = plan.items.filter((item) => item.status === "undo").length;
@@ -3947,7 +3925,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
     await loadEntries().catch(() => {});
     rerender();
   } catch (error) {
-    toast(error.message || `Couldn't undo what ${name} changed.`, true);
+    toast(error.message || voiceLine("failed", `undo what ${name} changed`), true);
   }
 }
 
@@ -4215,7 +4193,7 @@ function dashTensionRow(tension, onGone) {
       onGone();
     } catch (error) {
       pressed.disabled = false;
-      toast(error.message || "Couldn't save that decision.", true);
+      toast(error.message || voiceLine("failed", "save that decision"), true);
     }
   };
   actions.append(

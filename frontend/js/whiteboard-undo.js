@@ -114,7 +114,7 @@
     wbDropUndoEntry(entry);
     if (!wbRedoStack.length) wbRedoStack = redoBefore;
     wbUpdateUndoRedoButtons();
-    toast(voiceLine("failed", { what: "delete that" }), true, { action: ["Try again", retry] });
+    toast(voiceLine("failed", "delete that"), true, { action: ["Try again", retry] });
   }
 
   function wbPushUndo(entry) {

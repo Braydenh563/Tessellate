@@ -563,6 +563,7 @@ function renderAnswerGrounding(
       digestShape(answerEl, support.shape, support.figure);
       digestMore(answerEl, support.more);
       digestOffer(answerEl, support.offer);
+      digestMore.threads(support.threads);
     }).catch(() => {});
     return;
   }
@@ -998,6 +999,28 @@ function matchReasonBadge(info, scored = true) {
   return badge;
 }
 
+//: **No match numbers while an answer is being written** (L736, the owner, 2026-11-12: "Hide them while thinking"). Found
+//: notes show without a percentage until the turn is done; the number stays in the hover text, and `.reveal`
+//: puts it back when the stream ends. Hung on `matchReasonBadge` and block-scoped, so no name joins the shared scope.
+{
+  const held = new Map();
+  const percent = /\b(\d+)% (similar|match)\b/;
+  matchReasonBadge.hold = (root) => {
+    if (!chatController && !askController) return;
+    for (const el of root.querySelectorAll(".result-reason-chip, .record-score")) {
+      for (const node of [...el.childNodes].filter((n) => n.nodeType === 3 && percent.test(n.textContent))) {
+        const word = percent.exec(node.textContent)[2];
+        held.set(node, node.textContent);
+        node.textContent = node.textContent.replace(percent, word[0].toUpperCase() + word.slice(1));
+      }
+    }
+  };
+  matchReasonBadge.reveal = () => {
+    for (const [node, text] of held) node.textContent = text;
+    held.clear();
+  };
+}
+
 //: **The one place the phase vocabulary meets the stream** (INBOX 649). A
 //: caller that passes `progress` (a `progressLine`) gets its words and shape
 //: driven from the events that really arrive: the request leaving is "Reaching
@@ -1095,6 +1118,7 @@ async function streamChatEvents({
   onHint,
   onStats,
   onChart,
+  onPreview,
   onPanel,
   onGrounding,
   onGroundingLive,
@@ -1109,6 +1133,7 @@ async function streamChatEvents({
   peek,
   attempt,
   isPrivate,
+  oneModel,
 }) {
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
   ensureModule("replyKit").catch(() => {});
@@ -1117,6 +1142,9 @@ async function streamChatEvents({
   if (attempt) body.attempt = attempt;
   if (isPrivate) body.private = true;
   if (persona) body.persona = persona;
+  //: Regenerate with (L165): a model name for this answer, or "composer" for the app's own words.
+  if (oneModel === "composer") body.composer_only = true;
+  else if (oneModel) body.model = oneModel;
   // Per-turn, not a setting: one quick answer shouldn't change the default
   // for every answer after it.
   if (mode) body.mode = mode;
@@ -1206,56 +1234,13 @@ async function streamChatEvents({
     signal,
   });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffered = "";
-  while (true) {
-    // **No timeout on the stream** (reported: "the AI fails to respond
-    // while still saying it is writing"). The backend's own read against
-    // Ollama times out and turns into a real "offline" line on the wire, 
-    // but only for a hang *inside that one socket call*. Anything that
-    // stalls the backend before or between chunks (retrieval, a stuck
-    // lock, a dead process) has nothing to catch it, and `reader.read()`
-    // then waits forever with no sign of life. `STREAM_IDLE_TIMEOUT_MS` is
-    // comfortably longer than the backend's own 120s per-chunk timeout, so
-    // a real recovery message from *that* always wins the race; this is
-    // only for the case where nothing, not even an error, ever arrives.
-    const chunk = await Promise.race([
-      reader.read(),
-      new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("stream_idle_timeout")),
-          STREAM_IDLE_TIMEOUT_MS
-        )
-      ),
-    ]).catch((err) => {
-      if (err.message === "stream_idle_timeout") {
-        reader.cancel().catch(() => {}); // stop the underlying fetch too
-        throw new Error(
-          "The model stopped responding. It may still be loading a large " +
-            "model, or Ollama may have stalled, try again, or check " +
-            "Settings, Models."
-        );
-      }
-      throw err;
-    });
-    const { done, value } = chunk;
-    if (done) break;
-    buffered += decoder.decode(value, { stream: true });
-    const lines = buffered.split("\n");
-    buffered = lines.pop(); // last piece may be a partial line
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      let event;
-      // One malformed line must not abort a whole answer. Before this, a
-      // single bad frame threw out of the read loop and the user saw a
-      // half-written reply with no error.
-      try {
-        event = JSON.parse(line);
-      } catch (parseErr) {
-        recordBrowserLog("WARN", [`[Chat stream] Unparseable line: ${line.slice(0, 80)}`]);
-        continue;
-      }
+  //: **No timeout on the stream** (reported: "the AI fails to respond while still saying it is
+  //: writing"). The backend's own read against Ollama times out into a real "offline" line, but
+  //: only for a hang inside that one socket call; anything that stalls it before or between chunks
+  //: has nothing to catch it. `STREAM_IDLE_TIMEOUT_MS` is longer than the backend's own 120s per
+  //: chunk, so a real recovery message from it always wins; this is for when nothing ever arrives.
+  await ensureModule("ndjson");
+  await api.ndjson(response, (event) => {
       if (event.type === "meta") onMeta(event);
       //: The first byte the server flushes, before retrieval (routes_chat.py,
       //: `_stream_lines`); it was ignored here until the phase line used it.
@@ -1287,6 +1272,7 @@ async function streamChatEvents({
       //: A bar of counts the realiser drew from a no-model answer (CHAT_PLAN
       //: decision 59, step 2), drawn with the Ask box's chart recipe.
       else if (event.type === "chart" && onChart) onChart(event);
+      else if (event.type === "composed_preview" && onPreview) onPreview(event);
       //: A panel the app draws under the answer (INBOX 1300 C06, reply-kit.js).
       else if (event.type === "panel" && onPanel) onPanel(event);
       // ROADMAP.md item 36: which retrieved note backs which sentence of a
@@ -1330,8 +1316,11 @@ async function streamChatEvents({
           `[Agent tool error] ${event.label || event.name || "?"}: ${event.error || "unknown error"}`,
         ]);
       }
-    }
-  }
+  }, {
+    idleMs: STREAM_IDLE_TIMEOUT_MS,
+    label: "Chat stream",
+    idleMessage: "The model stopped responding. It may still be loading a large model, or Ollama may have stalled, try again, or check Settings, Models.",
+  });
 }
 
 //: The id of the note offer the last composed answer ended with, while its button is unpressed.
@@ -1357,6 +1346,9 @@ function chatHistoryToSend() {
   let turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.askedAct, ...(open.consentId ? { pending_id: open.consentId } : {}) }] : chatConv.turns;
   //: The answer's note offer (Gather them, Track your lifts) is held by the server under an id; the last turn
   //: carries it until the button is pressed, so a typed yes makes that note (`composer_talk.held_offer`).
+  //: A card confirmed on the last turn tells the next one what ran, so a goodbye can name it (`done_act`).
+  const ran = chatHistoryToSend.ran;
+  if (ran && ran.turns === turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), done_act: ran.label }];
   if (chatHistoryToSend.heldOffer && turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), offer_id: chatHistoryToSend.heldOffer }];
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
@@ -1372,6 +1364,7 @@ function chatHistoryToSend() {
 }
 
 chatHistoryToSend.settle = (card, event, outcome, extra = {}) => {
+  chatHistoryToSend.ran = outcome === "done" ? { label: event.label || event.name || "", turns: chatConv.turns.length } : null;
   const msg = card.closest(".msg.assistant");
   const send = () => {
     const index = msg.turnIndex ?? [...$("chat-messages").querySelectorAll(".msg.assistant")].indexOf(msg);
@@ -2137,7 +2130,7 @@ function toolChip(label, ok = true, event = null) {
         again.replaceWith(Object.assign(document.createElement("span"), { className: "muted", textContent: "Fetched again." }));
       } catch (error) {
         again.disabled = false;
-        toast(error.message || "Couldn't fetch that page.", "info");
+        toast(error.message || voiceLine("failed", "fetch that page"), "info");
       }
     });
     wrap.append(chip, again);
@@ -2215,80 +2208,25 @@ renderToolConfirm.saved = (handles, { acts }) => {
 };
 
 // A destructive tool call parked for approval (Wave G). Nothing has
-// happened yet: Confirm actually runs it via /chat/tools/execute.
+// happened yet: Allow (tool-consent.js) runs it through the server's guard.
 function renderToolConfirm(holder, event) {
   //: An act's card lives with the composer's page code (ask-compose.js).
   if (event.type === "act") return ensureModule("askCompose").then(() => renderActCard(holder, event));
   if (event.state === "cancelled" || event.state === "done") return void holder.appendChild(toolChip(event.state === "done" ? `ph:check-circle ${event.summary || event.label || event.name}` : "ph:x Cancelled: nothing was changed."));
   const card = document.createElement("div");
   card.className = "tool-confirm";
-  //: Open until Confirm or Cancel settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
+  //: Open until Allow or Decline settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
   card.dataset.pendingAct = card.dataset.askedAct = event.label || event.name;
   card.consentId = event.consent_id || "";
-  const text = document.createElement("p");
-  setLabel(text, `ph:warning Atlas wants to: ${event.label || event.name}`);
-  
-  const contentArea = document.createElement("div");
-  
-  if (event.name === "edit_note" && event.arguments?.content) {
-    // async fetch for diff
-    apiJson(`/entries/${event.arguments.note_id}`).then(res => {
-      const oldContent = res.content || "";
-      const newContent = event.arguments.content;
-      if (oldContent !== newContent) {
-        //: DOM nodes, not an innerHTML template (SEC-16): a note's own text
-        //: goes in as text, so no escaping has to be remembered.
-        const viewer = document.createElement("div");
-        viewer.className = "diff-viewer";
-        const removed = document.createElement("div");
-        removed.className = "diff-removed";
-        removed.textContent = `- ${oldContent}`;
-        const added = document.createElement("div");
-        added.className = "diff-added";
-        added.textContent = `+ ${newContent}`;
-        viewer.append(removed, added);
-        contentArea.replaceChildren(viewer);
-      }
-    }).catch(() => {});
-  }
-
-  const row = document.createElement("div");
-  row.className = "row";
-  row.appendChild(
-    smallButton(
-      "Confirm",
-      "Run this action",
-      async () => {
-        try {
-          const result = await apiJson("/chat/tools/execute", {
-            method: "POST",
-            body: JSON.stringify({ name: event.name, arguments: event.arguments, consent_id: event.consent_id || null }),
-          });
-          chatHistoryToSend.settle(card, event, "done");
-          card.replaceWith(toolChip(`ph:check-circle ${result.label || event.label || event.name}`));
-          toast("Done: check Activity for the audit trail.");
-          refreshAfterToolChanges();
-        } catch (error) {
-          toast(error.message, true);
-        }
-      },
-      false
-    )
-  );
-  row.appendChild(
-    smallButton("Cancel", "Don't do this", () => {
-      chatHistoryToSend.settle(card, event, "cancelled");
-      card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
-    })
-  );
-  card.append(text, contentArea, row);
-  if (event.state === "expired") {
-    for (const button of row.querySelectorAll("button")) button.disabled = true;
-    contentArea.textContent = event.notice;
-    delete card.dataset.pendingAct;
-  }
   holder.appendChild(card);
   chatScrollToEnd();
+  //: The asking itself (what, why, the three answers, the suggested edit) is
+  //: tool-consent.js, fetched with the first card. A failed fetch leaves the card's sentence and
+  //: a typed yes or no, which `chatHistoryToSend` still carries.
+  return lazyScript("/js/tool-consent.js").then((loaded) => {
+    if (loaded) return drawToolConsent(card, event);
+    setLabel(card.appendChild(document.createElement("p")), `ph:warning Atlas wants to: ${event.label || event.name}. Type yes or no.`);
+  });
 }
 
 //: "open settings", "go to the graph" (decision 38): the place, opened.
@@ -2487,6 +2425,38 @@ function sourcesByFirstMention(sources, sentences) {
   return out;
 }
 
+//: **Kept pages** (CHAT_PLAN web-search store): a web source read in a chat is
+//: kept on this computer for 7 days. One line each under the cards, outside
+//: them because a card is itself a link: how long ago, and Fetch again.
+function chatKeptPagesRow(body, sources) {
+  const urls = [...new Set(sources.filter((s) => s.kind === "web" && s.url).map((s) => s.url))].slice(0, 50);
+  if (!urls.length) return;
+  apiJson("/websearch/stored/ages", { method: "POST", body: JSON.stringify({ urls }), silent: true })
+    .then(({ ages }) => {
+      for (const url of urls) {
+        if (!ages[url]) continue;
+        const line = document.createElement("p");
+        line.className = "chat-source-kept muted";
+        const when = document.createElement("span");
+        const show = (iso) => (when.textContent = `${sourceHost(url) || url}: fetched ${relativeTime(iso)}`);
+        show(ages[url]);
+        const again = smallButton("ph:arrow-clockwise Fetch again", `Fetch ${url} again`, async () => {
+          again.disabled = true;
+          try {
+            const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
+            show(fresh.ages[url] || new Date().toISOString());
+          } catch (error) {
+            toast(error.message || voiceLine("failed", "fetch that page"), "info");
+          }
+          again.disabled = false;
+        });
+        line.append(when, " ", again);
+        body.appendChild(line);
+      }
+    })
+    .catch(() => {});
+}
+
 //: **The Sources panel: cards, previews and real links.**
 //:
 //: Reported twice: *"improve the ui of the sources as well in the chat"* and
@@ -2510,37 +2480,6 @@ function chatSourcesPanel(input) {
   //: Two derivations of "the same" order is how they drift apart, which is
   //: what INBOX 81's second half is about.
   const sources = input.sources || chatSourcesFrom(input);
-  //: **Kept pages** (CHAT_PLAN web-search store): a web source read in a chat is
-  //: kept on this computer for 7 days. One line each under the cards, outside
-  //: them because a card is itself a link: how long ago, and Fetch again.
-  const keptPagesRow = (body, sources) => {
-    const urls = [...new Set(sources.filter((s) => s.kind === "web" && s.url).map((s) => s.url))].slice(0, 50);
-    if (!urls.length) return;
-    apiJson("/websearch/stored/ages", { method: "POST", body: JSON.stringify({ urls }), silent: true })
-      .then(({ ages }) => {
-        for (const url of urls) {
-          if (!ages[url]) continue;
-          const line = document.createElement("p");
-          line.className = "chat-source-kept muted";
-          const when = document.createElement("span");
-          const show = (iso) => (when.textContent = `${sourceHost(url) || url}: fetched ${relativeTime(iso)}`);
-          show(ages[url]);
-          const again = smallButton("ph:arrow-clockwise Fetch again", `Fetch ${url} again`, async () => {
-            again.disabled = true;
-            try {
-              const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
-              show(fresh.ages[url] || new Date().toISOString());
-            } catch (error) {
-              toast(error.message || "Couldn't fetch that page.", "info");
-            }
-            again.disabled = false;
-          });
-          line.append(when, " ", again);
-          body.appendChild(line);
-        }
-      })
-      .catch(() => {});
-  };
   if (!sources.length) return null;
   //: **The number on a card is the number in the answer**, which stops being
   //: the card's own position the moment this panel is handed a subset (the
@@ -2573,6 +2512,12 @@ function chatSourcesPanel(input) {
   body.className = "chat-sources-body";
   const grid = document.createElement("div");
   grid.className = row ? "chat-sources-list" : "chat-sources-grid";
+  //: Scrolls past a screenful (decision 37, L730), so a keyboard reaches it too.
+  if (!row) {
+    grid.tabIndex = 0;
+    grid.setAttribute("role", "region");
+    grid.setAttribute("aria-label", "Sources");
+  }
   const icons = Object.fromEntries(CHAT_SOURCE_GROUPS.map((g) => [g.key, g.icon]));
   sources.forEach((source, index) => {
     if (row) return grid.appendChild(row(source, icons, numbering.indexOf(source) + 1));
@@ -2702,7 +2647,7 @@ function chatSourcesPanel(input) {
     grid.appendChild(card);
   });
   body.appendChild(grid);
-  keptPagesRow(body, sources);
+  chatKeptPagesRow(body, sources);
   details.appendChild(body);
   //: **On a phone the sources are a sheet** (UI_MODERNISATION_PLAN Phase 11
   //: item 3). Opened in place, the grid of cards unfolds inside a bubble in

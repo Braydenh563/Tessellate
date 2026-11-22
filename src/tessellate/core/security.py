@@ -919,6 +919,20 @@ class UnsafeUrl(ValueError):
     """A URL that must not be fetched, with a sentence fit to show a person."""
 
 
+#: The NAT64 well-known prefix (RFC 6052): its last 32 bits are an IPv4 address the
+#: gateway reaches for us, so 64:ff9b::7f00:1 is 127.0.0.1. Python 3.11 and 3.12
+#: report the whole prefix as global, which let NAT64 forms of loopback and the
+#: cloud metadata address through.
+_NAT64 = ipaddress.ip_network("64:ff9b::/96")
+
+
+def _nat64_embedded(address):  # noqa: ANN001, ANN202  # ipaddress objects
+    """The IPv4 address a NAT64 address stands for, or None for any other address."""
+    if address.version == 6 and address in _NAT64:
+        return ipaddress.IPv4Address(int(address) & 0xFFFFFFFF)
+    return None
+
+
 def is_internal_address(address) -> bool:  # noqa: ANN001  # an ipaddress object
     """True for anything on this machine or the local network.
 
@@ -928,6 +942,9 @@ def is_internal_address(address) -> bool:  # noqa: ANN001  # an ipaddress object
     One definition, so the two cannot drift apart and leave a hole in the
     half nobody re-read.
     """
+    embedded = _nat64_embedded(address)
+    if embedded is not None and is_internal_address(embedded):
+        return True
     return (
         address.is_private
         or address.is_loopback

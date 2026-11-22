@@ -1,0 +1,19 @@
+# The build context is the repo root (docker/compose.yaml `context: ..`). The
+# Dockerfile copies named paths only, but the whole context is sent to the
+# daemon first: a notebook in data/ (the owner's notes) and a local venv must
+# never leave the machine that way. tests/test_docker_files.py checks this list.
+.git
+.venv
+venv
+data
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+node_modules
+scratchpad
+dist
+build
+*.db
+*.db-journal
+*.db-wal

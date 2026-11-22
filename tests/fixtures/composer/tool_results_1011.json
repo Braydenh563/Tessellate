@@ -749,6 +749,17 @@
     }
    }
   ],
+  "restore_link_reasons": [
+   {
+    "args": {
+     "log_id": 1
+    },
+    "result": {
+     "restored": 2,
+     "message": "Put back 2 link reasons."
+    }
+   }
+  ],
   "create_category": [
    {
     "args": {
@@ -2375,6 +2386,197 @@
      "items": [],
      "run": "2026-10-11T16:00:00+00:00",
      "message": "Checked 3, retired 0 and flagged 0."
+    }
+   }
+  ],
+  "archive_note": [
+   {
+    "args": {
+     "note_ids": [
+      3,
+      4
+     ]
+    },
+    "result": {
+     "archived": [
+      3,
+      4
+     ],
+     "now_archived": true,
+     "label": "ph:archive Archived: #3, #4",
+     "undo": {
+      "tool": "archive_note",
+      "arguments": {
+       "note_ids": [
+        3,
+        4
+       ],
+       "archived": false
+      }
+     }
+    }
+   }
+  ],
+  "find_stale_notes": [
+   {
+    "args": {
+     "days": 90
+    },
+    "result": {
+     "days": 90,
+     "total_stale": 2,
+     "returned": 2,
+     "notes": [
+      {
+       "id": 3,
+       "title": "Old plan",
+       "last_touched": "2026-06-01"
+      },
+      {
+       "id": 4,
+       "title": "Trip ideas",
+       "last_touched": "2026-07-12"
+      }
+     ],
+     "label": "ph:archive Found 2 notes untouched for 90 days"
+    }
+   }
+  ],
+  "count_month_figures": [
+   {
+    "args": {
+     "month": "October"
+    },
+    "result": {
+     "period": "October",
+     "from": "2026-10-01",
+     "to": "2026-10-31",
+     "notes_written": 2,
+     "written_ids": [
+      3,
+      4
+     ],
+     "reminders_finished": 1,
+     "finished": [
+      {
+       "id": 1,
+       "text": "Send the form"
+      }
+     ],
+     "reminders_still_open_from_then": 1,
+     "spent": {
+      "text": "From your notes: Spent $45 on groceries.",
+      "source_notes": [
+       3
+      ]
+     },
+     "label": "ph:calendar Counted October: 2 written, 1 finished"
+    }
+   }
+  ],
+  "get_person_page": [
+   {
+    "args": {
+     "name": "Sam"
+    },
+    "result": {
+     "name": "Sam Lee",
+     "kind": "person",
+     "aliases": [
+      "Sam"
+     ],
+     "mentioned_in": [
+      {
+       "id": 3,
+       "title": "Call with Sam",
+       "written": "2026-10-05"
+      },
+      {
+       "id": 4,
+       "title": "Report",
+       "written": "2026-10-06"
+      }
+     ],
+     "mentioned_total": 2,
+     "linked_notes": [],
+     "open_reminders": [
+      {
+       "id": 2,
+       "text": "Email Sam the report",
+       "due_at": "2026-11-12T09:00:00"
+      }
+     ],
+     "label": "ph:user Read what the notes hold about Sam Lee: 2 notes"
+    }
+   }
+  ],
+  "edit_chats": [
+   {
+    "args": {
+     "action": "sort",
+     "sort": "name"
+    },
+    "result": {
+     "view": {
+      "sort": "name",
+      "group": "none",
+      "pinned": true
+     },
+     "label": "ph:sort-descending Chats are by name"
+    }
+   }
+  ],
+  "edit_document": [
+   {
+    "args": {
+     "document_id": 1,
+     "content": "# Launch checklist\n\n- Beta feedback\n- Store listing\n- Press kit\n"
+    },
+    "result": {
+     "id": 1,
+     "title": "Launch checklist",
+     "changed": true,
+     "words": 11,
+     "label": "ph:file-text Edited the document “Launch checklist”"
+    }
+   }
+  ],
+  "edit_goals": [
+   {
+    "args": {
+     "action": "tick",
+     "goal": "Packing",
+     "item": "passport"
+    },
+    "result": {
+     "id": 3,
+     "item": 9,
+     "done": true,
+     "label": "ph:check-square Ticked off “passport” on “Packing”"
+    }
+   }
+  ],
+  "list_goals": [
+   {
+    "args": {},
+    "result": {
+     "goals": [
+      {
+       "id": 3,
+       "title": "Packing",
+       "kind": "list",
+       "target": "",
+       "progress": "1/2",
+       "items": [
+        "x passport",
+        "- charger"
+       ]
+      }
+     ],
+     "counts": {
+      "goal": 0,
+      "list": 1
+     }
     }
    }
   ]

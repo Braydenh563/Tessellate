@@ -185,7 +185,7 @@ def test_the_records_card_draws_the_reason_on_the_why_this_result_line():
 
 def test_two_notes_linked_both_ways_list_each_other_once(session):
     """Reviewer finding on PR 193: A to B and B to A gave linked_to [B, B]."""
-    from tessellate.api.routes_chat import _frame_matches
+    from tessellate.api.chat_pool import _frame_matches
     from tessellate.core.database import EntryLink
 
     a = manager.create_entry(session, "Gym Routine Overview", tags=["gym"])

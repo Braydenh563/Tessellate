@@ -41,7 +41,7 @@ def ollama_tools(allowed: list[str] | None = None, session: Session | None = Non
             },
         }
         for spec in TOOLS.values()
-        if tool_enabled(spec.name) and (wanted is None or spec.name in wanted)
+        if tool_enabled(spec.name) and (spec.name in wanted if wanted is not None else not spec.skill_only)
     ]
     return with_relation_types(offered, session) if session is not None else offered
 

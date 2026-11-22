@@ -66,7 +66,8 @@ def test_the_rows_and_the_listeners():
     rows = re.search(r"^Object\.assign\(NMB_REACTIONS, \{(.*?)\n\}\);", MENU, re.S | re.M)
     assert rows
     names = set(re.findall(r"^  ([a-z_]+):", rows.group(1), re.M))
-    assert names == {"night_falls", "morning_hello", "fullscreen_app", "typing_burst"}
+    #: `writing_stretch` joined the rows for L-chat-7 (a minute's writing run ends in a stretch, tests/test_writing_stretch_l7.py).
+    assert names == {"night_falls", "morning_hello", "fullscreen_app", "typing_burst", "writing_stretch"}
     assert all("world: true" in line for line in rows.group(1).strip().splitlines())  # Little habits off and reduced motion stop them
     assert 'document.addEventListener("keydown", seen, { capture: true, passive: true });' in MENU
     assert 'window.addEventListener("fullscreenchange", () => document.fullscreenElement || nameMarkBuddyReact("fullscreen_app"), true);' in MENU

@@ -18,7 +18,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import unwrapped, nmb_curve_js
 
 ROOT = Path(__file__).resolve().parents[1]
 AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
@@ -37,6 +37,7 @@ def _block(name: str) -> str:
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 def test_each_change_with_a_body_gets_its_beat_and_never_the_same_twice() -> None:
     script = "\n".join([
+        nmb_curve_js(),
         _block("NMB_SETTLES"),
         re.search(r"^const NMB_BEAT_MS = .*;$", AV, re.M).group(0),
         "let nmb = {}; let still = false; const played = [];",

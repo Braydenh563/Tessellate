@@ -25,6 +25,7 @@ _ASK = r"(?:what is |calculate |work out |tell me )?"
 _FACTORIAL = re.compile(rf"^{_ASK}(?:(?:the )?factorial of (?P<a>\d{{1,4}})|(?P<b>\d{{1,4}}) factorial|(?P<c>\d{{1,4}})!)$")
 _PART = re.compile(rf"^{_ASK}(?P<w>half|a half|quarter|a quarter|a third|third) of (?P<n>{_NUM})$")
 _MULTIPLE = re.compile(rf"^{_ASK}(?P<w>double|twice|triple|treble) (?P<n>{_NUM})$")
+_PRIME = re.compile(r"^(?:is |is the number )(?P<n>\d{1,9}) (?:a )?prime(?: number)?$")
 _SQRT = re.compile(rf"^{_ASK}(?:(?:the )?sqrt|√) ?(?:of )?(?P<n>{_NUM})$")
 #: round, floor, ceil as words, each with a number straight after ("round up my notes" has none, so it is left alone).
 _ROUND = re.compile(
@@ -144,6 +145,13 @@ def _implicit(text: str) -> Reply | None:
     return computed(f"{text} is {_say(value)}.", f"{spaced.replace('*', ' x ')}, with the multiplication left out")
 
 
+def _prime(n: int) -> Reply:
+    """Trial division by the odd numbers up to the square root: exact, and quick at nine digits."""
+    divisor = next((d for d in [2, *range(3, math.isqrt(n) + 1, 2)] if n % d == 0 and d < n), None) if n > 1 else 1
+    said = f"{n:,} is a prime number." if divisor is None else (f"{n:,} is not a prime number: it is {divisor:,} times {n // divisor:,}." if n > 1 else f"{n} is not a prime number.")
+    return computed(said, f"trial division of {n:,} by every number up to its square root")
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = _clean(ctx.question)
     if not text or len(text) > 80:
@@ -155,6 +163,9 @@ def answer(ctx: Ctx) -> Reply | None:
     implicit = _implicit(text.removeprefix("what is ").removeprefix("calculate "))
     if implicit:
         return implicit
+    found = _PRIME.match(text)
+    if found:
+        return _prime(int(found["n"]))
     found = _FACTORIAL.match(text)
     if found:
         return _factorial(int(found["a"] or found["b"] or found["c"]))

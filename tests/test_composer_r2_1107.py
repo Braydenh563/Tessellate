@@ -152,7 +152,8 @@ def test_e11_a_one_word_note_answers_as_itself(question, word):
     from tests._seed_r2_1107 import _route_answer, notes
 
     result = _route_answer(question, notes)
-    assert result["text"] == f"Your note “{word}” is one word: {word}.", result["text"]
+    #: Intent unchanged (the note answers as itself, cited); only the wording moved: the word was said twice (L204).
+    assert result["text"] == f"Your note “{word}” is just that one word.", result["text"]
     assert result["grounding"], "cited to the note"
 
 

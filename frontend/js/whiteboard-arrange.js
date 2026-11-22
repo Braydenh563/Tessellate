@@ -450,7 +450,7 @@
       .filter(Boolean)
       .join("\n\n---\n\n");
     if (!text.trim()) {
-      toast(voiceLine("failed", { what: "read the selected notes' content: try reloading the Notes tab first" }));
+      toast(voiceLine("failed", "read the selected notes' content: try reloading the Notes tab first"));
       return;
     }
     openExtractPreview(text, { sourceEntryIds: entryIds });

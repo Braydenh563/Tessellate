@@ -65,6 +65,12 @@ def _lazy_order() -> list[str]:
     assert table, "app.js has no LAZY_MODULES table; has the lazy loader moved?"
     names = [name for name in re.findall(r'"/js/([A-Za-z0-9_.-]+\.js)"', table.group(1))]
     assert names, "the LAZY_MODULES table lists no files"
+    #: lazy-entries.js extends the table (`Object.assign(LAZY_MODULES, ...)`, app.js is at its cap), so its
+    #: files are lazy too; the check's intent is unchanged, only where the table is written.
+    extra = (FRONTEND / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    block = re.search(r"Object\.assign\(LAZY_MODULES, \{(.*?)\n\}\);", extra, re.S)
+    if block:
+        names += [n for n in re.findall(r'"/js/([A-Za-z0-9_.-]+\.js)"', block.group(1)) if n not in names]
     for name in names:
         assert (FRONTEND / "js" / name).exists(), f"LAZY_MODULES names {name}, which does not exist"
     return names

@@ -92,4 +92,4 @@ def test_board_failures_are_said_on_screen_not_in_the_console():
     board = BOARDS
     assert "console.error(" not in board and "console.log(" not in board
     for what in ("save that drawing", "open that board", "connect those"):
-        assert f'voiceLine("failed", {{ what: "{what}"' in board, what
+        assert f'voiceLine("failed", "{what}"' in board, what

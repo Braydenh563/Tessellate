@@ -100,7 +100,7 @@
     try {
       made = await create(parent, title);
     } catch (error) {
-      toast(voiceLine("failed", { what: "make the sub-page", why: error.message }), true);
+      toast(voiceLine("failed", "make the sub-page", error.message), true);
       return;
     }
     refresh();
@@ -137,7 +137,7 @@
     try {
       await place(doc, parentId);
     } catch (error) {
-      toast(voiceLine("failed", { what: "move that page", why: error.message }), true);
+      toast(voiceLine("failed", "move that page", error.message), true);
       return;
     }
     if (parentId != null) opened.add(parentId), keepOpened();
@@ -177,7 +177,7 @@
     try {
       made = await create(parent, title);
     } catch (error) {
-      toast(voiceLine("failed", { what: "make the sub-page", why: error.message }), true);
+      toast(voiceLine("failed", "make the sub-page", error.message), true);
       return;
     }
     textarea.focus();

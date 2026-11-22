@@ -17,6 +17,7 @@ and find no tests in it.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 
 FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
@@ -89,12 +90,18 @@ CSS_FILES = [
     CSS_DIR / "key-grid-lazy.css",
     #: The staged chip's upload bar (chat-attach.js `attachmentChip` loads it).
     CSS_DIR / "chip-bar-lazy.css",
+    #: The sidebar's group headings (chat-order.js, L-world-class-180).
+    CSS_DIR / "chat-order-lazy.css",
+    #: An agent edit marked in the open document (doc-agent-review.js, L-documents-41).
+    CSS_DIR / "doc-agent-review-lazy.css",
     #: The composer's model picker (`LAZY_MODULES.modelMenu`, INBOX 1477).
     CSS_DIR / "model-menu-lazy.css",
     #: The live captions dock (captions.js, Brief 82).
     CSS_DIR / "captions-lazy.css",
     #: The Notes tab's Questions view (questions-view.js loads it).
     CSS_DIR / "questions-lazy.css",
+    #: The Notes tab's Goals view (goals-view.js loads it, Brief 98).
+    CSS_DIR / "goals-lazy.css",
     #: The voice-note recorder and Library, Recordings (meetings.js, Brief 80).
     CSS_DIR / "meetings-lazy.css",
     #: What a click shows fades in and out (`LAZY_MODULES.uiReveal`, INBOX 1565).
@@ -179,11 +186,19 @@ CSS_FILES = [
 ]
 
 
+@lru_cache(maxsize=1)
 def css_text() -> str:
-    """All of CSS_FILES, concatenated in load order.
+    """All of CSS_FILES, concatenated in load order (one shared copy: a str per caller was 7 MB a worker each).
 
     Byte-for-byte what `frontend/style.css` used to return from
     `.read_text()`, see the split's own diff, or diff this against a
     `cat`'d concatenation of CSS_FILES, to confirm.
     """
     return "".join(p.read_text(encoding="utf-8") for p in CSS_FILES)
+
+
+@lru_cache(maxsize=1)
+def css_glob_text() -> str:
+    """Every CSS file joined by newlines in name order (not load order), as the modules that scan
+    all of it read it: one shared copy."""
+    return "\n".join(p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css")))

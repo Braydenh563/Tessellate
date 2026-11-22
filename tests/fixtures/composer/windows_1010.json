@@ -1,0 +1,485 @@
+{
+ "about": "Time phrases read against a clock (CHAT_PLAN section 4): expected first day, last day and grain, worked out by calendar arithmetic in scripts/composer_fixtures_1113.py. A date or month with no year is read as past; weeks run Monday to Sunday.",
+ "rows": [
+  {
+   "id": "window-01",
+   "phrase": "yesterday",
+   "now": "2026-10-06",
+   "start": "2026-10-05",
+   "end": "2026-10-05",
+   "grain": "day"
+  },
+  {
+   "id": "window-02",
+   "phrase": "yesterday",
+   "now": "2026-11-13",
+   "start": "2026-11-12",
+   "end": "2026-11-12",
+   "grain": "day"
+  },
+  {
+   "id": "window-03",
+   "phrase": "yesterday",
+   "now": "2027-01-04",
+   "start": "2027-01-03",
+   "end": "2027-01-03",
+   "grain": "day"
+  },
+  {
+   "id": "window-04",
+   "phrase": "yesterday",
+   "now": "2028-03-01",
+   "start": "2028-02-29",
+   "end": "2028-02-29",
+   "grain": "day"
+  },
+  {
+   "id": "window-05",
+   "phrase": "last week",
+   "now": "2026-10-06",
+   "start": "2026-09-28",
+   "end": "2026-10-04",
+   "grain": "week"
+  },
+  {
+   "id": "window-06",
+   "phrase": "the week before last",
+   "now": "2026-10-06",
+   "start": "2026-09-21",
+   "end": "2026-09-27",
+   "grain": "week"
+  },
+  {
+   "id": "window-07",
+   "phrase": "last month",
+   "now": "2026-10-06",
+   "start": "2026-09-01",
+   "end": "2026-09-30",
+   "grain": "month"
+  },
+  {
+   "id": "window-08",
+   "phrase": "last year",
+   "now": "2026-10-06",
+   "start": "2025-01-01",
+   "end": "2025-12-31",
+   "grain": "year"
+  },
+  {
+   "id": "window-09",
+   "phrase": "last week",
+   "now": "2027-01-04",
+   "start": "2026-12-28",
+   "end": "2027-01-03",
+   "grain": "week"
+  },
+  {
+   "id": "window-10",
+   "phrase": "the week before last",
+   "now": "2027-01-04",
+   "start": "2026-12-21",
+   "end": "2026-12-27",
+   "grain": "week"
+  },
+  {
+   "id": "window-11",
+   "phrase": "last month",
+   "now": "2027-01-04",
+   "start": "2026-12-01",
+   "end": "2026-12-31",
+   "grain": "month"
+  },
+  {
+   "id": "window-12",
+   "phrase": "last year",
+   "now": "2027-01-04",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "grain": "year"
+  },
+  {
+   "id": "window-13",
+   "phrase": "last week",
+   "now": "2026-11-13",
+   "start": "2026-11-02",
+   "end": "2026-11-08",
+   "grain": "week"
+  },
+  {
+   "id": "window-14",
+   "phrase": "the week before last",
+   "now": "2026-11-13",
+   "start": "2026-10-26",
+   "end": "2026-11-01",
+   "grain": "week"
+  },
+  {
+   "id": "window-15",
+   "phrase": "this week",
+   "now": "2026-10-06",
+   "start": "2026-10-05",
+   "end": "2026-10-11",
+   "grain": "week"
+  },
+  {
+   "id": "window-16",
+   "phrase": "this week",
+   "now": "2026-10-11",
+   "start": "2026-10-05",
+   "end": "2026-10-11",
+   "grain": "week"
+  },
+  {
+   "id": "window-17",
+   "phrase": "this month",
+   "now": "2026-11-13",
+   "start": "2026-11-01",
+   "end": "2026-11-30",
+   "grain": "month"
+  },
+  {
+   "id": "window-18",
+   "phrase": "this year",
+   "now": "2026-11-13",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "grain": "year"
+  },
+  {
+   "id": "window-19",
+   "phrase": "last month",
+   "now": "2028-03-01",
+   "start": "2028-02-01",
+   "end": "2028-02-29",
+   "grain": "month"
+  },
+  {
+   "id": "window-20",
+   "phrase": "last weekend",
+   "now": "2026-10-06",
+   "start": "2026-10-03",
+   "end": "2026-10-04",
+   "grain": "week"
+  },
+  {
+   "id": "window-21",
+   "phrase": "last weekend",
+   "now": "2026-11-13",
+   "start": "2026-11-07",
+   "end": "2026-11-08",
+   "grain": "week"
+  },
+  {
+   "id": "window-22",
+   "phrase": "a week ago",
+   "now": "2026-10-06",
+   "start": "2026-09-29",
+   "end": "2026-09-29",
+   "grain": "day"
+  },
+  {
+   "id": "window-23",
+   "phrase": "2 days ago",
+   "now": "2026-10-06",
+   "start": "2026-10-04",
+   "end": "2026-10-04",
+   "grain": "day"
+  },
+  {
+   "id": "window-24",
+   "phrase": "3 weeks ago",
+   "now": "2026-10-06",
+   "start": "2026-09-15",
+   "end": "2026-09-15",
+   "grain": "day"
+  },
+  {
+   "id": "window-25",
+   "phrase": "10 days ago",
+   "now": "2026-10-06",
+   "start": "2026-09-26",
+   "end": "2026-09-26",
+   "grain": "day"
+  },
+  {
+   "id": "window-26",
+   "phrase": "a week ago",
+   "now": "2027-01-04",
+   "start": "2026-12-28",
+   "end": "2026-12-28",
+   "grain": "day"
+  },
+  {
+   "id": "window-27",
+   "phrase": "since March",
+   "now": "2026-10-06",
+   "start": "2026-03-01",
+   "end": "2026-10-06",
+   "grain": "month"
+  },
+  {
+   "id": "window-28",
+   "phrase": "since March",
+   "now": "2027-01-04",
+   "start": "2026-03-01",
+   "end": "2027-01-04",
+   "grain": "month"
+  },
+  {
+   "id": "window-29",
+   "phrase": "since last week",
+   "now": "2026-10-06",
+   "start": "2026-09-28",
+   "end": "2026-10-06",
+   "grain": "week"
+  },
+  {
+   "id": "window-30",
+   "phrase": "since last month",
+   "now": "2026-11-13",
+   "start": "2026-10-01",
+   "end": "2026-11-13",
+   "grain": "month"
+  },
+  {
+   "id": "window-31",
+   "phrase": "since March last year",
+   "now": "2026-10-06",
+   "start": "2025-03-01",
+   "end": "2026-10-06",
+   "grain": "month"
+  },
+  {
+   "id": "window-32",
+   "phrase": "in March",
+   "now": "2026-10-06",
+   "start": "2026-03-01",
+   "end": "2026-03-31",
+   "grain": "month"
+  },
+  {
+   "id": "window-33",
+   "phrase": "on 3 March",
+   "now": "2026-10-06",
+   "start": "2026-03-03",
+   "end": "2026-03-03",
+   "grain": "day"
+  },
+  {
+   "id": "window-34",
+   "phrase": "in March",
+   "now": "2027-01-04",
+   "start": "2026-03-01",
+   "end": "2026-03-31",
+   "grain": "month"
+  },
+  {
+   "id": "window-35",
+   "phrase": "on 3 March",
+   "now": "2027-01-04",
+   "start": "2026-03-03",
+   "end": "2026-03-03",
+   "grain": "day"
+  },
+  {
+   "id": "window-36",
+   "phrase": "in December",
+   "now": "2026-10-06",
+   "start": "2025-12-01",
+   "end": "2025-12-31",
+   "grain": "month"
+  },
+  {
+   "id": "window-37",
+   "phrase": "in January",
+   "now": "2026-10-06",
+   "start": "2026-01-01",
+   "end": "2026-01-31",
+   "grain": "month"
+  },
+  {
+   "id": "window-38",
+   "phrase": "in February",
+   "now": "2028-03-01",
+   "start": "2028-02-01",
+   "end": "2028-02-29",
+   "grain": "month"
+  },
+  {
+   "id": "window-39",
+   "phrase": "14 November",
+   "now": "2026-10-06",
+   "start": "2025-11-14",
+   "end": "2025-11-14",
+   "grain": "day"
+  },
+  {
+   "id": "window-40",
+   "phrase": "on 21 September",
+   "now": "2026-10-06",
+   "start": "2026-09-21",
+   "end": "2026-09-21",
+   "grain": "day"
+  },
+  {
+   "id": "window-41",
+   "phrase": "in 2025",
+   "now": "2026-10-06",
+   "start": "2025-01-01",
+   "end": "2025-12-31",
+   "grain": "year"
+  },
+  {
+   "id": "window-42",
+   "phrase": "in 2024",
+   "now": "2026-11-13",
+   "start": "2024-01-01",
+   "end": "2024-12-31",
+   "grain": "year"
+  },
+  {
+   "id": "window-43",
+   "phrase": "last friday",
+   "now": "2026-10-06",
+   "start": "2026-10-02",
+   "end": "2026-10-02",
+   "grain": "day"
+  },
+  {
+   "id": "window-44",
+   "phrase": "last friday",
+   "now": "2026-11-13",
+   "start": "2026-11-06",
+   "end": "2026-11-06",
+   "grain": "day"
+  },
+  {
+   "id": "window-45",
+   "phrase": "last monday",
+   "now": "2026-10-06",
+   "start": "2026-10-05",
+   "end": "2026-10-05",
+   "grain": "day"
+  },
+  {
+   "id": "window-46",
+   "phrase": "last sunday",
+   "now": "2026-10-06",
+   "start": "2026-10-04",
+   "end": "2026-10-04",
+   "grain": "day"
+  },
+  {
+   "id": "window-47",
+   "phrase": "last wednesday",
+   "now": "2026-11-13",
+   "start": "2026-11-11",
+   "end": "2026-11-11",
+   "grain": "day"
+  },
+  {
+   "id": "window-48",
+   "phrase": "last tuesday",
+   "now": "2026-10-06",
+   "start": "2026-09-29",
+   "end": "2026-09-29",
+   "grain": "day"
+  },
+  {
+   "id": "window-49",
+   "phrase": "last thursday",
+   "now": "2027-01-04",
+   "start": "2026-12-31",
+   "end": "2026-12-31",
+   "grain": "day"
+  },
+  {
+   "id": "window-50",
+   "phrase": "on monday",
+   "now": "2026-10-06",
+   "start": "2026-10-05",
+   "end": "2026-10-05",
+   "grain": "day"
+  },
+  {
+   "id": "window-51",
+   "phrase": "on friday",
+   "now": "2026-10-06",
+   "start": "2026-10-02",
+   "end": "2026-10-02",
+   "grain": "day"
+  },
+  {
+   "id": "window-52",
+   "phrase": "the weekend before last",
+   "now": "2026-10-06",
+   "start": "2026-09-26",
+   "end": "2026-09-27",
+   "grain": "week"
+  },
+  {
+   "id": "window-53",
+   "phrase": "today",
+   "now": "2026-10-06",
+   "start": "2026-10-06",
+   "end": "2026-10-06",
+   "grain": "day"
+  },
+  {
+   "id": "window-54",
+   "phrase": "the 21st",
+   "now": "2026-10-06",
+   "start": "2026-09-21",
+   "end": "2026-09-21",
+   "grain": "day"
+  },
+  {
+   "id": "window-55",
+   "phrase": "yesterday",
+   "now": "2026-10-11",
+   "start": "2026-10-10",
+   "end": "2026-10-10",
+   "grain": "day"
+  },
+  {
+   "id": "window-56",
+   "phrase": "last week",
+   "now": "2026-10-11",
+   "start": "2026-09-28",
+   "end": "2026-10-04",
+   "grain": "week"
+  },
+  {
+   "id": "window-57",
+   "phrase": "today",
+   "now": "2026-11-13",
+   "start": "2026-11-13",
+   "end": "2026-11-13",
+   "grain": "day"
+  },
+  {
+   "id": "window-58",
+   "phrase": "2 days ago",
+   "now": "2027-01-04",
+   "start": "2027-01-02",
+   "end": "2027-01-02",
+   "grain": "day"
+  },
+  {
+   "id": "window-59",
+   "phrase": "last month",
+   "now": "2026-11-13",
+   "start": "2026-10-01",
+   "end": "2026-10-31",
+   "grain": "month"
+  },
+  {
+   "id": "window-60",
+   "phrase": "this week",
+   "now": "2027-01-04",
+   "start": "2027-01-04",
+   "end": "2027-01-10",
+   "grain": "week"
+  }
+ ]
+}

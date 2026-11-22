@@ -35,9 +35,10 @@ from pathlib import Path
 
 from tessellate.ai import help_chat
 from tests._repo_files import repo_files
+from tests._app_js import index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 JS = {p.name: p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "js").glob("*.js")}
 
 #: Words that may follow a path and start ordinary prose rather than a group,

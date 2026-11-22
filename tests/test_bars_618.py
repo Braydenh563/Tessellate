@@ -12,9 +12,10 @@ light and dark: 11 findings at 1440 before, 0 after.
 
 import re
 from pathlib import Path
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
+CSS = css_glob_text()
 STATUS = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
 
 

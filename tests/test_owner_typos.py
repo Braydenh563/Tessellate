@@ -79,6 +79,13 @@ LEFT_ALONE = [
     "it was a really nice weekend at the lake house",
     "a shyer person with a flyer and the dryer",
     "the ghost cursor and a happier, busier week",
+    "when did the matcha arrive",
+    "where is the paneer from the shop",
+    "a pinot and an aperol on the balcony",
+    "the paddleboard and the longboard in the garage",
+    "crossfit and a probiotic",
+    "kubernetes on postgres with a macbook",
+    "the kettlebell and the airpods",
 ]
 
 
@@ -247,10 +254,26 @@ def test_a_cold_process_that_loads_the_chat_route_routes_an_act():
 
     src = Path(__file__).resolve().parents[1] / "src"
     code = (
-        "import tessellate.api.routes_chat;from tessellate.ai import intent;"
+        "import tessellate.api.routes_chat;import tessellate.api.chat_service;from tessellate.ai import intent;"
         "print(intent.classify('pin the dentist noe'), intent.classify('unlnk the gym note from the running note'))"
     )
     out = subprocess.run(
         [sys.executable, "-c", code], capture_output=True, text=True, check=True, env={"PYTHONPATH": str(src), "PATH": ""}
     ).stdout.split()
     assert out == ["act", "act"]
+
+
+# L35 and L36: an all-caps word is an acronym, not a typo, and the owner's four
+# guessed typos have one reading each.
+@pytest.mark.parametrize("text", ["which NASA", "how NASA works", "who is NASA", "NSA and CIA", "USB and PDF"])
+def test_an_all_caps_word_is_never_read_as_an_asking_word(text):
+    assert question_noise.repair(text) == text
+
+
+@pytest.mark.parametrize(
+    ("typed", "meant"),
+    [("I liks the file", "I like the file"), ("the mut be done", "the must be done"), ("this ro that", "this or that"),
+     ("open the odf", "open the odf")],
+)
+def test_the_owners_four_guessed_typos_have_one_reading_each(typed, meant):
+    assert question_noise.repair(typed) == meant

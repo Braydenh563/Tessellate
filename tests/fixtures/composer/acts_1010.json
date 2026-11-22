@@ -198,6 +198,12 @@
    "verb": "summarise",
    "object": "gym",
    "confirm": false
+  },
+  {
+   "phrase": "archive the gym note",
+   "verb": "file",
+   "object": "gym",
+   "confirm": true
   }
  ],
  "lookalikes": [
@@ -208,7 +214,6 @@
   "what did I tag as travel?",
   "when is my reminder for the plumber?",
   "where did I file the tax note?",
-  "archive the gym note",
   "delete the tag",
   "remind me what I wrote about Friday"
  ]

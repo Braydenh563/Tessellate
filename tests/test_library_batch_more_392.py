@@ -7,11 +7,11 @@ Measured with scratchpad/sw/lib392.js: two notes set "stage: draft" (toast
 2 notes; the menu button is 32px, in Delete's row.
 """
 
-from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests._app_js import index_html_text
 
-HTML = (Path(__file__).parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+HTML = index_html_text()
 JS = frontend_text("library.js")
 
 

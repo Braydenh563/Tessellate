@@ -50,7 +50,7 @@
     try {
       if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") throw 0;
       await navigator.clipboard.write([new ClipboardItem({ "image/png": png.then((blob) => blob || Promise.reject(0)) })]);
-      toast("Copied the picture. Paste it into a note, a document or a chat.");
+      toast(voiceLine("done", "Copied the picture. Paste it into a note, a document or a chat"));
     } catch {
       const blob = await png.catch(() => null);
       if (!blob) return toast("This diagram could not be copied as a picture. Save it as SVG.", "info");

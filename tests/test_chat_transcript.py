@@ -11,9 +11,10 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text, frontend_text
+from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("*.css")))
+CSS = css_glob_text()
 
 
 def _function(source: str, name: str) -> str:
@@ -247,8 +248,10 @@ def test_the_ask_wait_is_on_screen():
     the records column reads "Searching your notes…" (532x43)."""
     ask = frontend_text("capture-ask.js")
     body = ask[ask.index("async function askQuestion(") :][:9000]
-    assert 'setLabel(searching, "ph:spin Searching your notes…");' in body
-    assert body.index('$("chat-results").classList.remove("hidden");') < body.index("await streamChat(")
+    searching = ask[ask.index("function askShowSearching(") :][:700]
+    assert 'setLabel(searching, "ph:spin Searching your notes…");' in searching
+    assert '$("chat-results").classList.remove("hidden");' in searching
+    assert body.index("askShowSearching();") < body.index("await streamChat(")
 
 
 def test_a_percentage_on_every_card_or_none():

@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from tessellate.ai import realise
+
 import calendar
 
 import re
@@ -90,6 +92,6 @@ def long_form(fact: str, today: date) -> str:
     if not isinstance(day, date):
         return fact
     clock = _clock_word(last.text)
-    said = f"{calendar.day_name[day.weekday()]} {day.day} {_MONTHS[day.month - 1].title()}" + (f" {day.year}" if day.year != today.year else "")
+    said = realise.localised_days(f"{calendar.day_name[day.weekday()]} {day.day} {_MONTHS[day.month - 1].title()}" + (f" {day.year}" if day.year != today.year else ""))
     joiner = " at " if clock and f"at {clock.lower()}" in last.text.lower() else ", "
     return f"{fact[:start]}{said}{joiner + clock if clock else ''}{fact[last.end:]}"

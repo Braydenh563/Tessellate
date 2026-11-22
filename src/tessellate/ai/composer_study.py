@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from itertools import zip_longest
 
+from tessellate.ai import composer_tables
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import composer_frame, filed_name, note_rank, realise, recognise, study
 
@@ -161,7 +162,15 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3, *, open_one: bool = False)
     exact = _titled_as(topic, ctx, open_one)
     if exact:
         return exact
-    return _ranked_by_title_then_body(topic, wanted, ctx, limit)
+    found = _ranked_by_title_then_body(topic, wanted, ctx, limit)
+    if found or len(wanted) != 1:
+        return found
+    #: A concept word ("sport") that no title or text holds is the notes titled or saying one of its members
+    #: ("Swimming log"; `composer_tables.CONCEPTS`, L-chat-66).
+    for member in composer_tables.CONCEPTS.get(topic.strip().lower().removesuffix(" notes").removeprefix("my "), ()):
+        if found := _ranked_by_title_then_body(member, study.content_stems(member), ctx, limit):
+            return found
+    return []
 
 
 def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
@@ -175,7 +184,7 @@ def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
     names = {wanted, f"{wanted} notes"}
     #: A tag names notes as a category does ("list my running notes" says
     #: three tagged #running, so "summarise my running notes" is the same three).
-    tagged = {t.lower() for t in names}
+    tagged = {t.lower() for t in names} | set(composer_tables.CONCEPTS.get(wanted, ()))
 
     def filed(n: dict) -> bool:
         #: "my social notes" is the category "Social connections": a category
@@ -637,14 +646,14 @@ def _continue_quiz(ctx: Ctx) -> Reply | None:
     return Reply(f"{feedback}\n\n{_header(topic, n + 1, total, score, done, rounds)}\n\n{deck[n].q}", asks=QUIZ_CHIPS)
 
 
-def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int, done: int, *, lead: str = "", stopped: bool = False) -> Reply:
-    pct = round(100 * score / done) if done else 0
-    verdict = ("Strong." if pct >= 85 else "Solid." if pct >= 60 else "Worth another go.") if done else ""
+def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int, answered: int, *, lead: str = "", stopped: bool = False) -> Reply:
+    pct = round(100 * score / answered) if answered else 0
+    verdict = ("Strong." if pct >= 85 else "Solid." if pct >= 60 else "Worth another go.") if answered else ""
     lines = [lead, ""] if lead else []
-    if stopped and not done:
+    if stopped and not answered:
         lines.append("Stopped before any answer, so no score.")
     else:
-        lines.append(f"Quiz finished on {_link(note)}: you got {score} of {done} ({pct} percent). {verdict}".strip())
+        lines.append(f"Quiz finished on {_link(note)}: you got {score} of {answered} ({pct} percent). {verdict}".strip())
     return Reply("\n".join(lines), asks=[f"Quiz me on {topic}", f"Make flashcards from {topic}"])
 
 

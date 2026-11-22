@@ -475,7 +475,7 @@ input.backup-retention-input {
 }
 /* `!important` on a utility class, deliberately. `.hidden` is one class, so
    any other single class that sets `display` and happens to be written later
-   in this file beats it, which is how the hidden "🤖 Agent mode" checkbox
+   in this file beats it, which is how the hidden "Agent mode" checkbox
    came back on screen next to the Chat/Agent buttons that replaced it
    (`.tools-toggle` is three lines below and sets `display: inline-flex`).
    The one-off `#id.hidden` / `.class.hidden` rules further down this file are
@@ -1668,9 +1668,12 @@ button.recording.live-level {
 #meeting-overlay:not(.meeting-into) .meeting-save-into {
   display: none;
 }
+/* A bottom margin of its own, as `.space-dialog label`: with none the 2px focus ring at a 2px offset
+   drew 4px into "What is this recording?" (the owner, 2026-11-22). */
 .meeting-title-label {
   display: block;
   margin-top: var(--space-5);
+  margin-bottom: var(--space-2);
   font-size: var(--text-sm);
   color: var(--muted);
 }
@@ -4376,6 +4379,10 @@ details[open] > .fold-summary {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
   gap: var(--space-2);
+  /* A long list of web pages scrolls inside the bubble instead of stretching it (L730, decision 37). */
+  max-height: min(24rem, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 /* **A link the AI wrote on a line of its own** (CHAT_PLAN.md decision 12).
    The source card's recipe, deliberately: this is the same object (something
@@ -4805,10 +4812,8 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   #chat-sidebar {
     --card-pad-y: var(--space-3);
   }
-  /* The select is dressed by `enhanceSelect` (a `.select-shell` wraps it),
-     so the shell is what has to go, not the hidden native control. */
-  #chat-sidebar .chat-sidebar-sort,
-  #chat-sidebar .select-shell:has(> .chat-sidebar-sort),
+  /* The sort and group menu mounts in `.chat-sidebar-view` (chat-order.js). */
+  #chat-sidebar .chat-sidebar-view,
   #chat-sidebar .conv-browse-all {
     display: none;
   }

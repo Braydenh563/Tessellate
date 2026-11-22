@@ -122,7 +122,7 @@ async function linkNoteMention(subjectId, row, button) {
     if (typeof textBefore === "string" && typeof textAfter === "string" && textBefore !== textAfter) {
       pushRequestUndo(`Linked a mention in ${row.title}`, sourcePath, "PUT", { content: textBefore }, { content: textAfter }, () => (row.kind === "note" ? refreshEntries([row.id]) : undefined));
     }
-    toast(`Linked from ${row.title}.`);
+    toast(voiceLine("done", `Linked from ${row.title}`));
   } catch (error) {
     toast(error.message, true);
   }

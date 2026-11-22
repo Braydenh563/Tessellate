@@ -47,7 +47,7 @@ _READS = (
     ("tag_untagged", re.compile(r"^tag (?:my |all |all my |the )?untagged notes$")),
     #: The other tabs' starters (palette.js AGENT_TAB_STARTERS, OPEN row 562).
     ("tag_open", re.compile(r"^(?:suggest tags for|tag) (?:the|this) note(?: i have open| i've got open| on screen)?$")),
-    ("save_answer", re.compile(r"^(?:save|file|keep) (?:the|that|your) (?:last )?answer(?: as a note)?$")),
+    ("save_answer", re.compile(r"^(?:save|file|keep) (?:the|that|your) (?:last )?(?:answer|summary|reply)(?: as a note)?$")),
     ("open_links", re.compile(r"^what(?:'s| is) linked to (?:the|this) note(?: i have open| on screen)?$")),
     ("open_board", re.compile(r"^what(?:'s| is) (?:in|on) (?:the|this) (?:board|map|board or map|mind map)(?: i have open| on screen)?$")),
     ("open_note", re.compile(

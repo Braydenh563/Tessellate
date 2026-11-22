@@ -253,7 +253,7 @@
         }
       } catch (err) {
         //: Said on screen, not only in a console nobody has open (audit 1028 B22).
-        toast(voiceLine("failed", { what: "save that drawing", why: err.message }), true);
+        toast(voiceLine("failed", "save that drawing", err.message), true);
         if (wbPen.path) wbPen.path.remove();
       }
 

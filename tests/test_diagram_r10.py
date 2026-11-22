@@ -7,6 +7,7 @@ clipboard (a download with a toast where the browser will not). The drawing itse
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import index_html_text
 
 from tests._app_js import documents_text
 
@@ -16,7 +17,7 @@ EMBED = (JS / "diagram-embed.js").read_text(encoding="utf-8")
 BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
 LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
 DOCS = documents_text()
-INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 
 
 def test_copy_as_picture_writes_a_png_and_falls_back_to_a_download():

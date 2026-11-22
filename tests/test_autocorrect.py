@@ -21,11 +21,11 @@ from pathlib import Path
 import pytest
 
 from tests import _js_scope
-from tests._app_js import documents_text
+from tests._app_js import documents_text, index_html_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
-INDEX = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
+INDEX = index_html_text()
 #: autocorrect.js is one closure now (ranked row 37a); the tests call its private names, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
 SOURCE = _js_scope.unwrapped((JS / "autocorrect.js").read_text(encoding="utf-8"))
 

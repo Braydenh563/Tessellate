@@ -53,7 +53,7 @@ def read(data_dir: Path, name: str) -> str:
             value = ring.get(_account(data_dir, name))
             if value:
                 return value
-        except pinstore.StoreError:
+        except (pinstore.StoreError, OSError):
             log.warning("the OS protected store could not be read for %s", name)
     try:
         return _file(data_dir, name).read_text(encoding="utf-8").strip()
@@ -83,7 +83,7 @@ def write(data_dir: Path, name: str, value: str) -> bool:
         if ring is not None:
             try:
                 ring.delete(_account(data_dir, name))
-            except pinstore.StoreError:
+            except (pinstore.StoreError, OSError):
                 log.warning("the OS protected store could not delete %s", name)
         _file(data_dir, name).unlink(missing_ok=True)
         return True
@@ -92,7 +92,7 @@ def write(data_dir: Path, name: str, value: str) -> bool:
             ring.put(_account(data_dir, name), value)
             _file(data_dir, name).unlink(missing_ok=True)
             return True
-        except pinstore.StoreError:
+        except (pinstore.StoreError, OSError):
             log.warning("the OS protected store refused %s; using the owner-only file", name)
     try:
         _write_file(data_dir, name, value)

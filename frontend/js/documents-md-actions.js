@@ -208,7 +208,7 @@
         }
         docImageUpload(box, boxId, file, said);
       };
-      toast("Couldn't upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
+      toast(voiceLine("failed", "upload that picture. Add its address by hand"), true, { action: ["Try again", retry] });
     }
   }
 

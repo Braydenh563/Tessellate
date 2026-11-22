@@ -357,6 +357,9 @@ _VOICE_PLATFORMS = ("windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-ar
 #: The voice, from rhasspy/piper-voices at a commit (never `main`); both files are kept as named.
 _PIPER_VOICES = "https://huggingface.co/rhasspy/piper-voices/resolve/cf910fb59f1d79ab3b625a63993a108751c6c25d/"
 NATURAL_VOICE_VERSION = "ljspeech-medium-cf910fb"
+#: Silero VAD v5.1.2 at its commit (raw files keep a path, so no `main`).
+_SILERO = "https://raw.githubusercontent.com/snakers4/silero-vad/6478567951ae5c9979ad7b234185b5515f4be7a1/"
+VAD_MODEL_VERSION = "silero-v5.1.2-6478567"
 
 
 @dataclass(frozen=True)
@@ -718,16 +721,17 @@ EXTRAS: tuple[Extra, ...] = (
     #: Licence **Apache-2.0**, checked 2026-09-24 for both halves: the
     #: LICENSE file at the pinned commit (downloaded with the rest, below)
     #: and the Hugging Face card's `license: apache-2.0`. The engine is the
-    #: `libneedle3` library out of the per-platform wheels the model repo
-    #: publishes under `python/` (the Python package itself is not used);
-    #: every URL is pinned to commit b274efc, so the files cannot move under
-    #: the hashes. Engine 3.0.1 is the newest published there; needle's
-    #: fetcher names 3.0.2, which the repo does not carry.
+    #: `libcactus` library out of the per-platform `cactus_runtime` wheels
+    #: (the Python package itself is not used). **Engine 4.1.0** (L-chat-241,
+    #: 2026-11-14): same weights, 40-case bench 0.85 to 0.875 tool accuracy and
+    #: p50 67.9 s to 12.4 s. The wheels are pinned to revision 4e822c90 of
+    #: `Cactus-Compute/cactus` under `releases/4.1.0/python/`; the weights and
+    #: LICENSE stay at the needle3 commit b274efc. All eight wheels were read
+    #: for their imports (`core/native_imports.py`) at install time.
     #:
     #: **To bump:** `curl https://huggingface.co/api/models/Cactus-Compute/
-    #: needle3/tree/main/python` lists each wheel with its `lfs.oid`, which
-    #: is its sha256; take the new commit from `/api/models/Cactus-Compute/
-    #: needle3` (`sha`) and the weights' hash from the root listing.
+    #: cactus/tree/<rev>/releases/<ver>/python` lists each wheel with its
+    #: `lfs.oid`, which is its sha256.
     Extra(
         id="needle",
         label="Tool calling without Ollama (needle)",
@@ -735,7 +739,7 @@ EXTRAS: tuple[Extra, ...] = (
         enables="A small built-in model the assistant uses to pick and fill "
         "tools (make a note, set a reminder, search) when no Ollama or other "
         "model server is running. It runs tools; it does not write replies.",
-        packages=("needle 3.0.1",),
+        packages=("cactus_runtime 4.1.0",),
         module="",
         size="~36 MB",
         caveat="Runs offline, inside the app. needle's own tools send usage "
@@ -743,38 +747,38 @@ EXTRAS: tuple[Extra, ...] = (
         "that it imports no network calls, and switches that setting off "
         "anyway. Nothing for you to do.",
         kind="download",
-        version="3.0.1",
+        version="4.1.0",
         licence="Apache-2.0",
         downloads=(
             *(
                 Download(
-                    url="https://huggingface.co/Cactus-Compute/needle3/resolve/"
-                    "b274efcb211a9eef48c9a88da4b43bd569696a39/python/"
-                    f"cactus_needle-3.0.1-py3-none-{tag}.whl",
+                    url="https://huggingface.co/Cactus-Compute/cactus/resolve/"
+                    "4e822c9036be2eb0e47ef556df32a818bb1572ef/releases/4.1.0/python/"
+                    f"cactus_runtime-4.1.0-py3-none-{tag}.whl",
                     sha256=sha,
                     size=size,
                     unpack="zip",
-                    members=((f"needle/libneedle3.{ext}", f"libneedle3.{ext}"),),
+                    members=((f"cactus/libcactus.{ext}", f"libcactus.{ext}"),),
                     platform=key,
                     inspect_imports=True,
                 )
                 for key, tag, ext, sha, size in (
                     ("linux-x86_64", "manylinux2014_x86_64", "so",
-                     "05770ef9a85686583968ea15f62f9ad44217e078efdaa99559d3208bb8a369b0", 536871),
+                     "e4a1c56e23b62fda5dcd62ece09b6757d350c7d8d909200ef2e10a68048a095f", 856875),
                     ("linux-aarch64", "manylinux2014_aarch64", "so",
-                     "fc0c550b64627ed20101d1ac6de736bf0d15fb592d649f24bacba4e7340fc3df", 517746),
+                     "b0b375732949fb37caaff8a93e97a7e90aaa4ee4f08e5ff956fa2d1bd0efbc18", 823130),
                     ("linux-x86_64-musl", "musllinux_1_2_x86_64", "so",
-                     "1b2f5f560fcf8d2033c0ade7ea48d8f2f228cb17f53331bf844fcceb955440e0", 537929),
+                     "113bd99cf56c9ac36550ab84ee6c9622f67d636884d81238647a4689aeb760f8", 857854),
                     ("linux-aarch64-musl", "musllinux_1_2_aarch64", "so",
-                     "ec307274ed14d8a11be448e1546d3a330704a8d76a96a2f99de12ca14ed8ee64", 517367),
+                     "3151d11f7379315cc2cf52cfb5bd23e3cd937021061008205a08da11f63be407", 822675),
                     ("macos-arm64", "macosx_11_0_arm64", "dylib",
-                     "161c3aacfb6e54443925b389a69eb58a1861e60af19bbdf8f39d89992c5d7436", 387232),
+                     "82037b01d8eb22125e1610b2c19d89ab7149b5775a70ef5a806ec4005466ec5c", 722631),
                     ("macos-x86_64", "macosx_11_0_x86_64", "dylib",
-                     "941883e51fb2530706f1a115a0ea0062bb37501edaad8a6f08b85e12c4f5ca76", 431615),
+                     "a132faeb0fe1b42a58bdfef20f4b26d890dfd829b4faf6efc5e58661a51f95dd", 780938),
                     ("windows-x86_64", "win_amd64", "dll",
-                     "7d4467726814ab18d9ce32a8a5cc23d1198a2c0557c613a00bef738121903e2f", 553581),
+                     "300f66c30a67e907686edd35f05b45ce82b78ae9449214f6776df983dcb2178f", 866115),
                     ("windows-arm64", "win_arm64", "dll",
-                     "dfa6f8c15ca979bbe7c3e0579efdd8bf7b7afc75355e063cd00e6ac7732c9896", 493234),
+                     "52d6db6346b33570ac1e4510f46d039f694fc1a9651766cae10347b1c2cab917", 785566),
                 )
             ),
             Download(
@@ -1063,6 +1067,44 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
+    #: **Speech detection (Brief 87, L691).** Silero VAD (MIT) read straight through onnxruntime: no
+    #: torch, no `silero-vad` wheel. The model is one file from snakers4/silero-vad at the commit the
+    #: v5.1.2 tag names (never `master`). **To change it:** take the new file at one commit, write its
+    #: `sha256sum` and byte size, and bump the version.
+    Extra(
+        id="vad",
+        label="Speech detection, engine (onnxruntime)",
+        short_label="Speech detection engine",
+        enables="Finds where speech is in a recording, on this computer. Needs the model below as "
+        "well; the Speech detection bundle installs both.",
+        packages=("onnxruntime",),
+        module="onnxruntime",
+        size="~24 MB, nothing if the natural voice or OCR already brought it",
+        licence="MIT",
+    ),
+    Extra(
+        id="vad-model",
+        label="Speech detection, model (Silero VAD)",
+        short_label="Speech detection model",
+        enables="The small model that tells speech from silence and noise. It is read from this "
+        "computer's data folder; nothing is sent anywhere after the download.",
+        packages=("Silero VAD v5.1.2",),
+        module="",
+        size="~2.3 MB download",
+        caveat="Trained on many languages; very quiet speech and music can be missed or kept.",
+        kind="download",
+        version=VAD_MODEL_VERSION,
+        licence="MIT",
+        downloads=(
+            Download(
+                url=_SILERO + "src/silero_vad/data/silero_vad.onnx",
+                sha256="2623a2953f6ff3d2c1e61740c6cdb7168133479b267dfef114a4a3cc5bdd788f",
+                size=2327524,
+                unpack="file",
+                members=(("", "silero_vad.onnx"),),
+            ),
+        ),
+    ),
 )
 
 
@@ -1154,6 +1196,12 @@ BUNDLES: tuple[Bundle, ...] = (
         extras=("naturalvoice", "naturalvoice-voice"),
     ),
     Bundle(
+        id="vad",
+        label="Speech detection",
+        about="Find where speech is in a recording, on this computer.",
+        extras=("vad", "vad-model"),
+    ),
+    Bundle(
         id="desktop",
         label="Desktop",
         about="Tessellate in its own window, with a tray icon on Windows.",
@@ -1183,6 +1231,11 @@ class InstallState:
     running: bool = False
     extra_id: str = ""
     step: str = ""
+    #: How far a download has got, 0 to 1 over all its files, or None while
+    #: nothing can say (pip reports no fraction worth believing). Set by
+    #: `extra_downloads._fetch`; read by `/extras` and `/tasks` so the
+    #: installer shows a real bar, not a spinner, when there is one.
+    fraction: float | None = None
     log: list[str] = field(default_factory=list)
     started: float = 0.0
     outcome: str = ""  # "" while running, then completed | failed
@@ -1329,6 +1382,7 @@ def _status_row(extra: Extra) -> dict:
         "installed": is_installed(extra),
         "installing": _state.running and _state.extra_id == extra.id,
         "step": _state.step if _state.running and _state.extra_id == extra.id else "",
+        "fraction": _state.fraction if _state.running and _state.extra_id == extra.id else None,
     }
 
 
@@ -1983,6 +2037,7 @@ def _claim(extra: Extra, step: str) -> None:
     _state.extra_id = extra.id
     _state.outcome = ""
     _state.step = step
+    _state.fraction = None
     _state.log = []
     _state.started = time.time()
     _state.cancelled = False
@@ -2347,7 +2402,7 @@ def _loaded_in_process_reason(extra: Extra) -> str:
     """
     if extra.id == "needle":
         # The same Windows lock, on the needle engine: once a turn has used
-        # it, `libneedle3.dll` is mapped for the life of the process. Asked
+        # it, `libcactus.dll` is mapped for the life of the process. Asked
         # through `sys.modules` so a status question never imports it.
         module = sys.modules.get("tessellate.ai.needle_provider")
         if module is not None and module.loaded():
