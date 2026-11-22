@@ -134,7 +134,5 @@
  "whiteboard-templates.js::wbOpenTemplateGallery": 184,
  "whiteboard-textedit.js::wbApplyHistoryEntry": 225,
  "whiteboard-toolsheet.js::wbInitToolsSheet": 310,
- "whiteboard.js::function": 158,
- "whiteboard.js::initWhiteboard": 558,
- "whiteboard.js::renderWhiteboard": 957
+ "whiteboard.js::initWhiteboard": 558
 }
