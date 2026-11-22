@@ -19,7 +19,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Qu
 from fastapi.responses import FileResponse
 
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import clock
@@ -35,6 +34,7 @@ from tessellate.repo import relation_types, relations
 from tessellate.repo.content import walk as content_walk
 from tessellate.entry.cleantext import import_path
 from tessellate.api.this_computer import this_computer_only
+from tessellate.repo import notes as notes_repo
 
 router = APIRouter(tags=["settings"])
 
@@ -460,15 +460,9 @@ def _already_imported(session) -> dict:  # noqa: ANN001
     """Every live note that came from a vault file: its path in the vault ->
     the hashes of its text, or `_PRIVATE` when its text is encrypted."""
 
-    from tessellate.core.database import Entry
 
     known: dict = {}
-    rows = session.execute(
-        select(Entry.source_path, Entry.content, Entry.is_private).where(
-            Entry.source_path != "", Entry.is_deleted.is_(False)
-        )
-    )
-    for path, content, private in rows:
+    for path, content, private in notes_repo.source_texts(session):
         if private:
             known[path] = _PRIVATE
         elif known.get(path) is not _PRIVATE:

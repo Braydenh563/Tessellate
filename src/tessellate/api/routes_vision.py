@@ -32,14 +32,15 @@ from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 from tessellate.core import clock
 from tessellate.core import deps
-from tessellate.core.database import AuditLog, Category, Entry, EntryOpen, utcnow
+from tessellate.core.database import Category, Entry, utcnow
 from tessellate.core.deps import get_session
 from tessellate.repo import categories as categories_repo
+from tessellate.repo import vision as vision_repo
 from tessellate.entry import manager
 
 router = APIRouter(tags=["vision"])
@@ -89,9 +90,7 @@ def review_queue(
     limit: int = Query(default=500, ge=1, le=2000), session: Session = Depends(get_session)
 ) -> dict:
     """The notes to check, newest first, and how many there are."""
-    base = select(Entry.id).outerjoin(Category, Category.id == Entry.category_id).where(review_filter())
-    total = session.scalar(select(func.count()).select_from(base.subquery())) or 0
-    ids = list(session.scalars(base.order_by(Entry.created_at.desc(), Entry.id.desc()).limit(limit)))
+    total, ids = vision_repo.review_page(session, review_filter(), limit)
     return {"count": int(total), "ids": ids, "below": REVIEW_BELOW}
 
 
@@ -123,17 +122,8 @@ def most_opened(
     from tessellate.api.entry_out import to_out_bulk
 
     since = (utcnow().date() - timedelta(days=days - 1)).isoformat()
-    opened = func.sum(EntryOpen.count).label("opened")
-    rows = session.execute(
-        select(EntryOpen.entry_id, opened)
-        .join(Entry, Entry.id == EntryOpen.entry_id)
-        .where(EntryOpen.day >= since, *_live_notes())
-        .group_by(EntryOpen.entry_id)
-        .order_by(opened.desc(), EntryOpen.entry_id.desc())
-        .limit(limit)
-    ).all()
-    counts = {entry_id: int(n) for entry_id, n in rows}
-    entries = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(list(counts))))}
+    counts = vision_repo.most_opened(session, since, _live_notes(), limit)
+    entries = vision_repo.entries_by_ids(session, list(counts))
     ordered = [entries[i] for i in counts if i in entries]
     out = []
     for item in to_out_bulk(session, ordered):
@@ -158,15 +148,7 @@ def _pair_key(a: str, b: str) -> str:
 
 def _renamed_by_person(session: Session) -> set[int]:
     """Categories a person renamed: their name is a choice, never merged away."""
-    rows = session.scalars(
-        select(AuditLog.entity_id).where(
-            AuditLog.entity_type == "category",
-            AuditLog.action == "edited",
-            AuditLog.actor == "user",
-            AuditLog.detail.like("%→%"),
-        )
-    )
-    return {int(i) for i in rows if i is not None}
+    return vision_repo.renamed_by_person(session)
 
 
 def _meaning_alike(names: list[str]) -> dict[tuple[int, int], float]:
@@ -201,13 +183,7 @@ def _meaning_alike(names: list[str]) -> dict[tuple[int, int], float]:
 def tidy_proposals(session: Session = Depends(get_session)) -> dict:
     """Merges and removals the librarian proposes; nothing is changed here."""
     categories = categories_repo.all_rows(session)
-    counts = dict(
-        session.execute(
-            select(Entry.category_id, func.count(Entry.id))
-            .where(Entry.is_deleted == False)  # noqa: E712
-            .group_by(Entry.category_id)
-        ).all()
-    )
+    counts = vision_repo.counts_by_category(session)
     dismissed = set(deps.get_config().get_preference(TIDY_DISMISSED_PREF, []) or [])
     renamed = _renamed_by_person(session)
     usable = [c for c in categories if c.name != manager.UNCATEGORISED]
@@ -374,7 +350,7 @@ def count_notes(session: Session, by: str, since: date | None, until: date | Non
         filters.append(Entry.created_at >= datetime(since.year, since.month, since.day, tzinfo=timezone.utc))
     if until:
         filters.append(Entry.created_at < datetime(until.year, until.month, until.day, tzinfo=timezone.utc))
-    entries = list(session.scalars(select(Entry).where(*filters)))
+    entries = vision_repo.notes_where(session, filters)
     if by == "category":
         names = manager.bulk_category_names(session, entries)
         return _top_twenty(Counter(names.get(entry.category_id, manager.UNCATEGORISED) for entry in entries))

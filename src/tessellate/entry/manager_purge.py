@@ -89,7 +89,7 @@ def seal_private_events(session: Session, ids: list[int]) -> None:
     """Mark every event about these (private) notes as sealed, and empty it.
 
     The activity export leaves out events about a private note by looking the
-    note up (`routes_settings._not_private_events`), and a purged note is
+    note up (`repo.audit.not_private`), and a purged note is
     gone, so that lookup stops matching and its events, which carry a title or
     a clip of it in `detail` and the whole text in `payload`, would be handed
     over. A purge seals them first: `detail` dropped, `payload` replaced by

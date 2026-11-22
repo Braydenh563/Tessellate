@@ -13,7 +13,6 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_documents import _full
@@ -23,6 +22,7 @@ from tessellate.core.deps import get_session
 from tessellate.entry import manager_text
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import documents as document_repo
+from tessellate.repo import notes as notes_repo
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -50,7 +50,7 @@ def document_from_notes(body: FromNotes, session: Session = Depends(get_session)
     wanted = list(dict.fromkeys(body.note_ids))
     rows = [
         e
-        for e in session.scalars(select(Entry).where(Entry.id.in_(wanted))).all()
+        for e in notes_repo.by_ids(session, wanted)
         if not (e.is_deleted or e.is_board or e.is_private or e.is_draft)
     ]
     if not rows:

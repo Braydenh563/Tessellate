@@ -13,7 +13,6 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import extractor, librarian
@@ -49,6 +48,7 @@ from tessellate.entry import manager_purge
 from tessellate.entry import service as entry_service
 from tessellate.repo import content as content_repo
 from tessellate.repo.content import NOTES
+from tessellate.repo import notes as notes_repo
 
 router = APIRouter(prefix="/entries", tags=["entries"])
 
@@ -590,9 +590,7 @@ def entry_reference_counts(
     #: not exist or are deleted are simply absent from the answer, so a stale
     #: id on the client is a missing key rather than a 404 that fails the
     #: whole page's chips.
-    entries = session.scalars(
-        select(Entry).where(Entry.id.in_(wanted), Entry.is_deleted.is_(False))
-    ).all()
+    entries = notes_repo.live_by_ids(session, wanted)
     counts: dict[str, dict[str, int]] = {}
     #: The whole page in one go (`_reference_rows_batch`): the per-note reader
     #: this called was four statements a card, and sixty cards at every unlock.

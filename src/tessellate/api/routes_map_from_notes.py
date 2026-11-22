@@ -37,13 +37,13 @@ from collections import Counter, deque
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Entry
 from tessellate.repo import categories as categories_repo
 from tessellate.core.deps import get_session
 from tessellate.entry.properties import strip as strip_properties
+from tessellate.repo import notes as notes_repo
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -291,7 +291,7 @@ def map_from_notes(body: MapFromNotes, db: Session = Depends(get_session)):
     wanted = list(dict.fromkeys(body.note_ids))
     found = {
         entry.id: entry
-        for entry in db.scalars(select(Entry).where(Entry.id.in_(wanted))).all()
+        for entry in notes_repo.by_ids(db, wanted)
         if not entry.is_deleted and not entry.is_board
     }
     category_ids = {e.category_id for e in found.values() if e.category_id}

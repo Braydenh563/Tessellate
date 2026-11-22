@@ -19,13 +19,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_board_library import MAX_NAME, SNIPPET_KIND, _clean_tags, _item_out, _yours
 from tessellate.core import events, filetypes
 from tessellate.core.database import BoardLibraryItem, utcnow
 from tessellate.core.deps import get_session
+from tessellate.repo import board_library as board_library_repo
 
 router = APIRouter(tags=["code-snippets"])
 
@@ -70,11 +70,7 @@ def list_snippets(
 ) -> dict:
     """The person's snippets, newest first; `language` and `q` (words in the
     name, the tags or the code's language) narrow it."""
-    rows = db.scalars(
-        select(BoardLibraryItem)
-        .where(BoardLibraryItem.kind == SNIPPET_KIND, BoardLibraryItem.deleted_at.is_(None))
-        .order_by(BoardLibraryItem.updated_at.desc(), BoardLibraryItem.id.desc())
-    ).all()
+    rows = board_library_repo.snippets(db, SNIPPET_KIND)
     wanted = filetypes.normalise(language) if language else None
     words = (q or "").lower().split()
     items = []

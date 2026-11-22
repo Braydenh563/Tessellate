@@ -7,7 +7,7 @@ Read only; see `repo/__init__.py` for the rules every repository keeps.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -46,3 +46,19 @@ def this_day_before(session: Session, today: date, limit: int = 10) -> list[Entr
         .order_by(Entry.created_at.desc())
         .limit(limit)
     ).all())
+
+
+def written_on(session: Session, today: date, asked: list[str]) -> dict[date, int]:
+    """How many shown notes were written on each of the `asked` days (today and yesterday), counted in SQL.
+
+    The created-at range lets `ix_entries_created_order` serve the day filter,
+    which on its own is `date()` of every note's column: a SCAN of the table
+    at 5,000 notes (L-world-class-125).
+    """
+    day = func.date(Entry.created_at)
+    rows = session.execute(
+        select(day, func.count())
+        .where(*SHOWN, Entry.created_at >= datetime.combine(today - timedelta(days=1), datetime.min.time()), day.in_(asked))
+        .group_by(day)
+    ).all()
+    return {date.fromisoformat(d): n for d, n in rows}

@@ -31,14 +31,15 @@ from datetime import datetime, timedelta, timezone
 from functools import partial
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import Select, String, and_, func, or_, select
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy import Select, and_, func, or_
+from sqlalchemy.orm import Session
 
 from tessellate.core import cjk
-from tessellate.core.database import Entry, EntryDate, Space, utcnow
+from tessellate.core.database import Entry, EntryDate, utcnow
 from tessellate.repo import properties as properties_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import reminders as reminder_repo
+from tessellate.repo import timeline as timeline_repo
 from tessellate.repo.documents import Document
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
@@ -405,10 +406,7 @@ def timeline(
     kinds = _requested_kinds(kind)
     _check_params(scale, group, limit)
 
-    query = select(Entry).where(
-        Entry.is_deleted == False,  # noqa: E712
-        Entry.is_private == False,  # noqa: E712  # private text stays out of a view
-    )
+    query = timeline_repo.visible_notes()  # private text stays out of a view
     #: A board is an `Entry` with `is_board` set, so "notes only" and "boards
     #: only" are one query with a flag rather than two code paths.
     if "note" in kinds and "board" not in kinds:
@@ -598,12 +596,7 @@ def _dates_of(session: Session, entries: list) -> tuple[dict[int, EntryDate], di
     resolved: dict[int, EntryDate] = {}
     every: dict[int, list[str]] = {}
     if entries:
-        rows = session.scalars(
-            select(EntryDate)
-            .where(EntryDate.entry_id.in_([entry.id for entry in entries]))
-            .order_by(EntryDate.id)
-        )
-        for row in rows:
+        for row in timeline_repo.dates_of(session, [entry.id for entry in entries]):
             resolved.setdefault(row.entry_id, row)
             every.setdefault(row.entry_id, []).append(row.at.date().isoformat())
     return resolved, every
@@ -621,7 +614,7 @@ def _placed_rows(session: Session, entries: list, documents_found: list, reminde
     # one query each for the whole page rather than one per row, the same
     # batching `resolved` above uses: a timeline over a year of writing is
     # hundreds of rows and this endpoint is drawn on every visit to the tab.
-    spaces = {space.id: space.name for space in session.scalars(select(Space))}
+    spaces = timeline_repo.space_names(session)
     links = manager.links_count_bulk(session, [entry.id for entry in entries])
 
     placed: list[dict] = []
@@ -686,13 +679,7 @@ def _with_placement(query: Select) -> tuple[Select, object, object]:
     placement four times, so a 5,000-note range read 40 ms of SQL on this
     alone and the cost grew with the notebook, not the page.
     """
-    first_pick = (
-        select(EntryDate.entry_id.label("entry_id"), func.min(EntryDate.id).label("pick"))
-        .group_by(EntryDate.entry_id)
-        .subquery("first_mention")
-    )
-    mention = aliased(EntryDate)
-    joined = query.outerjoin(first_pick, first_pick.c.entry_id == Entry.id).outerjoin(mention, mention.id == first_pick.c.pick)
+    joined, mention = timeline_repo.with_first_mention(query)
     joined, own_date = properties_repo.join_meeting_date(joined, Entry.id)
     return joined, mention.at, own_date
 
@@ -731,12 +718,11 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     placed += [first <= until + wall] if until is not None else []
     clauses = [and_(first.is_(None), *written), and_(first.is_not(None), *placed)]
     if also:
-        named = [EntryDate.entry_id == Entry.id]
-        #: A span overlaps the window when it starts before the window ends and
-        #: ends after it starts (decision 13); a day's end is its own start.
-        named += [func.coalesce(EntryDate.until, EntryDate.at) >= since + wall] if since is not None else []
-        named += [EntryDate.at <= until + wall] if until is not None else []
-        clauses.append(select(EntryDate.id).where(*named).correlate(Entry).exists())
+        clauses.append(
+            timeline_repo.names_a_date_between(
+                since + wall if since is not None else None, until + wall if until is not None else None
+            )
+        )
     return query.where(or_(*clauses))
 
 
@@ -755,11 +741,7 @@ def _density(session: Session, ranged: Select, mention_at) -> dict[str, int]:
     #: date (lowest id, as before) is a correlated read served by the
     #: `entry_id` index; dates are stored as naive UTC text, so the day is its
     #: first ten characters, which is what `.date()` gave on the row.
-    day = func.substr(func.coalesce(mention_at, Entry.created_at), 1, 10, type_=String)
-    rows = session.execute(
-        ranged.with_only_columns(day.label("day"), func.count()).select_from(Entry).order_by(None).group_by("day")
-    ).all()
-    return {str(when): int(count) for when, count in rows if when}
+    return timeline_repo.day_counts(session, ranged, mention_at)
 
 
 #: The longest span a brush may ask about: a year and a day, the strip's own

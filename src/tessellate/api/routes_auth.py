@@ -31,7 +31,6 @@ import bcrypt
 from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import (
@@ -53,10 +52,11 @@ from tessellate.core import (
 )
 from tessellate.core.config import ConfigManager
 from tessellate.core.deps import brief_session, get_config, get_session, register_cache_reset
-from tessellate.core.database import Entry, User, Vault
+from tessellate.core.database import User
 from tessellate.entry import manager_private
 from tessellate.entry.manager import log_action
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
+from tessellate.repo import auth as auth_repo
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -678,7 +678,7 @@ class PasswordBody(BaseModel):
 
 
 def _get_user(session: Session) -> User | None:
-    return session.scalar(select(User))
+    return auth_repo.user(session)
 
 
 #: **The gate's "is there a password" answer, remembered for a few seconds,
@@ -999,7 +999,7 @@ def _hold_new_device(request: Request, device: str, config: ConfigManager) -> JS
 
 
 def _pin_binding(session: Session, user: User) -> bytes | None:
-    row = session.scalar(select(Vault))
+    row = auth_repo.vault(session)
     if row is None:
         return None
     return pinstore.binding(user.password_hash, bytes(row.kdf_salt), bytes(row.wrapped_dek))
@@ -2020,7 +2020,7 @@ def rotate_vault_key(
     session.info["workspace_id"] = "all"
     private_entries = [
         entry
-        for entry in session.scalars(select(Entry))
+        for entry in auth_repo.every_entry(session)
         if crypto.is_encrypted(entry.content)
     ]
 
@@ -2062,7 +2062,7 @@ def rotate_vault_key(
         entry.content = new_ciphertext
     manager_private.rekey_private_extras(session, old_key, new_key)
 
-    vault_row = session.scalar(select(Vault))
+    vault_row = auth_repo.vault(session)
     new_salt = crypto.new_salt()
     vault_row.kdf_salt = new_salt
     vault_row.wrapped_dek = crypto.wrap_dek(new_key, body.current_password, new_salt)
