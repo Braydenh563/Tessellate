@@ -666,10 +666,10 @@ _ENTRY_SKIP = set(ENTRY_LEFT_OUT) | {"parent_id", "is_private"}
 
 
 def _space_for(session, space: object, made: dict) -> str | None:  # noqa: ANN001
-    """The id of the space a note was exported from: a space of that name
-    already here, else one made now (L979). None keeps the note in the space
-    open. A private space is only made private with the vault open; locked,
-    its note stays in the open space, sealed as it came."""
+    """The id of the space a note was exported from: a space of that name and
+    privacy already here, else one made now (L979). None keeps the note in the
+    space open. A private space, found or made, is only used with the vault
+    open; locked, its note stays in the open space, sealed as it came."""
     from tessellate.core import vault
     from tessellate.core.database import Space
     from tessellate.entry.cleantext import clean_name, name_key
@@ -677,13 +677,13 @@ def _space_for(session, space: object, made: dict) -> str | None:  # noqa: ANN00
     if not isinstance(space, dict) or not clean_name(space.get("name")):
         return None
     name = clean_name(space["name"])[:60]
-    key = name_key(name)
+    private = bool(space.get("is_private"))
+    key = (name_key(name), private)
     if key not in made:
-        found = next((sp for sp in session.query(Space) if name_key(sp.name) == key), None)
-        private = bool(space.get("is_private"))
-        if found is None and private and vault.key() is None:
+        found = next((sp for sp in session.query(Space) if (name_key(sp.name), bool(sp.is_private)) == key), None)
+        if private and vault.key() is None:
             made[key] = None
-        elif found is None and key in {"all", "all spaces", "everything"}:
+        elif found is None and key[0] in {"all", "all spaces", "everything"}:
             made[key] = None
         else:
             made[key] = (found or _new_space(session, name, space, private)).id

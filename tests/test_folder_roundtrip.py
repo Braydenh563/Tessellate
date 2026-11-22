@@ -306,3 +306,21 @@ def test_notes_come_back_in_the_spaces_they_were_exported_from(client, tmp_path)
     assert names[where["garden one"]] == ("Garden", "ph-plant") == names[where["garden two"]]
     assert names[where["trip one"]] == ("Trips", "ph-airplane")
     assert where["plain one"] == "default"
+
+
+def test_a_private_space_is_matched_by_privacy_and_skipped_while_locked(client, monkeypatch):
+    """Review of PR 255: a note from a private "Work" never lands in an open
+    "Work", and an existing private space is not used while the vault is locked."""
+    from tessellate.core import vault
+    from tessellate.core.database import Space
+
+    session = deps.get_db().session()
+    session.add_all([Space(id="t255-open", name="Desk 255"), Space(id="t255-priv", name="Desk 255", is_private=True)])
+    session.flush()
+    monkeypatch.setattr(vault, "key", lambda: None)
+    assert export_folder._space_for(session, {"name": "Desk 255", "is_private": True}, {}) is None
+    assert export_folder._space_for(session, {"name": "Desk 255"}, {}) == "t255-open"
+    monkeypatch.setattr(vault, "key", lambda: b"k" * 32)
+    assert export_folder._space_for(session, {"name": "Desk 255", "is_private": True}, {}) == "t255-priv"
+    session.rollback()
+    session.close()
