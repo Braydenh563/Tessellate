@@ -2,7 +2,7 @@
 
 The row stayed after an undo (a second press said "Already undone"). The feed
 now names, on a `restored` event, the events it reversed (`undid`), and the
-widget's `activityActorStarts` leaves an actor out once everything it did in
+widget's `activityUndoStarts` leaves an actor out once everything it did in
 the list is named there.
 """
 
@@ -25,11 +25,11 @@ AI = "system:librarian"
 
 def _starts(items: list[dict]) -> dict:
     source = (JS_DIR / "dashboard.js").read_text(encoding="utf-8")
-    match = re.search(r"^function activityActorStarts\(items\) \{.*?^\}", source, re.S | re.M)
-    assert match, "activityActorStarts is gone from the dashboard script"
+    match = re.search(r"^function activityUndoStarts\(items\) \{.*?^\}", source, re.S | re.M)
+    assert match, "activityUndoStarts is gone from the dashboard script"
     script = (
         match.group(0)
-        + f"\nprocess.stdout.write(JSON.stringify([...activityActorStarts({json.dumps(items)})]));"
+        + f"\nprocess.stdout.write(JSON.stringify([...activityUndoStarts({json.dumps(items)})]));"
     )
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
     return dict(json.loads(out))

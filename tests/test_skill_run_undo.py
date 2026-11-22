@@ -114,5 +114,5 @@ def test_chat_offers_the_runs_undo_and_keeps_it_on_reopen():
 
     lazy = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "note-history.js").read_text(encoding="utf-8")
     assert "async function undoSkillRun(span, button, onDone)" in lazy
-    assert "activityPlanText(plan, byId, \"this run\")" in lazy
+    assert "activityUndoPlanText(plan, byId, \"this run\")" in lazy
     assert "dry_run: false" in lazy
