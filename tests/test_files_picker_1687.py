@@ -1,4 +1,6 @@
-"""INBOX 1687: the chat Attach panel and the Library picker list the Library's
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+INBOX 1687: the chat Attach panel and the Library picker list the Library's
 own uploads (MediaUpload) beside a note's attachments, and a thing staged by a
 tray drop is the panel's ticked row (one staged list, not a second set)."""
 

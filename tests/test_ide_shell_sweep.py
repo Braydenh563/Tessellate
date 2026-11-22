@@ -1,4 +1,6 @@
-"""The IDE shell sweep drives the run panel through public names only.
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+The IDE shell sweep drives the run panel through public names only.
 
 `docIdeRunApply` became private to documents-ide.js's wrapper when the file
 was split, so the sweep's direct call threw and the script exited 1 with no

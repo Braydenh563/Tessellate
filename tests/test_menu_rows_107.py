@@ -1,4 +1,6 @@
-"""Menu rows and the connection pill's menu button (WORLD_CLASS_PLAN 403,
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+Menu rows and the connection pill's menu button (WORLD_CLASS_PLAN 403,
 L-world-class-107). Measured by scratchpad/ui-sweeps/menu-rows.js at 1440x900.
 
 With a mouse the pill's button is the pill's inner height, so any end margin

@@ -1,4 +1,6 @@
-"""Connector shapes and text on path (WHITEBOARD_PLAN section 4): a link's `shape` is drawn as an outline round its centre line.
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Connector shapes and text on path (WHITEBOARD_PLAN section 4): a link's `shape` is drawn as an outline round its centre line.
 
 `connectorOutline` (whiteboard-shape-more.js) is pure and run in node; the .drawio import and export are read in node
 from whiteboard-interchange.js. The browser half (each shape drawn, textPath on and off) is

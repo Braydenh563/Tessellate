@@ -1,4 +1,6 @@
-"""draw.io interchange, the rest (WHITEBOARD_PLAN section 14 and 8): rotation, a picture inside the file,
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+draw.io interchange, the rest (WHITEBOARD_PLAN section 14 and 8): rotation, a picture inside the file,
 gradient and shadow both ways; the `mxlibrary` reader and writer; the CSV import; a plan as a library entry.
 
 The pure parts run in node against the source (the browser half, with the DOM reader and the upload, is

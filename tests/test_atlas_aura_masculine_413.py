@@ -1,4 +1,6 @@
-"""Atlas's aura sits on the masculine figure (L-world-class-413, atlasaura.js).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+Atlas's aura sits on the masculine figure (L-world-class-413, atlasaura.js).
 
 At the default `auraAt` [31, 46] the aura's centre sat 9px left of the standing
 masculine figure's middle in the large view (4.5 to 5.1% of its width, past the

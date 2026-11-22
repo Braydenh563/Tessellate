@@ -1,4 +1,6 @@
-"""L-whiteboard-13: draw.io's `points` pixel offsets (`dx`, `dy`) and the perimeter flag as a shape's port fields, kept on
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+L-whiteboard-13: draw.io's `points` pixel offsets (`dx`, `dy`) and the perimeter flag as a shape's port fields, kept on
 import, written back on export, checked on save; the Format panel's connection-point rows (list, add, remove, on outline,
 nudge). Pure parts run in node against the source."""
 

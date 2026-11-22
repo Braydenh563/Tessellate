@@ -1,4 +1,6 @@
-"""L270: a board exports as a PDF file written in the app, with real pages.
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+L270: a board exports as a PDF file written in the app, with real pages.
 
 The browser's print window left page size and count to the print dialog. The
 writer (`wbPdf.plan` and `wbPdf.build`, whiteboard-interchange.js) is plain

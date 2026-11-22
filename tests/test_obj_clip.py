@@ -1,4 +1,6 @@
-"""INBOX 1467 part 3: copy and paste an object (obj-clip.js)."""
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+INBOX 1467 part 3: copy and paste an object (obj-clip.js)."""
 
 from __future__ import annotations
 

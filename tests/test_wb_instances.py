@@ -1,4 +1,6 @@
-"""Board state per instance (L-whiteboard-53, for L-documents-104: a board edited
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Board state per instance (L-whiteboard-53, for L-documents-104: a board edited
 in place inside a document, one instance per embed).
 
 `whiteboard-instances.js` keeps one object per mounted board and swaps the

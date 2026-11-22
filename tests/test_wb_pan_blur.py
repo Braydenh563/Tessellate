@@ -1,4 +1,6 @@
-"""A board or mind map pan does not re-blur the panels over it (BACKLOG, the owner 2026-10-12).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+A board or mind map pan does not re-blur the panels over it (BACKLOG, the owner 2026-10-12).
 
 "With a popup tool panel showing, a two-finger trackpad pan is slow and
 laggy." The panels over a board (top bar, tool rail, zoom card, map strip,

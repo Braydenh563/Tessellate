@@ -1,4 +1,6 @@
-"""The JS-drawn shape classes (WHITEBOARD_PLAN section 11): `wbFmtState.shapeTable.shapePath(kind, w, h)` in
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+The JS-drawn shape classes (WHITEBOARD_PLAN section 11): `wbFmtState.shapeTable.shapePath(kind, w, h)` in
 `whiteboard-shape-table.js`, run in node. Every outline is M, L, C and Z only, fills its box exactly (so a resize that draws it
 again keeps the box), and the draw.io words round-trip. The browser half is `scratchpad/ui-sweeps/wbtext3.js`."""
 

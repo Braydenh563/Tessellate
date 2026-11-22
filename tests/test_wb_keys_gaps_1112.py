@@ -1,4 +1,6 @@
-"""The draw.io keys the board lacked (WHITEBOARD_PLAN section 11, 2026-11-12).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+The draw.io keys the board lacked (WHITEBOARD_PLAN section 11, 2026-11-12).
 
 Behaviour is measured by `scratchpad/ui-sweeps/wbkeys2.js`; these hold the wiring: each key sits on its
 command (so the palette, the help sheet and the key reader read one chord), no two board commands share a

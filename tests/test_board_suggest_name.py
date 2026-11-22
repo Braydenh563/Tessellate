@@ -1,4 +1,6 @@
-"""L280: a board or map can be named from what is on it, as a document can
+"""Source text: the routes run through the test client; the page half runs only in a browser (no DOM here), so it is checked as source text.
+
+L280: a board or map can be named from what is on it, as a document can
 (INBOX 904 B17). The model writes the name when one runs, else the board's own
 words (`composer_voice.title_for`) are cut to one. Nothing is saved by the
 route; the client renames through Rename's undoable path."""

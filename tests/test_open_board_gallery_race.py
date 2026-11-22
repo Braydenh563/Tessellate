@@ -1,4 +1,6 @@
-"""Opening a board from code is not undone by the gallery's late landing (ledger L374, mindmap3 sweep).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+Opening a board from code is not undone by the gallery's late landing (ledger L374, mindmap3 sweep).
 
 `openWhiteboardBoard` presses the Boards sub-tab, whose handler loads the small gallery file and then
 calls `show`, which showed the landing and hid the canvas. After an import into a library with many

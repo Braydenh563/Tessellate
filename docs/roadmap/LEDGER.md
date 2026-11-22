@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 0 | 0 | 0 | 0 | 4 | 0 |
+| ui-modernisation | 0 | 0 | 0 | 0 | 0 | 0 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
-| general | 0 | 1 | 0 | 0 | 3 | 1 |
-| all | 376 | 384 | 122 | 2 | 158 | 882 |
+| general | 0 | 1 | 0 | 0 | 1 | 1 |
+| all | 376 | 384 | 122 | 2 | 152 | 882 |
 
 ## graph
 
@@ -703,17 +703,11 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-chat-12** `chat` blocked-hardware, S: Check the wider desk frame canvas, crop and window size on a real Windows desktop (hardware). From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1550. Evidence: The wider desk-frame canvas (masculine 289x304, feminine 275x298) changed the crop, the wave reach and the 100 percent window size. None of it has been checked on a real desktop. The nearest rows are 
 - [ ] **L-world-class-4** `world-class` blocked-hardware, M: Evaluate Kokoro-82M via kokoro-onnx as a second natural voice. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1800. Evidence: It is on the ranked vendor shortlist with no code. Piper was built for read aloud. The only mention in the plans is WORLD_CLASS_PLAN 2205's prose line "research in flight", which is not a row.
 - [ ] **L-world-class-5** `world-class` blocked-hardware, S: Verify Tessellate --mcp from the packaged Windows exe with a real MCP client (hardware). From open-work sweep 2026-11-12, docs/INSTALL.md:297. Evidence: The packaged windowed exe's stdio MCP mode has not been checked on a real Windows build. L687 covers the HTTP transport, not this check.
-- [ ] **L-general-23** `general` blocked-hardware, L: Add LEDGER rows for the 0.9 public beta and 1.0 exit criteria. From open-work sweep 2026-11-12, docs/ROADMAP.md:184. Evidence: The 0.5 to 0.8 milestones point to briefs in the plans. The 0.9 and 1.0 exit criteria have no LEDGER rows: non-owner clean-machine installs, the iOS and Android QR flow, the 0.8 to 0.9 update path, te
-- [ ] **L-general-29** `general` blocked-hardware, L: Move the 0.9 and 1.0 release gates into BACKLOG or LEDGER rows. From open-work sweep 2026-11-12, docs/ROADMAP.md:171. Evidence: The 0.5 to 1.0 milestone exit criteria are open gates that exist only in ROADMAP's milestone table, with no LEDGER rows
 - [ ] **L-documents-5** `documents` blocked-hardware, M: Have the local model summarise a document's revisions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:847. Evidence: version history exists, but there is no model-written account of the revisions; lines 847 to 849 are untracked
 - [ ] **L-world-class-24** `world-class` blocked-hardware, S: Run the ten-minute browser memory check. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4186. Evidence: Open line in the plan's prose a session could miss. Real-browser memory run not done.
 - [ ] **L-chat-17** `chat` blocked-hardware, L: Personal wording switch and per-surface composer evals. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:655. Evidence: Open line in the plan's prose a session could miss. Items 1-11 leftovers; item 10 needs a local model.
 - [ ] **L-chat-23** `chat` blocked-hardware, M: Chat latency budgets and small-model tool use. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1614. Evidence: Open line in the plan's prose a session could miss. Budgets unmet and small-model tool use unverified.
 - [ ] **L-documents-6** `documents` blocked-hardware, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open.
-- [ ] **L-ui-modernisation-8** `ui-modernisation` blocked-hardware, S: Check the composer above a soft keyboard and iPad landscape on real devices. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:619. Evidence: Open line in the plan's prose a session could miss. A phone gate left unmeasured, with phone.md's real iPad landscape look. There is no hardware row.
-- [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
-- [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
-- [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
 - [ ] **L-general-38** `general` blocked-hardware, S: Measure ocrScheduleFitDock's forced layout with the real Tesseract engine. From L708, 2026-11-21. Evidence: ocrScheduleFitDock (library.js:7682) fits the dock by measuring (one frame, halving, memoised key already built); its forced layout with a real Tesseract page open cannot be traced without the engine and a scanned page. Check: open the OCR dialog on a scan at 390 px, CPU 4, stack-category trace, forced layouts under ocrFitDock.

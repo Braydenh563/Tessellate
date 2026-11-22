@@ -1,4 +1,6 @@
-"""PlantUML out and the Import dialog's routing (L-whiteboard-41, 45), run in node: the writer, the sniffing and
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+PlantUML out and the Import dialog's routing (L-whiteboard-41, 45), run in node: the writer, the sniffing and
 the positioned layout are pure, and the placing is checked as source (the browser half is the sweep)."""
 
 from __future__ import annotations

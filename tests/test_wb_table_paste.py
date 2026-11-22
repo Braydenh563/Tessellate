@@ -1,4 +1,6 @@
-"""A Markdown (pipe) table pasted onto a board becomes a table (LEDGER L273 row;
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+A Markdown (pipe) table pasted onto a board becomes a table (LEDGER L273 row;
 WHITEBOARD_PLAN section 12). `pasteGrid.pipe` is in the shared paste core, so the
 document editor's Paste special table reads it too."""
 

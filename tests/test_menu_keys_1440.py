@@ -1,4 +1,6 @@
-"""Menu keys found by scratchpad/ui-sweeps/menus.js at 1440 (the hub's order on PR 223).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+Menu keys found by scratchpad/ui-sweeps/menus.js at 1440 (the hub's order on PR 223).
 
 Escape in Logs' More, with its "Which log" list open inside it, closed the dock menu and left
 the list on screen; the next Escape closed Settings. ArrowDown on the dashboard Customise's

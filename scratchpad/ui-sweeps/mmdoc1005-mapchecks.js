@@ -41,7 +41,7 @@ const VIEWPORT = (() => {
       const a = boxes[i], c = boxes[j];
       if (a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1) overlaps++;
     }
-    return { layout: wbMapLayout(), overlaps, topics: boxes.length, undo: wbUndoStack.length };
+    return { layout: wbMapLayout(), overlaps, topics: boxes.length, undo: wbStacks.undo.length };
   }, outline.join("\n"));
   check("an imported map opens in tree-right", imported.layout === "tree-right", imported.layout);
   check("and no two topics overlap", imported.overlaps === 0, `${imported.overlaps} pairs over ${imported.topics}`);

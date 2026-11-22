@@ -1,4 +1,6 @@
-"""L272: the export SVG is built from board data; one function reads the page.
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+L272: the export SVG is built from board data; one function reads the page.
 
 `wbBuildExportSvg` used to call `getComputedStyle`, `querySelector` and
 `getBoundingClientRect` all through its 354 lines. Now every read of the drawn

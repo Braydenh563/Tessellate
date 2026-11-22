@@ -50,7 +50,7 @@ const near = (a, b, tol = 1.5) => a != null && b != null && Math.abs(a - b) <= t
     const o = (wbState.nodes || []).find((x) => x.id === id);
     return o ? { x: o.x, y: o.y, r: o.rotation || 0 } : null;
   }, id);
-  const undoDepth = () => page.evaluate(() => wbUndoStack.length);
+  const undoDepth = () => page.evaluate(() => wbStacks.undo.length);
   const counts = () => page.evaluate(() => ({
     objects: (wbState.objects || []).length,
     sketches: (wbState.sketches || []).length,

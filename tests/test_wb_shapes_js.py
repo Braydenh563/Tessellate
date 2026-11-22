@@ -1,4 +1,6 @@
-"""Insert, Polygon and the JS-drawn shape classes (WHITEBOARD_PLAN sections 11 and 14): `whiteboard-shapes-js.js` is pure at its
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Insert, Polygon and the JS-drawn shape classes (WHITEBOARD_PLAN sections 11 and 14): `whiteboard-shapes-js.js` is pure at its
 core and run in node; the browser half is `scratchpad/ui-sweeps/wbtext3.js`."""
 
 from __future__ import annotations

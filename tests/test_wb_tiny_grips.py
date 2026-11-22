@@ -1,4 +1,6 @@
-"""A box too small on screen to hold its grips drags instead (L-whiteboard-15).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+A box too small on screen to hold its grips drags instead (L-whiteboard-15).
 
 Measured, wb500perf.js: on a 500-box board at the fit zoom (0.23) a text box
 is 42 by 16 px on screen and its ten-pixel resize grips, which keep their

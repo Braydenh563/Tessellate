@@ -1,4 +1,6 @@
-"""L-world-class-413 (wbrail sweep): the board's tool row is a pill while it is
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+L-world-class-413 (wbrail sweep): the board's tool row is a pill while it is
 one line and a card once it wraps. The card rule keyed on the panel having more
 than one child, and the phone's hidden Tools opener is a second child, so the
 row drew the card radius at every width (measured at 1440: 8px on a 46px row).

@@ -3874,11 +3874,6 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();
   wbLinkParseCache.clear(); // the next board's sketches are other ids
-  //: Asked now, answered during the settle below (`fetchWhiteboardState`).
-  //: Not for the board already open: its unsaved nudge is written first.
-  const id = boardId ?? null;
-  const state = id === (window.currentBoardId ?? null) ? null : apiJson(id ? `/whiteboard/?board_id=${id}` : "/whiteboard/");
-  state?.catch(() => {});
   //: **What the last board's renders left behind is dropped here** (audit 1028 B39:
   //: render state lived at module level with no reset). A frame queued for the old
   //: board is called off, and the element, size, colour and overview caches are
@@ -3891,6 +3886,11 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbClearMapNodeSizeCache();
   Object.assign(wbBoardBgCache, { sig: "", pass: false });
   wbNavState.stale = true;
+  //: Asked now, before the settle, and answered during it (`fetchWhiteboardState`).
+  //: Not for the board already open: its unsaved nudge is written first.
+  const id = boardId ?? null;
+  const state = id === (window.currentBoardId ?? null) ? null : apiJson(id ? `/whiteboard/?board_id=${id}` : "/whiteboard/");
+  state?.catch(() => {});
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
   window.currentBoardId = boardId ?? null;

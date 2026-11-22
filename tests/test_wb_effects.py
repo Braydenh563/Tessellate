@@ -1,4 +1,6 @@
-"""The board's finishing effects (LEDGER L-whiteboard-37, 38, 40 and 47): text shadow, glass, a picture as a shape's fill,
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+The board's finishing effects (LEDGER L-whiteboard-37, 38, 40 and 47): text shadow, glass, a picture as a shape's fill,
 a mirror for a sticky, a picture or a frame, frame opacity and a status bar. `whiteboard-effects.js` is run in node for its
 pure parts; the drawn half is measured by `scratchpad/ui-sweeps/wbeffects.js`."""
 

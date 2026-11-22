@@ -1,4 +1,6 @@
-"""Structure rows of the board (WHITEBOARD_PLAN section 12): tags and a tag filter, collapsing a frame, the drop
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Structure rows of the board (WHITEBOARD_PLAN section 12): tags and a tag filter, collapsing a frame, the drop
 highlight on a frame, and find limited to one frame (`scratchpad/ui-sweeps/wbstructure3.js`, 33/33)."""
 
 from __future__ import annotations

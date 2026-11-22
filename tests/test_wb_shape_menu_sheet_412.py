@@ -1,4 +1,6 @@
-"""The board's shape kind menu in a phone's Tools sheet (L-world-class-412, toolpop.js at 390).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+The board's shape kind menu in a phone's Tools sheet (L-world-class-412, toolpop.js at 390).
 
 It opened above its button, as on the floating bar; in the sheet that put it over the card's
 top edge (menu top 267, card top 299), the card's overflow cut it off and a tap on Line fell

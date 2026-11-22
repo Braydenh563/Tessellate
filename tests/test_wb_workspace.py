@@ -1,4 +1,6 @@
-"""L-whiteboard-7 (edit inside a group, the rest dimmed) and L-whiteboard-8 (saved board workspaces).
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+L-whiteboard-7 (edit inside a group, the rest dimmed) and L-whiteboard-8 (saved board workspaces).
 whiteboard-workspace.js runs in node against a stand-in for the page and the board's functions."""
 
 from __future__ import annotations

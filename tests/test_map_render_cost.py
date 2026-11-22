@@ -282,7 +282,10 @@ def test_a_line_builds_its_grips_only_when_they_can_show() -> None:
     # Kept on the path, so a drag frame (`wbUpdateMapEdges`) moves them.
     assert "path._wbHandle = " in grips and "path._wbEnds = " in grips
     # Selection is the route that needs no pointer.
-    assert "wbMapEdgeElement.grips(held.wrap)" in _code("wbSyncMapEdgeHandles")
+    #: whiteboard-map-edges.js is a wrapped file since the base split, so `wbMapEdgeElement` is its own; the sync
+    #: in whiteboard-map.js reaches the same builder through the shared `wbRenderMapEdges.grips` (no new global).
+    assert "wbRenderMapEdges.grips = wbMapEdgeElement.grips;" in WB
+    assert "wbRenderMapEdges.grips(held.wrap)" in _code("wbSyncMapEdgeHandles")
     # Hover and focus, delegated once on the group rather than per line.
     render = _code("wbRenderMapEdges")
     assert '"pointerover"' in render and '"focusin"' in render

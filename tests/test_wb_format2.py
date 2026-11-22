@@ -1,4 +1,6 @@
-"""Board format, round two (WHITEBOARD_PLAN, wbformat2): picture border, grid size and colour, board options,
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Board format, round two (WHITEBOARD_PLAN, wbformat2): picture border, grid size and colour, board options,
 paper size, PNG and HTML export, rulers and units.
 
 The server half runs through the API; the pure writers and readers run in node against the source."""
