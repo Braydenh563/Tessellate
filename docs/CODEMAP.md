@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8844, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2853, tests 22872, plan headings 695, app scripts 29, boot scripts 38, script files 360.
+Counts: frontend functions 8846, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2853, tests 22872, plan headings 695, app scripts 29, boot scripts 38, script files 362.
 
-## Frontend functions (8844)
+## Frontend functions (8846)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:274 |
-| `charactersLost` | frontend/js/lazy-entries.js:283 |
-| `emblemHead` | frontend/js/lazy-entries.js:291 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:320 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:353 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:314 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:341 |
-| `onDomReady` | frontend/js/lazy-entries.js:364 |
-| `plainHead` | frontend/js/lazy-entries.js:297 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:305 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:376 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:395 |
+| `afterCharacters` | frontend/js/lazy-entries.js:276 |
+| `charactersLost` | frontend/js/lazy-entries.js:285 |
+| `emblemHead` | frontend/js/lazy-entries.js:293 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:322 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:355 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:316 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:343 |
+| `onDomReady` | frontend/js/lazy-entries.js:366 |
+| `plainHead` | frontend/js/lazy-entries.js:299 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:307 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:378 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:397 |
 
 ### frontend/js/att-chip.js (7)
 
@@ -10118,6 +10118,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbVoteTargets` | frontend/js/whiteboard-paint.js:203 |
 | `wbVotesAfter` | frontend/js/whiteboard-paint.js:198 |
 
+### frontend/js/whiteboard-pan.js (1)
+
+| Name | File:line |
+|---|---|
+| `wbInitPan` | frontend/js/whiteboard-pan.js:4 |
+
 ### frontend/js/whiteboard-pdf.js (11)
 
 | Name | File:line |
@@ -10162,6 +10168,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `puExport` | frontend/js/whiteboard-plantuml.js:29 |
 | `puText` | frontend/js/whiteboard-plantuml.js:13 |
 | `puWords` | frontend/js/whiteboard-plantuml.js:8 |
+
+### frontend/js/whiteboard-pointer.js (1)
+
+| Name | File:line |
+|---|---|
+| `wbInitPointer` | frontend/js/whiteboard-pointer.js:4 |
 
 ### frontend/js/whiteboard-present.js (10)
 
@@ -10549,21 +10561,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:7954 |
-| `dragging` | frontend/js/whiteboard.js:7368 |
+| `addBoardToNote` | frontend/js/whiteboard.js:5709 |
+| `dragging` | frontend/js/whiteboard.js:5123 |
 | `handleWbZoom` | frontend/js/whiteboard.js:599 |
-| `highlighterBlend` | frontend/js/whiteboard.js:7974 |
+| `highlighterBlend` | frontend/js/whiteboard.js:5729 |
 | `initWhiteboard` | frontend/js/whiteboard.js:1929 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:7631 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:7866 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:7735 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:6368 |
-| `renderWhiteboardNow` | frontend/js/whiteboard.js:6342 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:7791 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:5386 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:5621 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:5490 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:4123 |
+| `renderWhiteboardNow` | frontend/js/whiteboard.js:4097 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:5546 |
 | `wbAlignTol` | frontend/js/whiteboard.js:985 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:446 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:527 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:7610 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:5365 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:509 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:477 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:363 |
@@ -10579,7 +10591,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1022 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:944 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:7595 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:5350 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
 | `wbMultiKey` | frontend/js/whiteboard.js:1405 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:919 |
@@ -10594,8 +10606,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbScreenToBoard` | frontend/js/whiteboard.js:500 |
 | `wbShapeAt` | frontend/js/whiteboard.js:1145 |
 | `wbShapePoly` | frontend/js/whiteboard.js:1146 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:7558 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:7545 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:5313 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:5300 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:656 |
 | `wbSnap` | frontend/js/whiteboard.js:968 |
 | `wbSnapOn` | frontend/js/whiteboard.js:955 |

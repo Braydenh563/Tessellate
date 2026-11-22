@@ -129,6 +129,8 @@
  "whiteboard-bar.js::raf": 4,
  "whiteboard-boards.js::raf": 1,
  "whiteboard-clipboard.js::raf": 1,
+ "whiteboard-pan.js::resize-observer": 3,
+ "whiteboard-pointer.js::raf": 3,
  "whiteboard-ctxmenu.js::raf": 1,
  "whiteboard-navigator.js::raf": 1,
  "whiteboard-place.js::raf": 1,
@@ -138,7 +140,6 @@
  "whiteboard-toolbar.js::raf": 1,
  "whiteboard-tree.js::raf": 1,
  "whiteboard.js::mutation-observer": 1,
- "whiteboard.js::raf": 7,
- "whiteboard.js::resize-observer": 3,
+ "whiteboard.js::raf": 4,
  "wiring.js::mutation-observer": 1
 }

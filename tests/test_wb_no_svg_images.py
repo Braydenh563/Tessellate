@@ -67,7 +67,8 @@ def test_a_stray_svg_in_the_media_folder_is_not_served(ai_client):
 
 
 def test_paste_and_drop_place_only_what_the_upload_returned():
-    src = _js("whiteboard.js")
+    #: initWhiteboard and its pointer section, carved out of it (L634).
+    src = _js("whiteboard.js") + _js("whiteboard-pointer.js")
     place = _between(src, "async function wbPlaceUploadedImage", "async function wbPlaceImageUrl")
     assert '"/media/upload"' in place and "wbPlaceImageUrl(uploaded.url" in place
     # A pasted data: picture becomes a File for that upload; it is never an object's address.

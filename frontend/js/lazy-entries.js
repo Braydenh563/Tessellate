@@ -32,6 +32,8 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-tree.js", //: After whiteboard.js: the mind-map tree on a board; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-gesture.js", //: After whiteboard.js: gestures, the bin target and drag finishing; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-clipboard.js", //: After whiteboard.js: copy, paste and the item grips; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-pointer.js", //: After whiteboard.js: drawing, erasing, marquee and lasso select; wrapped, initWhiteboard calls it once.
+    "/js/whiteboard-pan.js", //: After whiteboard.js: pan, zoom and the board settings controls; wrapped, initWhiteboard calls it once.
     "/js/whiteboard-instances.js", //: After whiteboard.js: board state per instance (an embed's own state, selection, undo and zoom); wrapped, reads whiteboard.js's `wbZoom` at load.
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.
