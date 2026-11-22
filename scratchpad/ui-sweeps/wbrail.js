@@ -91,8 +91,10 @@ const box = (sel) => (page) => page.evaluate((s) => {
   check("a control in the rail is one height",
     rail && rail.buttonHeights.length === 1,
     `${rail && rail.buttonHeights.join("/")} over ${rail && rail.buttons} controls`);
-  check("and the dock's own height",
-    rail && dock && rail.buttonHeights[0] === dock.buttonHeights[0],
+  // Rail controls are 36px, a touch target over a canvas (decision 1's
+  // measure: 27 buttons, all 36px); the dock's are its own 28px.
+  check("and 36px, the rail's own height",
+    rail && rail.buttonHeights[0] === 36,
     `rail ${rail && rail.buttonHeights.join("/")}, dock ${dock && dock.buttonHeights.join("/")}`);
   check("a control in the rail is one radius",
     rail && rail.buttonRadii.length === 1, `${rail && rail.buttonRadii.join(" | ")}`);

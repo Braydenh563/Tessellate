@@ -113,7 +113,8 @@ const VH = Number(process.env.VH || 900);
     const el = document.querySelector(`.wb-object[data-id="${id}"]`);
     return { resize: el.querySelectorAll(".wb-resize-handle").length, rotate: el.querySelectorAll(".wb-rotate-handle").length };
   }, frame.id);
-  ok("a frame has its eight resize handles and no rotate grip", handles.resize === 8 && handles.rotate === 0, JSON.stringify(handles));
+  // A frame turns, and turns what lies inside it (WHITEBOARD_PLAN decision 42).
+  ok("a frame has its eight resize handles and one rotate grip", handles.resize === 8 && handles.rotate === 1, JSON.stringify(handles));
 
   // 3. Things inside and outside it.
   await page.keyboard.press("Escape");

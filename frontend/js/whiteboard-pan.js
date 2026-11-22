@@ -853,6 +853,13 @@
           // of whatever is clearing it right on top of the panel above. The
           // CSS fallbacks stay in charge until there is a real size to use.
           if (box.height > 0) wbPanelMetricsRoot.style.setProperty(`--wb-h-${name}`, `${Math.round(box.height)}px`);
+          //: The tools row is a pill on one line and a card once wrapped: read
+          //: here, after layout, as the first and last shown section's rows.
+          if (name === "tools") {
+            const shown = [...(panel.querySelector(".wb-tool-group")?.children || [])].filter((el) => el.offsetParent);
+            const wrapped = shown.length > 1 && shown[shown.length - 1].offsetTop > shown[0].offsetTop + 4;
+            panel.classList.toggle("wb-rail-wrapped", wrapped && panel.dataset.dock !== "side");
+          }
           // The tools panel's width is read back by its own side-dock rule
           // (`width: var(--wb-w-tools)`), so a width taken while it lay along the
           // bottom (758px at 768) became the side column's width.

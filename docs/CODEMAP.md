@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8846, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2853, tests 22872, plan headings 695, app scripts 29, boot scripts 38, script files 362.
+Counts: frontend functions 8846, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11010, test files 2854, tests 22874, plan headings 695, app scripts 29, boot scripts 38, script files 362.
 
 ## Frontend functions (8846)
 
@@ -13511,7 +13511,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/08-consistency.css:10130 |
 | A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/08-consistency.css:10627 |
 | A note's time: the same corner on every card | frontend/css/08-consistency.css:8518 |
-| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3476 |
+| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3479 |
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10855 |
 | A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10765 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2866 |
@@ -13646,7 +13646,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Timeline: the table view (TIMELINE_PLAN.md Phase 2) | frontend/css/06-timeline-dialogs.css:392 |
 | Trace mode on the graph (§41) | frontend/css/07-whiteboard-misc.css:2157 |
 | Two floating buttons that sit over content: opaque, readable hover | frontend/css/08-consistency.css:4852 |
-| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3269 |
+| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3272 |
 | WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2392 |
 | Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:404 |
 | Wave E: graph view | frontend/css/02-chat-graph.css:925 |
@@ -13987,7 +13987,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:7886 |
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3178 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10788 |
-| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2774 |
+| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2777 |
 | the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4454 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
 | the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3570 |
@@ -14025,7 +14025,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/03-dashboard-widgets.css | 4948 |
 | frontend/css/04-chat-dock-appearance.css | 6639 |
 | frontend/css/05-sidebars-themes.css | 6217 |
-| frontend/css/06-timeline-dialogs.css | 3750 |
+| frontend/css/06-timeline-dialogs.css | 3753 |
 | frontend/css/07-whiteboard-misc.css | 12060 |
 | frontend/css/08-consistency.css | 11114 |
 | frontend/css/09-editor.css | 1143 |
@@ -28895,7 +28895,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22872)
+## Tests (22874)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31643,6 +31643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_present_picker_open.py | 2 |
 | tests/test_wb_prune_selection.py | 4 |
 | tests/test_wb_rail_kind.py | 1 |
+| tests/test_wb_rail_pill_413.py | 2 |
 | tests/test_wb_recorded_registry.py | 5 |
 | tests/test_wb_render_w30.py | 13 |
 | tests/test_wb_repeat_last.py | 7 |

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: the tool row along the bottom is a pill again while it fits on one line; it drew card corners at every width.
 - Board: the drawing, select, pan, zoom and board settings handlers moved into two files of their own (whiteboard-pointer.js, whiteboard-pan.js); nothing changes on screen.
 - Board: exporting a board as a folder builds the zip on disk and streams it, so a large board no longer holds hundreds of megabytes in memory.
 - Board: more of the board's code moves into smaller files (guides, background and votes, line ends, groups and zoom, styles, the board tree, gestures, copy and paste), with no change to how a board works.

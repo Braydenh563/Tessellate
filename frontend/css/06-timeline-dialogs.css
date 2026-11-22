@@ -2731,8 +2731,11 @@
   border-radius: var(--radius-in-pill);
 }
 /* A pill is a single row of controls. Once it has wrapped it is a block of
-   them, and the fully-rounded ends read as a mistake rather than a shape. */
-.whiteboard-floating-panel.bottom-center:has(> :last-child:not(:first-child)) {
+   them, and the fully-rounded ends read as a mistake rather than a shape.
+   The wrap is marked by the row's size observer (whiteboard-pan.js): a
+   `:has()` on a second child also matched the phone's hidden Tools opener, so
+   the row drew this radius on one line at every width (L-world-class-413). */
+.whiteboard-floating-panel.bottom-center.wb-rail-wrapped {
   border-radius: var(--radius);
 }
 /* Below this there is not enough width left to share the edge at all, the
