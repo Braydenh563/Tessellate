@@ -69,6 +69,24 @@ async function moveNotesToSpace(ids, space) {
     toast(`They are all in ${space.name} already.`);
     return moved;
   }
+  //: **Its links kept** (WORLD_CLASS_PLAN 27.1, Spaces): a link to a note left
+  //: behind stays in the old space, out of view in both. Asked once, before the
+  //: Undo is made, so one Undo sends every note back.
+  if (moved.linked?.length) {
+    const n = moved.linked.length;
+    const these = ids.length === 1 ? "this one" : "these";
+    const bring = await confirmDialog(
+      `${n === 1 ? `A note linked to ${these} stays` : `${n} notes linked to ${these} stay`} where ${n === 1 ? "it is" : "they are"}, so the links show only under All spaces. Move ${n === 1 ? "it" : "them"} to ${space.name} as well?`,
+      { confirmLabel: n === 1 ? "Bring it too" : "Bring them too", cancelLabel: n === 1 ? "Leave it" : "Leave them", danger: false }
+    );
+    const more = bring ? await batchSpaceRequest(space.id, moved.linked, activeSpaceId(), keep).catch((error) => void toast(error.message, true)) : null;
+    if (more?.moved) {
+      Object.assign(moved.from, more.from);
+      moved.moved += more.moved;
+      ids = [...ids, ...moved.linked];
+      await refreshEntries(moved.linked);
+    }
+  }
   const back = async () => {
     const groups = new Map();
     for (const [id, from] of Object.entries(moved.from)) groups.set(from, [...(groups.get(from) || []), Number(id)]);

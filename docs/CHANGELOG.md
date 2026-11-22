@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Spaces: Move to space asks, when the notes link to notes staying behind, whether to bring those too ("Bring them too"), so the links stay in view; one Undo sends all of them back (the move answers with `linked`, and a link whose other end is already in the target space moves with it).
 - Tests: the answer pictures, citation order and copy-app-link checks read chat-list.js, where the saved-chat code moved from sheets-selects.js.
 - Sweeps: companioninteract passes above the face for its follow-off check (the old path crossed the face, and a pointer on the face is a touch that looks with the setting off too).
 - Sweeps: every sweep that runs a python seed takes it from one helper (`venvPython` in lib.js: VENV, else the repo .venv, else python3), so asktab and twelve others no longer spawn a .venv/bin/python CI does not have.
