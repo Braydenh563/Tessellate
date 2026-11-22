@@ -12,7 +12,7 @@
 //
 //   BASE=http://127.0.0.1:8791 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //   node scratchpad/ui-sweeps/wbrail.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 const results = [];
 function check(label, ok, detail) {
@@ -46,15 +46,7 @@ const box = (sel) => (page) => page.evaluate((s) => {
   const dock = await box('.dock[data-dock-name="notes"]')(page);
   console.log("  dock  :", JSON.stringify(dock));
 
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(600);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(900);
-  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", `Rail ${Date.now()}`);
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, `Rail ${Date.now()}`, 'board');
   await page.keyboard.press("Escape");
 
   const rail = await box("#wb-tools-panel")(page);
@@ -99,8 +91,10 @@ const box = (sel) => (page) => page.evaluate((s) => {
   check("a control in the rail is one height",
     rail && rail.buttonHeights.length === 1,
     `${rail && rail.buttonHeights.join("/")} over ${rail && rail.buttons} controls`);
-  check("and the dock's own height",
-    rail && dock && rail.buttonHeights[0] === dock.buttonHeights[0],
+  // Rail controls are 36px, a touch target over a canvas (decision 1's
+  // measure: 27 buttons, all 36px); the dock's are its own 28px.
+  check("and 36px, the rail's own height",
+    rail && rail.buttonHeights[0] === 36,
     `rail ${rail && rail.buttonHeights.join("/")}, dock ${dock && dock.buttonHeights.join("/")}`);
   check("a control in the rail is one radius",
     rail && rail.buttonRadii.length === 1, `${rail && rail.buttonRadii.join(" | ")}`);

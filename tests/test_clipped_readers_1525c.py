@@ -7,6 +7,7 @@ picker's search, Copy. Each reads the whole note, or the server's answer about i
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -20,7 +21,7 @@ needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
 def _text(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS / name).read_text(encoding="utf-8")
 
 
 def _block(text: str, head: str, tail: str = "\n}\n") -> str:

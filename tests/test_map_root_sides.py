@@ -14,7 +14,7 @@ import subprocess
 
 import pytest
 
-from tests._app_js import JS_DIR
+from tests._app_js import frontend_text
 
 pytestmark = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -42,7 +42,7 @@ function wbMapSubtree(index, id) {
 
 
 def _run(body: str):
-    source = (JS_DIR / "whiteboard-map.js").read_text(encoding="utf-8")
+    source = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     match = re.search(r"^function wbMapFreshPlace\(row, parent\) \{.*?^\}", source, re.S | re.M)
     assert match, "wbMapFreshPlace is gone from whiteboard-map.js"
     out = subprocess.run(["node", "-e", STUBS + match.group(0) + body], capture_output=True, text=True, check=True).stdout

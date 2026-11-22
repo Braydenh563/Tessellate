@@ -8,7 +8,7 @@ const { boot } = require('./lib.js');
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(4500);
   const r = await page.evaluate((act) => new Promise((done) => {
     const buddy = document.getElementById('nm-buddy');

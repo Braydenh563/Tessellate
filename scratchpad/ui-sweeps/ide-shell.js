@@ -51,13 +51,10 @@ const ok = (n, c, d) => { c ? good++ : bad++; console.log(`${c ? "PASS" : "FAIL"
   // Heights: one per tab, survive a reload
   const want = { output: 210, problems: 260, tests: 180, console: 300 };
   for (const [tab, h] of Object.entries(want)) {
-    //: Dragged on the grip, as a person sets it: `docIdeRunApply` is the
-    //: closure's own since documents-ide.js was wrapped (L529).
-    const g = await page.evaluate((t) => { docRunShowTab(t); const r = docRun.dom.querySelector(".doc-run-resize").getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, h: docRun.dom.getBoundingClientRect().height }; }, tab);
-    await page.mouse.move(g.x, g.y);
-    await page.mouse.down();
-    await page.mouse.move(g.x, g.y - (h - g.h), { steps: 4 });
-    await page.mouse.up();
+    //: Through the grip a person drags (`docIdeRunApply` is private to documents-ide.js's wrapper since its split).
+    await page.evaluate((t) => docRunShowTab(t), tab);
+    const g = await page.evaluate(() => { const r = document.querySelector(".doc-run-resize").getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, h: document.querySelector(".cm-run-panel").getBoundingClientRect().height }; });
+    await page.mouse.move(g.x, g.y); await page.mouse.down(); await page.mouse.move(g.x, g.y - (h - g.h), { steps: 4 }); await page.mouse.up();
   }
   // Fix the edit so the run is clean, then run and use the console
   await page.evaluate(() => { const d = docCmView.state.doc; const l = d.line(8); docCmView.dispatch({ changes: { from: l.from, to: l.to, insert: "const fixed = 1;" } }); });

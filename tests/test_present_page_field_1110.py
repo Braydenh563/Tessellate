@@ -7,12 +7,13 @@ there. The one fault found was the phone's field, 37 x 28 beside 44 px buttons; 
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
+MAP = frontend_text("whiteboard-map.js")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 

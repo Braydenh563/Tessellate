@@ -28,6 +28,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 CSS = sorted((FRONTEND / "css").glob("*.css"))
@@ -77,7 +79,7 @@ def test_the_strips_own_cluster_never_sits_on_the_tools() -> None:
 
 
 def test_one_row_mode_folds_what_does_not_fit_behind_more() -> None:
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "function fitDocToolbarRow(" in docs, "the one-row strip no longer measures what fits"
     mount = docs.split("function mountDocToolbarControlsFor(", 1)[1].split("\nfunction ", 1)[0]
     assert "watchDocToolbarWidth(bar)" in mount and "new ResizeObserver" in docs, (
@@ -109,7 +111,7 @@ def test_a_strip_is_refitted_when_its_contents_change() -> None:
     without resizing the strip; the width observer alone missed it, so the
     strip also watches its children, and refits only when what it lays out
     changed (the bold button's `active` class is not a reason)."""
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     watch = docs[docs.index("function watchDocToolbarWidth"):]
     watch = watch[: watch.index("\nfunction fitDocToolbars")]
     assert "watchDocToolbarContents(bar)" in watch
@@ -122,7 +124,7 @@ def test_a_narrow_strip_folds_its_layout_toggle_first() -> None:
     """At 360 the strip's own group took 176 of a 300px row. Under 600px the
     layout toggle goes behind More, but only when something is folded
     anyway, so a strip whose tools all fit keeps it in reach."""
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     fit = docs[docs.index("function fitDocToolbarRow"):]
     fit = fit[: fit.index("\nfunction syncDocToolbarMore")]
     folded = fit.index('bar.classList.add("is-layout-folded")')
@@ -141,7 +143,7 @@ def test_the_document_strips_group_never_takes_a_row_alone() -> None:
     on a third row (`stripwrap.js`). The document strip leaves layout and
     collapse to its ⋯ menu then, and puts line numbers at the first row's
     end when there is room; the group is back at the end before every fit."""
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     body = docs[docs.index("function trimDocToolbarGroup"):]
     body = body[: body.index("\n}\n")]
     assert 'bar.id !== "doc-toolbar"' in body, "only the strip whose menu holds the other two"

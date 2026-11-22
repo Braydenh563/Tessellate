@@ -9,18 +9,10 @@
 // the bar's top when it flips above). Exit 1 on any failure.
 //
 //   BASE=http://127.0.0.1:8791 node scratchpad/ui-sweeps/wbtextbar.js
-const {boot, OUT} = require('./lib.js');
+const {boot, OUT, newBoard: libNewBoard } = require('./lib.js');
 
 async function newBoard(page, name) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
-  await page.waitForTimeout(700);
-  await page.fill('#wb-template-name', name);
-  await page.click('#wb-template-create');
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, name, 'board');
   await page.keyboard.press('Escape');
 }
 

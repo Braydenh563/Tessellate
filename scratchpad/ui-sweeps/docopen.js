@@ -61,7 +61,7 @@ async function openDoc(page, opts = {}) {
     // carrying on measuring a markdown document that was asked to be code.
     const problem = await page.evaluate(async (ext) => {
       if (!docFileTypes.some((t) => t.ext === ext)) return `no file type "${ext}"`;
-      await docTypeChoose(ext);
+      await docTypeState.choose(ext);
       return null;
     }, opts.ext);
     if (problem) throw new Error(`openDoc: ${problem}`);

@@ -130,6 +130,10 @@ undoStoreClear.purged = (kind, id) => {
     }
     return undoStoreClear.one(`doc:${id}`);
   }
+  //: An embed keeps its history as `board:<id>:embed:<host>` (L-whiteboard-70): those go too (L-whiteboard-77).
+  const prefix = `board:${id}:embed:`;
+  for (const [name, timer] of undoStoreTimers) if (name.startsWith(prefix)) { clearTimeout(timer); undoStoreTimers.delete(name); }
+  if (typeof IDBKeyRange !== "undefined") undoStoreRequest("readwrite", (table) => table.delete(IDBKeyRange.bound(prefix, `${prefix}\uffff`)));
   return undoStoreClear.one(`board:${id}`);
 };
 

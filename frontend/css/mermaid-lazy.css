@@ -17,6 +17,7 @@
 }
 
 .md-mermaid {
+  position: relative;
   margin: var(--space-4) 0;
   overflow-x: auto;
   color: var(--ink);
@@ -28,6 +29,30 @@
   height: auto;
   margin: 0 auto;
   border-radius: var(--radius-md);
+}
+
+/* L-documents-78: a document's picture follows a block's link; the layer is the image's own box, the buttons are the blocks. */
+.md-mermaid-hit {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.md-mermaid-hit-node {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.md-mermaid-hit-node:hover,
+.md-mermaid-hit-node:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* A fixed height while the frame draws, so the page does not jump when the

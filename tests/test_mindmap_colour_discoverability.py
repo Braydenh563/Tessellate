@@ -12,11 +12,12 @@ there.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WHITEBOARD_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WHITEBOARD_JS = frontend_text("whiteboard.js")
 INDEX_HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
@@ -78,7 +79,7 @@ def test_the_maps_own_help_mentions_both_wells() -> None:
 def test_palette_names_the_fill_and_background_wells() -> None:
     """INBOX 431(b): a search for fill, colour or background found neither
     well; each now has a palette row that clicks the existing control."""
-    js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     start = js.index("function mapPaletteCommands() {")
     body = js[start : js.index("\n}\n", start)]
     fill = body[body.index("Topic fill colour") - 120 : body.index("Topic fill colour") + 300]

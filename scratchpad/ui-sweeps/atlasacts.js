@@ -7,7 +7,7 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(4000);
   let bad = 0;
   for (const [act, pose, prop] of [['juggle', 'stand', '.nmp-stars'], ['map', 'stand', '.nmp-map'], ['juggle', 'float', '.nmp-stars'], ['meditate', 'float', '']]) {

@@ -322,11 +322,10 @@ function trackSeparatorValue(handle, panel, min, max, axis = "width") {
     handle.setAttribute("aria-valuenow", Math.min(Math.max(now, min), max));
     handle.setAttribute("aria-valuetext", `${now} pixels ${tall ? "tall" : "wide"}`);
   };
-  //: The observer reports the first size itself, so only a browser without one reads layout here
-  //: (a sync read on the first Chat open forced 13ms of layout inside the press).
+  //: The observer's first delivery reports the width before the first paint, so the grip's setup reads no box (a read there forced a layout of the whole page, 110 ms on the Documents cold open, L-documents-106).
   if (typeof ResizeObserver !== "function") write(size() || min);
   else {
-    write(min); // a placeholder until the observer's first report (a hidden panel never reports a size)
+    write(min);
     new ResizeObserver((entries) => {
       const box = entries[entries.length - 1].borderBoxSize?.[0];
       write((tall ? box?.blockSize : box?.inlineSize) ?? size());
@@ -1229,51 +1228,7 @@ function watchForSelects() {
 // stays where the finger held.
 const PHONE_ACTION_SHEET = "(max-width: 599.98px)";
 
-function openKebabSheet(menu, opener, label) {
-  closeActionMenus();
-  const home = menu.parentElement;
-  let closeSheet = null;
-  let sheetCard = null;
-  // A group's row and a level's back row move inside the sheet (`buildMenuGroupButton`), so they leave it open.
-  const onRow = (event) => {
-    const row = event.target.closest(".menu-item");
-    if (row && !row.matches(".has-submenu, .menu-back") && closeSheet) closeSheet();
-  };
-  closeSheet = openSheet({
-    label,
-    name: "action-menu",
-    returnFocus: opener,
-    build: (card) => {
-      card.classList.add("action-menu-card");
-      sheetCard = card;
-      menu._inSheet = true;
-      menu.style.left = "";
-      menu.style.top = "";
-      menu.classList.remove("hidden", "action-menu-flip", "action-menu-escaped");
-      card.appendChild(menu);
-      card.addEventListener("click", onRow, true);
-    },
-    onClose: () => {
-      closeSheet = null;
-      opener.setAttribute("aria-expanded", "false");
-    },
-    //: After the sheet's exit (`openSheet`'s `onGone`), so the card is not an
-    //: empty rectangle while it leaves. Skipped when the menu has already
-    //: been taken into a newer sheet (the same ⋯ pressed again inside the
-    //: exit window): sending it home then would empty the sheet that is open.
-    onGone: () => {
-      if (menu.parentElement !== sheetCard) return;
-      menu.classList.add("hidden");
-      if (home) home.appendChild(menu);
-      // After the observer has seen the class change above, so it does not
-      // escape a menu that is on its way home.
-      queueMicrotask(() => {
-        menu._inSheet = false;
-      });
-    },
-  });
-  opener.setAttribute("aria-expanded", "true");
-}
+//: `openKebabSheet` (a ⋯ menu as a phone's action sheet) is in the lazy gesture-kit.js: only a tap reaches it.
 
 //: **Which overflow glyph (INBOX 706).** `⋯` (`ph:dots-three`, horizontal) for
 //: an item's overflow in a row, a card or a bar of controls; `⋮`

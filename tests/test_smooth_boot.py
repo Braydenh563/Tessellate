@@ -105,7 +105,9 @@ def test_the_status_bar_is_at_the_foot_before_any_page():
 
 
 def test_the_dashboard_banner_keeps_its_lines_before_its_words():
-    assert ":is(.dash-greeting, .dash-submessage, .dash-clock-time, .dash-clock-date):empty::before {" in CSS["01-forms-settings.css"]
+    # One selector per line of the banner, so each is filed under its class (L342).
+    assert (".dash-greeting:empty::before,\n.dash-submessage:empty::before,\n.dash-clock-time:empty::before,\n"
+            ".dash-clock-date:empty::before {") in CSS["01-forms-settings.css"]
     assert ".dash-submessage:empty {\n  display: none;" not in CSS["01-forms-settings.css"]
 
 
@@ -142,7 +144,8 @@ def test_every_popup_has_one_way_in():
     css = CSS["08-consistency.css"]
     block = css[css.index("/* --- motion: a popup arrives") :]
     block = block[: block.index("/* --- ", 10)]
-    which = ":where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) {"
+    # One selector per overlay, so each is filed under its class or id (L342).
+    which = ":where(.modal-overlay):not(.hidden),\n:where(.lock-overlay:not(#lock-overlay)):not(.hidden),\n:where(#palette-overlay):not(.hidden) {"
     assert block.count(which) == 1, "one rule for every overlay"
     flat = " ".join(block.split())
     assert "@starting-style { opacity: 0; & > * { translate: 0 var(--space-2); scale: 0.985; }" in flat

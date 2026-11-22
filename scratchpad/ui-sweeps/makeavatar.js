@@ -9,11 +9,11 @@ const { boot } = require('./lib.js');
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-  await page.evaluate(() => { localStorage.removeItem('avatar-buddy-custom'); const b = document.getElementById('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { localStorage.removeItem('avatar-buddy-custom'); const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.waitForTimeout(3000);
   await page.evaluate(() => openSettingsModal('appearance', 'avatar-buddy-row'));
   await page.waitForTimeout(1200);
-  const hint = await page.evaluate(() => { const h = document.getElementById('avatar-buddy-make'); return { shown: !h.classList.contains('hidden') && h.getBoundingClientRect().height > 0, text: h.textContent.trim() }; });
+  const hint = await page.evaluate(() => { const h = $('avatar-buddy-make'); return { shown: !h.classList.contains('hidden') && h.getBoundingClientRect().height > 0, text: h.textContent.trim() }; });
   await page.click('#avatar-buddy-make-go');
   await page.waitForTimeout(1200);
   const opened = await page.evaluate(() => { const p = document.getElementById('profile-look'); const r = p?.getBoundingClientRect(); return !!r && r.height > 0 && r.top < innerHeight && r.bottom > 0; });

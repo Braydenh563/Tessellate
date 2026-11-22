@@ -12,9 +12,9 @@ listeners. A mount now first destroys every view whose editor left the page.
 
 from __future__ import annotations
 
-from tests._app_js import JS_DIR
+from tests._app_js import documents_text
 
-DOCS = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 
 
 def _fn(name: str) -> str:

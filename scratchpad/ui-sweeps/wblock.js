@@ -11,7 +11,7 @@
 //
 //   BASE=http://127.0.0.1:8800 SCRATCH=/tmp/x THEME=light VW=1440 VH=900 \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/wblock.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 let pass = 0;
 let fail = 0;
@@ -35,15 +35,7 @@ const OY = VW < 600 ? 150 : 0;
   });
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.evaluate(() => document.querySelector('[data-tab="library"]').click());
-  await page.waitForTimeout(500);
-  await page.evaluate(() => document.querySelector('[data-target="library-view-whiteboard"]').click());
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", `Lock sweep ${Date.now()}`);
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, `Lock sweep ${Date.now()}`, 'board');
   await page.keyboard.press("Escape");
   const box = await page.evaluate(() => {
     const r = document.getElementById("whiteboard-container").getBoundingClientRect();

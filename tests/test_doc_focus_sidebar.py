@@ -11,6 +11,8 @@ measures the geometry; these lints hold the shapes.
 from __future__ import annotations
 
 import re
+
+from tests._app_js import documents_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -56,7 +58,7 @@ def test_the_sidebar_is_a_fixed_left_panel_that_the_page_makes_room_for() -> Non
 
 
 def test_the_sidebar_toggle_is_wired_restored_and_closed_by_escape() -> None:
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "const DOC_FOCUS_SIDEBAR_KEY" in docs
     setter = docs[docs.index("function setDocFocusSidebar("):]
     setter = setter[: setter.index("\n}\n")]
@@ -83,7 +85,7 @@ def test_the_restore_runs_after_the_file_has_finished_loading() -> None:
     temporal-dead-zone error the surrounding `catch` swallowed after the
     class was set, so a reload brought back the mode and none of Tools, the
     sidebar or the idle watch."""
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     restore = docs.index('sessionStorage.getItem(DOC_FOCUS_KEY) === "1"')
     assert "onDomReady(() => {" in docs[restore - 80 : restore], (
         "focus mode's reload restore runs inline, before the file's later constants exist"

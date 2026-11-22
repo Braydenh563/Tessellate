@@ -216,7 +216,7 @@ async function openCase(c) {
   await page.evaluate((look) => { localStorage.setItem('atlas-look', look); document.documentElement.dataset.avatarMotion = 'always'; }, look);
   await page.evaluate(() => {
     localStorage.removeItem('nm-buddy-spots');
-    const b = document.getElementById('avatar-buddy');
+    const b = $('avatar-buddy');
     b.value = 'atlas';
     b.dispatchEvent(new Event('change', { bubbles: true }));
   });

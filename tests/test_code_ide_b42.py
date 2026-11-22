@@ -17,6 +17,7 @@ import pytest
 
 from tests import _js_scope
 from tests._help_text import help_chat_text
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -79,7 +80,7 @@ def test_reverting_one_hunk_restores_exactly_that_hunk(index: int) -> None:
 
 
 def test_the_ide_file_is_lazy_and_mounted_from_the_code_tools() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert 'lazyScript("/js/documents-ide.js")' in docs
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "documents-ide.js" not in index, "lazy: not a boot script"
@@ -103,7 +104,7 @@ def test_the_minimap_is_off_by_default_and_a_view_toggle() -> None:
 
 
 def test_the_palette_rows_have_a_shortcut_or_say_none() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+    docs = documents_text()
     table = docs[docs.index("// DOC-COMMANDS-BEGIN") : docs.index("// DOC-COMMANDS-END")]
     for cid, keys in [
         ("fold-all", "Ctrl+Alt+["),
@@ -169,5 +170,5 @@ def test_no_class_is_written_onto_the_engines_own_dom() -> None:
     assert hits == [], f"a class written onto CodeMirror's own DOM: {hits}"
     ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     assert 'editorAttributes.of({ class: "doc-content-code" })' in ide
-    sync = _function((JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8"), "syncDocFileType")
+    sync = _function(documents_text(), "syncDocFileType")
     assert 'docBoxEl()?.classList.toggle("doc-content-code", code)' in sync

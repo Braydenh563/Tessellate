@@ -56,6 +56,9 @@ function mermaidReasonLine(error) {
 //: (Mermaid writes width="100%" and a max-width style). The viewBox is the
 //: size, so it becomes the attributes, and the style goes.
 function mermaidFrameSized(svgText, background) {
+  //: A diagram with a `click` link has `<a xlink:href>` and Mermaid does not declare the prefix, so the picture was a parse error and a
+  //: broken image (L-documents-78, measured: naturalWidth 0). Declared here, in the text, before it is read.
+  if (/\bxlink:/.test(svgText) && !/xmlns:xlink=/.test(svgText)) svgText = svgText.replace("<svg", '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
   const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
   const root = doc.documentElement;
   if (!root || root.localName !== "svg" || doc.querySelector("parsererror")) return svgText;
@@ -119,8 +122,11 @@ async function mermaidFrameDraw(request) {
     //: **Each step is its own task** (INBOX 1662: `DOMWindow.onmessage 245ms`): the draw ran inside the
     //: message's promise chain, so the parse, the layout and the SVG build were all billed to one handler
     //: and the page waited on the whole. A turn of the loop between them lets input and paint run.
-    await mermaidFrameYield();
-    await mermaid.parse(source);
+    //: No separate `mermaid.parse` (L-documents-112): render parses first and throws the same reason line,
+    //: so the second parse was 26 to 51 ms of the task for nothing.
+    //: The type first: one regex over the head, so a source that names no diagram Mermaid knows gets
+    //: its reason line without paying for the layout.
+    mermaid.detectType(source);
     await mermaidFrameYield();
     const { svg } = await mermaid.render(domId, source);
     await mermaidFrameYield();

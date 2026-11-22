@@ -4,13 +4,14 @@ step, and a drag (pointer down) makes no lint call. Measured live in
 Chromium (`He have a plan` flagged, "Use “He has a plan”" one Undo step, 0
 asks across a 20-step drag), so these hold the wiring."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MORE = (JS / "whiteboard-map-more.js").read_text(encoding="utf-8")
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
-BOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
+BOARD = frontend_text("whiteboard.js")
 CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 
 

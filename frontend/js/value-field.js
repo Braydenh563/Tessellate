@@ -107,6 +107,8 @@ function valueField(host, opts = {}) {
   if (presets.length) {
     const rows = presets.map((p) => ({
       label: p.label || format(p.value),
+      //: The values are one group and a command (the board's Fit) another, parted by the recipe's hairline.
+      group: p.run ? "act" : "value",
       run: () => {
         if (p.run) return p.run();
         value = clamp(p.value);
@@ -116,6 +118,7 @@ function valueField(host, opts = {}) {
     }));
     const menu = kebabMenu(rows, `${opts.label || "Value"}: choose`);
     menu.classList.add("value-field-menu");
+    menu.querySelector(".action-menu")?.classList.add("value-field-list");
     const opener = menu.querySelector(":scope > button");
     opener.classList.add("value-field-chevron");
     opener.title = "Choose a value";

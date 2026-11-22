@@ -99,6 +99,9 @@ ATTACHMENT_SUFFIXES = frozenset(
         ".rs", ".rb", ".php", ".sh", ".sql", ".swift", ".kt",
         # Archives
         ".zip",
+        #: An EMF is kept as the original of a board import (L-whiteboard-48): nothing draws it, so it is only
+        #: ever a download (the route below serves every non-picture as an octet stream, attachment, sandboxed).
+        ".emf",
     }
     #: Everything the chat's file picker offers (`docview.VIEWABLE_SUFFIXES`),
     #: so the Quick capture card, which takes the same files and attaches them
@@ -228,9 +231,10 @@ def download_file(
     #: keeps the app's own policy, since Chrome's viewer will not open in a
     #: sandboxed response and a PDF runs no script in the page anyway.
     mime = (attachment.mime or "").split(";", 1)[0].strip().lower()
-    if not (mime.startswith("image/") or mime == "application/pdf"):
+    #: An EMF says `image/emf` but no browser draws one: it is a download, whatever the uploader declared.
+    if Path(attachment.filename).suffix.lower() == ".emf" or not (mime.startswith("image/") or mime == "application/pdf"):
         mime = "application/octet-stream"
-    headers = {"Cross-Origin-Resource-Policy": "same-origin"}
+    headers = {"Cross-Origin-Resource-Policy": "same-origin", "X-Content-Type-Options": "nosniff"}
     if mime != "application/pdf":
         headers["Content-Security-Policy"] = "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
     return sealed_aware(path, media_type=mime, headers=headers, filename=attachment.filename, request_range=range)
@@ -1342,9 +1346,18 @@ def reveal_folder(folder: Path, what: str) -> None:
 #: An allowlist rather than a denylist of dangerous types, because the failure
 #: mode of a missing entry is "this image didn't upload", and the failure mode
 #: of a missed denylist entry is the paragraph above.
+#:
+#: **Video (`.mp4`, `.webm`) is here for a document's `![](/media/x.mp4)`**
+#: (L-documents-68). Served inline with its own type, from this origin only:
+#: the page's `media-src 'self' blob:` is what lets a `<video>` play it, and
+#: `FileResponse` answers a Range request with 206 so a seek does not refetch.
 MEDIA_SUFFIXES = frozenset(
-    {".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".ico", ".pdf"}
+    {".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".ico", ".pdf", ".mp4", ".webm"}
 )
+
+#: The two video types, each served as itself (anything else here is a picture
+#: or a PDF, which Starlette types from the suffix).
+VIDEO_TYPES = {".mp4": "video/mp4", ".webm": "video/webm"}
 
 
 @router.post("/media/upload")
@@ -1375,7 +1388,7 @@ def upload_media(
         raise HTTPException(
             status_code=415,
             detail=(
-                "Only images and PDFs can be dropped in here. "
+                "Only images, PDFs and MP4 or WebM video can be dropped in here. "
                 "Use the note's attachments for anything else."
             ),
         )
@@ -2180,6 +2193,7 @@ def ocr_media(
         raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
     if body.text is not None:
         upload.ocr_text = body.text.strip() or None
+        ocr.text_set_by_hand(upload.id)
         session.commit()
         if body.edited:
             _set_edited_reading(_page_read_key(None, upload.id), upload.ocr_text, "tesseract")
@@ -2249,7 +2263,7 @@ def get_media(
         raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL)
     return sealed_aware(
         path,
-        media_type=mimetypes.guess_type(name)[0],
+        media_type=VIDEO_TYPES.get(Path(name).suffix.lower()) or mimetypes.guess_type(name)[0],
         headers={"Content-Disposition": f'inline; filename="{name}"'},
         request_range=range,
     )

@@ -39,29 +39,9 @@ root logger and uvicorn's. It now sanitises each message to one printable line
 (so a chat question or a page title can't forge a row) and keeps tracebacks in a
 separate `trace` field for a fold.
 
-**What's left.** Streaming (NDJSON over `fetch`, not `EventSource`, see
-HISTORY.md for why), follow/tail with autoscroll, level/text/source
-filters, the `trace` fold, merging in `browserLogs`, and an error badge on
-the nav item are all **done**, see HISTORY.md. Also done: **exporting a
-support bundle** (an allowlist zip of the log buffer, scrubbed
-`preferences.json`, and model status).
+**What's left.** Streaming (NDJSON over `fetch`, not `EventSource`, see HISTORY.md for why), follow/tail with autoscroll, level/text/source filters, the `trace` fold, merging in `browserLogs`, and an error badge on the nav item are all **done**, see HISTORY.md. Also done: **exporting a support bundle** (an allowlist zip of the log buffer, scrubbed `preferences.json`, and model status).
 
-- **Getting one error OUT of the log** (asked for directly after the console
-  landed: "make sure that if there is an error in the log that it can be
-  accessed and copied"). Each record has its own copy button that takes the
-  traceback with it, an open traceback has a **Copy traceback** of its own,
-  and "Copy all" relabels to "Copy 12 shown" whenever a filter is hiding
-  something. **The real find here was underneath:** every copy in the whole
-  app went through `navigator.clipboard`, which browsers expose **only in a
-  secure context**. `http://localhost` qualifies, which is why nothing had
-  ever shown it: but reach the app at `http://192.168.1.20:8000` or through
-  a tunnel (§17's mobile-access question, and the proxied client address §8b
-  already saw in a real log) and the API is `undefined`, so every copy button
-  in the app was a no-op that said "couldn't copy". Copying now tries the
-  modern API, then `execCommand` on plain http, then shows the text
-  pre-selected in a dialog. A test asserts no caller writes to
-  `navigator.clipboard` directly any more, since a helper only some callers
-  use leaves the rest quietly lying.
+- **Getting one error OUT of the log** (asked for directly after the console landed: "make sure that if there is an error in the log that it can be accessed and copied"). Each record has its own copy button that takes the traceback with it, an open traceback has a **Copy traceback** of its own, and "Copy all" relabels to "Copy 12 shown" whenever a filter is hiding something. **The real find here was underneath:** every copy in the whole app went through `navigator.clipboard`, which browsers expose **only in a secure context**. `http://localhost` qualifies, which is why nothing had ever shown it: but reach the app at `http://192.168.1.20:8000` or through a tunnel (§17's mobile-access question, and the proxied client address §8b already saw in a real log) and the API is `undefined`, so every copy button in the app was a no-op that said "couldn't copy". Copying now tries the modern API, then `execCommand` on plain http, then shows the text pre-selected in a dialog. A test asserts no caller writes to `navigator.clipboard` directly any more, since a helper only some callers use leaves the rest quietly lying.
 - The support bundle and the dropped-records count are built: HISTORY.md, "Moved from the plans, 2026-11-14 (BACKLOG size cap)".
 
 ---
@@ -135,28 +115,17 @@ Moved to HISTORY.md ("Moved from the plans, 2026-11-11 (backlog-2: BACKLOG §2, 
 > one new SSE field, one schema change to what a saved conversation stores,
 > real work, correctly deferred rather than rushed this session.
 
-**Why.** Asked for directly. The page mixes three activities in one column, and
-the web panel is bolted on top of the message list.
+**Why.** Asked for directly. The page mixes three activities in one column, and the web panel is bolted on top of the message list.
 
 **Shape.**
 
 - **Chat**: plain grounded Q&A
-- **Agent**: tool-calling with its own controls: which tools are allowed this
-  turn, max rounds, visible plan/progress, and a stop that keeps what it already
-  did
+- **Agent**: tool-calling with its own controls: which tools are allowed this turn, max rounds, visible plan/progress, and a stop that keeps what it already did
 - **Browse**: web search results, reader view, page history
 
-Cross-linking is the point: the agent hands a page to Browse, Browse hands a page
-to the chat. Web-search gating should be independent, a Browse-only mode where
-the section works even when the chat/agent `web_search` tool is off.
+Cross-linking is the point: the agent hands a page to Browse, Browse hands a page to the chat. Web-search gating should be independent, a Browse-only mode where the section works even when the chat/agent `web_search` tool is off.
 
-**On the "in-built browser".** In the browser-served app this can only be an
-`<iframe>`, and most sites send `X-Frame-Options`/`frame-ancestors` that refuse
-to load in one, it would fail on exactly the sites worth opening. Proxying and
-rewriting pages server-side is effectively writing a browser, and re-introduces
-every tracker the privacy work removed. So the reader view stays the web path,
-and a genuine embedded browser belongs in the desktop shell, whose webview can
-navigate anywhere. **This ties §3 to §7.**
+**On the "in-built browser".** In the browser-served app this can only be an `<iframe>`, and most sites send `X-Frame-Options`/`frame-ancestors` that refuse to load in one, it would fail on exactly the sites worth opening. Proxying and rewriting pages server-side is effectively writing a browser, and re-introduces every tracker the privacy work removed. So the reader view stays the web path, and a genuine embedded browser belongs in the desktop shell, whose webview can navigate anywhere. **This ties §3 to §7.**
 
 ---
 
@@ -173,27 +142,13 @@ navigate anywhere. **This ties §3 to §7.**
 > a session; check `routes_library.py` and the `Entry`/`Document`/
 > `Conversation` models before assuming otherwise.
 
-**Why.** Asked for directly. Everything that isn't a note lives only in its own
-tab, and there is no archive at all.
+**Why.** Asked for directly. Everything that isn't a note lives only in its own tab, and there is no archive at all.
 
-**Order matters: images first, since the gallery is a view over what they
-store:**
+**Order matters: images first, since the gallery is a view over what they store:**
 
-1. ~~**File uploads on notes**~~ **Built, see `frontend/js/attachment-actions.js`, `routes_files.py` `ATTACHMENT_SUFFIXES` and `routes_library.py`** (every sub-bullet below is struck or done). Original ask: **File uploads on notes, asked for again, directly: "I want to be able
-   to upload files with notes."** Worth being precise about what's already
-   there versus what isn't, since this is narrower than it sounds:
-   - **Already exists:** images can be pasted or dropped into a note or
-     document (this item, above), and `📎 Attach a file` stores an arbitrary
-     file (PDF, `.docx`, anything) against a note and gives you back a
-     download: so the storage layer and one upload path both already
-     handle non-image files.
-   - ~~**What's actually missing:** that attach path is a button, reached
-     after the note exists, there's no drag-and-drop of an arbitrary file
-     straight onto the capture box itself.~~ **Stale, already done.**
-     `app.js`'s global `dragover`/`drop`/`paste` handlers match *any*
-     `<textarea>` (including `#entry-content`) and already filter for
-     `image/`, `application/`, `text/`, `video/` and `audio/`, not
-     image-only: and attach every file in a multi-file drop, not just the
+1. ~~**File uploads on notes**~~ **Built, see `frontend/js/attachment-actions.js`, `routes_files.py` `ATTACHMENT_SUFFIXES` and `routes_library.py`** (every sub-bullet below is struck or done). Original ask: **File uploads on notes, asked for again, directly: "I want to be able to upload files with notes."** Worth being precise about what's already there versus what isn't, since this is narrower than it sounds:
+   - **Already exists:** images can be pasted or dropped into a note or document (this item, above), and `📎 Attach a file` stores an arbitrary file (PDF, `.docx`, anything) against a note and gives you back a download: so the storage layer and one upload path both already handle non-image files.
+   - ~~**What's actually missing:** that attach path is a button, reached after the note exists, there's no drag-and-drop of an arbitrary file straight onto the capture box itself.~~ **Stale, already done.** `app.js`'s global `dragover`/`drop`/`paste` handlers match *any* `<textarea>` (including `#entry-content`) and already filter for `image/`, `application/`, `text/`, `video/` and `audio/`, not image-only: and attach every file in a multi-file drop, not just the
      first. A file-picker button (`#entry-attach-file`) reuses the same
      `handleFileUpload` for a third path. See the "ROADMAP.md Tier 2 §16c"
      comment right above `#entry-attach-file`'s listener in `app.js`, this
@@ -362,6 +317,9 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
   are (it is a hub over them, which is exactly what `document_links` records);
   on the timeline it wants to be a band or a marker rather than a dot, because
   a document is written over weeks and a note happens at a moment.
+- **Writing desk Stop against a real model** (L-documents-94). Stop mid-pass is verified on a delayed reasoning stub only (`scratchpad/ui-sweeps/hw889.js`: Stop reaches the model). Check: `scratchpad/llama-dev.sh serve`, start a writing desk pass on a long note, press Stop mid-stream, and confirm the server log shows the request cancelled and no further tokens arrive.
+- **Adding a block to a large flowchart in one short task** (L-documents-112). Owner decided 2026-11-21: parked until Mermaid offers incremental layout. Measured 2026-11-21 at 390 px, load about 2: the first task of each add to a 40-block flowchart is 100 to 174 ms (102, 100, 174, 141), later ones 60 to 83 ms; the first is the single `mermaid.render` layout with no yield point (htmlLabels already off, mermaid-frame.js:101; the redundant parse removed). Check: `scratchpad/ui-sweeps/dgm40.js` at 390, every task under 50 ms, when Mermaid offers incremental layout.
+- **Diagram pan p95 under 16 ms** (L-documents-102). Owner decided 2026-11-21: parked; what is left is the browser's scroll commit of the picture layer. Measured 2026-11-21 at 1440 and 4x CPU, 5 interleaved runs: p50 median 7.0 ms (met), p95 median 19.6 to 22.9 ms; the minimap frame is throttled; a 0.4x raster during the pan gave 19.2, and 2048 px tiles gave 25.0 to 29.5 (worse). Check: `scratchpad/ui-sweeps/diagram-pan-latency.js` at 1440 and 4x CPU on a quiet box, p95 under 16 ms.
 
 ---
 
@@ -4482,6 +4440,32 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L667, a real SearXNG install through the package notice.** The notice, the failure toast and the notice coming back were verified live on :9020 (Install, 503 "Couldn't download SearXNG", notice restored in under 1 s), but the from-source install could not finish here: github.com's archive host answers 403 through the sandbox proxy and the Docker daemon is not running. Check on a machine with github.com: in a fresh data folder press Install on the web search notice, wait for Settings, Web search to say running, ask a web question, then press Undo and see it stop.
 - **L660, first-run checks that need a real Windows installer and real Ollama (2026-11-21): Setup's optional-package pick installs on first launch with progress and Stop; the janitor warms only an installed model.** Built and tested on fake transports (`packaging/windows/installer.iss:391` writes `pending-extras.txt`, `api/app.py:680` `_install_pending_extras`, `ai/janitor.py:832` `warm_filing_model`; `tests/test_extras.py`, `tests/test_janitor_warm.py`). Check on real hardware: run the built Windows Setup with two packages ticked, open the app, and see the bell task show bytes and percent with a working Stop; then, on a fresh Ollama holding only a non-default chat model, check the log says the filing model warmed and never "llama3.2 failed".
 
+## Whiteboard, parked 2026-11-13
+
+- **L-whiteboard-5, pen pressure on a real pen.** Built and measured with synthetic PointerEvents (pointerType "pen", pressure 0.15 and 0.9 give outlines 2.4 times apart in `scratchpad/ui-sweeps/wbink3.js`; `tests/test_wb_ink_more.py`). No Apple Pencil or Wacom was available. On a tablet with a pen: pick the Pen, draw a line pressing lightly then hard, and see the stroke thicken with pressure and stay smooth; do the same with a finger and a mouse and see the width follow speed instead.
+- **L279, owner input: the texts of U19, U20, U23, U30, U31, U36, U37, U39, U41, U45 and U49.** They came from `bs-1111.md`, a scratch file of the 2026-11-11 run that was never committed (`git log --all -- '*bs-1111*'` is empty). The repo and HISTORY hold other audits' items under the same numbers (U23, U36, U37 and U39 in audit 1028 copy, U41 the mind-map toast), so none can be matched to these 11 ids. Needs the owner to name what each item asked for; each then becomes a row on its surface's plan.
+
+- **Whiteboard device checks (moved from LEDGER 2026-11-14; each needs the named device, everything that runs headless is built and swept):**
+  - L872: Verify link-label blur and re-raster after zoom on a GPU compositor or desktop webview. From OPEN.md:1678; OPEN.md:2676. Evidence: Needs the owner's desktop webview / GPU; not reproducible headless
+  - L873: Verify pinch: board handles starting d3-drag on a second finger, on real touch. From OPEN.md:1717. Evidence: wbCancelGesture exists (whiteboard.js:8430) but the second-finger case needs real touch hardware
+  - L874: Verify touch drag from Library on real touch hardware. From OPEN.md:3524. Evidence: HTML5 DnD does not run on touch; needs touch hardware.
+  - L875: Verify real pointer flick, splat look and phone size. From OPEN.md:3856. Evidence: Needs a human with a pointer and phone
+  - L876: Verify Windows webview and drag-select outside Chromium. From OPEN.md:3904. Evidence: Needs the owner's Windows desktop and other browsers.
+  - L877: Verify trackpad middle-pan heuristic on a real trackpad. From OPEN.md:3905. Evidence: tests/test_wb_middle_pan.py exists with synthetic sequences; real trackpad needed.
+  - L878: Verify real OS clipboard, spreadsheet copy and touch paste. From OPEN.md:3908. Evidence: Sweep used synthetic ClipboardEvents; needs real OS clipboard, a real spreadsheet and touch.
+  - L282: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
+  - L-whiteboard-11: Check the real model's wording of "What changed" in the board history bar. Built with a fake transport (tests/test_board_narrate.py); with scratchpad/llama-dev.sh serve, narrate a board with 3 cards added and one moved, and confirm the sentence names nothing that is not in the composer text.
+  - L-whiteboard-14: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
+
+- **L-world-class-414, two sweeps that need what this sandbox lacks (moved from LEDGER 2026-11-21, the L554 run):** `scratchpad/ui-sweeps/pywarm.js` needs the Pyodide extra installed ("the Pyodide extra is not installed here"); `scratchpad/ui-sweeps/personamarks.js` needs a model server (`scratchpad/llama-dev.sh serve`; "the model server isn't running").
+
+## Whiteboard, parked 2026-11-14
+
+- **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
+- **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
+
+- **Documents device checks:** the three device groups (phone, desktop webview or Word, screen reader) moved to HISTORY.md, "Moved from the plans, 2026-11-22 (BACKLOG size cap)"; each is still the LEDGER's blocked-hardware rows.
+
 ## Placed from IDEAS.md, 2026-11-14
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.
@@ -4498,3 +4482,19 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 - **L708, the phone tab click and the document open: measured, nothing safe to cut.** At 390x844, 4x CPU, companion off: the click on `#tab-btn-dashboard` has 12 to 14 forced layouts totalling 29 ms median (n=10), none above 9 ms: `scrollRowArrows` placement (13 ms), `syncSelectionPopup` (6), `revealTab`'s `tabIndex` write on the focused button (5, ordered first already), `settle@notes-list.js` (4). With the companion on the same click is 468 ms forced (`nameMarkBuddyBlend` 113, `check@:7321` 48, `nameMarkBuddyGo` 35, `atlasRigRead` 31, `nameMarkBuddyTempo` 28, `rect@avatars.js:5484` 27: the candidates listed above). One try, placing the arrows' offsets at the frame, gave click dispatch 113 ms against 71 and was not kept (n=10 each). `openDocument` steady is 30 ms forced (19 to 42), the first one 185 ms, 30 of it `readSelectionRange` inside the vendored CodeMirror and 16 `fitDocToolbarRow`, which measures the strip by design. **The check:** `l708.js`-style trace of the click and `openDocument(id)` at 390 px, forced `Layout` by top frame; a fix would memoise `fitDocToolbarRow` on the strip's width and item signature as `ocrFitDock` does, or fold the companion rows above. The OCR dock is the hardware row (blocked-hardware, plan general).
 - **L690 device check: Windows memory cap.** Run a crafted document through the parse child on a real Windows machine and confirm the job object (`JOB_OBJECT_LIMIT_PROCESS_MEMORY`, `parse_guard._limit_memory_windows`) turns a huge allocation into the "too large to read" answer; only a fake ctypes was tested here.
 - **L695 (moved from LEDGER 2026-11-21, needs the owner):** a custom domain for the site, and the diagram dive that only Fable may run (opt-in by the owner, CLAUDE.md order 4). Sync, studio and pet are built (dec4ec1a5, 603ba7780, 3ef770475). From INBOX.md:1748 Q34, OPEN O54.
+
+## Sweeps triaged as real but not fixed, L-world-class-413, 2026-11-21
+
+- **viewerpose.js: the large view's arms are 130 degrees from rest at 300 ms.** `openNameMarkViewer(seed, { visit: true })` while Atlas hangs from the top bar reads arms at 159 and -158 against rest 28 and -50 (3 of 3 runs, 5 frames); they reach rest by about 1.2 s, a smooth fall at the 200 degrees/s spring cap (`ATLAS_RIG_MAX_SPEED`), so `rig.fresh` does not snap. Clearing `arm.hist` on a not-live frame did not change it, so the cause is elsewhere (suspect `nmb.visit.settle` is only assigned when `nmb.visit.pose !== nmb.pose`, which is already false). Needs an owner of atlas-motion.js and companion-menu.js.
+- **atlasmoodfx.js: 81 paints/s and 23 layouts/s against limits 1.5 and 2.** Measured, not random; relates to L-world-class-390. Not touched.
+- **companionacts.js: the lie out-step measures 12.3 against 12.** Measured on the real walk; the limit was not loosened.
+- **companiongaze.js: the left-side case flakes** (passes some runs, fails others) under load; needs a seeded gaze target before a limit can be judged.
+- **Not triaged in this pass:** viewerclash, companionsleeptab, locomotion, perchwords, perchall, perchtext, variety, napgait, companionmenu, companionmenulow, companionsmooth; throwfates climb, splat, wrap, grab and slip (a memory kill on the full run).
+
+## Sweeps still failing after two measured runs, L-world-class-413, 2026-11-22
+
+Moved from LEDGER (the hub: finish, or BACKLOG with two measured attempts). Run 1 is the 2026-11-21 r3 logs; run 2 is 2026-11-22 on a current head (scratchpad r6, dark theme, 1440x900). Pass on run 2, so out of this list: atlasmo1005-viewerlife, companionreact, companioninteract, companionemotes, companiongaze, perchtext, ux1005-tabstops, chatheads, profilelook, clickarm, companiontabswitch. Fixed: toolpop, wbrail's tool row (a pill again on one line; test_wb_rail_pill_413). Retired as stale: wbframes (a frame turns, decision 42), companionpin (the drawn place is the perch under the kept spot, INBOX 1640).
+
+- **Board:** mapmorezoom (the More box 42px off the drawn wedge at zoom 100 and 115, both runs); toolgrid (448.72px, both); connlabel (button not shown, both); wbrail (history and present bars draw the card radius and 8px padding while the tool row and zoom are pills at 4px/6.4px: a design call, which shape a one-row bar on the board takes).
+- **Shell and notes:** verify1011 (206: the document AI panel not shown; 218: stepper radii 2.4 on 36px buttons); laptopfold (1093: 3 whole cards for 4); iphone1011 (notes foot 752; sheets with overscroll contain/auto; run 2 timed out at 300s); anchorsmotion (rowmenu and graph surfaces not found at 1440x900 and 1440x600); libtlscroll (table); graphcoldlayout (tree stored and checked, physics not dimmed).
+- **Companion:** companionsleeptab, locomotion, companionsmooth, perchall (16 window-bar perches while a panel is free), companionmenulow (5 of 54 menus), viewerpose (an arm 131 degrees from rest at 300 ms), atlasaura (1), atlasmoodfx (paints/s, above), and the measure exits companionacts, napgait, peekdown, viewerclash; companioneyes (masculine look, lie and hang with thinking: 2 of 16 pupil-edge samples outside the white, 17 cases, worst 0.13).

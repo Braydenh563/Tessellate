@@ -16,7 +16,7 @@
 //
 //   BASE=http://127.0.0.1:8932 SCRATCH=/tmp/mm-wb4 \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/wbphase4.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 const VIEWPORT = (() => {
   const raw = process.env.VIEWPORT;
@@ -34,16 +34,7 @@ function check(label, ok, detail) {
 // Clicks through the real UI, `openWhiteboardBoard(id)` from page.evaluate
 // leaves the boards landing showing (mindmap.md).
 async function newBoard(page, name, type) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  if (type === "map") await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, name, type);
   await page.keyboard.press("Escape");
 }
 

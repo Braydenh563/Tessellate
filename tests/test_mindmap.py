@@ -19,6 +19,7 @@ why a test says which is which.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 from pathlib import Path
 
@@ -942,7 +943,7 @@ def test_k31_the_map_line_style_picker_and_end_grips_are_wired():
     grips write `edge_from`/`edge_to` through the undoable node setter."""
     root = Path(__file__).resolve().parents[1]
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
-    js = (root / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     assert '<select id="wb-map-link-style"' in html
     assert "return wbMapSetTheme({ edge_style:" in js
     assert "await wbMapSetNodeStyle(child, { [field]: side });" in js

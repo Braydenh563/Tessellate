@@ -280,7 +280,7 @@
   };
 
   // --- the dialog (D6) ----------------------------------------------------------------
-  const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram" };
+  const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram", gantt: "gantt", pie: "pie", state: "stateDiagram-v2", class: "classDiagram", er: "erDiagram" };
 
   //: `{source, kind, title, shapes, named, onDone(source, changed, name)}`. `named` adds a title field: the new document's name and the exports' file name. `kind` names the blank diagram to start
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes

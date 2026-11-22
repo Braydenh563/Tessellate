@@ -19,13 +19,14 @@ import pytest
 
 from tessellate.api.run_sandbox import PY_RUNNER, RUN_SANDBOX_HTML, RUN_SANDBOX_PY_HTML
 from tests import _js_scope
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CODE = (JS / "documents-code.js").read_text(encoding="utf-8")
 #: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
 IDE = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 PALETTE = _js_scope.unwrapped((JS / "app-palette.js").read_text(encoding="utf-8"))
 LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
