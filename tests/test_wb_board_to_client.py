@@ -8,6 +8,7 @@ events. The canvas now drops it when it resizes (it is shown, a panel opens),
 and the chip reads the origin fresh.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 
 

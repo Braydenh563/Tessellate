@@ -100,6 +100,25 @@ def test_a_document_edited_on_both_the_later_wins_and_the_other_words_stay_in_hi
     assert pull(a)["applied"] == 1 and _documents(a)[0].content == "B's third draft"
 
 
+def test_a_sub_page_keeps_its_parent_across_the_pull_whichever_arrives_first(pair):
+    a, b, pull = pair
+    child = _document(a, "Child", "c", 2)  # the lower id: it is written before its parent on the other side
+    parent = _document(a, "Parent", "p", 1)
+    child.parent_id = parent.id
+    a.session.commit()
+    assert pull(b)["error"] == ""
+    on_b = {d.title: d for d in _documents(b)}
+    assert on_b["Child"].parent_id == on_b["Parent"].id and on_b["Parent"].parent_id is None
+    # A sub-page moved back to the top level on A follows.
+    child.parent_id, child.updated_at = None, _at(5)
+    a.session.commit()
+    pull(b)
+    assert {d.title: d.parent_id for d in _documents(b)}["Child"] is None
+    # A parent that is not here (never shipped, or a cycle) leaves the page at the top level, never a bad id.
+    state = sync_extras.document_state(a.session, child, sync_extras.names_for(a.session, a.dir, a.device))
+    assert "parent" not in state
+
+
 def _board(book: Notebook, note: Entry, minute: int) -> Entry:
     board = Entry(content="Garden plan", is_board=True, updated_at=_at(minute))
     book.session.add(board)

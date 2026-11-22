@@ -12,13 +12,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 WORD = (ROOT / "frontend/js/documents-word.js").read_text(encoding="utf-8")
 
 
 def test_the_word_export_strips_the_shared_chrome_list():
     assert "querySelectorAll(`${DOC_EXPORT_STRIP}, button`)" in WORD
-    docs = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     strip = docs.split("const DOC_EXPORT_STRIP = ")[1].split(";")[0]
     for chrome in (".code-bar", ".entry-image-note", "a.md-fn-back"):
         assert chrome in strip

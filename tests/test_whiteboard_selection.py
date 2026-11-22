@@ -9,10 +9,10 @@ click by fitting the box to its text.
 from __future__ import annotations
 
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 ROOT = Path(__file__).resolve().parent.parent
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CSS = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
 
 
@@ -154,7 +154,7 @@ def test_every_undo_door_leads_to_the_board_while_one_is_open() -> None:
     assert app.count("const surface = surfaceHistory(\"redo\");") >= 1
     assert "canUndo: window.wbCanUndo, canRedo: window.wbCanRedo" in app
     assert "canUndo: window.docCanUndo, canRedo: window.docCanRedo" in app
-    assert "window.wbCanUndo = () => (wbHistoryFor(), wbUndoStack.length > 0);" in WB
+    assert "window.wbCanUndo = () => (wbHistoryFor(), wbStacks.undo.length > 0);" in WB  # L-whiteboard-52: read through the wbStacks surface
     #: Each board keeps its own pair of stacks for the session.
     assert "const wbHistoryByBoard = new Map();" in WB
 

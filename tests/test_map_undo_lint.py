@@ -19,6 +19,7 @@ skipped as "unchanged".
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -44,7 +45,7 @@ EXEMPT: dict[str, str] = {
 def functions() -> dict[str, str]:
     out: dict[str, str] = {}
     for name in FILES:
-        src = (JS / name).read_text(encoding="utf-8")
+        src = frontend_text(name)
         marks = [(m.start(), m.group(1)) for m in FUNC.finditer(src)]
         for i, (at, fn) in enumerate(marks):
             end = marks[i + 1][0] if i + 1 < len(marks) else len(src)
@@ -53,7 +54,7 @@ def functions() -> dict[str, str]:
 
 
 def recorded_names() -> set[str]:
-    src = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    src = frontend_text("whiteboard.js")
     block = src[src.index("const WB_RECORDED = ["):]
     block = block[: block.index("];")]
     return set(re.findall(r'"(\w+)"', block))

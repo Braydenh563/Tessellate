@@ -25,7 +25,7 @@ def test_every_remaining_feature_mounts_its_notice() -> None:
     where = {
         "voice": "navigation.js",
         "translate": "translate.js",
-        "languagetool": "documents.js",
+        "languagetool": "documents-dictionary.js",  # the sheet moved out of documents.js (L327)
         "pyodide": "documents-code.js",
         "documents": "settings-prefs.js",
         "semantic": "settings-prefs.js",

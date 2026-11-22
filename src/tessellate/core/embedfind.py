@@ -178,18 +178,23 @@ def _lmstudio_rows() -> list[dict]:
     return rows
 
 
-def _ollama_rows(ollama) -> list[dict]:  # noqa: ANN001
-    from tessellate.core import embedmodels
-
+def _live_ollama_models(ollama) -> list[dict]:  # noqa: ANN001
+    """The runner's models asked live, as a switch does; [] when it is off."""
     if ollama is None:
         return []
     try:
-        if not ollama.is_running():
-            return []
-        models = ollama.list_models() or []
+        return (ollama.list_models() or []) if ollama.is_running() else []
     except Exception:  # noqa: BLE001  # Ollama down or odd is "nothing found", never an error
         logger.debug("_ollama_rows: Ollama down or odd is 'nothing found', never an error", exc_info=True)
         return []
+
+
+def _ollama_rows(ollama, listed: list[dict] | None = None) -> list[dict]:  # noqa: ANN001
+    """`listed` is a list already fetched off the request thread (Settings' list);
+    without one the runner is asked live."""
+    from tessellate.core import embedmodels
+
+    models = _live_ollama_models(ollama) if listed is None else listed
     rows = []
     for model in models:
         name = str(model.get("name", ""))
@@ -215,16 +220,17 @@ def _row(row_id: str, backend: str, model: str, label: str, where: str, why: str
     }
 
 
-def found(ollama=None) -> list[dict]:  # noqa: ANN001
+def found(ollama=None, listed: list[dict] | None = None) -> list[dict]:  # noqa: ANN001
     """Every embedding model on this computer that the catalogue does not
-    already list, usable ones first. Never raises."""
+    already list, usable ones first. Never raises. `listed`: the runner's models
+    as the caller already has them, so a Settings read never waits on the runner."""
     rows: list[dict] = []
     for scan in (_hub_rows, _legacy_rows, _lmstudio_rows):
         try:
             rows.extend(scan())
         except Exception:  # noqa: BLE001  # one unreadable folder is not the list
             logger.debug("embedding model scan step failed", exc_info=True)
-    rows.extend(_ollama_rows(ollama))
+    rows.extend(_ollama_rows(ollama, listed))
     return sorted(rows, key=lambda row: (not row["usable"], row["where"], row["label"].lower()))
 
 

@@ -13,12 +13,12 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = app_js_text()
 SETTINGS = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _function(text: str, signature: str) -> str:

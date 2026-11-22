@@ -1,10 +1,9 @@
 // diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN "1546 design" D5 to D10). Lazy:
-// `LAZY_MODULES.diagramBuilder` (documents-mermaid.js). Blocks, connector rows and the live picture; each gesture is one
-// model change printed to the source (`io.set`), so the source is the only state and its history the undo. Pure half:
-// diagram-ops.js; Add library: diagram-library.js; drag: diagram-pointer.js. Held to 12 KB gzipped: new behaviour goes
-// in lazy files. One closure, one export: `diagramModel.builder`.
+// `LAZY_MODULES.diagramBuilder`. Blocks, connector rows and the live picture; each gesture is one model change printed
+// to the source (`io.set`), so the source is the only state and its history the undo. Held to 12 KB gzipped: new
+// behaviour goes in lazy files. One export: `diagramModel.builder`.
 (() => {
-  //: The pure half (diagram-ops.js, fetched with this file): keys name blocks, every change is one call, none draws.
+  //: The pure half (diagram-ops.js): keys name blocks, every change is one call.
   let diagramOps;
 
   // ---------------------------------------------------------------------------
@@ -64,7 +63,7 @@
       const stamp = ++S.drawn;
       //: Empty: no block and only a header; a kept line is still drawn, so the picture says why.
       const blank = S.k ? S.k.blank(S.m) : S.m && !S.m.nodes.length;
-      const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b)/i.test(l));
+      const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b|gantt\b|pie\b|stateDiagram|classDiagram|erDiagram\b)/i.test(l));
       const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
@@ -315,6 +314,7 @@
         group: "edit",
       });
     }
+    items.push(...(diagramModel.style?.items?.(S, helpers, key) || []));
     items.push(
       { label: "ph:arrow-up Move up", run: () => stepBlock(S, key, -1), group: "move" },
       { label: "ph:arrow-down Move down", run: () => stepBlock(S, key, 1), group: "move" },
@@ -647,7 +647,7 @@
   //: flowchart path above never reads it. Any other text is a flowchart's, or a picture alone.
   function kindOf(text) {
     const first = diagramModel.front(String(text || "").replace(/\r/g, "")).rest.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("%%"));
-    const hit = /^(mindmap|timeline|sequenceDiagram)\b/i.exec(first || "");
+    const hit = /^(mindmap|timeline|sequenceDiagram|gantt|pie|stateDiagram|classDiagram|erDiagram)\b/i.exec(first || "");
     return hit ? hit[1].toLowerCase().replace("diagram", "") : "flowchart";
   }
   //: What the kinds' panes borrow: the same DOM helpers, so the two read as one pane.
@@ -659,7 +659,7 @@
     //: The renderer and the toolbar fetch with the first batch.
     const kind = kindOf(text);
     ensureModule("mermaid");
-    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
+    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline"), ensureModule("diagramStyle")] : [])]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     Object.assign(SHAPE_LABEL, diagramOps.LABEL);
@@ -670,6 +670,7 @@
     let S;
     if (kind !== "flowchart") {
       if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
+      if (!(await diagramModel.kinds.load(kind))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
       S = diagramModel.kinds.show(host, io, text, kind, kit);
     } else {
       S = panes.get(host.querySelector(":scope > .dgm"));

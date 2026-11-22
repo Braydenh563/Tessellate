@@ -151,7 +151,7 @@ async function atlaswake() {
 async function atlassmooth() {
   const {boot}=require('./lib.js');
     const {browser,page}=await boot({viewport:{width:1440,height:900}});
-    await page.evaluate(()=>{ localStorage.removeItem('nm-buddy-spots'); const b=document.getElementById('avatar-buddy'); b.value='atlas'; b.dispatchEvent(new Event('change',{bubbles:true})); revealTab('dashboard'); });
+    await page.evaluate(()=>{ localStorage.removeItem('nm-buddy-spots'); const b=$('avatar-buddy'); b.value='atlas'; b.dispatchEvent(new Event('change',{bubbles:true})); revealTab('dashboard'); });
     await page.waitForTimeout(6000);
     const lat=await page.evaluate(async(n)=>{
       const out=[]; const moods=['proud','worried','happy','confused','delighted','thinking','shy'];

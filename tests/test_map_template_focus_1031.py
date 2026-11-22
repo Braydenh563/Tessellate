@@ -11,10 +11,10 @@ the focus.
 import re
 from pathlib import Path
 
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-BOARD = {n: (JS / n).read_text(encoding="utf-8") for n in ("whiteboard-templates.js", "whiteboard-map.js")}
+BOARD = {n: frontend_text(n) for n in ("whiteboard-templates.js", "whiteboard-map.js", "whiteboard-map-record.js")}  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
 
 
 def _body(js: str, signature: str) -> str:
@@ -42,4 +42,4 @@ def test_the_global_key_handler_counts_a_shown_editor_as_typing():
 
 def test_a_template_does_not_toast_the_layout_it_just_chose():
     assert "wbMapSetLayout(entry.layout, { quiet: true })" in BOARD["whiteboard-templates.js"]
-    assert "if (quiet) return;" in BOARD["whiteboard-map.js"]
+    assert "if (quiet) return;" in BOARD["whiteboard-map.js"] + BOARD["whiteboard-map-record.js"]

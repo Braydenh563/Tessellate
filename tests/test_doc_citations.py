@@ -6,6 +6,7 @@ region runs in node; the wiring is read from the source; the drive is in CHANGEL
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import shutil
@@ -21,7 +22,7 @@ node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not inst
 
 
 def _read(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name == "documents.js" else (JS / name).read_text(encoding="utf-8")
 
 
 def _run(expr: str) -> object:

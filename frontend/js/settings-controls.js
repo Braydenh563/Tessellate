@@ -675,6 +675,7 @@
   wire("pref-warm-search-model").addEventListener("change", (e) =>
     setPreference("warm_search_model_at_launch", e.target.checked)
   );
+  wire("pref-writing-style").addEventListener("change", (e) => setPreference("writing_style", e.target.value));
   wire("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
   wire("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
   wire("pref-time-format").addEventListener("change", (e) => setPreference("time_format", e.target.value));

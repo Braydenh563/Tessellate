@@ -19,6 +19,7 @@ const PREFS_FILLS = [
   ["pref-search-z-margin", "value", () => prefsCache.search_relative_z_margin],
   ["pref-style", "value", () => prefsCache.communication_style],
   ["pref-voice", "value", () => prefsCache.composer_voice],
+  ["pref-writing-style", "value", () => prefsCache.writing_style || "notes"],
   ["pref-week-start", "value", () => prefsCache.week_start || "auto"],
   ["pref-season-hemisphere", "value", () => prefsCache.season_hemisphere || "auto"],
   ["pref-birthday", "value", () => prefsCache.birthday || ""],

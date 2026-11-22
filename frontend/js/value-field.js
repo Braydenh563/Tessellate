@@ -107,8 +107,8 @@ function valueField(host, opts = {}) {
   if (presets.length) {
     const rows = presets.map((p) => ({
       label: p.label || format(p.value),
-      //: The numbers, then what is run (Fit): a hairline between, the way a longer menu parts its kinds.
-      group: p.run ? "run" : "value",
+      //: The values are one group and a command (the board's Fit) another, parted by the recipe's hairline.
+      group: p.run ? "act" : "value",
       run: () => {
         if (p.run) return p.run();
         value = clamp(p.value);

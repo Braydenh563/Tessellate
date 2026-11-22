@@ -2081,7 +2081,9 @@ twenty). It is the bar every pass in this plan is measured against.
     standing bar for every pass (INBOX 399's hole-poke and refinement briefs
     carry it). Named: the connection pill's x inset, orchestrator; menus
     (widths, spacing, alignment), a sweep of every menu for width, padding
-    and row alignment (LEDGER L-world-class-107).
+    and row alignment (built: L-world-class-107, HISTORY; the pill's button
+    concentric with its end, submenu rows' words on the plain rows' column;
+    `scratchpad/ui-sweeps/menu-rows.js` measures every reachable menu).
 
 ## Placed from INBOX, 2026-10-03 (INBOX 391, 392)
 

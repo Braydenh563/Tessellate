@@ -64,7 +64,7 @@ def test_the_word_list_is_there_and_is_a_word_list() -> None:
 
 def test_the_editor_reads_the_word_list_it_is_given() -> None:
     """The url in the code and the file on disk are one edit apart otherwise."""
-    source = (VENDOR.parent / "js" / "documents.js").read_text(encoding="utf-8")
+    source = (VENDOR.parent / "js" / "documents-instruments.js").read_text(encoding="utf-8")
     assert 'DOC_WORDLIST_URL = "/vendor/wordlist/en.txt"' in source
 
 
@@ -84,7 +84,7 @@ def test_the_loader_trims_each_entry() -> None:
     does not care, which is also the only fix that reaches copies that already
     exist.
     """
-    source = (VENDOR.parent / "js" / "documents.js").read_text(encoding="utf-8")
+    source = (VENDOR.parent / "js" / "documents-instruments.js").read_text(encoding="utf-8")
     loader = source[source.index("function docLoadWordlist()") :][:2000]
     assert "line.trim()" in loader, (
         "docLoadWordlist must trim each line: an untrimmed CRLF checkout makes "

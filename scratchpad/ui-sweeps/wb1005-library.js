@@ -59,7 +59,7 @@ const SHOTS = process.env.SHOTS || "";
   const placed = await page.evaluate(() => {
     const s = (wbState.sketches || []).at(-1);
     const d = JSON.parse(s.data);
-    return { shape: d.shape, fill: d.fill, ref: d.library_ref, selected: wbSelectedItem?.id === s.id, kind: wbContextKindOf?.() };
+    return { shape: d.shape, fill: d.fill, ref: d.library_ref, selected: wbSelectedItem?.id === s.id, kind: wbUpdateContextBar.sweep?.wbContextKindOf?.() };
   });
   check(`${W}: it is a fillable, selected shape that remembers its source`, placed.shape === "custom" && placed.selected && placed.ref?.builtin === "flowchart/decision", placed);
   // Shift+Enter: a process box joined to the selected diamond.

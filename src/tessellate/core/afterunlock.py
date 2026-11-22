@@ -45,6 +45,16 @@ def arm(held: bool = True) -> None:
         _pending.clear()
 
 
+def disarm() -> None:
+    """The launch has no password: hold nothing. An app built in the same
+    process after one that armed (the suite builds many) would otherwise
+    inherit the hold and never run its launch work."""
+    with _lock:
+        _state["armed"] = False
+        _state["fired"] = False
+        _pending.clear()
+
+
 def armed() -> bool:
     """Whether work is being held (the tests and Settings, Logs read this)."""
     with _lock:

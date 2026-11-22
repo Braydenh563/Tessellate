@@ -11,13 +11,15 @@ fails when a mark has no entry, so a new toolbar mark cannot ship as raw text.
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
-JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
+from tests._app_js import frontend_text
 
 
 def _read(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    # documents.js hands sections to wrapped pieces (MD_ACTIONS is in
+    # documents-md-actions.js, the toolbar menus in documents-wiring.js):
+    # frontend_text joins them, unwrapped, so the slices below see one source.
+    return frontend_text(name)
 
 
 def _live_table() -> dict[str, str]:

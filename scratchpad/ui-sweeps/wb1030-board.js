@@ -12,7 +12,7 @@ const { check, summary } = checker();
   }));
   // B31: queue frames and timers on this board, then switch.
   const pend = await page.evaluate(async (id) => {
-    wbMarkMoving(); wbQueueReveal(); wbScheduleRender(); wbScheduleStickyDates(); wbScheduleCull();
+    wbMarkMoving(); wbQueueReveal(); wbScheduleRender(); renderWbObjects.sweep.wbScheduleStickyDates(); wbScheduleCull();
     const before = { moving: document.getElementById("wb-canvas-view").classList.contains("wb-moving"), reveal: wbRevealTimer, render: wbRenderFrame, cull: wbCullFrame, dates: wbStickyDates.timer };
     const p = openWhiteboardBoard(id);
     const during = { moving: document.getElementById("wb-canvas-view").classList.contains("wb-moving"), reveal: wbRevealTimer, render: wbRenderFrame, cull: wbCullFrame, dates: wbStickyDates.timer };

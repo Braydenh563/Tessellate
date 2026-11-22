@@ -47,9 +47,10 @@ class _Upload:
 async def _upload_form(request: Request) -> _Upload:
     """The form read here, not by FastAPI: its parser keeps Starlette's limit of 1,000
     files, so a vault picked as a folder of more notes was refused before `MAX_FILES`
-    could answer (L-world-class-411). Over the cap, the refusal is the route's own words."""
+    could answer (L-world-class-411). Over the cap, the refusal is the route's own words:
+    one over is let through so `_received` counts it, more fails here."""
     try:
-        form = await request.form(max_files=MAX_FILES, max_fields=100)
+        form = await request.form(max_files=MAX_FILES + 1, max_fields=100)
     except (MultiPartException, StarletteHTTPException) as exc:
         if "files" not in str(getattr(exc, "detail", None) or getattr(exc, "message", exc)).lower():
             raise

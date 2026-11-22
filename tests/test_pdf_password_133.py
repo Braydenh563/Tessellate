@@ -167,13 +167,11 @@ def test_a_locked_pdf_is_never_called_broken():
 
 
 def test_the_workspace_and_the_viewer_ask_once_and_list_contents():
-    from tests._app_js import app_js_text
-
-    js = app_js_text()
     library = open("frontend/js/library.js", encoding="utf-8").read()
     known = library[library.index("async function ocrKnownPages"):library.index("function ocrRailActive")]
     assert "askPdfPassword(" in known
-    ask = js[js.index("async function askPdfPassword"):js.index("askPdfPassword.asked = new Set()")]
+    lb = open("frontend/js/lightbox.js", encoding="utf-8").read()
+    ask = lb[lb.index("async function askPdfPassword"):lb.index("askPdfPassword.asked = new Set()")]
     assert "if (askPdfPassword.asked.has(unlockUrl)) return null;" in ask
     assert 'id: "contents"' in library and "const outlineRail = (image) =>" in library
     lightbox = open("frontend/js/lightbox-view.js", encoding="utf-8").read()

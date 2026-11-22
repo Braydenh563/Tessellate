@@ -14,7 +14,7 @@ const TABS = (process.env.TABS || 'notes,dashboard,chat,dashboard,library,dashbo
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: VW, height: VH } });
-  await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
+  await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, process.env.KIND || 'atlas');
   await page.evaluate(() => {
     window.__moves = [];
     const orig = window.nameMarkBuddyMoveTo;
@@ -57,5 +57,7 @@ const TABS = (process.env.TABS || 'notes,dashboard,chat,dashboard,library,dashbo
   }
   console.log(JSON.stringify(rows));
   await browser.close();
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((rows.some((r) => r.overWords > 30 || r.moves.includes('poof'))) ? 'FAIL perchtext: a measure above is out of bounds' : 'PASS perchtext');
   process.exit(rows.some((r) => r.overWords > 30 || r.moves.includes('poof')) ? 1 : 0);
 })();

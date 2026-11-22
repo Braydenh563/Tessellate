@@ -35,6 +35,7 @@ import re
 import shutil
 import subprocess  # noqa: S404  # fixed args from a hardcoded table below, no shell, no user input
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -1111,7 +1112,28 @@ def _reading_block_kind(body: str) -> str:
     return "text"
 
 
-def extract_and_store(upload_id: int, image_path: Path) -> None:
+#: **A hand-set text outranks a read queued before it.** A clear stores
+#: nothing, so "already has text" could not stop a background read queued at
+#: upload from landing afterwards and putting the machine's words back (CI
+#: py3.12 on 50462a6a: cleared, then 'reading'). Each hand set bumps the
+#: upload's count; a read stores only if the count is what it was queued at.
+#: In memory: the queue it guards is in memory too.
+_hand_sets: dict[int, int] = {}
+_hand_sets_lock = threading.Lock()
+
+
+def text_set_by_hand(upload_id: int) -> None:
+    """Mark that a person set (or cleared) this upload's text just now."""
+    with _hand_sets_lock:
+        _hand_sets[upload_id] = _hand_sets.get(upload_id, 0) + 1
+
+
+def _hand_set_count(upload_id: int) -> int:
+    with _hand_sets_lock:
+        return _hand_sets.get(upload_id, 0)
+
+
+def extract_and_store(upload_id: int, image_path: Path, queued_at: int | None = None) -> None:
     """Runs OCR synchronously and writes the result onto the `MediaUpload`
     row if any text was found. Split out from `extract_in_background` below
     so tests can call this directly without waiting on a real thread.
@@ -1158,10 +1180,10 @@ def extract_and_store(upload_id: int, image_path: Path) -> None:
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return  # deleted (or its upload never committed) before OCR finished
-        if upload.ocr_text:
+        if upload.ocr_text or (queued_at is not None and _hand_set_count(upload_id) != queued_at):
             #: Read again or typed by hand while this pass ran: that reading
             #: stands ("Read with RapidOCR" came back with this pass's
-            #: Tesseract text, PR 211 CI).
+            #: Tesseract text, PR 211 CI), and so does a clear.
             return
         upload.ocr_text = text
         session.commit()
@@ -1173,7 +1195,10 @@ def extract_in_background(upload_id: int, image_path: Path) -> None:
     already done by the time this runs, the same "don't make the caller
     wait for something that isn't the point of the request" reasoning as
     `ai/embeddings.py`'s background reinstall-and-retry."""
-    jobs.enqueue("ocr", extract_and_store, upload_id, image_path, name=image_path.name, dedupe_key=("ocr", upload_id))
+    jobs.enqueue(
+        "ocr", extract_and_store, upload_id, image_path, _hand_set_count(upload_id),
+        name=image_path.name, dedupe_key=("ocr", upload_id),
+    )
 
 
 #: Per platform, the first package manager found on PATH gets tried. Every
