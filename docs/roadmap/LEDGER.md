@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
-| whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
+| whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 472 | 516 | 124 | 2 | 173 | 1112 |
+| all | 472 | 515 | 125 | 2 | 173 | 1112 |
 
 ## graph
 
@@ -277,7 +277,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
 
 ## whiteboard
-- [ ] **L-whiteboard-78** `whiteboard` open, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only
+- [ ] **L-whiteboard-78** `whiteboard` partly, M: A JS function-size ratchet (the Python complexity cap has no JS twin), seeded with today's sizes, then the five board closures over 900 lines split by job. From L634 close, 2026-11-22. Evidence: acorn sizes: wbInitPointer 1,273, wbInitPan 990, wbInitMenus 978, renderWhiteboard 957, renderWbObjects 901 lines; ruff C901 covers Python only Progress 2026-11-22: the ratchet is built (tests/test_js_function_size.py, 146 bodies seeded over 150 lines). Left: the five closures, split so every new piece is under 150 lines (about 40 carves; tool: scratchpad carve2/extract.js with SRC and HOST).
 
 ## documents
 
