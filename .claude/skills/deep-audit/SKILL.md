@@ -33,12 +33,14 @@ saved as agents (INBOX 1430, 1431). Every agent reads `.claude/skills/deep-audit
    Rung: Sonnet for each agent (they drive the app), Haiku only for a pure
    inventory, Opus for the ranking if rows conflict.
 2. Brief each with: the date, its port (8794 up), "read the checklist",
-   and the ids already open (`audit-*-ranked.md`) so it re-verifies rather
+   and the rows already open for its surface
+   (`grep '<plan>' docs/roadmap/LEDGER.md`) so it re-verifies rather
    than re-lists.
-3. Rank: merge the thirteen files into `audit-<date>-ranked.md` (severity,
-   then security and data loss, broken, UX and a11y, perf, polish); mark
-   each row planned or new against the plans; rows already fixed leave.
-4. Commit the files, then fix in rank order, the class not the case.
+3. Rank: each agent writes its findings as LEDGER rows
+   (`python scripts/ledger.py add`, checklist.md); order the new rows by
+   severity, then security and data loss, broken, UX and a11y, perf, polish;
+   a row already fixed is closed (`scripts/ledger.py done`), not listed.
+4. Commit the rows, then fix in that order, the class not the case.
 
-Standing order 8: these files are findings, not plans; built rows move to
-HISTORY at the step boundary.
+Standing order 8: findings are LEDGER rows, not plans or ranked files; built
+rows move to HISTORY at the step boundary.

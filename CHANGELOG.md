@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Deep-audit skill: its steps brief from and write LEDGER rows, matching its checklist, not the retired ranked files (L-general-26).
 - CONTRIBUTING: "Replace, do not layer" replaces the old "Additive only" rule, and the test count matches the README (L-general-27).
 - RELEASING: the version check, the installer's left-out packages and the 1.0 criterion now say what is true (L-general-24).
 - ARCHITECTURE: document revisions, the packaged app's MCP, the MSI and asset caching now say what the code does (L-general-22).
