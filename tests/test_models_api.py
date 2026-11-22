@@ -895,15 +895,13 @@ def test_a_finished_download_is_in_the_installed_list_of_the_poll_that_reports_i
     """CI on PR 212 (3.12): the poll that said a pull succeeded still listed the models from before it. A poll
     waits `INSTALLED_REFRESH_BUDGET` for the runner's list and otherwise serves the last one, so on a loaded
     machine "Downloaded" arrived beside a list without the model. A runner that answers its list in 0.12 s
-    (over the 0.05 s budget, under the cold 0.2 s) makes that certain."""
-    real = fake_ollama.list_models
+    (over the 0.05 s budget, under the cold 0.2 s) made that certain, but against a wall clock: a stalled
+    worker could fall either side of those budgets. Budgets of zero make it certain without one: no poll
+    waits for any list, so every poll is offered the one it knew before."""
+    from tessellate.api import routes_models
 
-    def slow_list():
-        answer = real()  # as of when it was asked, like a runner's own list
-        time.sleep(0.12)
-        return answer
-
-    monkeypatch.setattr(fake_ollama, "list_models", slow_list)
+    monkeypatch.setattr(routes_models, "INSTALLED_REFRESH_BUDGET", 0.0)
+    monkeypatch.setattr(routes_models, "INSTALLED_COLD_BUDGET", 0.0)
     _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
     started = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
     assert started.status_code == 200
