@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8854, frontend ids 2837, CSS sections 543, backend routes 719, backend modules 11039, test files 2953, tests 23194, plan headings 693, app scripts 29, boot scripts 38, script files 365.
+Counts: frontend functions 8857, frontend ids 2837, CSS sections 543, backend routes 719, backend modules 11039, test files 2953, tests 23194, plan headings 693, app scripts 29, boot scripts 38, script files 365.
 
-## Frontend functions (8854)
+## Frontend functions (8857)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2566,32 +2566,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `spaceDeleteNeedsName` | frontend/js/batch-space.js:95 |
 | `spaceDeleteSubmit` | frontend/js/batch-space.js:152 |
 
-### frontend/js/bg-art.js (38)
+### frontend/js/bg-art.js (41)
 
 | Name | File:line |
 |---|---|
-| `bgArtApplyPause` | frontend/js/bg-art.js:2383 |
-| `bgArtCalm` | frontend/js/bg-art.js:2340 |
-| `bgArtCovered` | frontend/js/bg-art.js:2458 |
-| `bgArtFrameRate` | frontend/js/bg-art.js:2344 |
-| `bgArtFreeze` | frontend/js/bg-art.js:2408 |
-| `bgArtGenome` | frontend/js/bg-art.js:340 |
-| `bgArtHalt` | frontend/js/bg-art.js:2506 |
-| `bgArtMountStill` | frontend/js/bg-art.js:2552 |
-| `bgArtPreview` | frontend/js/bg-art.js:2762 |
-| `bgArtRetire` | frontend/js/bg-art.js:2496 |
-| `bgArtRun` | frontend/js/bg-art.js:2568 |
-| `bgArtSeedOf` | frontend/js/bg-art.js:364 |
-| `bgArtSeedStale` | frontend/js/bg-art.js:2288 |
-| `bgArtSeedText` | frontend/js/bg-art.js:401 |
-| `bgArtShouldFreeze` | frontend/js/bg-art.js:2318 |
-| `bgArtSpeciesName` | frontend/js/bg-art.js:389 |
-| `bgArtStrainCount` | frontend/js/bg-art.js:395 |
-| `bgArtStrains` | frontend/js/bg-art.js:373 |
-| `bgArtSurface` | frontend/js/bg-art.js:2361 |
-| `bgArtThaw` | frontend/js/bg-art.js:2443 |
-| `bgArtTier` | frontend/js/bg-art.js:2751 |
-| `bgArtWatch` | frontend/js/bg-art.js:2478 |
+| `bgArtApplyPause` | frontend/js/bg-art.js:2392 |
+| `bgArtCalm` | frontend/js/bg-art.js:2349 |
+| `bgArtCovered` | frontend/js/bg-art.js:2467 |
+| `bgArtFrameRate` | frontend/js/bg-art.js:2353 |
+| `bgArtFreeze` | frontend/js/bg-art.js:2417 |
+| `bgArtGenome` | frontend/js/bg-art.js:395 |
+| `bgArtHalt` | frontend/js/bg-art.js:2515 |
+| `bgArtMountStill` | frontend/js/bg-art.js:2561 |
+| `bgArtPreview` | frontend/js/bg-art.js:2771 |
+| `bgArtRetire` | frontend/js/bg-art.js:2505 |
+| `bgArtRun` | frontend/js/bg-art.js:2577 |
+| `bgArtSeedOf` | frontend/js/bg-art.js:419 |
+| `bgArtSeedStale` | frontend/js/bg-art.js:2297 |
+| `bgArtSeedText` | frontend/js/bg-art.js:456 |
+| `bgArtShouldFreeze` | frontend/js/bg-art.js:2327 |
+| `bgArtSpeciesName` | frontend/js/bg-art.js:444 |
+| `bgArtStrainCount` | frontend/js/bg-art.js:450 |
+| `bgArtStrains` | frontend/js/bg-art.js:428 |
+| `bgArtSurface` | frontend/js/bg-art.js:2370 |
+| `bgArtThaw` | frontend/js/bg-art.js:2452 |
+| `bgArtTier` | frontend/js/bg-art.js:2760 |
+| `bgArtWatch` | frontend/js/bg-art.js:2487 |
+| `bgAuroraProfile` | frontend/js/bg-art.js:363 |
+| `bgBacillusPath` | frontend/js/bg-art.js:331 |
 | `bgCapRgb` | frontend/js/bg-art.js:75 |
 | `bgClamp` | frontend/js/bg-art.js:282 |
 | `bgColourHue` | frontend/js/bg-art.js:230 |
@@ -2603,6 +2605,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `bgHslToRgb` | frontend/js/bg-art.js:209 |
 | `bgHsla` | frontend/js/bg-art.js:98 |
 | `bgLattice` | frontend/js/bg-art.js:142 |
+| `bgMyceliumColony` | frontend/js/bg-art.js:343 |
 | `bgP5Rgba` | frontend/js/bg-art.js:189 |
 | `bgRand` | frontend/js/bg-art.js:179 |
 | `bgRandom` | frontend/js/bg-art.js:287 |
