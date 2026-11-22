@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: three Ollama-client test modules no longer write the repo's `data/` folder in a serial run (they read the config without `app_state`; L-general-71).
 - Link reasons with the model down: after the first "not running" (or connect timeout) the suggestions sheet's "Why?" batch stops, later batches are not sent for 30 s, and it is logged once (the owner's log had six back to back, each logged; `tests/test_link_reasons_backoff_1122.py`).
 - Reminders without a model: "at 930" and "at 1045" read as clocks, and a second sentence ("... at 930?? they come out at 10pm") is kept as a fact in brackets instead of giving the reminder its time (`tests/test_reminder_owner_phrasings_1122.py`).
 - Windows: `GET /capabilities` no longer answers 500. The protected store named its file after the account ("setting|mcp_token|..."), and Windows refuses `|` in a file name; such accounts are now named by their digest (PIN records keep their names), a refused store write falls back to the owner-only file, and a token that cannot be kept leaves only that field empty (`tests/test_pinstore_windows_names.py`).

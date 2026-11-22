@@ -27,6 +27,9 @@ from tessellate.ai.ollama_client import OllamaClient
 from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.ai.provider import known_context
 
+#: Every client here reads the config, whose default is the repo's `data/` (L-general-71).
+pytestmark = pytest.mark.usefixtures("app_state")
+
 
 @pytest.fixture
 def ollama():
