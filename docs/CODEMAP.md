@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9128, frontend ids 2862, CSS sections 532, backend routes 763, backend modules 11757, test files 3088, tests 24171, plan headings 691, app scripts 29, boot scripts 38, script files 424.
+Counts: frontend functions 9128, frontend ids 2862, CSS sections 532, backend routes 763, backend modules 11758, test files 3088, tests 24172, plan headings 691, app scripts 29, boot scripts 38, script files 424.
 
 ## Frontend functions (9128)
 
@@ -15494,7 +15494,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11757)
+## Backend modules (11758)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22985,19 +22985,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `to_out` | src/tessellate/api/entry_out.py:32 |
 | `to_out_bulk` | src/tessellate/api/entry_out.py:174 |
 
-### src/tessellate/api/lazy_routes.py (9)
+### src/tessellate/api/lazy_routes.py (10)
 
 | Name | File:line |
 |---|---|
 | `LazyRouter` | src/tessellate/api/lazy_routes.py:70 |
 | `_pattern` | src/tessellate/api/lazy_routes.py:63 |
-| `build_table` | src/tessellate/api/lazy_routes.py:142 |
+| `build_table` | src/tessellate/api/lazy_routes.py:163 |
+| `flat_routes` | src/tessellate/api/lazy_routes.py:126 |
 | `is_lazy` | src/tessellate/api/lazy_routes.py:51 |
 | `lazy_rows` | src/tessellate/api/lazy_routes.py:112 |
 | `load_all_routes` | src/tessellate/api/lazy_routes.py:120 |
-| `render_table` | src/tessellate/api/lazy_routes.py:147 |
+| `render_table` | src/tessellate/api/lazy_routes.py:168 |
 | `resolve` | src/tessellate/api/lazy_routes.py:55 |
-| `router_paths` | src/tessellate/api/lazy_routes.py:126 |
+| `router_paths` | src/tessellate/api/lazy_routes.py:147 |
 
 ### src/tessellate/api/once_routes.py (7)
 
@@ -30645,7 +30646,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24171)
+## Tests (24172)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -32253,7 +32254,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lazy_listener_refs.py | 1 |
 | tests/test_lazy_order_1530.py | 8 |
 | tests/test_lazy_retry.py | 2 |
-| tests/test_lazy_routes.py | 11 |
+| tests/test_lazy_routes.py | 12 |
 | tests/test_lazy_skeletons_598.py | 7 |
 | tests/test_learned_accuracy.py | 5 |
 | tests/test_learned_audit.py | 17 |

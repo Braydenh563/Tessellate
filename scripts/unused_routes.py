@@ -28,16 +28,12 @@ def _corpus(docs: bool = True) -> str:
     return "\n".join(parts)
 
 
-def main() -> None:
-    from tessellate.api.app import create_app
-    from tessellate.api.lazy_routes import load_all_routes
+def unreferenced(app, corpus: str) -> list[tuple[str, str, str]]:  # noqa: ANN001
+    """(path, methods, name) of every route the corpus never mentions."""
+    from tessellate.api.lazy_routes import flat_routes
 
-    corpus = _corpus("--no-docs" not in sys.argv)
     found = []
-    app = create_app()
-    load_all_routes(app)
-    for route in app.routes:
-        path = getattr(route, "path", "")
+    for path, route in flat_routes(app):
         if not path.startswith("/") or path.startswith(("/docs", "/openapi", "/redoc")):
             continue
         pieces = [re.escape(piece) for piece in re.split(r"\{[^}]*\}", path)]
@@ -45,7 +41,14 @@ def main() -> None:
             continue
         methods = ",".join(sorted(getattr(route, "methods", None) or []))
         found.append((path, methods, getattr(route, "name", "")))
-    for path, methods, name in sorted(found):
+    return sorted(set(found))
+
+
+def main() -> None:
+    from tessellate.api.app import create_app
+
+    found = unreferenced(create_app(), _corpus("--no-docs" not in sys.argv))
+    for path, methods, name in found:
         print(f"{methods:12} {path}  ({name})")
     print(f"{len(found)} unreferenced routes", file=sys.stderr)
 

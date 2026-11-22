@@ -123,6 +123,27 @@ def load_all_routes(app) -> None:  # noqa: ANN001
         row.load()
 
 
+def flat_routes(app):  # noqa: ANN001, ANN201
+    """(full path, route) for every leaf route, every lazy row loaded first.
+
+    FastAPI keeps an included router as one node in `app.routes`, so a walk of
+    the top level alone sees no API route at all (scripts/unused_routes.py
+    reported 0 for that reason)."""
+    load_all_routes(app)
+
+    def walk(routes, prefix):  # noqa: ANN001, ANN202
+        for route in routes:
+            inner = getattr(route, "original_router", None)
+            if inner is not None:
+                yield from walk(inner.routes, prefix + (route.include_context.prefix or ""))
+            elif hasattr(route, "endpoint"):
+                yield prefix + route.path, route
+            elif hasattr(route, "routes") and hasattr(route, "app"):
+                yield from walk(route.routes, prefix + route.path)
+
+    yield from walk(app.routes, "")
+
+
 def router_paths(router: APIRouter, prefix: str = "") -> list[str]:
     """Every path template a router serves, nested includes walked through."""
     out: list[str] = []

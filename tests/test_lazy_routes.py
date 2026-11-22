@@ -194,3 +194,21 @@ def test_a_row_that_needs_another_module_loads_it_first(spec):
         env={"PYTHONPATH": str(ROOT / "src"), "PATH": "/usr/bin:/bin"},
     )
     assert out.returncode == 0, out.stderr[-2000:]
+
+
+def test_the_unused_routes_report_sees_a_lazy_only_route():
+    """scripts/unused_routes.py walked the top level of `app.routes`, where an
+    included router is one node, so it listed 0 routes; it must reach a route
+    that only a lazy row serves, on an app where no request has loaded it."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("unused_routes", ROOT / "scripts" / "unused_routes.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    lazy_path = PATHS["routes_hello.router"][0]
+    app = _fresh()
+    assert not _row(app, "routes_hello.router").loaded
+    listed = {path for path, _methods, _name in module.unreferenced(app, corpus="")}
+    assert lazy_path in listed
+    assert "/health" in listed
+    assert not {path for path, _m, _n in module.unreferenced(_fresh(), corpus=lazy_path)} & {lazy_path}
