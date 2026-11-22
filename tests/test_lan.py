@@ -106,6 +106,29 @@ def test_a_network_marked_untrusted_stays_closed_even_with_any_network():
     assert lantrust.evaluate(seen, CAFE) == (True, "any_network")
 
 
+def test_a_missed_router_reading_behind_the_same_gateway_keeps_the_port_open(tmp_path, monkeypatch):
+    lantrust.reset_for_tests()
+    lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
+    monkeypatch.setattr(netid, "read", lambda: HOME)
+    assert lantrust.refresh(tmp_path)["open"] is True
+    # The ARP entry is gone for a moment; the route still names the same router.
+    monkeypatch.setattr(netid, "read", lambda: None)
+    monkeypatch.setattr(netid, "gateway", lambda: HOME.gateway)
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    # A different gateway (or none) is a real change: unknown, closed.
+    monkeypatch.setattr(netid, "gateway", lambda: "10.0.0.1")
+    assert lantrust.refresh(tmp_path)["reason"] == "unknown_network"
+
+
+def test_the_gateway_alone_is_read_from_the_route_table(tmp_path):
+    (tmp_path / "route").write_text(
+        "Iface\tDestination\tGateway\tFlags\tRefCnt\tUse\tMetric\tMask\n"
+        "eth0\t00000000\t0100A8C0\t0003\t0\t0\t100\t00000000\n"
+    )
+    assert netid.gateway_linux(tmp_path) == "192.168.0.1"
+    assert netid.gateway_linux(tmp_path / "missing") == ""
+
+
 def test_no_network_at_all_is_its_own_closed_state():
     loose = _state(any_network=True)
     assert lantrust.evaluate(loose, None, online=False) == (False, "no_network")

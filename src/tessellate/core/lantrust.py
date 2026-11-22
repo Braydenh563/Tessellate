@@ -261,10 +261,22 @@ def _online() -> bool:
 _UNREAD = object()
 
 
+def _read_keeping_last() -> netid.Network | None:
+    """Read the network; a failed read behind the same gateway keeps the last
+    network. The router's ARP entry can go missing or incomplete for a moment
+    (CI on PR 242 and 253): reading that as unknown_network closed the port and
+    reset connections mid-handshake, though nothing had changed."""
+    network = netid.read()
+    last = _gate["network"]
+    if network is None and last is not None and last.gateway and netid.gateway() == last.gateway:
+        return last
+    return network
+
+
 def refresh(data_dir: Path, network=_UNREAD, *, online: bool | None = None) -> dict:  # noqa: ANN001  # a netid.Network, None, or unread
     """Read the network again and decide whether the LAN port may be open."""
     if network is _UNREAD:
-        network = netid.read()
+        network = _read_keeping_last()
     if online is None:
         online = network is not None or _online()
     with _lock:

@@ -217,6 +217,15 @@ def read_linux(proc: Path = Path("/proc/net")) -> Network | None:
     return Network(gateway, mac, subnet, address=_linux_address(iface), virtual=_linux_virtual())
 
 
+def gateway_linux(proc: Path = Path("/proc/net")) -> str:
+    """The default route's gateway alone, or "" (no hardware address needed)."""
+    try:
+        found = parse_proc_route((proc / "route").read_text(encoding="ascii", errors="replace"))
+    except OSError:
+        return ""
+    return found[1] if found else ""
+
+
 # --- macOS ---------------------------------------------------------------------
 
 
@@ -333,6 +342,14 @@ def read_windows() -> Network | None:
         return None
     mac = normal_mac(_run(["arp", "-a", gateway]))
     return Network(gateway, mac) if mac else None
+
+
+def gateway() -> str:
+    """The default gateway now, or "" where it cannot be told without a full read."""
+    try:
+        return gateway_linux() if sys.platform.startswith("linux") else ""
+    except Exception:  # noqa: BLE001  # never let reading the network stop the app
+        return ""
 
 
 def read() -> Network | None:
