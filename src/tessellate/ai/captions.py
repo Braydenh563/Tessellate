@@ -197,6 +197,9 @@ class Session:
     #: ended, so Stop can write a Recording whose transcript seeks the audio.
     keep_audio: bool = False
     spool: Path | None = None
+    #: The run is in a private space (L-world-class-670): the spool is
+    #: appended sealed, so no plain speech is on disk while it runs.
+    sealed: bool = False
     line_start: int = 0
     timings: list[tuple[int, int]] = field(default_factory=list)
 
@@ -215,10 +218,12 @@ class Session:
         waveform the Recordings shelf draws. Returns (size in bytes, peaks)."""
         if self.spool is None or not self.spool.is_file():
             return 0, []
-        total = self.spool.stat().st_size // 2 * 2
+        from tessellate.core import sealed_files
+
+        total = sealed_files.plain_size(self.spool) // 2 * 2
         per_bin = max(2, total // bins // 2 * 2)
         peaks: list[int] = []
-        with self.spool.open("rb") as src, wave.open(str(dest), "wb") as out:
+        with sealed_files.readable(self.spool) as plain, plain.open("rb") as src, wave.open(str(dest), "wb") as out:
             out.setnchannels(1)
             out.setsampwidth(2)
             out.setframerate(SAMPLE_RATE)
@@ -271,7 +276,11 @@ class Session:
         self.pcm += chunk
         before = self.heard_ms
         self.heard_ms += len(chunk) // BYTES_PER_MS
-        if self.spool is not None:
+        if self.spool is not None and self.sealed:
+            from tessellate.core import sealed_files
+
+            sealed_files.append(self.spool, chunk, sealed=True)
+        elif self.spool is not None:
             with self.spool.open("ab") as out:
                 out.write(chunk)
         if _rms(chunk) >= SILENCE_RMS:
@@ -409,15 +418,16 @@ def _sweep_spools() -> None:
             logger.debug("could not remove a stale captions spool", exc_info=True)
 
 
-def begin(keep_audio: bool = False) -> Session:
+def begin(keep_audio: bool = False, sealed: bool = False) -> Session:
     """A new session, the only one: a second microphone stream would double
     every caption. Raises CaptionsError when the helper is not there.
-    `keep_audio` is the page's switch (Settings, General, Microphone)."""
+    `keep_audio` is the page's switch (Settings, General, Microphone);
+    `sealed` is a private space's run, whose spool is written sealed."""
     info = status()
     if not info["available"]:
         raise CaptionsError(info["hint"] or NO_HELPER_HINT)
     _own_helper()  # the first use starts the app's own helper
-    session = Session(keep_audio=keep_audio)
+    session = Session(keep_audio=keep_audio, sealed=sealed and keep_audio)
     if keep_audio:
         from tessellate.core import recordings
 

@@ -11,7 +11,7 @@ import array
 import io
 import wave
 
-from tessellate.core import deps, recordings, transcript
+from tessellate.core import deps, recordings, sealed_files, spacelock, transcript, vault
 from tessellate.core.database import Recording
 from tessellate.entry.manager import log_action
 
@@ -39,10 +39,13 @@ def duration_ms(wav: bytes) -> int:
 
 
 def save_generated(
-    title: str, wav: bytes, segments: list[dict], *, derived: str, workspace: str | None = None
+    title: str, wav: bytes, segments: list[dict], *, derived: str, workspace: str | None = None, token: str | None = None
 ) -> int:
     """Store a wav and its lines as a finished recording; its id. Opens its own session,
-    so a background thread can call it (the request's session is long closed)."""
+    so a background thread can call it (the request's session is long closed).
+    A private space's wav is written sealed, as the session `token` that
+    started the run (L-world-class-670, SECURITY.md T28); the door shut, it
+    writes nothing and raises `SealedLocked`."""
     mime = "audio/wav"
     row = Recording(
         title=title.strip()[:200],
@@ -59,11 +62,17 @@ def save_generated(
     if workspace:
         session.info["workspace_id"] = workspace
     try:
-        recordings.path_of(row).write_bytes(wav)
-        session.add(row)
-        session.flush()
-        log_action(session, "created", "recording", row.id, detail=derived)
-        session.commit()
-        return row.id
+        with vault.acting_for(token):
+            data = wav
+            if sealed_files.wanted(session, workspace):
+                if token is not None and not spacelock.opened(token):
+                    raise sealed_files.SealedLocked(sealed_files.BACKGROUND_LOCKED_DETAIL)
+                data = sealed_files.seal_bytes(wav)
+            recordings.path_of(row).write_bytes(data)
+            session.add(row)
+            session.flush()
+            log_action(session, "created", "recording", row.id, detail=derived)
+            session.commit()
+            return row.id
     finally:
         session.close()

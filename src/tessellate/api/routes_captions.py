@@ -109,7 +109,8 @@ def start(body: StartBody | None = None, db: DbSession = Depends(get_session)) -
     for stale in captions.expired():  # an abandoned run is saved, not lost
         _save(stale, db)
     try:
-        session = captions.begin(keep_audio=bool(body and body.keep_audio))
+        keep = bool(body and body.keep_audio)
+        session = captions.begin(keep_audio=keep, sealed=keep and sealed_files.wanted(db, None))
     except captions.CaptionsError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     return {
