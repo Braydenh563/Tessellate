@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11488, test files 2943, tests 23158, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11490, test files 2944, tests 23160, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -13796,7 +13796,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:53 |
 | `/export/board-folder` | POST | `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:245 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:845 |
-| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:169 |
+| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:170 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:77 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:214 |
 | `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:1103 |
@@ -13883,11 +13883,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import` | POST | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:126 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:610 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:488 |
-| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:99 |
+| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:100 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings_transfer.py:611 |
 | `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings_transfer.py:738 |
 | `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings_transfer.py:631 |
-| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:160 |
+| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:161 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:359 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1047 |
 | `/instance` | GET | `instance` | src/tessellate/api/app.py:1685 |
@@ -14346,7 +14346,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:154 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11488)
+## Backend modules (11490)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21393,14 +21393,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `strip_js` | src/tessellate/api/asset_strip.py:386 |
 | `strip_js_comments` | src/tessellate/api/asset_strip.py:380 |
 
-### src/tessellate/api/bounds.py (4)
+### src/tessellate/api/bounds.py (6)
 
 | Name | File:line |
 |---|---|
-| `_is_its_type` | src/tessellate/api/bounds.py:84 |
-| `check_image_upload` | src/tessellate/api/bounds.py:95 |
-| `display_name` | src/tessellate/api/bounds.py:56 |
-| `squeeze_blanks` | src/tessellate/api/bounds.py:51 |
+| `FolderUploadRoute` | src/tessellate/api/bounds.py:118 |
+| `_FolderRequest` | src/tessellate/api/bounds.py:113 |
+| `_is_its_type` | src/tessellate/api/bounds.py:85 |
+| `check_image_upload` | src/tessellate/api/bounds.py:96 |
+| `display_name` | src/tessellate/api/bounds.py:57 |
+| `squeeze_blanks` | src/tessellate/api/bounds.py:52 |
 
 ### src/tessellate/api/chat_agent.py (11)
 
@@ -23004,14 +23006,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_excluded` | src/tessellate/api/routes_import.py:71 |
-| `_progress` | src/tessellate/api/routes_import.py:54 |
-| `_received` | src/tessellate/api/routes_import.py:38 |
-| `_refuse_open_private_while_locked` | src/tessellate/api/routes_import.py:85 |
-| `_summary` | src/tessellate/api/routes_import.py:65 |
-| `export_notebook_folder` | src/tessellate/api/routes_import.py:170 |
-| `import_app` | src/tessellate/api/routes_import.py:100 |
-| `import_report_page` | src/tessellate/api/routes_import.py:161 |
+| `_excluded` | src/tessellate/api/routes_import.py:72 |
+| `_progress` | src/tessellate/api/routes_import.py:55 |
+| `_received` | src/tessellate/api/routes_import.py:39 |
+| `_refuse_open_private_while_locked` | src/tessellate/api/routes_import.py:86 |
+| `_summary` | src/tessellate/api/routes_import.py:66 |
+| `export_notebook_folder` | src/tessellate/api/routes_import.py:171 |
+| `import_app` | src/tessellate/api/routes_import.py:101 |
+| `import_report_page` | src/tessellate/api/routes_import.py:162 |
 
 ### src/tessellate/api/routes_inbox.py (28)
 
@@ -29143,7 +29145,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23158)
+## Tests (23160)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30577,6 +30579,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_import_idempotent.py | 5 |
 | tests/test_import_job.py | 3 |
 | tests/test_import_lazy_agent.py | 1 |
+| tests/test_import_many_files.py | 2 |
 | tests/test_import_markdown_links.py | 3 |
 | tests/test_import_module_cycles.py | 2 |
 | tests/test_import_name_tags.py | 4 |
