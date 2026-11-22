@@ -103,7 +103,7 @@
       //: The row's whole text too, its helper copy included: a setting is
       //: found by what it does ("battery"), not only by its label.
       const haystack = `${text} ${el.textContent || ""} ${el.getAttribute("title") || ""} ${el.querySelector("input, select, textarea")?.getAttribute("aria-label") || ""} ${el.dataset.keys || ""} ${el.dataset.find || ""} ${el.dataset.synonyms || ""}`.toLowerCase();
-      rows.push({ section: name, sectionLabel, where, text, haystack, keys: el.dataset.keys || "", synonyms: (el.dataset.synonyms || "").toLowerCase().split(/\s+/).filter(Boolean), el, isHead: el.matches("h3, h4") });
+      rows.push({ section: name, sectionLabel, where, text, haystack, keys: el.dataset.keys || "", find: (el.dataset.find || "").toLowerCase(), synonyms: (el.dataset.synonyms || "").toLowerCase().split(/\s+/).filter(Boolean), el, isHead: el.matches("h3, h4") });
     }
     return rows;
   };

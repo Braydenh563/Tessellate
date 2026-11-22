@@ -333,7 +333,7 @@ Captured from the app in the dark theme at 1440 by 900.
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/palette.png" alt="The command palette: the word new matching the create commands, a preview of the chosen one, and a last row that searches everything" width="850">
+  <img src="docs/screenshots/palette.png" alt="The command palette: the word new matching the create commands, new note first, with a preview of the chosen one" width="850">
   <br><sub><b>Command palette</b>: Ctrl/⌘-K runs a command or goes to a place, and hands a search to Find anything</sub>
 </p>
 
