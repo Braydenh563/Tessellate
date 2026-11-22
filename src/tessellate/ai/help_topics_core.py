@@ -155,7 +155,8 @@ HELP_TOPICS: list[dict] = [
             "The Graph's search box reads filters as well as words: "
             '"connected to Harbor", "untouched since June", "tagged work", '
             '"pinned", "with pictures", "edited last week"; any other '
-            "words still have to match. The box says how many notes match; Enter jumps to the next "
+            "words still have to match, read as the Settings search reads them (\"sourdogh\" or "
+            "\"my sourdough notes\" finds Sourdough). The box says how many notes match; Enter jumps to the next "
             "match and pans to it, Shift and Enter to the one before, and Esc clears the search. "
             "Click a note for its panel: Open, Focus, "
             "Pin and Link are at its foot and the ⋯ holds the rest. The panel stands "
@@ -260,7 +261,8 @@ HELP_TOPICS: list[dict] = [
             "hand over. Events about private notes are left out of it. The "
             "Library's search reads the same filters as the Graph's: "
             '"connected to Harbor", "untouched since June", "tagged '
-            'work", "pinned", "filed under Cooking". Drop files anywhere in '
+            'work", "pinned", "filed under Cooking", and its words forgive a slip '
+            "or an ending the same way. Drop files anywhere in "
             "the app to add them: pictures and PDFs go to Images, anything "
             "else becomes a document. On the Notes tab, .md and .txt "
             "files become notes instead, with Undo."

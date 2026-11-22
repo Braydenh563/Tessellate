@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+CI, 2a263b28c: the OCR refused Read writes its message line again (L529, lost in a merge); the export name reads its space through repo.spaces (ORM cap 330); the dashboard space fact takes a failed read as null (catch cap 35); two tests follow a split handler and pick the running pass row.
+Search, L628: the Library and graph search boxes read words by meaning, as Settings does: "sourdogh" and "my sourdough notes" find Sourdough, "launches" finds launch.
 Boot, L-world-class-280: first paint re-measured on an idle machine, 20 of 20 cold loads under the 300 ms line (205 to 289 ms); closed on the numbers, nothing trimmed.
 Lag, L-world-class-355: moved to BACKLOG with its numbers after two measured attempts (26 of 29 Settings and tab presses under 100 ms at 4x; the first show of Appearance from the keyboard still 175 to 191 ms).
 Palette, L-world-class-780: Agent runs and Job history open the activity panel on those tabs, so every tab of it is one pick away (it was four presses).

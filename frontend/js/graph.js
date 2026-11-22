@@ -2308,6 +2308,11 @@ function graphReadPhrase(query) {
 //: it asks a set. The key is the node array, the query and what the server
 //: said about a phrase, so a hover or a pan reuses the last answer untouched.
 const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", ids: null, list: [], at: -1, current: null };
+//: The meaning tables land after the first key (meaning.js asks once): the lit set is found again with them.
+document.addEventListener("meaning-ready", () => {
+  graphSearch.nodes = null;
+  if (graphSearch.query) applyGraphHighlight(true);
+});
 
 //: A note's lowercase name, kept on the node and made again only when the
 //: preview itself changed (an edit, a rename): the label index.
@@ -2319,11 +2324,12 @@ function graphPreviewLower(node) {
   return node._lc;
 }
 
-function graphNodeMatches(node, query) {
+//: `holds` is the box's word test, made once per search (graphSearchFor).
+function graphNodeMatches(node, query, holds) {
   if (graphPhrase.ids && graphPhrase.q === query) {
     return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || graphPreviewLower(node).includes(graphPhrase.rest));
   }
-  return !query || graphPreviewLower(node).includes(query);
+  return !query || holds(graphPreviewLower(node));
 }
 
 //: The notes `query` lights: `list` newest first (the order Enter walks them
@@ -2334,7 +2340,14 @@ function graphSearchFor(nodes, query) {
   const phrase = graphPhrase.q === query ? graphPhrase.ids : null;
   if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest) return g;
   Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, at: -1, current: null });
-  g.list = query ? nodes.filter((n) => !n.isGroup && graphNodeMatches(n, query)) : [];
+  //: Read by meaning (L628, meaning.js in this bundle): an ending, a synonym, a slip of a word the notes'
+  //: names use, the request's own words dropped; the plain words as before without the layer. Locals, not
+  //: helpers: the shared scope only shrinks (test_global_scope_ratchet).
+  const things = query && typeof meaningAlts === "function"
+    ? meaningAlts(query, new Set(nodes.flatMap((n) => graphPreviewLower(n).match(/[a-z0-9]+/g) || [])))
+    : null;
+  const holds = (text) => text.includes(query) || (!!things && meaningHolds(things, text));
+  g.list = query ? nodes.filter((n) => !n.isGroup && graphNodeMatches(n, query, holds)) : [];
   g.list.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")) || a.id - b.id);
   g.ids = query ? new Set(g.list.map((n) => n.id)) : null;
   return g;

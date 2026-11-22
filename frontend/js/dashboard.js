@@ -550,7 +550,8 @@ async function renderDashSubmessage() {
     dashTodayLine(dashLine.bucket).catch(() => ""),
   ]);
   const bits = [];
-  const spaceFact = stats ? dashSpaceFact(await dashEntries().catch(() => []), stats.total_entries || 0) : null;
+  //: A failed read is no fact (null), not an empty space: dashSpaceFact reads null as nothing to say.
+  const spaceFact = stats ? dashSpaceFact(await dashEntries().catch(() => null), stats.total_entries || 0) : null;
   if (composed) bits.push(["notes", composed]);
   else if (stats) {
     const n = stats.total_entries;

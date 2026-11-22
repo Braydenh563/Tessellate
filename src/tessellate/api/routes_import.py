@@ -192,12 +192,12 @@ def _folder_export_name(session: Session) -> str:
     (`tessellate-<slug>.zip`, an ASCII slug so a header never carries a stray
     character), else the whole notebook's. A private space that is still
     sealed refuses (423), the wording the spaces routes use."""
-    from tessellate.core.database import Space
+    from tessellate.repo import spaces as space_repo
 
     scope = session.info.get("workspace_id")
     if not scope or scope == "all":
         return "tessellate-notebook.zip"
-    space = session.get(Space, scope)
+    space = space_repo.find(session, scope)
     if space is None:
         return "tessellate-notebook.zip"
     if scope in (session.info.get("sealed_workspaces") or ()):

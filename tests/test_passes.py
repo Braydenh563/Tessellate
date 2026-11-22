@@ -102,7 +102,8 @@ def test_a_pass_with_no_step_to_stop_at_says_so(client, monkeypatch):
     client.post("/jobs/passes/learned-audit/run")
     _wait(lambda: passes.running("learned-audit"))
     # The learned audit's own row: another test's pass can still be listed in this worker (CI 31bac2a took a stoppable one).
-    row = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "job-pass" and passes.kind_for_label(t["name"]) == "learned-audit")
+    # The running row, not a queued one a scheduled run left in this worker (a queued row is cancellable; CI 2a263b28c).
+    row = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "job-pass" and not t.get("queued") and passes.kind_for_label(t["name"]) == "learned-audit")
     assert row["cancellable"] is False
     gate.set()
 

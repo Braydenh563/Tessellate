@@ -201,7 +201,10 @@ def test_ctrl_slash_has_one_owner_per_surface():
     app = app_js_text()
     #: DX16 (a29j, 132bf47) put Ctrl+K's palette on the same guard; the rule
     #: for Ctrl+/ is unchanged.
-    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;' in app
+    #: The guard moved into `typingBurst.skips` when the keydown handler was split
+    #: under the function cap (0de635539): `return true` there is the old `continue`.
+    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) return true;' in app
+    assert "typingBurst.skips(id, e)" in app
     notes = _function("noteSurfaceKeymap")
     # A note binds Ctrl+/ itself now, ahead of the engine's defaultKeymap,
     # whose own comment toggle wrote `<!--  -->` into a markdown note. The
