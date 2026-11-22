@@ -9,15 +9,9 @@ function fillEntryMenu(menu, entry) {
   // The note's own actions; the assembly at the end picks them into
   // decision 64's four groups by label.
   const topLevel = [
-    // Direct instruction: a way into multi-select from the row itself,
-    // not only the toolbar's own "Select" button: which is real and
-    // already works, but requires knowing it exists and is above the
-    // list rather than on the note someone actually wants to start
-    // selecting from. Reuses that exact same mode (`enterSelectMode`,
-    // `selectedIds`) rather than inventing a second one, and seeds it
-    // with this note already checked, so choosing "Select" here is a
-    // head start rather than an empty selection identical to the
-    // toolbar button's own.
+    // Direct instruction: a way into multi-select from the row itself, not only
+    // the toolbar's "Select". It reuses that mode (`enterSelectMode`,
+    // `selectedIds`) and seeds it with this note already checked.
     {
       label: "ph:check-square Select",
       title: "Start selecting multiple notes, beginning with this one",

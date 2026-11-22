@@ -433,14 +433,8 @@ function paletteCommands() {
       label: "ph:image Browse images",
       reveal: "library-images",
     },
-    {
-      label: "ph:paperclip Browse files",
-      reveal: "library-files",
-    },
-    {
-      label: "ph:link Browse links",
-      reveal: "library-links",
-    },
+    { label: "ph:paperclip Browse files", reveal: "library-files" },
+    { label: "ph:link Browse links", reveal: "library-links" },
     {
       //: The whole list of what the app can do, from the list of what the app
       //: can do: the features browser was reachable from a dashboard button

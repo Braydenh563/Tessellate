@@ -1520,12 +1520,9 @@ function buildMenuGroupButton(label, subItems) {
   submenu.addEventListener("keydown", (event) => {
     const subItems = [...submenu.querySelectorAll(':scope > [role="menuitem"]')];
     const current = subItems.indexOf(document.activeElement);
-    if (event.key === "ArrowDown") {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
-      subItems[(current + 1) % subItems.length]?.focus();
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      subItems[(current - 1 + subItems.length) % subItems.length]?.focus();
+      subItems[(current + (event.key === "ArrowDown" ? 1 : -1) + subItems.length) % subItems.length]?.focus();
     } else if (event.key === "ArrowLeft" || event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation(); // don't also close the whole menu on ArrowLeft

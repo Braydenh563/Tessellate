@@ -402,15 +402,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     companionNote.textContent = "The companion shows on the desktop while the desktop app runs with its window minimised or in the tray; set it here or there.";
     companionHelp.after(companionNote);
   }
-  // Same reasoning as the tray/console rows above: /system/restart can only
-  // ever do something in the packaged desktop app on Windows specifically
-  // (the one platform _spawn_desktop knows how to relaunch), not desktop in
-  // general: but this app's own convention (the console row just above)
-  // is to gate on desktop-ness alone and let the backend's own platform
-  // check be the final word, so a browser tab never even offers the button
-  // while a desktop build on macOS/Linux still can, and finds out only
-  // when it actually tries, rather than a client-side guess going stale
-  // the moment this app ships a real relaunch for those platforms too.
+  // /system/restart only does something in the packaged desktop app: gate on
+  // desktop-ness alone, as the console row does, and let the backend's platform check answer.
   $("about-restart-row").classList.toggle("hidden", !isDesktop);
   $("open-exports-row").classList.toggle("hidden", !isDesktop);
   $("export-save-dir-row").classList.toggle("hidden", !isDesktop);
@@ -464,32 +457,14 @@ async function openSettingsModal(section = "models", scrollToId = null) {
       for (let fold = found.closest("details"); fold; fold = fold.parentElement?.closest("details")) {
         fold.open = true;
       }
-      // **Scroll to what the user can see, not to the element that holds the
-      // value.** Every `<select>` in this app is replaced at runtime by an
-      // opener button plus a menu (`enhanceSelect`), and the native control
-      // is kept only for its value, its label association and the
-      // accessibility tree: as a 1x1 clipped, fully transparent box.
-      //
-      // A deep link that targets a select id therefore scrolled to a point
-      // with no visible control at it, and, worse, because it fails
-      // silently: put the `flash` highlight on an invisible element, so the
-      // "here is the setting you asked for" cue never appeared at all. Found
-      // by measuring: the modal opened on the right section with the select
-      // present and `selectInView: false`.
-      //
-      // `.select-shell` is the wrapper `enhanceSelect` puts around both, so
-      // it is the visible representative of any enhanced select and the
-      // right thing to scroll to and highlight. A select that was never
-      // enhanced has no shell and is its own target, unchanged.
+      // **Scroll to what the user can see.** `enhanceSelect` replaces every
+      // `<select>` with an opener button and keeps the native one as a 1x1
+      // transparent box, so a deep link scrolled to nothing visible and flashed
+      // an invisible element. `.select-shell` wraps both: it is the target; a
+      // select never enhanced has no shell and is its own target.
       const target = found.closest(".select-shell") || found;
-      // A target with no layout box cannot be scrolled to or highlighted, and
-      // trying is a silent no-op that looks like the deep link is broken.
-      // This is a real state, not a defensive guard: several settings are
-      // gated on a backend being present (`#models-config` is hidden outright
-      // when no local model server is detected), so a link into one of them
-      // legitimately lands on a `display: none` control. Opening the section
-      // is still right, it is where the explanation lives, so only the
-      // scroll and flash are skipped.
+      // No layout box (a setting gated on a missing backend is hidden outright):
+      // the section still opens, where the explanation lives; scroll and flash are skipped.
       if (!target.getClientRects().length) return;
       //: **The ring is `flashRevealed`'s now** (app.js), the one every
       //: catalogue row lands with. This used to add `flash` alone, which
@@ -507,19 +482,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
       };
       document.addEventListener("scrollend", settle, { once: true, capture: true });
       setTimeout(settle, 2500);
-      // The helper takes it off again, the way flashEntry and flashReminder both already
-      // do. Reported directly: "the search relevance settings section stays
-      // highlighted permanently and doesn't return to normal."
-      //
-      // This was the one of the three flash call sites with no cleanup, and it
-      // looked harmless because the animation ends on `transparent`, so on an
-      // ordinary machine the highlight does fade and the stuck class is
-      // invisible. Under reduced motion (`data-motion="reduced"`) the stylesheet
-      // deliberately swaps the animation for a *static* outline and background
-      // (see .flash-target.flash there), and with nothing ever removing the
-      // class that static highlight is permanent. A value that is only wrong
-      // under a setting the author does not have on is exactly the shape this
-      // codebase keeps getting caught by.
+      // The helper takes the ring off again (a static outline under reduced motion would stay).
     });
   }
 }

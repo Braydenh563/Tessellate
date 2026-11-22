@@ -916,8 +916,7 @@ document.addEventListener("keydown", (e) => {
       return; // wait for the second key; a lone "m" does nothing on its own
     }
   }
-  if (e.key === "Escape") closeActionMenus();
-  if (e.key === "Escape" && linkSource !== null) linkCancel();
+  if (e.key === "Escape") { closeActionMenus(); if (linkSource !== null) linkCancel(); }
 });
 
 // Clicking anywhere outside an open ⋯ menu closes it (Wave L).
