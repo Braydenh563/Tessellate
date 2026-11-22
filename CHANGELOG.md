@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Palette, L-world-class-780: Agent runs and Job history open the activity panel on those tabs, so every tab of it is one pick away (it was four presses).
 Budgets, L540: the browser budgets are re-measured on an idle machine and tightened (first interaction 6960 to 2840 ms, first paint 1070 to 390 ms); the server shares keep their loaded figures, since their test runs in the loaded suite.
 Ledger, L542: INBOX 266 closes with no owner needed; its seven asks were all answered by 2026-10-05 (BACKLOG, INBOX 266 status).
 Stylesheet grammar, L533: the 13a counts are recounted from the stylesheet (115 layers, 7 shadows, 87 `!important`, 156 colour literals) and four colour-literal caps fall to their counts (189 allowed to 156).

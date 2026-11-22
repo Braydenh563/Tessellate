@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11667, test files 3066, tests 24069, plan headings 691, app scripts 29, boot scripts 38, script files 420.
+Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11667, test files 3067, tests 24071, plan headings 691, app scripts 29, boot scripts 38, script files 420.
 
 ## Frontend functions (9110)
 
@@ -1864,12 +1864,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paletteAbouts` | frontend/js/app-features.js:30 |
 | `paletteCommands` | frontend/js/app-features.js:341 |
 | `paletteKeys` | frontend/js/app-features.js:16 |
-| `paletteRowParts` | frontend/js/app-features.js:701 |
+| `paletteRowParts` | frontend/js/app-features.js:704 |
 | `popupToolMaths` | frontend/js/app-features.js:291 |
-| `quickAccessCurrent` | frontend/js/app-features.js:669 |
-| `quickAccessItems` | frontend/js/app-features.js:660 |
-| `quickCatalogue` | frontend/js/app-features.js:638 |
-| `renderQuickLinks` | frontend/js/app-features.js:674 |
+| `quickAccessCurrent` | frontend/js/app-features.js:672 |
+| `quickAccessItems` | frontend/js/app-features.js:663 |
+| `quickCatalogue` | frontend/js/app-features.js:641 |
+| `renderQuickLinks` | frontend/js/app-features.js:677 |
 | `renderToolShortcutList` | frontend/js/app-features.js:307 |
 
 ### frontend/js/app-import.js (6)
@@ -14712,7 +14712,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `read` | src/tessellate/api/routes_kept_words.py:65 |
 |  | GET | `read_meta` | src/tessellate/api/routes_library_meta.py:35 |
 |  | GET | `search` | src/tessellate/api/routes_search.py:99 |
-|  | GET | `state` | src/tessellate/api/routes_bench.py:235 |
+|  | GET | `state` | src/tessellate/api/routes_bench.py:236 |
 |  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:119 |
 |  | GET | `tidy_summary` | src/tessellate/api/routes_tidy.py:50 |
 |  | GET | `timeline` | src/tessellate/api/routes_timeline.py:365 |
@@ -14726,7 +14726,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_entry` | src/tessellate/api/routes_entries.py:148 |
 |  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:555 |
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:54 |
-|  | POST | `start` | src/tessellate/api/routes_bench.py:195 |
+|  | POST | `start` | src/tessellate/api/routes_bench.py:196 |
 |  | PUT | `keep` | src/tessellate/api/routes_kept_words.py:44 |
 | `/` | GET | `get_whiteboard_state` | src/tessellate/api/wb_board.py:115 |
 | `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1741 |
@@ -14795,7 +14795,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/wb_preview.py:913 |
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:902 |
 | `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/wb_map.py:31 |
-| `/budgets` | GET | `budgets` | src/tessellate/api/routes_bench.py:119 |
+| `/budgets` | GET | `budgets` | src/tessellate/api/routes_bench.py:120 |
 | `/bulk` | POST | `bulk` | src/tessellate/api/routes_library_meta.py:42 |
 | `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:313 |
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:106 |
@@ -15224,7 +15224,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/status` | GET | `status` | src/tessellate/api/routes_models.py:686 |
 | `/status` | GET | `status` | src/tessellate/api/routes_translate.py:22 |
 | `/status` | GET | `status` | src/tessellate/api/routes_voice.py:27 |
-| `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:244 |
+| `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:245 |
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:46 |
 | `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:2132 |
 | `/suggest` | POST | `suggest_reminder` | src/tessellate/api/routes_reminders.py:612 |
@@ -23070,19 +23070,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BenchBody` | src/tessellate/api/routes_bench.py:147 |
+| `BenchBody` | src/tessellate/api/routes_bench.py:148 |
 | `Budget` | src/tessellate/api/routes_bench.py:34 |
-| `_last_report` | src/tessellate/api/routes_bench.py:164 |
-| `_report_path` | src/tessellate/api/routes_bench.py:160 |
-| `_run` | src/tessellate/api/routes_bench.py:171 |
-| `budget_rows` | src/tessellate/api/routes_bench.py:97 |
-| `budgets` | src/tessellate/api/routes_bench.py:120 |
-| `heavy_ids` | src/tessellate/api/routes_bench.py:86 |
-| `loopback` | src/tessellate/api/routes_bench.py:113 |
-| `start` | src/tessellate/api/routes_bench.py:196 |
-| `state` | src/tessellate/api/routes_bench.py:236 |
-| `stop` | src/tessellate/api/routes_bench.py:245 |
-| `time_share` | src/tessellate/api/routes_bench.py:70 |
+| `_last_report` | src/tessellate/api/routes_bench.py:165 |
+| `_report_path` | src/tessellate/api/routes_bench.py:161 |
+| `_run` | src/tessellate/api/routes_bench.py:172 |
+| `budget_rows` | src/tessellate/api/routes_bench.py:98 |
+| `budgets` | src/tessellate/api/routes_bench.py:121 |
+| `heavy_ids` | src/tessellate/api/routes_bench.py:87 |
+| `loopback` | src/tessellate/api/routes_bench.py:114 |
+| `start` | src/tessellate/api/routes_bench.py:197 |
+| `state` | src/tessellate/api/routes_bench.py:237 |
+| `stop` | src/tessellate/api/routes_bench.py:246 |
+| `time_share` | src/tessellate/api/routes_bench.py:71 |
 
 ### src/tessellate/api/routes_board_affinity.py (11)
 
@@ -30465,7 +30465,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24069)
+## Tests (24071)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -32582,6 +32582,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_page_read_lifecycle.py | 4 |
 | tests/test_pair_passes_paths.py | 5 |
 | tests/test_palette_act_rows_l656.py | 1 |
+| tests/test_palette_activity_tabs_l780.py | 2 |
 | tests/test_palette_contract.py | 3 |
 | tests/test_palette_coverage.py | 7 |
 | tests/test_palette_guide_after_action_1449.py | 4 |
@@ -33955,14 +33956,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1231 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4474 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4324 |
-| Needs hardware | docs/roadmap/LEDGER.md:480 |
+| Needs hardware | docs/roadmap/LEDGER.md:478 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:473 |
+| Owner calls | docs/roadmap/LEDGER.md:471 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4197 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -34142,7 +34143,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3156 |
-| Plan session briefs | docs/roadmap/LEDGER.md:575 |
+| Plan session briefs | docs/roadmap/LEDGER.md:573 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2581 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -34200,25 +34201,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:591 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:675 |
+| chat | docs/roadmap/LEDGER.md:589 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:673 |
 | documents | docs/roadmap/LEDGER.md:283 |
-| documents | docs/roadmap/LEDGER.md:615 |
-| general | docs/roadmap/LEDGER.md:445 |
+| documents | docs/roadmap/LEDGER.md:613 |
+| general | docs/roadmap/LEDGER.md:443 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:579 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:687 |
+| graph | docs/roadmap/LEDGER.md:577 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:685 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4333 |
 | mindmap | docs/roadmap/LEDGER.md:286 |
-| mindmap | docs/roadmap/LEDGER.md:627 |
+| mindmap | docs/roadmap/LEDGER.md:625 |
 | timeline | docs/roadmap/LEDGER.md:404 |
-| timeline | docs/roadmap/LEDGER.md:651 |
+| timeline | docs/roadmap/LEDGER.md:649 |
 | ui-modernisation | docs/roadmap/LEDGER.md:288 |
-| ui-modernisation | docs/roadmap/LEDGER.md:639 |
+| ui-modernisation | docs/roadmap/LEDGER.md:637 |
 | whiteboard | docs/roadmap/LEDGER.md:280 |
-| whiteboard | docs/roadmap/LEDGER.md:603 |
+| whiteboard | docs/roadmap/LEDGER.md:601 |
 | world-class | docs/roadmap/LEDGER.md:406 |
-| world-class | docs/roadmap/LEDGER.md:663 |
+| world-class | docs/roadmap/LEDGER.md:661 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2749 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2800 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2907 |
