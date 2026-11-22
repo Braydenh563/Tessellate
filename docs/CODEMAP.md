@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8565, frontend ids 2810, CSS sections 528, backend routes 742, backend modules 11316, test files 2947, tests 23130, plan headings 689, app scripts 29, boot scripts 38, script files 312.
+Counts: frontend functions 8565, frontend ids 2810, CSS sections 528, backend routes 742, backend modules 11316, test files 2947, tests 23133, plan headings 689, app scripts 29, boot scripts 38, script files 312.
 
 ## Frontend functions (8565)
 
@@ -13896,7 +13896,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/media/orphans` | GET | `list_orphaned_media` | src/tessellate/api/routes_files.py:1589 |
 | `/media/pdf-info/{filename}` | GET | `media_pdf_info` | src/tessellate/api/routes_files.py:1767 |
 | `/media/pdf-page/{filename}/{index}` | GET | `media_pdf_page` | src/tessellate/api/routes_files.py:1808 |
-| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:651 |
+| `/media/recordings/{recording_id}` | GET | `recording_audio` | src/tessellate/api/routes_recordings.py:657 |
 | `/media/restore` | POST | `restore_media` | src/tessellate/api/routes_files.py:1937 |
 | `/media/text/{filename}` | GET | `media_text` | src/tessellate/api/routes_files.py:1698 |
 | `/media/upload` | POST | `upload_media` | src/tessellate/api/routes_files.py:1334 |
@@ -13995,22 +13995,22 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recordings` | GET | `list_recordings` | src/tessellate/api/routes_recordings.py:93 |
 | `/recordings` | POST | `create_recording` | src/tessellate/api/routes_recordings.py:141 |
 | `/recordings/recover` | POST | `recover_recordings` | src/tessellate/api/routes_recordings.py:133 |
-| `/recordings/{recording_id}` | DELETE | `bin_recording` | src/tessellate/api/routes_recordings.py:300 |
-| `/recordings/{recording_id}` | GET | `read_recording` | src/tessellate/api/routes_recordings.py:280 |
-| `/recordings/{recording_id}` | PATCH | `update_recording` | src/tessellate/api/routes_recordings.py:285 |
+| `/recordings/{recording_id}` | DELETE | `bin_recording` | src/tessellate/api/routes_recordings.py:306 |
+| `/recordings/{recording_id}` | GET | `read_recording` | src/tessellate/api/routes_recordings.py:286 |
+| `/recordings/{recording_id}` | PATCH | `update_recording` | src/tessellate/api/routes_recordings.py:291 |
 | `/recordings/{recording_id}/chunk` | POST | `append_chunk` | src/tessellate/api/routes_recordings.py:176 |
 | `/recordings/{recording_id}/finish` | POST | `finish_recording` | src/tessellate/api/routes_recordings.py:211 |
-| `/recordings/{recording_id}/purge` | DELETE | `purge_recording` | src/tessellate/api/routes_recordings.py:317 |
-| `/recordings/{recording_id}/restore` | POST | `restore_recording` | src/tessellate/api/routes_recordings.py:310 |
-| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:522 |
-| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:599 |
-| `/recordings/{recording_id}/speakers/voice` | POST | `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:536 |
-| `/recordings/{recording_id}/transcribe` | POST | `transcribe_recording` | src/tessellate/api/routes_recordings.py:328 |
-| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:373 |
-| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:399 |
-| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:514 |
-| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:628 |
-| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:633 |
+| `/recordings/{recording_id}/purge` | DELETE | `purge_recording` | src/tessellate/api/routes_recordings.py:323 |
+| `/recordings/{recording_id}/restore` | POST | `restore_recording` | src/tessellate/api/routes_recordings.py:316 |
+| `/recordings/{recording_id}/speakers` | POST | `name_speakers` | src/tessellate/api/routes_recordings.py:528 |
+| `/recordings/{recording_id}/speakers` | PUT | `rename_speaker` | src/tessellate/api/routes_recordings.py:605 |
+| `/recordings/{recording_id}/speakers/voice` | POST | `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:542 |
+| `/recordings/{recording_id}/transcribe` | POST | `transcribe_recording` | src/tessellate/api/routes_recordings.py:334 |
+| `/recordings/{recording_id}/transcribe/start` | POST | `start_transcription` | src/tessellate/api/routes_recordings.py:379 |
+| `/recordings/{recording_id}/transcribe/stop` | POST | `stop_transcription` | src/tessellate/api/routes_recordings.py:405 |
+| `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:520 |
+| `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:634 |
+| `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:639 |
 | `/recordings/{recording_id}/trim` | POST | `trim_recording` | src/tessellate/api/routes_recordings.py:234 |
 | `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:2245 |
 | `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:2168 |
@@ -23485,43 +23485,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `RecordingFinish` | src/tessellate/api/routes_recordings.py:57 |
 | `RecordingPatch` | src/tessellate/api/routes_recordings.py:63 |
 | `RecordingTrim` | src/tessellate/api/routes_recordings.py:229 |
-| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:594 |
+| `RenameSpeakerBody` | src/tessellate/api/routes_recordings.py:600 |
 | `_append` | src/tessellate/api/routes_recordings.py:165 |
 | `_get` | src/tessellate/api/routes_recordings.py:70 |
-| `_keep_segments` | src/tessellate/api/routes_recordings.py:463 |
-| `_label_in_background` | src/tessellate/api/routes_recordings.py:560 |
-| `_locked_away` | src/tessellate/api/routes_recordings.py:638 |
-| `_named` | src/tessellate/api/routes_recordings.py:494 |
-| `_named_if_unlabelled` | src/tessellate/api/routes_recordings.py:479 |
-| `_people_at` | src/tessellate/api/routes_recordings.py:487 |
-| `_record_failure` | src/tessellate/api/routes_recordings.py:444 |
-| `_refuse_sealed_in_background` | src/tessellate/api/routes_recordings.py:368 |
-| `_segments_of` | src/tessellate/api/routes_recordings.py:506 |
-| `_subtitles` | src/tessellate/api/routes_recordings.py:616 |
-| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:409 |
-| `_voice_labelled` | src/tessellate/api/routes_recordings.py:453 |
+| `_keep_segments` | src/tessellate/api/routes_recordings.py:469 |
+| `_label_in_background` | src/tessellate/api/routes_recordings.py:566 |
+| `_locked_away` | src/tessellate/api/routes_recordings.py:644 |
+| `_named` | src/tessellate/api/routes_recordings.py:500 |
+| `_named_if_unlabelled` | src/tessellate/api/routes_recordings.py:485 |
+| `_people_at` | src/tessellate/api/routes_recordings.py:493 |
+| `_record_failure` | src/tessellate/api/routes_recordings.py:450 |
+| `_refuse_sealed_in_background` | src/tessellate/api/routes_recordings.py:374 |
+| `_segments_of` | src/tessellate/api/routes_recordings.py:512 |
+| `_subtitles` | src/tessellate/api/routes_recordings.py:622 |
+| `_transcribe_in_background` | src/tessellate/api/routes_recordings.py:415 |
+| `_voice_labelled` | src/tessellate/api/routes_recordings.py:459 |
 | `_writable` | src/tessellate/api/routes_recordings.py:83 |
 | `append_chunk` | src/tessellate/api/routes_recordings.py:177 |
-| `bin_recording` | src/tessellate/api/routes_recordings.py:301 |
+| `bin_recording` | src/tessellate/api/routes_recordings.py:307 |
 | `create_recording` | src/tessellate/api/routes_recordings.py:142 |
 | `finish_recording` | src/tessellate/api/routes_recordings.py:212 |
-| `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:537 |
+| `label_speakers_by_voice` | src/tessellate/api/routes_recordings.py:543 |
 | `list_recordings` | src/tessellate/api/routes_recordings.py:94 |
-| `name_speakers` | src/tessellate/api/routes_recordings.py:523 |
-| `purge_recording` | src/tessellate/api/routes_recordings.py:318 |
-| `read_recording` | src/tessellate/api/routes_recordings.py:281 |
-| `read_transcript` | src/tessellate/api/routes_recordings.py:515 |
-| `recording_audio` | src/tessellate/api/routes_recordings.py:652 |
+| `name_speakers` | src/tessellate/api/routes_recordings.py:529 |
+| `purge_recording` | src/tessellate/api/routes_recordings.py:324 |
+| `read_recording` | src/tessellate/api/routes_recordings.py:287 |
+| `read_transcript` | src/tessellate/api/routes_recordings.py:521 |
+| `recording_audio` | src/tessellate/api/routes_recordings.py:658 |
 | `recover_recordings` | src/tessellate/api/routes_recordings.py:134 |
-| `rename_speaker` | src/tessellate/api/routes_recordings.py:600 |
-| `restore_recording` | src/tessellate/api/routes_recordings.py:311 |
-| `start_transcription` | src/tessellate/api/routes_recordings.py:374 |
-| `stop_transcription` | src/tessellate/api/routes_recordings.py:400 |
-| `transcribe_recording` | src/tessellate/api/routes_recordings.py:329 |
-| `transcript_srt` | src/tessellate/api/routes_recordings.py:629 |
-| `transcript_vtt` | src/tessellate/api/routes_recordings.py:634 |
+| `rename_speaker` | src/tessellate/api/routes_recordings.py:606 |
+| `restore_recording` | src/tessellate/api/routes_recordings.py:317 |
+| `start_transcription` | src/tessellate/api/routes_recordings.py:380 |
+| `stop_transcription` | src/tessellate/api/routes_recordings.py:406 |
+| `transcribe_recording` | src/tessellate/api/routes_recordings.py:335 |
+| `transcript_srt` | src/tessellate/api/routes_recordings.py:635 |
+| `transcript_vtt` | src/tessellate/api/routes_recordings.py:640 |
 | `trim_recording` | src/tessellate/api/routes_recordings.py:235 |
-| `update_recording` | src/tessellate/api/routes_recordings.py:286 |
+| `update_recording` | src/tessellate/api/routes_recordings.py:292 |
 
 ### src/tessellate/api/routes_relations.py (6)
 
@@ -26674,8 +26674,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `cut` | src/tessellate/core/recording_trim.py:52 |
 | `frame_range` | src/tessellate/core/recording_trim.py:35 |
 | `header` | src/tessellate/core/recording_trim.py:42 |
-| `kept_markers` | src/tessellate/core/recording_trim.py:74 |
-| `kept_peaks` | src/tessellate/core/recording_trim.py:67 |
+| `kept_markers` | src/tessellate/core/recording_trim.py:75 |
+| `kept_peaks` | src/tessellate/core/recording_trim.py:68 |
 | `span` | src/tessellate/core/recording_trim.py:26 |
 
 ### src/tessellate/core/recordings.py (20)
@@ -28782,7 +28782,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23130)
+## Tests (23133)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30990,7 +30990,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_recent_questions_surface.py | 7 |
 | tests/test_recognise.py | 20 |
 | tests/test_recording_is_unsaved_work_1029.py | 7 |
-| tests/test_recording_trim_l685.py | 5 |
+| tests/test_recording_trim_l685.py | 8 |
 | tests/test_recordings.py | 16 |
 | tests/test_recordings_background.py | 4 |
 | tests/test_recordings_empty_827.py | 1 |
@@ -32153,14 +32153,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4481 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4357 |
-| Needs hardware | docs/roadmap/LEDGER.md:567 |
+| Needs hardware | docs/roadmap/LEDGER.md:568 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1299 |
-| Owner calls | docs/roadmap/LEDGER.md:560 |
+| Owner calls | docs/roadmap/LEDGER.md:561 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4230 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32341,7 +32341,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3155 |
-| Plan session briefs | docs/roadmap/LEDGER.md:693 |
+| Plan session briefs | docs/roadmap/LEDGER.md:694 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2635 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32395,26 +32395,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:709 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:793 |
+| chat | docs/roadmap/LEDGER.md:710 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:794 |
 | documents | docs/roadmap/LEDGER.md:325 |
-| documents | docs/roadmap/LEDGER.md:733 |
+| documents | docs/roadmap/LEDGER.md:734 |
 | general | docs/roadmap/LEDGER.md:521 |
-| general | docs/roadmap/LEDGER.md:527 |
+| general | docs/roadmap/LEDGER.md:528 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:697 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:805 |
+| graph | docs/roadmap/LEDGER.md:698 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:806 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4366 |
 | mindmap | docs/roadmap/LEDGER.md:341 |
-| mindmap | docs/roadmap/LEDGER.md:745 |
+| mindmap | docs/roadmap/LEDGER.md:746 |
 | timeline | docs/roadmap/LEDGER.md:461 |
-| timeline | docs/roadmap/LEDGER.md:769 |
+| timeline | docs/roadmap/LEDGER.md:770 |
 | ui-modernisation | docs/roadmap/LEDGER.md:344 |
-| ui-modernisation | docs/roadmap/LEDGER.md:757 |
+| ui-modernisation | docs/roadmap/LEDGER.md:758 |
 | whiteboard | docs/roadmap/LEDGER.md:280 |
-| whiteboard | docs/roadmap/LEDGER.md:721 |
+| whiteboard | docs/roadmap/LEDGER.md:722 |
 | world-class | docs/roadmap/LEDGER.md:463 |
-| world-class | docs/roadmap/LEDGER.md:781 |
+| world-class | docs/roadmap/LEDGER.md:782 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2805 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2856 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2963 |

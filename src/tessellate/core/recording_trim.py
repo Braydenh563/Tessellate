@@ -59,7 +59,8 @@ def cut(path: Path, first: int, last: int) -> Iterator[bytes]:
         while left > 0:
             block = src.readframes(min(BLOCK_FRAMES, left))
             if not block:
-                break
+                # The header promised frames the file does not hold.
+                raise NotTrimmable("That recording is shorter than its header says.")
             left -= len(block) // (channels * width)
             yield block
 

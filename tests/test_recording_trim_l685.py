@@ -106,3 +106,40 @@ def _row(rid):
         return row
     finally:
         session.close()
+
+
+def test_a_truncated_wav_is_refused_and_leaves_no_file(client):
+    # The header promises 2,000 frames; the file holds 500. The cut must not
+    # write a wav whose header claims frames it never got.
+    whole = _wav(2000)
+    source = _saved(client, whole[: 44 + 500 * 2])
+    folder = recordings.directory()
+    names = set(p.name for p in folder.iterdir())
+    refused = client.post(f"/recordings/{source['id']}/trim", json={"start_ms": 0, "end_ms": 2000})
+    assert refused.status_code == 415
+    assert set(p.name for p in folder.iterdir()) == names
+
+
+def test_the_trim_lands_in_the_source_space():
+    # Sealing is decided from the source's space, so the new row must be in it.
+    from tessellate.api import routes_recordings
+    import inspect
+
+    text = inspect.getsource(routes_recordings.trim_recording)
+    assert "workspace_id=row.workspace_id" in text
+
+
+def test_a_failed_commit_leaves_no_file(client, monkeypatch):
+    from tessellate.api import routes_recordings
+
+    source = _saved(client, _wav(2000))
+    folder = recordings.directory()
+    names = set(p.name for p in folder.iterdir())
+
+    def boom(*_a, **_k):
+        raise RuntimeError("log failed")
+
+    monkeypatch.setattr(routes_recordings, "log_action", boom)
+    with pytest.raises(RuntimeError):
+        client.post(f"/recordings/{source['id']}/trim", json={"start_ms": 0, "end_ms": 1000})
+    assert set(p.name for p in folder.iterdir()) == names

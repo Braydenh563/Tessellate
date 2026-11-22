@@ -245,6 +245,7 @@ def trim_recording(recording_id: int, body: RecordingTrim, session: Session = De
     made = Recording(
         size_bytes=0, title=f"{row.title or 'Recording'} (trimmed)"[:200], mime="audio/wav", filename=recordings.new_filename("audio/wav"),
         entry_id=row.entry_id, source_id=row.id, derived="trim", state="recording",
+        workspace_id=row.workspace_id,
     )
     path = recordings.path_of(made)
     sealed = sealed_files.wanted(session, row.workspace_id)
@@ -270,10 +271,15 @@ def trim_recording(recording_id: int, body: RecordingTrim, session: Session = De
         recording_trim.kept_markers(transcript.marks_of(row), body.start_ms, body.end_ms), kept_ms or None
     )
     made.state = "saved"
-    session.add(made)
-    session.flush()
-    log_action(session, "created", "recording", made.id, detail=f"trim of {row.id}")
-    session.commit()
+    try:
+        session.add(made)
+        session.flush()
+        log_action(session, "created", "recording", made.id, detail=f"trim of {row.id}")
+        session.commit()
+    except BaseException:
+        session.rollback()
+        path.unlink(missing_ok=True)
+        raise
     return recordings.as_dict(made)
 
 
