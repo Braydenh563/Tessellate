@@ -7,6 +7,95 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-22 (stale whiteboard entries, L-whiteboard-17)
+
+From WHITEBOARD_PLAN decision 36, the sentence it replaced:
+
+Ghosts drawn on the canvas wait for boot CSS room (the cap is full).
+
+From WHITEBOARD_PLAN, Placed from INBOX, 2026-09-21:
+
+258. **Recommendation, not a change, 2026-09-19 (the session).** The
+    reverted outside commit added right-drag to pan the board, filtered so
+    a right-click still reaches a node's context menu
+    (`wbZoomFilter`: `event.button === 2` on a target that is not
+    `.node-card, .sketch-group, .wb-object`). It is a good gesture and
+    every canvas app has it, but nobody asked for it and a new gesture on
+    the surface that carries the app's only context menu is a decision, not
+    a patch. Not built here on purpose (standing order 8: a new need is an
+    entry, not an ad-hoc build).
+    Recommendation: take it, guarded as above, plus `contextmenu` suppressed
+    on the canvas only while such a drag actually moved (so a right *click*
+    on empty canvas keeps whatever it does today), and measured against
+    `scratchpad/ui-sweeps/wbpan.js`. The other two ideas from that commit,
+    a rotated group outline and alignment guides for a group drag, are built
+    (861e740, 5273bae).
+    **Tried 2026-09-19 and taken back out, with what was learned.** The pan
+    itself is four lines in `wbZoomFilter` (`event.button === 2` when
+    `event.target` is not inside `.node-card, .sketch-group, .wb-object,
+    .wb-map-edge-hit, [contenteditable]`, and the mousemove half gated on a
+    flag the mousedown set) and measured clean: a right-drag moved the board
+    150px, a right-click with no drag left the transform untouched.
+    The half that matters could not be measured. Three things were found
+    and are worth having written down:
+    - The `contextmenu` that ends a right-drag over this board is dispatched
+      at the `<section>` *around* it, not at anything inside it, so a
+      listener scoped to `#whiteboard-container` never sees it and
+      `event.target.closest("#library-view-whiteboard")` is null on it.
+    - It is dispatched **before** `pointerup`, not after, so clearing the
+      "this drag moved" flag on the release is safe and clearing it on a
+      `setTimeout(0)` from the release is not.
+    - With all of that accounted for, two runs of identical code disagreed
+      about whether the menu was dispatched at all. Non-deterministic here,
+      and the difference between "the gesture is polished" and "the gesture
+      leaves a menu open on your board" is exactly that dispatch.
+    So: not shipped. `scratchpad/ui-sweeps/wbrightpan.js` is the acceptance
+    test, written first and failing, with the three facts above in its
+    header. Whoever builds it makes that file pass on a board with a card on
+    it, which is also the case this run could not cover.
+    **Built and taken back out a second time, 2026-09-20, and this run found
+    why. Two of the three facts above are wrong.** Measured with every event
+    logged in the capture phase across a full right-drag:
+
+        pointerdown@wb-svg-layer
+        mousedown@wb-svg-layer
+        contextmenu@wb-svg-layer      <- on the press
+        pointerup@wb-svg-layer
+        mouseup@wb-svg-layer
+        auxclick@wb-svg-layer
+
+    `contextmenu` arrives **on the press, before the drag has moved a pixel**,
+    and at `#wb-svg-layer`, not at the `<section>`. So at the only moment the
+    decision can be made, nothing can know whether the gesture will become a
+    drag: "suppress the menu only when the drag moved" is not implementable,
+    which is why both attempts left a menu open. The non-determinism recorded
+    above did not reproduce: six runs across two attempts agreed every time,
+    so it should not be planned around.
+    The pan half measured clean again (0 to 150px, three runs identical), and
+    a probe bug was fixed while there: the card's position was read at setup,
+    before checks 1 and 2 pan the board, so check 3 pressed empty canvas and
+    reported a 120px pan "on a card" that never touched one.
+    **Recommendation, for the owner, because it is a decision and not a
+    patch.** One shape works: suppress the native menu on the canvas outright
+    and open the app's own pointer menu (`openMenuAtPoint`, which exists) in
+    its place. A right-click then gives board actions instead of Chrome's
+    menu, and a right-drag gives a clean pan. What goes in that menu is the
+    open question, and assertion 2 of the acceptance test ("a right-click
+    still opens whatever it opened before") changes with it.
+
+From WHITEBOARD_PLAN, Placed from INBOX, 2026-10-05 (ledger triage):
+
+- **`contrast.js` never visits a board or a map** (documents was added
+  2026-10-04). Brief: add `whiteboard` and `mindmap` to its `TABS` with a seeded
+  board (cards, stickies, a frame, shapes) and a seeded map, run at 1440 and
+  390 in both themes, fix what it finds one surface per commit. Expect
+  pre-existing findings; a session of its own. Opus, M.
+
+From WHITEBOARD_PLAN, Placed from INBOX, 2026-10-26b:
+
+1358. **The owner, 2026-10-26, verbatim.** "also keep improving all the main features like the whitebaord, mindmap and document editor, there are still A LOT of issues with them which keep being missed. as well as missing features or features that dont work properly, both of which I keep easily encountering."
+     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in the retired analysis doc and WORLD_CLASS_PLAN.
+
 ## Moved from the plans, 2026-11-22 (BACKLOG size cap, documents built rows)
 
 - ~~**Outline / table of contents**, reading time~~ **done.** `renderDocOutline`/
@@ -56899,6 +56988,8 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY. Built: Built 2026-11-22: entries 258 (superseded by 1452), the contrast.js note (built: it reaches boards through the Library sub-tabs), 1358 (merged) and decision 36's ghost sentence (ghost topics built, fixes7-1018) moved whole to HISTORY (Moved from the plans, 2026-11-22, stale whiteboard entries), each leaving a pointer.
+- [x] **L-whiteboard-13** `whiteboard` open, S: Park port dx and dy offsets and the ports editor in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1310. Evidence: Open line in the plan's prose a session could miss. A conditional deferral of the port offsets, and perimeter use waits on the ports editor. There is no row. Built: Already built, found 2026-11-22: the ports editor (edit-ports, reset-ports) and port dx, dy offsets and perimeter snapping shipped in f2-1111 (HISTORY.md, the ports editor and richer ports; whiteboard.js wbPortFractions snapToOutline, wbAnchorPositions dx dy). The plan's 'not built until' sentence now says so; nothing to park.
 - [x] **L-general-3** `general` open, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text Built: Built 2026-11-22: both PyInstaller specs bundle LICENSE and THIRD_PARTY.md at the root (the .exe installer and MSI package dist/Tessellate whole, as do the Linux tarball and zip); the Dockerfile copies both; tests/test_licence_shipped.py, 4 tests
 - [x] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired. Built: 2026-11-22: IDEAS.md removed; its text moved whole to HISTORY (Moved from the plans, 2026-11-22, IDEAS.md retired). Open items: three new BACKLOG entries under Placed from IDEAS.md (agent edit before-and-after, web research mode, librarian dry run); the rest already L-chat-13, L-world-class-182/185 or BACKLOG. Checked since: highlighter alpha 0.4, media_gc sweeps orphaned attachments. tests/test_docs_links.py and scripts/rebrand.py no longer name the file.
 - [x] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open Built: 2026-11-22: ROADMAP's three open-looking queues (Next PR first, How to proceed after PR 149, Next up) moved whole to HISTORY (Moved from the plans, 2026-11-22, L-general-30); the plan list says what each file holds, not a 2026-10-05 status; README calls ROADMAP the direction, the road to 1.0 and where each plan lives.

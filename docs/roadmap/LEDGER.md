@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 3 | 4 | 0 | 0 | 7 |
 | chat | 176 | 205 | 60 | 2 | 59 | 441 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| whiteboard | 30 | 37 | 4 | 0 | 11 | 71 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 25 | 1 | 0 | 0 | 26 |
 | general | 0 | 8 | 5 | 0 | 5 | 13 |
-| all | 372 | 401 | 79 | 2 | 111 | 852 |
+| all | 372 | 399 | 79 | 2 | 111 | 850 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -317,10 +317,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-9** `whiteboard` open, M: Update a placed library copy from its source. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:634. Evidence: library_ref is stored on placed items, but no update command exists; untracked
 - [ ] **L-whiteboard-10** `whiteboard` open, S: Show a one-line hint the first time each board tool is used. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:720. Evidence: no per-tool first-use hint with a remembered dismissal exists; untracked
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
-- [ ] **L-whiteboard-13** `whiteboard` open, S: Park port dx and dy offsets and the ports editor in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1310. Evidence: Open line in the plan's prose a session could miss. A conditional deferral of the port offsets, and perimeter use waits on the ports editor. There is no row.
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
-- [ ] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY.
 
 ## documents
 
