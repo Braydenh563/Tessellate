@@ -32,11 +32,13 @@ JS = ROOT / "frontend" / "js"
 NAV_HISTORY = _js_scope.unwrapped((JS / "nav-history.js").read_text(encoding="utf-8"))
 #: Every script the helpers could live in: the boot list ends before the
 #: dashboard, and `noteRowImage` is the dashboard rows' own.
-SOURCE = app_js_text() + "\n" + (JS / "dashboard.js").read_text(encoding="utf-8")
+def _source() -> str:
+    """Built per use, not held from collection on: the app's code plus a file is 27 MB a copy."""
+    return app_js_text() + "\n" + (JS / "dashboard.js").read_text(encoding="utf-8")
 
 
 def _grab(pattern: str, what: str) -> str:
-    match = re.search(pattern, SOURCE, re.S | re.M)
+    match = re.search(pattern, _source(), re.S | re.M)
     assert match, f"{what} is gone from the app's scripts"
     return match.group(0)
 

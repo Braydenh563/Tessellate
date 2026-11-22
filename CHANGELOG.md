@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Test collection memory, third pass: seven modules that held the app's code plus a file at module level (27 MB a copy) build it per use instead.
 - Test collection memory, second pass: one cached `index_html_text()`, `all_js_text()` and `css_glob_text()` replace 179 module-level copies in 174 test modules, and `_js_scope.unwrapped` hands back one shared result per script (keyed by a digest). A 3.11 worker holds 1,032 MB after collecting leg 1, down from 1,286 MB.
 - Test collection memory: `tests/_css_paths.css_text()` returns one cached copy, and six emoji in CSS comments became words (one astral character made every joined-CSS string 4 bytes a character, 13 MB a copy, now 7 MB). A 3.11 worker holds 1,288 MB after collecting leg 1, down from 1,451 MB.
 - L-world-class-780: the Activity panel's History tab has a palette command ("Activity history"); from Chat's menu it was four clicks deep. Running was already "Activity".

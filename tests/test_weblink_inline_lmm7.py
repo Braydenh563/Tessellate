@@ -35,14 +35,16 @@ def _node(script: str):
     return json.loads(out.stdout)
 
 
-JS = app_js_text() + (ROOT / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
+def _js() -> str:
+    """Built per use, not held from collection on: the app's code plus a file is 27 MB a copy."""
+    return app_js_text() + (ROOT / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
 
 
 def _weblink(value: str, s: int, e: int):
     script = f"""
 let sel = null;
 function editorSplice(t, s, e, text, select) {{ t.value = t.value.slice(0, s) + text + t.value.slice(e); sel = [s + select.from, s + select.to]; }}
-{_fn(JS, "editorWebLink")}
+{_fn(_js(), "editorWebLink")}
 const t = {{ value: {json.dumps(value)}, selectionStart: {s}, selectionEnd: {e} }};
 editorWebLink(t);
 console.log(JSON.stringify([t.value, t.value.slice(sel[0], sel[1])]));
@@ -63,7 +65,7 @@ def test_web_link_inside_a_sentence_stays_plain():
 
 
 def test_the_card_rule_skips_the_angle_destination():
-    m = re.search(r"const LONE_LINK =\s*(/.+/);", JS)
+    m = re.search(r"const LONE_LINK =\s*(/.+/);", _js())
     script = f"""
 const LONE_LINK = {m.group(1)};
 console.log(JSON.stringify([LONE_LINK.test("[a](<https://x.org>)"), LONE_LINK.test("[a](https://x.org)")]));
@@ -73,11 +75,11 @@ console.log(JSON.stringify([LONE_LINK.test("[a](<https://x.org>)"), LONE_LINK.te
 
 def test_angle_autolinks_leave_a_destination_alone():
     script = f"""
-{_fn(JS, "expandAngleAutolinks")}
+{_fn(_js(), "expandAngleAutolinks")}
 console.log(JSON.stringify([expandAngleAutolinks("[a](<https://x.org>)"), expandAngleAutolinks("go <https://x.org> now")]));
 """
     assert _node(script) == ["[a](<https://x.org>)", "go [https://x.org](https://x.org) now"]
 
 
 def test_the_inline_grammar_unwraps_the_angle_destination():
-    assert "if (linkUrl && /^<[^<>]+>$/.test(linkUrl)) linkUrl = linkUrl.slice(1, -1);" in JS
+    assert "if (linkUrl && /^<[^<>]+>$/.test(linkUrl)) linkUrl = linkUrl.slice(1, -1);" in _js()

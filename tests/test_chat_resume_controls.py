@@ -13,13 +13,15 @@ from tests._app_js import app_js_text
 ROOT = Path(__file__).resolve().parent.parent
 #: app.js plus palette.js: the popup agent (Ctrl+K) was split out of app.js
 #: on 2026-09-24, and these tests read it wherever it lives.
-APP = app_js_text() + "\n" + (
-    ROOT / "frontend" / "js" / "palette.js"
-).read_text(encoding="utf-8")
+def _app() -> str:
+    """Built per use, not held from collection on: the app's code plus a file is 27 MB a copy."""
+    return app_js_text() + "\n" + (
+        ROOT / "frontend" / "js" / "palette.js"
+    ).read_text(encoding="utf-8")
 
 
 def test_one_function_draws_the_resume_controls() -> None:
-    assert "function appendRunResumeControls(bubble, spec)" in APP
+    assert "function appendRunResumeControls(bubble, spec)" in _app()
 
 
 def test_both_paths_draw_them_through_that_function() -> None:
@@ -28,26 +30,26 @@ def test_both_paths_draw_them_through_that_function() -> None:
     the reopen path did not build them at all, which is the same shape the
     Sources panel, the grounding chips and the followups were each fixed in.
     Two call sites, so a fix to one is a fix to both."""
-    assert APP.count("appendRunResumeControls(") >= 3, (
+    assert _app().count("appendRunResumeControls(") >= 3, (
         "expected the definition plus a call from the live path and one from "
         "openConversation"
     )
-    assert "...message.resume," in APP, "the reopen path rebuilds them from the saved state"
+    assert "...message.resume," in _app(), "the reopen path rebuilds them from the saved state"
 
 
 def test_the_saved_turn_carries_the_state_only_when_there_is_one() -> None:
     """An ordinary answer has nowhere to resume to, and should not write five
     null fields onto every row in the notebook to say so."""
-    assert "resumeState.stoppedAtStep !== null ||" in APP
-    assert "? resumeState" in APP
+    assert "resumeState.stoppedAtStep !== null ||" in _app()
+    assert "? resumeState" in _app()
 
 
 def test_the_status_bar_names_the_scope_not_the_persona() -> None:
     """The dock button beside "Ask" read "Atlas", so the bar offered two
     buttons that both mean "talk to the AI". The word is the scope now and the
     name is in the tooltip, which also survives renaming the persona."""
-    assert 'word.textContent = "Guide";' in APP
-    assert "Ask ${guideName} how this app works" in APP
+    assert 'word.textContent = "Guide";' in _app()
+    assert "Ask ${guideName} how this app works" in _app()
 
 
 def test_the_popup_agent_writes_its_thinking_as_it_arrives() -> None:
@@ -58,13 +60,13 @@ def test_the_popup_agent_writes_its_thinking_as_it_arrives() -> None:
     #: The app's one Thinking fold (INBOX 457), open as it is built, and put
     #: under the bubble's head, inside the step column, never `prepend`ed onto
     #: the bubble above the name and avatar.
-    assert "thinkingBox = thinkingFold();" in APP
+    assert "thinkingBox = thinkingFold();" in _app()
     #: Placed in the step column where it arrived (B5), still never above the head.
-    assert "placeStep(thinkingBox);" in APP
-    assert "agentMsg.prepend(" not in APP
+    assert "placeStep(thinkingBox);" in _app()
+    assert "agentMsg.prepend(" not in _app()
     #: Closed when the answer lands, so a finished turn still reads answer
     #: first, and never drawn twice.
-    assert "thinkingBox.open = false;" in APP
+    assert "thinkingBox.open = false;" in _app()
 
 
 def test_the_guide_reads_a_stream_and_can_fall_back() -> None:
