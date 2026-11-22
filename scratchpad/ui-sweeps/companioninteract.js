@@ -49,13 +49,16 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(3000);
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'off'; nameMarkBuddyRelease(); nmb.target = null; nmb.lastMove = null; });
   const off = [];
+  // Passing above the face, never over it: the pointer on the face is a touch (nameMarkBuddyHover's
+  // brighten), which looks with the setting off too; at f[1] - 40 the pass from -120 to +120 crossed it.
+  const passY = await page.evaluate(() => document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect().top - 24);
   // Slowly (a pointer passing, not a sudden flick, which still catches it).
   for (const dx of [-120, 120]) {
     // Slowly: a pointer passing at under 400px a second, paced by the clock (24 steps in one burst on a fast
     // machine is a flick of thousands of px a second, which still catches its eye).
     const from = await page.evaluate(() => [window.__mx ?? 100, window.__my ?? 100]);
-    for (let i = 1; i <= 24; i += 1) { await page.mouse.move(from[0] + ((f[0] + dx) - from[0]) * i / 24, from[1] + ((f[1] - 40) - from[1]) * i / 24); await page.waitForTimeout(30); }
-    await page.evaluate(([mx, my]) => { window.__mx = mx; window.__my = my; }, [f[0] + dx, f[1] - 40]);
+    for (let i = 1; i <= 24; i += 1) { await page.mouse.move(from[0] + ((f[0] + dx) - from[0]) * i / 24, from[1] + (passY - from[1]) * i / 24); await page.waitForTimeout(30); }
+    await page.evaluate(([mx, my]) => { window.__mx = mx; window.__my = my; }, [f[0] + dx, passY]);
     await page.waitForTimeout(200);
     // Its eyes move only while it attends (the CSS keys the look on nmb-attend).
     off.push(await page.evaluate(() => document.getElementById('nm-buddy').classList.contains('nmb-attend')));
