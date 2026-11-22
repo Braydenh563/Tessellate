@@ -2477,6 +2477,7 @@ function atlasBody(parent, id, props, look, route = null) {
   const tailAt = route ? pair(route.tail) : layers;
   const tipAt = route && route.tailTip ? pair(route.tailTip) : null;
   const lowerAt = route && route.lower ? pair(route.lower) : layers;
+  const torsoAt = route && route.torso ? pair(route.torso) : layers;
   const legAt = route && route.legs ? { l: pair(route.legs.l), r: pair(route.legs.r) } : null;
   const frontAt = route ? { fill: route.front } : layers;
   const arms = {};
@@ -2588,7 +2589,7 @@ function atlasBody(parent, id, props, look, route = null) {
       atlasMake("path", { class: edge ? "atl-edge" : "atl-skin", d }, hold);
       if (!edge) atlasMake("path", { class: "atl-overlay atl-rim-body", d }, hold);
     }
-    const torso = atlasGroup(layer, "nmb-torso");
+    const torso = atlasGroup(torsoAt[kind], "nmb-torso");
     //: The look that flows into a skirt has no hem: the torso fades out
     //: over the skirt's top (round 8, the `waist` mask).
     if (spec.lowers) torso.setAttribute("mask", `url(#${id}-waist)`);
@@ -3145,6 +3146,7 @@ function atlasDrawFigure(mood) {
   const frag = document.createDocumentFragment();
   const layers = {};
   let hairBox = null;
+  let torsoBox = null;
   const spec = ATLAS_LOOKS[look] || ATLAS_LOOKS.masculine;
   //: The legs are two layers of their own, under the body as the drawing
   //: has them, and each root wears the companion's `nmb-leg-<side>` class:
@@ -3179,7 +3181,7 @@ function atlasDrawFigure(mood) {
     box.appendChild(svg);
     return box;
   };
-  const names = ["neb", "back", ...(spec.wisps ? ["wisps-back"] : []), "tail", ...(spec.tailWave ? ["tail-tip"] : []), ...(spec.lowers ? ["lower"] : []), ...(legs ? ["leg-l", "leg-r"] : []), "hair", "body", "lidf-1", "lidf-2", "lids", "front", "neb-front", ...(spec.wisps ? ["wisps", "glint-a", "glint-b"] : []), "fx-1", "fx-2"];
+  const names = ["neb", "back", ...(spec.wisps ? ["wisps-back"] : []), "tail", ...(spec.tailWave ? ["tail-tip"] : []), ...(spec.lowers ? ["lower"] : []), ...(legs ? ["leg-l", "leg-r"] : []), "hair", "torso", "body", "lidf-1", "lidf-2", "lids", "front", "neb-front", ...(spec.wisps ? ["wisps", "glint-a", "glint-b"] : []), "fx-1", "fx-2"];
   for (const name of names) {
     const legSide = name.startsWith("leg-") ? name.slice(4) : "";
     //: Her tail's tip half (`tailWave`) is a tail layer too, so every
@@ -3212,6 +3214,14 @@ function atlasDrawFigure(mood) {
       pose.style.transformOrigin = "32px 15px";
       pose.appendChild(svg);
       hairBox.appendChild(pose);
+    } else if (name === "torso") {
+      //: **The chest's swell is a box of its own** (L-ui-modernisation-201): the torso's skin, drawn under the body's
+      //: arms and light, in its own layer inside the breath box, so its swell (`atlasBreathFrame`) is a `transform` on
+      //: an HTML box the compositor runs, not on an SVG group the main thread lays out and repaints every frame.
+      torsoBox = document.createElement("span");
+      torsoBox.className = "atl-lw-torso";
+      torsoBox.dataset.atlasLook = look;
+      torsoBox.appendChild(svg);
     } else if (name.startsWith("lid") && frag.querySelector(".atl-lw-breathe")) frag.querySelector(".atl-lw-breathe").appendChild(svg);
     else if (ATLAS_ROOT_BOXES.includes(name)) {
       const box = document.createElement("span");
@@ -3225,6 +3235,7 @@ function atlasDrawFigure(mood) {
         into.className = "atl-lw-breathe";
         box.appendChild(into);
         if (hairBox) into.appendChild(hairBox);
+        if (torsoBox) into.appendChild(torsoBox);
       }
       //: The lower body's and the tail's pose for what it is doing (INBOX
       //: 575, `atlasLowerState`): a box inside each one's loop box, turned,
@@ -3263,7 +3274,7 @@ function atlasDrawFigure(mood) {
   atlasMake("ellipse", { class: "atl-aura", ...atlasAuraAt(spec) }, layers.back.pose);
   //: The rings, in boxes of their own over and under the figure (`atlasRings`).
   layers.back.svg.after(atlasRings(look, false));
-  atlasBody(layers.body.rig, id, true, look, { neb: layers.neb.rig, back: layers.back.rig, tail: layers.tail.rig, tailTip: layers["tail-tip"]?.rig, lower: layers.lower?.rig, wisps: layers.wisps?.rig, wispsBack: layers["wisps-back"]?.rig, glints: spec.wisps ? [layers["glint-a"].rig, layers["glint-b"].rig] : null, legs: legs ? { l: layers["leg-l"].rig, r: layers["leg-r"].rig } : null, front: layers.front.rig });
+  atlasBody(layers.body.rig, id, true, look, { neb: layers.neb.rig, back: layers.back.rig, torso: layers.torso.rig, tail: layers.tail.rig, tailTip: layers["tail-tip"]?.rig, lower: layers.lower?.rig, wisps: layers.wisps?.rig, wispsBack: layers["wisps-back"]?.rig, glints: spec.wisps ? [layers["glint-a"].rig, layers["glint-b"].rig] : null, legs: legs ? { l: layers["leg-l"].rig, r: layers["leg-r"].rig } : null, front: layers.front.rig });
   //: `atl-head-lag` (the rig, INBOX 564): the head's lag behind a change of
   //: pose, a turn of its own inside every rule that turns the head.
   const headChain = (rig) => atlasGroup(atlasGroup(atlasGroup(rig, "nm-buddy-head", ATLAS_GEO.neck), "atl-head-lag", ATLAS_GEO.neck), "name-mark atl-face");

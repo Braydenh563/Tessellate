@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9062, frontend ids 2847, CSS sections 546, backend routes 722, backend modules 11094, test files 3000, tests 23526, plan headings 692, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9062, frontend ids 2847, CSS sections 546, backend routes 722, backend modules 11094, test files 3000, tests 23525, plan headings 692, app scripts 29, boot scripts 38, script files 402.
 
 ## Frontend functions (9062)
 
@@ -2075,8 +2075,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:898 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:926 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1625 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1600 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1597 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1572 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
@@ -2131,33 +2131,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `atlasAlmond` | frontend/js/atlas.js:1584 |
-| `atlasApply` | frontend/js/atlas.js:3664 |
+| `atlasApply` | frontend/js/atlas.js:3675 |
 | `atlasArmHand` | frontend/js/atlas.js:1025 |
 | `atlasArmPath` | frontend/js/atlas.js:1020 |
 | `atlasArmSegs` | frontend/js/atlas.js:1011 |
-| `atlasAuraAt` | frontend/js/atlas.js:3083 |
-| `atlasAvatar` | frontend/js/atlas.js:3545 |
+| `atlasAuraAt` | frontend/js/atlas.js:3084 |
+| `atlasAvatar` | frontend/js/atlas.js:3556 |
 | `atlasBand` | frontend/js/atlas.js:1931 |
 | `atlasBandPaths` | frontend/js/atlas.js:1508 |
 | `atlasBandSplit` | frontend/js/atlas.js:1530 |
 | `atlasBody` | frontend/js/atlas.js:2472 |
 | `atlasBookProp` | frontend/js/atlas.js:1989 |
 | `atlasBuild` | frontend/js/atlas.js:1108 |
-| `atlasBuildDefs` | frontend/js/atlas.js:2818 |
-| `atlasClassicFigure` | frontend/js/atlas.js:3821 |
-| `atlasClassicMark` | frontend/js/atlas.js:3700 |
+| `atlasBuildDefs` | frontend/js/atlas.js:2819 |
+| `atlasClassicFigure` | frontend/js/atlas.js:3832 |
+| `atlasClassicMark` | frontend/js/atlas.js:3711 |
 | `atlasCoilProp` | frontend/js/atlas.js:2022 |
 | `atlasCue` | frontend/js/atlas.js:2335 |
-| `atlasDefs` | frontend/js/atlas.js:2801 |
-| `atlasDraw` | frontend/js/atlas.js:3481 |
-| `atlasDrawFigure` | frontend/js/atlas.js:3143 |
-| `atlasDressMarks` | frontend/js/atlas.js:3549 |
-| `atlasDrift` | frontend/js/atlas.js:4077 |
+| `atlasDefs` | frontend/js/atlas.js:2802 |
+| `atlasDraw` | frontend/js/atlas.js:3492 |
+| `atlasDrawFigure` | frontend/js/atlas.js:3144 |
+| `atlasDressMarks` | frontend/js/atlas.js:3560 |
+| `atlasDrift` | frontend/js/atlas.js:4088 |
 | `atlasDrop` | frontend/js/atlas.js:1574 |
 | `atlasEars` | frontend/js/atlas.js:1845 |
 | `atlasExtras` | frontend/js/atlas.js:1686 |
 | `atlasEye` | frontend/js/atlas.js:1600 |
-| `atlasFigure` | frontend/js/atlas.js:3595 |
+| `atlasFigure` | frontend/js/atlas.js:3606 |
 | `atlasFix` | frontend/js/atlas.js:214 |
 | `atlasFoot` | frontend/js/atlas.js:394 |
 | `atlasGroup` | frontend/js/atlas.js:172 |
@@ -2172,9 +2172,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasHelixSpan` | frontend/js/atlas.js:1497 |
 | `atlasHelixWidth` | frontend/js/atlas.js:1487 |
 | `atlasHemTip` | frontend/js/atlas.js:1036 |
-| `atlasHiddenSync` | frontend/js/atlas.js:3643 |
-| `atlasLevelFor` | frontend/js/atlas.js:3059 |
-| `atlasLids` | frontend/js/atlas.js:3449 |
+| `atlasHiddenSync` | frontend/js/atlas.js:3654 |
+| `atlasLevelFor` | frontend/js/atlas.js:3060 |
+| `atlasLids` | frontend/js/atlas.js:3460 |
 | `atlasLimbShaped` | frontend/js/atlas.js:402 |
 | `atlasLimbTo` | frontend/js/atlas.js:397 |
 | `atlasLimbWidth` | frontend/js/atlas.js:931 |
@@ -2188,16 +2188,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMirror` | frontend/js/atlas.js:907 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:392 |
 | `atlasNightcap` | frontend/js/atlas.js:1675 |
-| `atlasOn` | frontend/js/atlas.js:4025 |
-| `atlasOrbits` | frontend/js/atlas.js:3319 |
+| `atlasOn` | frontend/js/atlas.js:4036 |
+| `atlasOrbits` | frontend/js/atlas.js:3330 |
 | `atlasPaw` | frontend/js/atlas.js:920 |
 | `atlasPivot` | frontend/js/atlas.js:166 |
-| `atlasPlay` | frontend/js/atlas.js:4002 |
-| `atlasRepaint` | frontend/js/atlas.js:3846 |
-| `atlasRestingMood` | frontend/js/atlas.js:3898 |
+| `atlasPlay` | frontend/js/atlas.js:4013 |
+| `atlasRepaint` | frontend/js/atlas.js:3857 |
+| `atlasRestingMood` | frontend/js/atlas.js:3909 |
 | `atlasRetune` | frontend/js/atlas.js:1404 |
 | `atlasRing` | frontend/js/atlas.js:2421 |
-| `atlasRings` | frontend/js/atlas.js:3388 |
+| `atlasRings` | frontend/js/atlas.js:3399 |
 | `atlasScalePath` | frontend/js/atlas.js:488 |
 | `atlasScalePathX` | frontend/js/atlas.js:1397 |
 | `atlasSegsAt` | frontend/js/atlas.js:219 |
@@ -2210,23 +2210,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:4100 |
-| `atlasStyle` | frontend/js/atlas.js:3696 |
+| `atlasStreak` | frontend/js/atlas.js:4111 |
+| `atlasStyle` | frontend/js/atlas.js:3707 |
 | `atlasTail` | frontend/js/atlas.js:1893 |
-| `atlasTailMasks` | frontend/js/atlas.js:2767 |
-| `atlasTailWake` | frontend/js/atlas.js:3559 |
+| `atlasTailMasks` | frontend/js/atlas.js:2768 |
+| `atlasTailWake` | frontend/js/atlas.js:3570 |
 | `atlasTaper` | frontend/js/atlas.js:421 |
 | `atlasTipShape` | frontend/js/atlas.js:327 |
 | `atlasTorsoEdge` | frontend/js/atlas.js:983 |
 | `atlasTune` | frontend/js/atlas.js:1076 |
 | `atlasTuneSegs` | frontend/js/atlas.js:1091 |
-| `atlasTuneStyle` | frontend/js/atlas.js:3067 |
+| `atlasTuneStyle` | frontend/js/atlas.js:3068 |
 | `atlasTurnAbout` | frontend/js/atlas.js:1006 |
-| `atlasWake` | frontend/js/atlas.js:4133 |
-| `atlasWatchFigure` | frontend/js/atlas.js:3630 |
-| `atlasWhenShown` | frontend/js/atlas.js:3575 |
-| `charactersArrived` | frontend/js/atlas.js:4230 |
-| `setAtlasMood` | frontend/js/atlas.js:3920 |
+| `atlasWake` | frontend/js/atlas.js:4144 |
+| `atlasWatchFigure` | frontend/js/atlas.js:3641 |
+| `atlasWhenShown` | frontend/js/atlas.js:3586 |
+| `charactersArrived` | frontend/js/atlas.js:4241 |
+| `setAtlasMood` | frontend/js/atlas.js:3931 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -13950,7 +13950,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/07-whiteboard-misc.css:18779 |
 | A row is a pointer target (INBOX 719) | frontend/css/07-whiteboard-misc.css:18635 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2778 |
-| Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2762 |
+| Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2764 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/07-whiteboard-misc.css:15212 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/05-sidebars-themes.css:5449 |
 | BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:6816 |
@@ -14494,7 +14494,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/board-lazy.css | 89 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 207 |
-| frontend/css/characters-lazy.css | 3193 |
+| frontend/css/characters-lazy.css | 3195 |
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |
@@ -29470,7 +29470,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23526)
+## Tests (23525)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29575,7 +29575,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_arm_over_hair_l461.py | 1 |
 | tests/test_atlas_aura_masculine_413.py | 1 |
 | tests/test_atlas_blink_both_eyes_1644.py | 3 |
-| tests/test_atlas_breath_687.py | 10 |
+| tests/test_atlas_breath_687.py | 9 |
 | tests/test_atlas_carry_and_holds_1589.py | 3 |
 | tests/test_atlas_composite_1101.py | 5 |
 | tests/test_atlas_cover_1587.py | 8 |

@@ -1259,12 +1259,14 @@
    root and the lids' (atlas.js, INBOX 540): the lids breathe with the face. */
 .atl-lw-breathe { position: absolute; left: 0; top: 0; width: 64px; height: 92px; transform-origin: 31px 90px; will-change: transform; }
 
-/* The chest swells about the hips (INBOX 687, `atlasBreathFrame`). */
-.atl-layer-body .nmb-torso { transform-origin: 31px 60px; }
+/* The chest swells about the hips (INBOX 687, `atlasBreathFrame`): the torso's own box, so it is the compositor's. */
+.atl-lw-torso { transform-origin: 31px 60px; will-change: transform; }
 
 /* The hair's own layer (INBOX 554, 564), in the breathing box under the
    body's root; its box sways it about the crown, a beat behind the body. */
-.atl-lw-breathe > .atl-lw-hair { position: absolute; left: 0; top: 0; width: 64px; height: 92px; transform-origin: 32px 15px; will-change: rotate; }
+.atl-lw-breathe > .atl-lw-hair,
+.atl-lw-breathe > .atl-lw-torso { position: absolute; left: 0; top: 0; width: 64px; height: 92px; }
+.atl-lw-breathe > .atl-lw-hair { transform-origin: 32px 15px; will-change: rotate; }
 
 .atl-lw-tail { transform-origin: 34px 60px; will-change: rotate; }
 
