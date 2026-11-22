@@ -181,6 +181,6 @@ def test_a_second_start_is_refused_and_a_shell_that_did_not_open_puts_the_map_ba
 
 
 def test_the_canvas_menu_greys_a_level_step_that_would_change_nothing():
-    menu = BOARD[BOARD.index("const openMapCanvasMenu") :][:2600]
+    menu = BOARD[BOARD.index("openMapCanvasMenu = (clientX") :][:2600]
     assert "moreLevel.disabled = !wbMapBuild.ring(index, hiddenByFold, 1).ids.length" in menu
     assert "lessLevel.disabled = !wbMapBuild.ring(index, hiddenByFold, -1).ids.length" in menu

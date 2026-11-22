@@ -61,7 +61,7 @@ def test_nothing_and_a_flood() -> None:
 
 def test_the_keys_let_the_browser_paste_through() -> None:
     keys = SOURCE[SOURCE.index('e.key.toLowerCase() === "v") {') :][:600]
-    assert "preventDefault" not in keys.split("return;")[0]
+    assert "preventDefault" not in keys.split("return true;")[0]
     assert 'document.addEventListener("paste"' in SOURCE
     assert "wbPasteText(text" in SOURCE
 

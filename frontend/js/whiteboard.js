@@ -2627,27 +2627,11 @@ function renderWhiteboardNow() {
   wbMapAfterRender();
 }
 
-//: A render places every topic from its data; a dragged branch's layer would carry them a
-//: second time, so it is undone first (the first line below).
-function renderWhiteboard() {
-  if (wbMapDragLayer.live) wbMapDragLayer.close();
-  wbPruneSelection();
-  //: A render replaces every map node's element, so every measurement taken
-  //: from the previous set is about to describe something that is gone.
-  wbClearMapNodeSizeCache();
-  wbItemElCache.clear();
-  wbItemElIndex.count = -1;
-  //: And the overview's items were drawn from that set: the next pan frame
-  //: redraws them rather than only moving its rectangle.
-  wbNavState.stale = true;
-  // Built once per render, not once per card: `allEntries.find(...)` inside
-  // a per-card callback is O(cards × notebook size) on every single render
-  //, for a large notebook that is real, measurable work paid on every
-  // whiteboard update, not just once. A note's id never changes shape
-  // (string vs number) across a session, so this Map stays valid for the
-  // whole render pass below.
-  const entriesById = new Map(allEntries.map((e) => [String(e.id), e]));
+//: The pieces of one render, by job. Properties of the function so they add no names to the shared scope.
+renderWhiteboard.parts = {};
 
+//: The empty-board hint and cue, from what the board holds now.
+renderWhiteboard.parts.wbSyncEmptyHint = function wbSyncEmptyHint() {
   // Objects count too: a board holding only a text box or an image is
   // not empty, and left out of this sum the hint sat on top of them.
   const wbBoardHolds = (wbState.nodes?.length || 0) + (wbState.sketches?.length || 0) + (wbState.objects?.length || 0);
@@ -2666,172 +2650,175 @@ function renderWhiteboard() {
     //: A card turned off still leaves one line on an empty board (audit 1028 B34).
     document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
   }
+};
 
-  // Render Sketches (SVG)
-  const svgGroup = d3.select(wbInstances.layer("wb-zoom-group"));
-  //: Every stroke's group wherever its band put it (decision 43); a new one
-  //: is made in the base layer and `wbPlaceSketchBands` moves it.
-  const sketchSelection = svgGroup.selectAll(() => wbInstances.queryAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
-    .data((wbState.sketches || []).filter(wbSketchIsDrawable), d => d.id);
-    
-
-  // Move: reported directly: "can't move objects made or drawn on
-  // whiteboard". Cards/objects get this from their own `d3.drag`; a sketch
-  // never had one at all. Filtered to the Select tool only, the same as a
-  // click here means "select" rather than "erase", under any other tool
-  // (pan, a brush, eraser/delete) this must stay out of the way entirely,
-  // pan in particular, since the canvas's own zoom/pan drag needs an
-  // unclaimed pointerdown to reach it.
-  const sketchDrag = d3.drag()
+// Move: reported directly: "can't move objects made or drawn on
+// whiteboard". Cards/objects get this from their own `d3.drag`; a sketch
+// never had one at all. Filtered to the Select tool only, the same as a
+// click here means "select" rather than "erase", under any other tool
+// (pan, a brush, eraser/delete) this must stay out of the way entirely,
+// pan in particular, since the canvas's own zoom/pan drag needs an
+// unclaimed pointerdown to reach it.
+renderWhiteboard.parts.wbSketchDrag = function wbSketchDrag() {
+  return d3.drag()
     .clickDistance(WB_CLICK_SLOP)
     .filter((event) => !wbIsSecondTouch(event) && !event.button && (window.currentTool === "select" || Boolean(window.currentTool?.startsWith("link-"))))
-    .on("start", function (event, d) {
-      event.sourceEvent.stopPropagation();
-      // A link tool drags a *link* out of the shape, not the shape, the same
-      // delegation `objDrag` does for text boxes and stickies.
-      if (window.currentTool?.startsWith("link-")) {
-        if (!wbSketchParsedData(d)) return;
-        d._linkKind = "sketch";
-        return dragStart.call(this, event, d);
-      }
-      const parsed = wbSketchParsedData(d);
-      d._linkedSketches = wbLinkedSketchesFor(d.id, "sketch");
-      d._dragOriginalD = parsed ? parsed.d : null;
-      d._moveUndoBefore = WB_KIND_INFO.sketch.payload(d);
-      d._altCopy = Boolean(event.sourceEvent?.altKey);
-      //: A connector drawn between two cards has no path of its own to carry (its ends follow the cards), so it starts
-      //: no move: the delete target came up on its drag and stayed (INBOX 1405).
-      d._gesture = d._dragOriginalD == null ? null : wbBeginGesture(() => wbRestoreMove("sketch", d), true);
-      // Raw (never-snapped) running totals, applied fresh from the
-      // *original* d each frame, the same fix as `dragging`'s own comment
-      // above: re-snapping an already-snapped value every frame discards
-      // the sub-grid remainder and can get stuck.
-      d._dragRawDX = 0;
-      d._dragRawDY = 0;
-      // Selection itself is deliberately *not* touched here, it lives
-      // entirely in the 'click' listener below, which only ever fires for a
-      // genuinely unmoved gesture (d3 suppresses the native click once real
-      // movement crosses the threshold). Doing it here too, keyed off "did
-      // this drag start", was tried and had a real bug: `wbDragIsBulkMove`
-      // is also true for a second shift-click meant to *toggle a member
-      // back off* an existing multi-selection, so treating every "start" as
-      // "begin a bulk move" swallowed that click's toggle entirely: a
-      // second shift-click on an already-selected item did nothing.
-      // `d._bulkOrigin` itself is decided lazily, on the first real "drag"
-      // frame below, for the same reason.
-    })
-    .on("drag", function (event, d) {
-      if (d._linkKind === "sketch") return dragging.call(this, event, d);
-      if (d._dragOriginalD == null || d._gesture?.cancelled) return;
-      const step = wbTouchSlopStep(d._gesture, event, d3.zoomTransform(wbInstances.container()).k);
-      if (!step) return;
-      // First real movement of this gesture, decide once whether this is
-      // a solo move or a bulk move of the whole multi-selection. Decided
-      // here rather than "start" (see its own comment) specifically so
-      // a zero-movement click never reaches this at all.
-      if (d._bulkOrigin === undefined) {
-        d._bulkOrigin = wbDragIsBulkMove("sketch", d.id)
-          ? wbCaptureBulkMoveOrigin(wbMultiKey("sketch", d.id))
-          : null;
-      }
-      // Board units already, no `/ transform.k`: this drag's container is the
-      // sketch group's parent inside the zoomed `#wb-zoom-group` (see the link
-      // endpoint handle's own note). A shape dragged at 2x followed the
-      // pointer at half speed until this was measured: 30px of travel for a
-      // 60px drag, against the card beside it, which moved the full 60.
-      d._dragRawDX += step.dx;
-      d._dragRawDY += step.dy;
-      const bypassSnap = event.sourceEvent?.altKey;
-      const lock = wbAxisLock(d._dragRawDX, d._dragRawDY, event.sourceEvent?.shiftKey);
-      let dx = lock === "y" ? 0 : wbSnap(d._dragRawDX, bypassSnap);
-      let dy = lock === "x" ? 0 : wbSnap(d._dragRawDY, bypassSnap);
-      //: **A sketch gets the alignment guides too.** Reported: "Alignment bars
-      //: don't appear for group selections". Measured, a group of *cards* has
-      //: had them since `wbBulkGroupBox` landed, and they draw correctly; this
-      //: handler is the one that never asked for them at all, solo or in a
-      //: group. So a marquee that happened to catch a sketch, dragged by that
-      //: sketch, was the one selection on the board with no guides, which is
-      //: exactly the report.
-      //:
-      //: A sketch has no x/y/width/height, only a path, so its box comes from
-      //: `wbPathBBox` and goes into the shared union through `self`.
-      if (!bypassSnap) {
-        const origin = wbPathBBox(d._dragOriginalD);
-        if (origin) {
-          const group = wbBulkGroupBox(d, "sketch", { ...origin, dx, dy });
-          const box = group || {
-            x: origin.minX + dx,
-            y: origin.minY + dy,
-            w: origin.maxX - origin.minX,
-            h: origin.maxY - origin.minY,
-          };
-          const snap = wbAlignmentGuides(
-            wbDragExcludeKeys(d, "sketch"), box.x, box.y, box.w, box.h, wbAlignTol()
-          );
-          if (lock !== "y") dx += snap.dx;
-          if (lock !== "x") dy += snap.dy;
-          wbShowAlignmentGuides(snap.guideLines);
-        }
-      } else {
-        wbClearAlignmentGuides();
-      }
-      const newD = wbTransformPathD(d._dragOriginalD, { dx, dy });
-      d._dragLiveD = newD;
-      const el = wbInstances.query(`.sketch-group[data-id="${d.id}"]`);
-      el?.querySelector(".sketch-path")?.setAttribute("d", newD);
-      el?.querySelector(".sketch-hitbox")?.setAttribute("d", newD);
-      wbNudgeShapeLabel(el, dx, dy);
-      if (d._bulkOrigin) wbApplyBulkMove(d._bulkOrigin, dx, dy);
-      if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
-      wbQueueSelectionBar();
-      // Handles would otherwise trail the sketch by a whole render, cheap
-      // to keep in step since there are at most 8 of them.
-      wbClearSketchHandles();
-    })
-    .on("end", async function (event, d) {
-      //: Every exit, before the early returns below: a guide left on the
-      //: canvas after the drag that drew it is a line pointing at nothing.
-      wbClearAlignmentGuides();
-      if (d._linkKind === "sketch") {
-        const r = dragEndNode.call(this, event, d);
-        d._linkKind = null;
-        return r;
-      }
-      if (d._dragOriginalD == null) {
-        delete d._linkedSketches;
-        return;
-      }
-      //: Dropped on the delete target: put back, then deleted (INBOX 660).
-      wbTrashTake(d._gesture, "sketch", d);
-      delete d._linkedSketches;
-      const finalD = d._dragLiveD;
-      const bulkOrigin = d._bulkOrigin;
-      const moveBefore = d._moveUndoBefore;
-      const altCopy = d._altCopy;
-      delete d._dragOriginalD;
-      delete d._dragRawDX;
-      delete d._dragRawDY;
-      delete d._dragLiveD;
-      delete d._bulkOrigin;
-      delete d._moveUndoBefore;
-      delete d._altCopy;
-      const cancelled = wbEndGesture(d._gesture);
-      delete d._gesture;
-      if (cancelled) {
-        wbScheduleRender();
-        return;
-      }
-      // `finalD`/`bulkOrigin` are only ever set once real movement occurred
-      // (in "drag" above): a zero-movement click leaves both undefined, so
-      // this correctly does nothing rather than a wasted save.
-      if (finalD) await wbSaveSketchD(d, finalD);
-      await wbFinishDrag(
-        finalD && moveBefore ? { action: "move", kind: "sketch", id: d.id, before: moveBefore } : null,
-        bulkOrigin, altCopy
-      );
-      wbScheduleRender();
-    });
+    .on("start", renderWhiteboard.parts.wbSketchDragStart)
+    .on("drag", renderWhiteboard.parts.wbSketchDragMove)
+    .on("end", renderWhiteboard.parts.wbSketchDragEnd);
+};
 
+renderWhiteboard.parts.wbSketchDragStart = function wbSketchDragStart(event, d) {
+  event.sourceEvent.stopPropagation();
+  // A link tool drags a *link* out of the shape, not the shape, the same
+  // delegation `objDrag` does for text boxes and stickies.
+  if (window.currentTool?.startsWith("link-")) {
+    if (!wbSketchParsedData(d)) return;
+    d._linkKind = "sketch";
+    return dragStart.call(this, event, d);
+  }
+  const parsed = wbSketchParsedData(d);
+  d._linkedSketches = wbLinkedSketchesFor(d.id, "sketch");
+  d._dragOriginalD = parsed ? parsed.d : null;
+  d._moveUndoBefore = WB_KIND_INFO.sketch.payload(d);
+  d._altCopy = Boolean(event.sourceEvent?.altKey);
+  //: A connector drawn between two cards has no path of its own to carry (its ends follow the cards), so it starts
+  //: no move: the delete target came up on its drag and stayed (INBOX 1405).
+  d._gesture = d._dragOriginalD == null ? null : wbBeginGesture(() => wbRestoreMove("sketch", d), true);
+  // Raw (never-snapped) running totals, applied fresh from the
+  // *original* d each frame, the same fix as `dragging`'s own comment
+  // above: re-snapping an already-snapped value every frame discards
+  // the sub-grid remainder and can get stuck.
+  d._dragRawDX = 0;
+  d._dragRawDY = 0;
+  // Selection itself is deliberately *not* touched here, it lives
+  // entirely in the 'click' listener below, which only ever fires for a
+  // genuinely unmoved gesture (d3 suppresses the native click once real
+  // movement crosses the threshold). Doing it here too, keyed off "did
+  // this drag start", was tried and had a real bug: `wbDragIsBulkMove`
+  // is also true for a second shift-click meant to *toggle a member
+  // back off* an existing multi-selection, so treating every "start" as
+  // "begin a bulk move" swallowed that click's toggle entirely: a
+  // second shift-click on an already-selected item did nothing.
+  // `d._bulkOrigin` itself is decided lazily, on the first real "drag"
+  // frame below, for the same reason.
+};
+
+renderWhiteboard.parts.wbSketchDragMove = function wbSketchDragMove(event, d) {
+  if (d._linkKind === "sketch") return dragging.call(this, event, d);
+  if (d._dragOriginalD == null || d._gesture?.cancelled) return;
+  const step = wbTouchSlopStep(d._gesture, event, d3.zoomTransform(wbInstances.container()).k);
+  if (!step) return;
+  // First real movement of this gesture, decide once whether this is
+  // a solo move or a bulk move of the whole multi-selection. Decided
+  // here rather than "start" (see its own comment) specifically so
+  // a zero-movement click never reaches this at all.
+  if (d._bulkOrigin === undefined) {
+    d._bulkOrigin = wbDragIsBulkMove("sketch", d.id)
+      ? wbCaptureBulkMoveOrigin(wbMultiKey("sketch", d.id))
+      : null;
+  }
+  // Board units already, no `/ transform.k`: this drag's container is the
+  // sketch group's parent inside the zoomed `#wb-zoom-group` (see the link
+  // endpoint handle's own note). A shape dragged at 2x followed the
+  // pointer at half speed until this was measured: 30px of travel for a
+  // 60px drag, against the card beside it, which moved the full 60.
+  d._dragRawDX += step.dx;
+  d._dragRawDY += step.dy;
+  const bypassSnap = event.sourceEvent?.altKey;
+  const lock = wbAxisLock(d._dragRawDX, d._dragRawDY, event.sourceEvent?.shiftKey);
+  let dx = lock === "y" ? 0 : wbSnap(d._dragRawDX, bypassSnap);
+  let dy = lock === "x" ? 0 : wbSnap(d._dragRawDY, bypassSnap);
+  //: **A sketch gets the alignment guides too.** Reported: "Alignment bars
+  //: don't appear for group selections". Measured, a group of *cards* has
+  //: had them since `wbBulkGroupBox` landed, and they draw correctly; this
+  //: handler is the one that never asked for them at all, solo or in a
+  //: group. So a marquee that happened to catch a sketch, dragged by that
+  //: sketch, was the one selection on the board with no guides, which is
+  //: exactly the report.
+  //:
+  //: A sketch has no x/y/width/height, only a path, so its box comes from
+  //: `wbPathBBox` and goes into the shared union through `self`.
+  if (!bypassSnap) {
+    const origin = wbPathBBox(d._dragOriginalD);
+    if (origin) {
+      const group = wbBulkGroupBox(d, "sketch", { ...origin, dx, dy });
+      const box = group || {
+        x: origin.minX + dx,
+        y: origin.minY + dy,
+        w: origin.maxX - origin.minX,
+        h: origin.maxY - origin.minY,
+      };
+      const snap = wbAlignmentGuides(
+        wbDragExcludeKeys(d, "sketch"), box.x, box.y, box.w, box.h, wbAlignTol()
+      );
+      if (lock !== "y") dx += snap.dx;
+      if (lock !== "x") dy += snap.dy;
+      wbShowAlignmentGuides(snap.guideLines);
+    }
+  } else {
+    wbClearAlignmentGuides();
+  }
+  const newD = wbTransformPathD(d._dragOriginalD, { dx, dy });
+  d._dragLiveD = newD;
+  const el = wbInstances.query(`.sketch-group[data-id="${d.id}"]`);
+  el?.querySelector(".sketch-path")?.setAttribute("d", newD);
+  el?.querySelector(".sketch-hitbox")?.setAttribute("d", newD);
+  wbNudgeShapeLabel(el, dx, dy);
+  if (d._bulkOrigin) wbApplyBulkMove(d._bulkOrigin, dx, dy);
+  if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
+  wbQueueSelectionBar();
+  // Handles would otherwise trail the sketch by a whole render, cheap
+  // to keep in step since there are at most 8 of them.
+  wbClearSketchHandles();
+};
+
+renderWhiteboard.parts.wbSketchDragEnd = async function wbSketchDragEnd(event, d) {
+  //: Every exit, before the early returns below: a guide left on the
+  //: canvas after the drag that drew it is a line pointing at nothing.
+  wbClearAlignmentGuides();
+  if (d._linkKind === "sketch") {
+    const r = dragEndNode.call(this, event, d);
+    d._linkKind = null;
+    return r;
+  }
+  if (d._dragOriginalD == null) {
+    delete d._linkedSketches;
+    return;
+  }
+  //: Dropped on the delete target: put back, then deleted (INBOX 660).
+  wbTrashTake(d._gesture, "sketch", d);
+  delete d._linkedSketches;
+  const finalD = d._dragLiveD;
+  const bulkOrigin = d._bulkOrigin;
+  const moveBefore = d._moveUndoBefore;
+  const altCopy = d._altCopy;
+  delete d._dragOriginalD;
+  delete d._dragRawDX;
+  delete d._dragRawDY;
+  delete d._dragLiveD;
+  delete d._bulkOrigin;
+  delete d._moveUndoBefore;
+  delete d._altCopy;
+  const cancelled = wbEndGesture(d._gesture);
+  delete d._gesture;
+  if (cancelled) {
+    wbScheduleRender();
+    return;
+  }
+  // `finalD`/`bulkOrigin` are only ever set once real movement occurred
+  // (in "drag" above): a zero-movement click leaves both undefined, so
+  // this correctly does nothing rather than a wasted save.
+  if (finalD) await wbSaveSketchD(d, finalD);
+  await wbFinishDrag(
+    finalD && moveBefore ? { action: "move", kind: "sketch", id: d.id, before: moveBefore } : null,
+    bulkOrigin, altCopy
+  );
+  wbScheduleRender();
+};
+
+//: A new sketch's group: its drag, double-click, path, hit band and context menu.
+renderWhiteboard.parts.wbEnterSketches = function wbEnterSketches(sketchSelection, sketchDrag) {
   const sketchEnter = sketchSelection.enter()
     .append("g")
     .attr("class", "sketch-group")
@@ -2921,9 +2908,11 @@ function renderWhiteboard() {
     .attr("pointer-events", "none");
 
   wbWireContextMenu(sketchEnter, "sketch");
+  return sketchEnter;
+};
 
-  const sketchUpdate = sketchEnter.merge(sketchSelection);
-
+//: The link and cross-link classes on every sketch group.
+renderWhiteboard.parts.wbClassSketches = function wbClassSketches(sketchUpdate) {
   // A cross-link on a map is drawn dashed (MINDMAP_PLAN.md §5 item 9, the
   // systems-map convention for "related, but not part of the tree"). The
   // sketch itself is untouched, this is a class, so the same link on an
@@ -2970,7 +2959,10 @@ function renderWhiteboard() {
     }
     return crossLinkIds.has(`${parsed?.sourceId}:${parsed?.targetId}`);
   });
+};
 
+//: The paint key of a stroke and the link ends read for this render, with the index of measured boxes.
+renderWhiteboard.parts.wbSketchPaintKeys = function wbSketchPaintKeys() {
   //: **A pen or highlighter stroke is repainted only when its look can have
   //: changed** (audit 1028 B3, B4): the key is its data plus what decides the
   //: ink (the board's colour and the light or dark mode), the way
@@ -3013,164 +3005,552 @@ function renderWhiteboard() {
   //: (`wbItemElement`): the walk over all 500 and their reads were 2.3 ms of a 10 ms render.
   const hasLinks = wbIsMap() || (wbState.sketches || []).some((s) => typeof s.data === "string" && s.data.includes("link-"));
   if (hasLinks && wbState.sketches?.length) wbIndexMapNodeElements(!wbIsMap());
-  sketchUpdate.each(function(d) {
-    const strokeKey = strokePaintKey(d);
-    const drawn = this.querySelector(".sketch-path");
-    if (strokeKey && this._wbStrokeKey === strokeKey && drawn?.getAttribute("d") === this._wbStrokeD) return;
-    let pathData = d.data;
-    let hitboxData = null;
-    let shapedLine = false;
-    let stroke = "var(--text-color)";
-    let strokeWidth = "3";
-    let strokeOpacity = 1;
-    let fill = "none";
-    let fillOpacity = 1;
-    let dashArray = null;
-    let isHighlighterStroke = false;
-    let shapeData = null;
-    let linkData = null;
-    try {
-      const parsed = JSON.parse(d.data);
-      if (parsed.d) {
-        shapeData = parsed;
-        pathData = parsed.d;
-        //: A hollow end (outline diamond, circle, square) stops the drawn shaft at its edge, as a link's does; the hit band keeps the whole line.
-        if (wbSketchTakesCaps(parsed)) {
-          const caps = wbSketchCaps(parsed);
-          const trimmed = wbFmtState.inkMore?.trimShaft(parsed.d, caps.startCap, caps.endCap, (parsed.width || 3) * 4 + 6, caps, wbShaftEnd);
-          if (trimmed && trimmed !== parsed.d) { hitboxData = parsed.d; pathData = trimmed; }
+  return { strokePaintKey, linkEnds };
+};
+
+//: What a sketch looks like, read from its data: path, ink, fill, dash and the link it is.
+renderWhiteboard.parts.wbSketchLook = function wbSketchLook(d, linkEnds) {
+  let pathData = d.data;
+  let hitboxData = null;
+  let shapedLine = false;
+  let stroke = "var(--text-color)";
+  let strokeWidth = "3";
+  let strokeOpacity = 1;
+  let fill = "none";
+  let fillOpacity = 1;
+  let dashArray = null;
+  let isHighlighterStroke = false;
+  let shapeData = null;
+  let linkData = null;
+  try {
+    const parsed = JSON.parse(d.data);
+    if (parsed.d) {
+      shapeData = parsed;
+      pathData = parsed.d;
+      //: A hollow end (outline diamond, circle, square) stops the drawn shaft at its edge, as a link's does; the hit band keeps the whole line.
+      if (wbSketchTakesCaps(parsed)) {
+        const caps = wbSketchCaps(parsed);
+        const trimmed = wbFmtState.inkMore?.trimShaft(parsed.d, caps.startCap, caps.endCap, (parsed.width || 3) * 4 + 6, caps, wbShaftEnd);
+        if (trimmed && trimmed !== parsed.d) { hitboxData = parsed.d; pathData = trimmed; }
+      }
+      // `shape` names the tool that drew it, which is what says "highlighter"
+      // rather than "a stroke that happens to carry an opacity": a pen
+      // stroke restyled through the context bar could have one too.
+      isHighlighterStroke = parsed.shape === "highlighter";
+      stroke = parsed.noStroke ? "none" : (wbDefaultInk(parsed.color) || stroke);
+      // Highlighter strokes carry their own width/opacity (see the mouseup
+      // handler that writes them), everything else keeps the defaults
+      // above, set explicitly every render so a reused element can't keep
+      // a stale highlighter width after its data changes.
+      if (parsed.width) strokeWidth = String(parsed.width);
+      if (parsed.opacity != null) strokeOpacity = parsed.opacity;
+      // Fill/dash: asked for directly ("fill colour/transparency...
+      // stroke width, style, and colour"). Absent on any sketch drawn
+      // before this existed, which is exactly why these default to "no
+      // fill, solid" rather than reading undefined.
+      if (parsed.fill) {
+        fill = parsed.fill;
+        fillOpacity = parsed.fillOpacity != null ? parsed.fillOpacity : 1;
+      }
+      dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
+      //: Smoothed ink is the stroke's outline, filled with its colour (whiteboard-ink-more.js).
+      if (parsed.ink) {
+        fill = stroke;
+        fillOpacity = strokeOpacity;
+        stroke = "none";
+        dashArray = null;
+      }
+    } else if (parsed.type && parsed.type.startsWith("link-")) {
+      linkData = parsed;
+      stroke = parsed.color || stroke;
+      strokeWidth = String(parsed.width || 3);
+      dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
+      const look = wbMapCrossLinkLook(parsed);
+      if (look) {
+        //: The branch's own drawing (see `wbMapCrossLinkLook`): a ribbon is
+        //: a filled outline, so it paints with fill and no stroke, and the
+        //: hitbox keeps the centreline so the whole length stays a target.
+        const colour = look.colour || stroke;
+        pathData = look.d;
+        hitboxData = look.line;
+        stroke = look.ribbon ? "none" : colour;
+        strokeWidth = String(look.width);
+        dashArray = null;
+        if (look.ribbon) {
+          fill = colour;
+          fillOpacity = 1;
         }
-        // `shape` names the tool that drew it, which is what says "highlighter"
-        // rather than "a stroke that happens to carry an opacity": a pen
-        // stroke restyled through the context bar could have one too.
-        isHighlighterStroke = parsed.shape === "highlighter";
-        stroke = parsed.noStroke ? "none" : (wbDefaultInk(parsed.color) || stroke);
-        // Highlighter strokes carry their own width/opacity (see the mouseup
-        // handler that writes them), everything else keeps the defaults
-        // above, set explicitly every render so a reused element can't keep
-        // a stale highlighter width after its data changes.
-        if (parsed.width) strokeWidth = String(parsed.width);
-        if (parsed.opacity != null) strokeOpacity = parsed.opacity;
-        // Fill/dash: asked for directly ("fill colour/transparency...
-        // stroke width, style, and colour"). Absent on any sketch drawn
-        // before this existed, which is exactly why these default to "no
-        // fill, solid" rather than reading undefined.
-        if (parsed.fill) {
-          fill = parsed.fill;
-          fillOpacity = parsed.fillOpacity != null ? parsed.fillOpacity : 1;
-        }
-        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
-        //: Smoothed ink is the stroke's outline, filled with its colour (whiteboard-ink-more.js).
-        if (parsed.ink) {
-          fill = stroke;
-          fillOpacity = strokeOpacity;
-          stroke = "none";
+      } else {
+        const endpoints = linkEnds.has(d.id) ? linkEnds.get(d.id) : wbResolveLinkEndpoints(parsed);
+        pathData = endpoints ? wbLinkPathD(parsed.type, endpoints.source, endpoints.target, wbLinkCaps(parsed), parsed.width, parsed.bend, wbLinkShape(parsed)) : "";
+        //: A connector shape (double, arrows, pipe, wire; `wbFmtState.shapeMore`): the outline round the centre
+        //: line is what is drawn, the centre line stays the hit band and the label's path.
+        const shaped = endpoints && parsed.shape ? wbFmtState.shapeMore?.shapedLink(parsed, endpoints) : null;
+        if (shaped) {
+          shapedLine = true;
+          pathData = shaped.d;
+          hitboxData = shaped.centre;
+          strokeWidth = String(shaped.stroke);
           dashArray = null;
-        }
-      } else if (parsed.type && parsed.type.startsWith("link-")) {
-        linkData = parsed;
-        stroke = parsed.color || stroke;
-        strokeWidth = String(parsed.width || 3);
-        dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
-        const look = wbMapCrossLinkLook(parsed);
-        if (look) {
-          //: The branch's own drawing (see `wbMapCrossLinkLook`): a ribbon is
-          //: a filled outline, so it paints with fill and no stroke, and the
-          //: hitbox keeps the centreline so the whole length stays a target.
-          const colour = look.colour || stroke;
-          pathData = look.d;
-          hitboxData = look.line;
-          stroke = look.ribbon ? "none" : colour;
-          strokeWidth = String(look.width);
-          dashArray = null;
-          if (look.ribbon) {
-            fill = colour;
-            fillOpacity = 1;
-          }
-        } else {
-          const endpoints = linkEnds.has(d.id) ? linkEnds.get(d.id) : wbResolveLinkEndpoints(parsed);
-          pathData = endpoints ? wbLinkPathD(parsed.type, endpoints.source, endpoints.target, wbLinkCaps(parsed), parsed.width, parsed.bend, wbLinkShape(parsed)) : "";
-          //: A connector shape (double, arrows, pipe, wire; `wbFmtState.shapeMore`): the outline round the centre
-          //: line is what is drawn, the centre line stays the hit band and the label's path.
-          const shaped = endpoints && parsed.shape ? wbFmtState.shapeMore?.shapedLink(parsed, endpoints) : null;
-          if (shaped) {
-            shapedLine = true;
-            pathData = shaped.d;
-            hitboxData = shaped.centre;
-            strokeWidth = String(shaped.stroke);
-            dashArray = null;
-            if (shaped.paint !== "outline") {
-              fill = stroke;
-              fillOpacity = shaped.paint === "tube" ? 0.2 : 1;
-            }
+          if (shaped.paint !== "outline") {
+            fill = stroke;
+            fillOpacity = shaped.paint === "tube" ? 0.2 : 1;
           }
         }
       }
-    } catch(e) {}
-    d3.select(this).select(".sketch-hitbox").attr("d", hitboxData ?? pathData);
-    //: The hand-drawn look (canvasdepth2): only the drawn line is roughened,
-    //: so the hit band, the ports and the label keep the true shape.
-    //: Rounded corners (draw.io's, `data.round`) and flow (`data.flow`): the
-    //: drawn line only, like the rough look, so the hit band keeps the true
-    //: shape. A flowing line with no dashes of its own gets the dashed look,
-    //: since the marching is the dashes moving.
-    const styled = shapeData || linkData;
-    const plainLine = !(linkData && wbMapCrossLinkLook(linkData)) && !shapedLine;
-    if (styled?.round && plainLine) pathData = wbRoundedPathD(pathData, styled.round, Boolean(linkData));
-    else if (styled?.curve && plainLine) pathData = wbRoundedPathD.curved(pathData, Boolean(linkData));
-    const flowing = Boolean(styled?.flow) && plainLine;
-    if (flowing && !dashArray) dashArray = wbDashArray("dashed", Number(strokeWidth) || 3);
-    const flowPeriod = flowing && dashArray ? dashArray.split(" ").map(Number).reduce((a, b) => a + b, 0) * (dashArray.split(" ").length % 2 ? 2 : 1) : 0;
-    if (wbDrawsRough(shapeData || linkData, !plainLine)) pathData = wbRoughD(pathData, d.id);
-    // A gradient or a fill style swaps the plain colour for a paint server in
-    // this group's own defs (null when there is none, which also drops a stale one).
-    const fillPaint = wbSyncFillDefs(this, d.id, shapeData);
-    if (fillPaint) fill = fillPaint;
-    d3.select(this).select(".sketch-path")
-      .classed("wb-flow", flowing)
-      // The highlighter's multiply, re-applied every render and cleared on
-      // every other kind so a reused element cannot keep it: the same reason
-      // the width and opacity above are set explicitly rather than only when
-      // present. Inline rather than a class because the export clones these
-      // nodes into a standalone SVG.
-      .style("mix-blend-mode", isHighlighterStroke ? wbHighlighterBlend() : null)
-      // The flat end a marker leaves, set here rather than only on the live
-      // path: the enter selection above appends every sketch with a round cap
-      // and nothing updated it, so a highlighter stroke was square while it
-      // was being drawn and round from the first render after mouseup
-      // (measured: `getComputedStyle(...).strokeLinecap` read round on both
-      // saved strokes while the pad read square).
-      .attr("stroke-linecap", isHighlighterStroke ? HIGHLIGHTER_STYLE.lineCap : "round")
-      .attr("stroke-linejoin", isHighlighterStroke ? HIGHLIGHTER_STYLE.lineJoin : "round")
-      .attr("d", pathData)
-      .attr("stroke", stroke)
-      .attr("stroke-width", strokeWidth)
-      .attr("stroke-opacity", strokeOpacity)
-      .attr("fill", fill)
-      .attr("fill-opacity", fillOpacity)
-      // `null` removes the attribute entirely (d3's own convention) rather
-      // than setting `stroke-dasharray=""`, which some renderers treat as
-      // "zero-length dashes" instead of "solid", a reused element from a
-      // dashed sketch must not leave a stale dasharray on a solid one.
-      .attr("stroke-dasharray", dashArray);
-    wbSetFlowAnimation(d3.select(this).select(".sketch-path").node(), flowing ? flowPeriod : 0);
-    //: The Format panel's opacity and shadow (decision 19), on the group so
-    //: the label goes with the shape; an attribute and an inline style, both
-    //: of which the export's clone keeps.
-    const look = shapeData || linkData;
-    d3.select(this)
-      .attr("opacity", look?.alpha != null && look.alpha < 1 ? look.alpha : null)
-      .style("filter", wbShadowCss(look));
-    wbSyncSketchTip(this, look);
-    // After the path, which the label is laid out from (decision 12).
-    wbPaintShapeLabel(this, shapeData, d);
-    wbFmtState.effects?.paintShape(this, shapeData, pathData, d.id); // glass, picture fill, label shadow (whiteboard-effects.js)
-    wbPaintLinkLabel(this, d, linkData);
-    this._wbStrokeKey = strokeKey;
-    this._wbStrokeD = strokeKey ? pathData : null;
-    //: The plain path, for the jump pass to go back to when its jumps no longer apply.
-    this._wbPlainD = strokeKey ? pathData : null;
+    }
+  } catch(e) {}
+  return { pathData, hitboxData, shapedLine, stroke, strokeWidth, strokeOpacity, fill, fillOpacity, dashArray, isHighlighterStroke, shapeData, linkData };
+};
+
+//: The look put on the sketch group's elements; returns the path drawn.
+renderWhiteboard.parts.wbPaintSketchLook = function wbPaintSketchLook(node, d, look0) {
+  let { pathData, hitboxData, shapedLine, stroke, strokeWidth, strokeOpacity, fill, fillOpacity, dashArray, isHighlighterStroke, shapeData, linkData } = look0;
+  d3.select(node).select(".sketch-hitbox").attr("d", hitboxData ?? pathData);
+  //: The hand-drawn look (canvasdepth2): only the drawn line is roughened,
+  //: so the hit band, the ports and the label keep the true shape.
+  //: Rounded corners (draw.io's, `data.round`) and flow (`data.flow`): the
+  //: drawn line only, like the rough look, so the hit band keeps the true
+  //: shape. A flowing line with no dashes of its own gets the dashed look,
+  //: since the marching is the dashes moving.
+  const styled = shapeData || linkData;
+  const plainLine = !(linkData && wbMapCrossLinkLook(linkData)) && !shapedLine;
+  if (styled?.round && plainLine) pathData = wbRoundedPathD(pathData, styled.round, Boolean(linkData));
+  else if (styled?.curve && plainLine) pathData = wbRoundedPathD.curved(pathData, Boolean(linkData));
+  const flowing = Boolean(styled?.flow) && plainLine;
+  if (flowing && !dashArray) dashArray = wbDashArray("dashed", Number(strokeWidth) || 3);
+  const flowPeriod = flowing && dashArray ? dashArray.split(" ").map(Number).reduce((a, b) => a + b, 0) * (dashArray.split(" ").length % 2 ? 2 : 1) : 0;
+  if (wbDrawsRough(shapeData || linkData, !plainLine)) pathData = wbRoughD(pathData, d.id);
+  // A gradient or a fill style swaps the plain colour for a paint server in
+  // this group's own defs (null when there is none, which also drops a stale one).
+  const fillPaint = wbSyncFillDefs(node, d.id, shapeData);
+  if (fillPaint) fill = fillPaint;
+  d3.select(node).select(".sketch-path")
+    .classed("wb-flow", flowing)
+    // The highlighter's multiply, re-applied every render and cleared on
+    // every other kind so a reused element cannot keep it: the same reason
+    // the width and opacity above are set explicitly rather than only when
+    // present. Inline rather than a class because the export clones these
+    // nodes into a standalone SVG.
+    .style("mix-blend-mode", isHighlighterStroke ? wbHighlighterBlend() : null)
+    // The flat end a marker leaves, set here rather than only on the live
+    // path: the enter selection above appends every sketch with a round cap
+    // and nothing updated it, so a highlighter stroke was square while it
+    // was being drawn and round from the first render after mouseup
+    // (measured: `getComputedStyle(...).strokeLinecap` read round on both
+    // saved strokes while the pad read square).
+    .attr("stroke-linecap", isHighlighterStroke ? HIGHLIGHTER_STYLE.lineCap : "round")
+    .attr("stroke-linejoin", isHighlighterStroke ? HIGHLIGHTER_STYLE.lineJoin : "round")
+    .attr("d", pathData)
+    .attr("stroke", stroke)
+    .attr("stroke-width", strokeWidth)
+    .attr("stroke-opacity", strokeOpacity)
+    .attr("fill", fill)
+    .attr("fill-opacity", fillOpacity)
+    // `null` removes the attribute entirely (d3's own convention) rather
+    // than setting `stroke-dasharray=""`, which some renderers treat as
+    // "zero-length dashes" instead of "solid", a reused element from a
+    // dashed sketch must not leave a stale dasharray on a solid one.
+    .attr("stroke-dasharray", dashArray);
+  wbSetFlowAnimation(d3.select(node).select(".sketch-path").node(), flowing ? flowPeriod : 0);
+  //: The Format panel's opacity and shadow (decision 19), on the group so
+  //: the label goes with the shape; an attribute and an inline style, both
+  //: of which the export's clone keeps.
+  const look = shapeData || linkData;
+  d3.select(node)
+    .attr("opacity", look?.alpha != null && look.alpha < 1 ? look.alpha : null)
+    .style("filter", wbShadowCss(look));
+  wbSyncSketchTip(node, look);
+  // After the path, which the label is laid out from (decision 12).
+  wbPaintShapeLabel(node, shapeData, d);
+  wbFmtState.effects?.paintShape(node, shapeData, pathData, d.id); // glass, picture fill, label shadow (whiteboard-effects.js)
+  wbPaintLinkLabel(node, d, linkData);
+  return pathData;
+};
+
+renderWhiteboard.parts.wbPaintSketch = function wbPaintSketch(d, strokePaintKey, linkEnds) {
+  const strokeKey = strokePaintKey(d);
+  const drawn = this.querySelector(".sketch-path");
+  if (strokeKey && this._wbStrokeKey === strokeKey && drawn?.getAttribute("d") === this._wbStrokeD) return;
+  const pathData = renderWhiteboard.parts.wbPaintSketchLook(this, d, renderWhiteboard.parts.wbSketchLook(d, linkEnds));
+  this._wbStrokeKey = strokeKey;
+  this._wbStrokeD = strokeKey ? pathData : null;
+  //: The plain path, for the jump pass to go back to when its jumps no longer apply.
+  this._wbPlainD = strokeKey ? pathData : null;
+};
+
+//: Card resize: asked for directly ("resizing... cards"). `width`/`height`
+//: are nullable (unset means "auto", the CSS-sized default every card used
+//: before this existed); a resize sets them explicitly for the first time.
+//: Shares `resizeDrag`'s own maths (see `renderWbObjects`) rather than a
+//: second copy: the two differ only in which element/datum they close
+//: over, so it's built inline here with the same shape.
+renderWhiteboard.parts.nodeResizeDrag = function nodeResizeDrag(handle) {
+  let rawDX = 0, rawDY = 0;
+  return d3.drag()
+    // The handle sits inside the card it resizes, see
+    // `wbStableDragContainer`. Matters for `w`/`n`, which move x/y too.
+    .container(wbStableDragContainer(".node-card"))
+    .on("start", (event, d) => {
+      event.sourceEvent.stopPropagation();
+      rawDX = 0;
+      rawDY = 0;
+      d._resizeUndoBefore = WB_KIND_INFO.node.payload(d);
+      d._linkedSketches = wbLinkedSketchesFor(d.id, "node");
+      //: Measured once, at the press: the height the text needs.
+      const card = wbInstances.query(`.node-card[data-id="${d.id}"]`);
+      d._fitH = card && !wbExpandedNodes.has(d.id) ? wbCardFitHeight(card) : null;
+      d._gesture = wbBeginGesture(() => wbRestoreBox("node", d, d._resizeUndoBefore));
+    })
+    .on("drag", (event, d) => {
+      if (d._gesture?.cancelled) return;
+      const transform = d3.zoomTransform(wbInstances.container());
+      rawDX += event.dx / transform.k;
+      rawDY += event.dy / transform.k;
+      const startW = d._resizeStartW ?? (d._resizeStartW = d.width || WB_CARD_DEFAULT_SIZE.w);
+      const startH = d._resizeStartH ?? (d._resizeStartH = d.height || WB_CARD_DEFAULT_SIZE.h);
+      const startX = d._resizeStartX ?? (d._resizeStartX = d.x);
+      const startY = d._resizeStartY ?? (d._resizeStartY = d.y);
+      const box = wbResizeBox({ x: startX, y: startY, w: startW, h: startH }, handle, rawDX, rawDY,
+        event.sourceEvent.shiftKey, event.sourceEvent.altKey, WB_OBJECT_MIN_SIZE);
+      let width = box.w, height = box.h, x = box.x, y = box.y;
+      //: Guided, never preset (INBOX 825 item 2): a neighbour's edge, width
+      //: or height, the grid, or the text's own height; Alt and Shift hold them off.
+      if (!event.sourceEvent.shiftKey && !event.sourceEvent.altKey) {
+        ({ width, height } = wbGuidedResize("node", d, handle, { x: startX, y: startY, w: startW, h: startH }, width, height, { fit: d._fitH }));
+        if (handle.includes("w")) x = startX + (startW - width);
+        if (handle.includes("n")) y = startY + (startH - height);
+      }
+      d.width = width;
+      d.height = height;
+      d.x = x;
+      d.y = y;
+      const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
+      if (el) {
+        el.style.width = `${width}px`;
+        el.style.height = `${height}px`;
+        el.style.transform = wbItemTransform(d);
+      }
+      //: **The arrows and the links follow a card's resize as they follow a
+      //: move** (the owner, 2026-10-26: "the side arrows dont move with it").
+      //: The object's resize did this; the card's left the four arrows and
+      //: every link on the old box until the release (measured: the right
+      //: arrow 17px outside the box at the press, 98px inside it at +120).
+      wbMapNodeSizeCache?.delete(d.id);
+      if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
+      wbQueueSelectionBar();
+    })
+    .on("end", async (event, d) => {
+      wbClearAlignmentGuides();
+      delete d._linkedSketches;
+      delete d._fitH;
+      delete d._resizeStartW;
+      delete d._resizeStartH;
+      delete d._resizeStartX;
+      delete d._resizeStartY;
+      const before = d._resizeUndoBefore;
+      delete d._resizeUndoBefore;
+      const cancelled = wbEndGesture(d._gesture);
+      delete d._gesture;
+      //: Escape put it back; and a press that resized nothing (each half of
+      //: the double-click that fits the text is one) is not a resize.
+      if (cancelled || (before && before.width === (d.width ?? null) && before.height === (d.height ?? null))) return;
+      await wbSaveNode(d);
+      wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
+      if (before) wbPushUndo({ action: "move", kind: "node", id: d.id, before });
+      wbScheduleRender();
+    });
+};
+
+//: Rotation: asked for directly, more than once ("rotations", "anchor
+//: points, rotations, resizing, cropping"). A single handle above the
+//: item's own top-centre, the same convention every drawing app uses;
+//: `getBoundingClientRect()`'s centre stays correct even mid-rotation
+//: (an axis-aligned box's centre coincides with the true rotation centre
+//: regardless of how far the box itself has turned), so this needs no
+//: zoom/pan math the way position drags do, only the *angle* to the
+//: cursor matters, and angle is unaffected by uniform scale/pan.
+renderWhiteboard.parts.nodeRotateDrag = function nodeRotateDrag() {
+  return d3.drag()
+    .on("start", (event, d) => {
+      event.sourceEvent.stopPropagation();
+      d._rotateUndoBefore = WB_KIND_INFO.node.payload(d);
+      //: The links touching it, found once: a turn moves their endpoints
+      //: as much as a move does, and without this they stayed where the
+      //: unturned box had them until the next move (INBOX 647).
+      d._linkedSketches = wbLinkedSketchesFor(d.id, "node");
+      d._gesture = wbBeginGesture(() => wbRestoreBox("node", d, d._rotateUndoBefore));
+    })
+    .on("drag", (event, d) => {
+      if (d._gesture?.cancelled) return;
+      const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      d.rotation = wbAngleFromCenterDeg(
+        rect.left + rect.width / 2, rect.top + rect.height / 2,
+        event.sourceEvent.clientX, event.sourceEvent.clientY,
+        event.sourceEvent.shiftKey
+      );
+      el.style.transform = wbItemTransform(d);
+      if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
+      wbQueueSelectionBar();
+    })
+    .on("end", async (event, d) => {
+      const before = d._rotateUndoBefore;
+      delete d._rotateUndoBefore;
+      delete d._linkedSketches;
+      const cancelled = wbEndGesture(d._gesture);
+      delete d._gesture;
+      //: A press that turned nothing (each half of a double-click is one)
+      //: saves nothing and leaves no undo step to press through.
+      if (cancelled || (before && (before.rotation || 0) === (d.rotation || 0))) return;
+      await wbSaveNode(d);
+      if (before) wbPushUndo({ action: "move", kind: "node", id: d.id, before });
+    });
+};
+
+//: A card's own drag; the filter keeps every drawing tool out of its way.
+renderWhiteboard.parts.wbNodeDrag = function wbNodeDrag() {
+  return d3.drag()
+    .clickDistance(WB_CLICK_SLOP)
+    // Reported directly: drawing over a note "just moves the note
+    // instead" of drawing on it. Cards sit in `#wb-html-layer`, a sibling
+    // painted on top of `#wb-svg-layer`, a pointerdown that lands on a
+    // card never reaches the SVG layer's own draw listener at all, and
+    // this drag (bound directly to the card) intercepted it first
+    // regardless of which tool was active. Filtering it out here, rather
+    // than only inside the start/drag handlers below, stops d3 from
+    // capturing the gesture in the first place, so the same pointerdown
+    // is free to bubble to `containerEl`'s brush listener instead.
+    // A resize handle (below) owns its own drag, same reasoning as
+    // `objDrag`'s own filter, and a real bug this filter's absence caused:
+    // without the exclusion, this card-level drag also engaged for the
+    // exact same pointerdown, and whichever one's gesture-tracking the
+    // browser resolved first silently won, so a resize handle drag never
+    // visibly resized anything.
+    // `currentTool !== "lasso"`: reported directly ("the lasso tool
+    // doesn't work properly"), a lasso loop is meant to start from
+    // anywhere, including right at a card's own edge, but this filter
+    // (unlike the lasso's own pointerdown listener) never excluded the
+    // lasso tool the way it already excludes the brush tools, so a lasso
+    // gesture begun on top of a card silently moved the card instead of
+    // ever reaching the lasso's own draw logic.
+    // `.wb-card-more`: the Show more/less toggle added below, without this
+    // exclusion its pointerdown started a card drag the same way a resize
+    // handle's did before it was excluded (see that comment above), so the
+    // click never registered and the toggle silently did nothing.
+    .filter((event) => !wbIsSecondTouch(event) && !WB_BRUSH_TOOLS.has(window.currentTool) && window.currentTool !== "lasso" && !event.ctrlKey && !event.button && !event.target.closest(".wb-resize-handle, .wb-rotate-handle, .wb-card-more"))
+    .on("start", dragStart)
+    .on("drag", dragging)
+    .on("end", dragEndNode);
+};
+
+// Reported directly: "when I attach notes to a whiteboard I want to see
+// the WHOLE note, not a cut-off version". This used to hard-truncate to
+// 100 plain-text characters with no way back to the rest, worse than the
+// Notes list's own long-note handling, which this now matches: render the
+// full note through the app's real markdown renderer (not textContent: 
+// a note can have headings, code, links), clamp it only past a height cap,
+// and give it the same "Show more"/"Show less" control and wording as
+// `.entry-more`, keyed by this whiteboard node's id in `wbExpandedNodes`
+// (not the note's own id: the same note can sit on the board twice).
+//: A card that is showing its whole note sizes to the note, with the stored
+//: height kept as a floor so collapsing puts the box back exactly where the
+//: person left it and an expanded card never becomes *smaller* than the one
+//: they sized by hand. `height: ""` rather than `auto` so the element falls
+//: back to the stylesheet's own rule rather than to a second hard value.
+renderWhiteboard.parts.wbCardExpandHeight = function wbCardExpandHeight(el, d) {
+  if (!el) return;
+  const stored = d.height ? `${d.height}px` : "";
+  if (wbExpandedNodes.has(d.id)) {
+    el.style.height = "";
+    el.style.minHeight = stored;
+  } else {
+    el.style.height = stored;
+    el.style.minHeight = "";
+  }
+};
+
+//: A new card's note, drawn through the markdown renderer with its Show more control.
+renderWhiteboard.parts.wbBuildCard = function wbBuildCard(d, entriesById) {
+  const card = d3.select(this);
+  const entry = entriesById.get(String(d.entry_id));
+  if (!entry) {
+    // **"Loading…" with nothing loading.** `entriesById` is built from
+    // `allEntries`, the app's in-memory note list, so a card whose note
+    // was created *after* the last `loadEntries()` said "Loading…"
+    // forever, because nothing here ever fetched it. Every path that
+    // creates a note and immediately places it now refreshes that list
+    // first (`wbMindMapAddCard`), which is the real
+    // fix; this branch is the honest fallback for the case that remains:
+    // a card pointing at a note that has actually been deleted.
+    card.append("div").attr("class", "wb-card-content muted").node().textContent =
+      "This note is no longer here";
+    return;
+  }
+  // A sketch's actual content is a file attachment, not text, never
+  // reflected here before (§89 item 10): thumb_attachment_id/thumb_url
+  // covers that, entry.attachments covers a note with a real attached
+  // image. Same priority libraryCard() (library.js) already uses. A
+  // pasted/dropped image living as inline markdown in entry.content is
+  // NOT handled here: that already renders through renderMarkdown below,
+  // and would be shown twice if it were.
+  const firstImageAttachment = (entry.attachments || []).find((a) => a.is_image);
+  const thumbSrc = entry.thumb_attachment_id
+    ? mediaSrc(`/files/${entry.thumb_attachment_id}`)
+    : entry.thumb_url && !isRemoteImage(entry.thumb_url)
+    ? mediaSrc(entry.thumb_url)
+    : firstImageAttachment
+    ? mediaSrc(`/files/${firstImageAttachment.id}`)
+    : null;
+  if (thumbSrc) {
+    card.append("img").attr("class", "wb-card-thumb").attr("src", thumbSrc).attr("alt", "").attr("loading", "lazy");
+  }
+  const contentEl = card.append("div").attr("class", "wb-card-content").node();
+  const text = entry.content || entry.preview || "";
+  if (!text) {
+    // The thumbnail above IS the content for a sketch/image-only note, 
+    // "Empty note" next to a picture would read as a bug, not a note.
+    if (!thumbSrc) contentEl.textContent = "Empty note";
+    return;
+  }
+  renderMarkdown(contentEl, text);
+  //: A clipped row (first 300 characters) is drawn again with the whole note once it arrives.
+  if (entry.content_truncated) fullEntry(entry.id).then((whole) => {
+    if (!contentEl.isConnected || contentEl.querySelector("textarea")) return;
+    contentEl.replaceChildren();
+    renderMarkdown(contentEl, whole.content);
+    wbScheduleCardClampSync();
+  }, () => {});
+  //: **Whether a note needs a "Show more" is a question about the box, not
+  //: about the note.** This used to ask `text.length > LONG_NOTE_CHARS ||
+  //: lines > LONG_NOTE_LINES`, the Notes list's own rule, and returned
+  //: early for anything under it. But the Notes list shows a note in a
+  //: column as tall as the page, while a board card is exactly as tall as
+  //: the person dragged it to, so the two questions have different
+  //: answers: measured, a 324-character note (well under the 500-character
+  //: threshold) in a 320x120 card laid out 215px of text, 112px of it
+  //: below the card's own bottom edge, with no clamp and no way to ask for
+  //: the rest. That is INBOX 238's "the text goes out of the panel
+  //: border".
+  //:
+  //: So the toggle is built for every note that has text, and
+  //: `wbSyncCardClamps` below hides it again on the cards where everything
+  //: already fits. Hidden rather than absent because the answer changes
+  //: whenever the card is resized, and a button that has to be created on
+  //: a resize is a button that will be missing after one.
+  const expanded = () => wbExpandedNodes.has(d.id);
+  contentEl.classList.toggle("wb-card-content-clamped", !expanded());
+  const toggle = card.append("button")
+    .attr("type", "button")
+    .attr("class", "entry-more wb-card-more")
+    .attr("hidden", "")
+    .text(expanded() ? "Show less" : "Show more");
+  toggle.on("click", (event) => {
+    event.stopPropagation();
+    if (expanded()) wbExpandedNodes.delete(d.id);
+    else wbExpandedNodes.add(d.id);
+    contentEl.classList.toggle("wb-card-content-clamped", !expanded());
+    toggle.text(expanded() ? "Show less" : "Show more");
+    //: The box has to grow with what is now inside it. Reported with a
+    //: screenshot of a poem running three paragraphs out through the
+    //: bottom edge of its own card: a placed note carries a stored
+    //: `height`, written below as an inline style, and "Show more" only
+    //: ever unclamped the text, so the extra lines were laid out beyond a
+    //: box that still measured what it did when the text was clipped.
+    //: Applied to this card directly as well as in the merge below,
+    //: because nothing redraws the board on a toggle.
+    renderWhiteboard.parts.wbCardExpandHeight(this.closest(".wb-node") || card.node(), d);
+    //: Collapsing brings the clip back, which can make the toggle itself
+    //: unnecessary (a note that fits the box it was collapsed into), so
+    //: the answer is recomputed rather than assumed to still hold.
+    wbSyncCardClamps();
+    wbSaveExpandedNodes();
   });
+};
+
+//: Handles arm lazily (wbArmHandles), so a card carries none until it is pointed at.
+renderWhiteboard.parts.wbArmCardHandles = function wbArmCardHandles() {
+  const card = d3.select(this);
+  wbArmHandles(this, () => {
+    for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
+      card.append("div")
+        .attr("class", "wb-resize-handle")
+        .attr("data-handle", handle)
+        //: The same title the object handles carry, for the same reason: the
+        //: double-click-to-fit gesture had nothing on screen saying it existed.
+        .attr("title", "Drag to resize: Shift keeps the proportions, double-click fits the card to its note")
+        .call(renderWhiteboard.parts.nodeResizeDrag(handle));
+    }
+    card.append("div")
+      .attr("class", "wb-rotate-handle")
+      .attr("title", "Drag to rotate: Shift snaps to 15°, double-click stands it upright")
+      .call(renderWhiteboard.parts.nodeRotateDrag());
+  });
+};
+
+//: Every card, new or kept: position, size, stack order and the eight-line cap.
+renderWhiteboard.parts.wbUpdateCards = function wbUpdateCards(nodeSelection, nodeEnter, stackRank) {
+  nodeSelection.merge(nodeEnter)
+    .style("transform", wbItemTransform)
+    .style("width", (d) => (d.width ? `${d.width}px` : ""))
+    //: An expanded card is sized by its text, not by the height it was saved
+    //: at (see `wbCardExpandHeight`), so a redraw does not clip it again.
+    .style("height", (d) => (d.height && !wbExpandedNodes.has(d.id) ? `${d.height}px` : ""))
+    .style("min-height", (d) => (d.height && wbExpandedNodes.has(d.id) ? `${d.height}px` : ""))
+    .style("z-index", (d) => stackRank.get(`node:${d.id}`))
+    //: The eight-line cap is for the card that has never been resized and so
+    //: has no height of its own to clip against. A card with a stored height
+    //: does, and applying both would clamp a 700px card to eight lines and
+    //: leave the rest of it empty under a "Show more" hiding nothing.
+    .each(function (d) {
+      this.querySelector(".wb-card-content")
+        ?.classList.toggle("wb-card-content-capped", !d.height);
+    });
+};
+
+//: A render places every topic from its data; a dragged branch's layer would carry them a
+//: second time, so it is undone first (the first line below).
+function renderWhiteboard() {
+  if (wbMapDragLayer.live) wbMapDragLayer.close();
+  wbPruneSelection();
+  //: A render replaces every map node's element, so every measurement taken
+  //: from the previous set is about to describe something that is gone.
+  wbClearMapNodeSizeCache();
+  wbItemElCache.clear();
+  wbItemElIndex.count = -1;
+  //: And the overview's items were drawn from that set: the next pan frame
+  //: redraws them rather than only moving its rectangle.
+  wbNavState.stale = true;
+  // Built once per render, not once per card: `allEntries.find(...)` inside
+  // a per-card callback is O(cards × notebook size) on every single render
+  //, for a large notebook that is real, measurable work paid on every
+  // whiteboard update, not just once. A note's id never changes shape
+  // (string vs number) across a session, so this Map stays valid for the
+  // whole render pass below.
+  const entriesById = new Map(allEntries.map((e) => [String(e.id), e]));
+
+  renderWhiteboard.parts.wbSyncEmptyHint();
+
+  // Render Sketches (SVG)
+  const svgGroup = d3.select(wbInstances.layer("wb-zoom-group"));
+  //: Every stroke's group wherever its band put it (decision 43); a new one
+  //: is made in the base layer and `wbPlaceSketchBands` moves it.
+  const sketchSelection = svgGroup.selectAll(() => wbInstances.queryAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
+    .data((wbState.sketches || []).filter(wbSketchIsDrawable), d => d.id);
+    
+
+  const sketchDrag = renderWhiteboard.parts.wbSketchDrag();
+
+  const sketchEnter = renderWhiteboard.parts.wbEnterSketches(sketchSelection, sketchDrag);
+
+
+  const sketchUpdate = sketchEnter.merge(sketchSelection);
+
+  renderWhiteboard.parts.wbClassSketches(sketchUpdate);
+
+  const { strokePaintKey, linkEnds } = renderWhiteboard.parts.wbSketchPaintKeys();
+  sketchUpdate.each(function (d) { renderWhiteboard.parts.wbPaintSketch.call(this, d, strokePaintKey, linkEnds); });
 
   sketchSelection.exit().remove();
   //: Off a map the sizes were read before the objects below were repainted, so none is kept.
@@ -3196,136 +3576,6 @@ function renderWhiteboard() {
     .data(wbState.nodes, d => d.id);
     
 
-  //: Card resize: asked for directly ("resizing... cards"). `width`/`height`
-  //: are nullable (unset means "auto", the CSS-sized default every card used
-  //: before this existed); a resize sets them explicitly for the first time.
-  //: Shares `resizeDrag`'s own maths (see `renderWbObjects`) rather than a
-  //: second copy: the two differ only in which element/datum they close
-  //: over, so it's built inline here with the same shape.
-  function nodeResizeDrag(handle) {
-    let rawDX = 0, rawDY = 0;
-    return d3.drag()
-      // The handle sits inside the card it resizes, see
-      // `wbStableDragContainer`. Matters for `w`/`n`, which move x/y too.
-      .container(wbStableDragContainer(".node-card"))
-      .on("start", (event, d) => {
-        event.sourceEvent.stopPropagation();
-        rawDX = 0;
-        rawDY = 0;
-        d._resizeUndoBefore = WB_KIND_INFO.node.payload(d);
-        d._linkedSketches = wbLinkedSketchesFor(d.id, "node");
-        //: Measured once, at the press: the height the text needs.
-        const card = wbInstances.query(`.node-card[data-id="${d.id}"]`);
-        d._fitH = card && !wbExpandedNodes.has(d.id) ? wbCardFitHeight(card) : null;
-        d._gesture = wbBeginGesture(() => wbRestoreBox("node", d, d._resizeUndoBefore));
-      })
-      .on("drag", (event, d) => {
-        if (d._gesture?.cancelled) return;
-        const transform = d3.zoomTransform(wbInstances.container());
-        rawDX += event.dx / transform.k;
-        rawDY += event.dy / transform.k;
-        const startW = d._resizeStartW ?? (d._resizeStartW = d.width || WB_CARD_DEFAULT_SIZE.w);
-        const startH = d._resizeStartH ?? (d._resizeStartH = d.height || WB_CARD_DEFAULT_SIZE.h);
-        const startX = d._resizeStartX ?? (d._resizeStartX = d.x);
-        const startY = d._resizeStartY ?? (d._resizeStartY = d.y);
-        const box = wbResizeBox({ x: startX, y: startY, w: startW, h: startH }, handle, rawDX, rawDY,
-          event.sourceEvent.shiftKey, event.sourceEvent.altKey, WB_OBJECT_MIN_SIZE);
-        let width = box.w, height = box.h, x = box.x, y = box.y;
-        //: Guided, never preset (INBOX 825 item 2): a neighbour's edge, width
-        //: or height, the grid, or the text's own height; Alt and Shift hold them off.
-        if (!event.sourceEvent.shiftKey && !event.sourceEvent.altKey) {
-          ({ width, height } = wbGuidedResize("node", d, handle, { x: startX, y: startY, w: startW, h: startH }, width, height, { fit: d._fitH }));
-          if (handle.includes("w")) x = startX + (startW - width);
-          if (handle.includes("n")) y = startY + (startH - height);
-        }
-        d.width = width;
-        d.height = height;
-        d.x = x;
-        d.y = y;
-        const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
-        if (el) {
-          el.style.width = `${width}px`;
-          el.style.height = `${height}px`;
-          el.style.transform = wbItemTransform(d);
-        }
-        //: **The arrows and the links follow a card's resize as they follow a
-        //: move** (the owner, 2026-10-26: "the side arrows dont move with it").
-        //: The object's resize did this; the card's left the four arrows and
-        //: every link on the old box until the release (measured: the right
-        //: arrow 17px outside the box at the press, 98px inside it at +120).
-        wbMapNodeSizeCache?.delete(d.id);
-        if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
-        wbQueueSelectionBar();
-      })
-      .on("end", async (event, d) => {
-        wbClearAlignmentGuides();
-        delete d._linkedSketches;
-        delete d._fitH;
-        delete d._resizeStartW;
-        delete d._resizeStartH;
-        delete d._resizeStartX;
-        delete d._resizeStartY;
-        const before = d._resizeUndoBefore;
-        delete d._resizeUndoBefore;
-        const cancelled = wbEndGesture(d._gesture);
-        delete d._gesture;
-        //: Escape put it back; and a press that resized nothing (each half of
-        //: the double-click that fits the text is one) is not a resize.
-        if (cancelled || (before && before.width === (d.width ?? null) && before.height === (d.height ?? null))) return;
-        await wbSaveNode(d);
-        wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
-        if (before) wbPushUndo({ action: "move", kind: "node", id: d.id, before });
-        wbScheduleRender();
-      });
-  }
-
-  //: Rotation: asked for directly, more than once ("rotations", "anchor
-  //: points, rotations, resizing, cropping"). A single handle above the
-  //: item's own top-centre, the same convention every drawing app uses;
-  //: `getBoundingClientRect()`'s centre stays correct even mid-rotation
-  //: (an axis-aligned box's centre coincides with the true rotation centre
-  //: regardless of how far the box itself has turned), so this needs no
-  //: zoom/pan math the way position drags do, only the *angle* to the
-  //: cursor matters, and angle is unaffected by uniform scale/pan.
-  function nodeRotateDrag() {
-    return d3.drag()
-      .on("start", (event, d) => {
-        event.sourceEvent.stopPropagation();
-        d._rotateUndoBefore = WB_KIND_INFO.node.payload(d);
-        //: The links touching it, found once: a turn moves their endpoints
-        //: as much as a move does, and without this they stayed where the
-        //: unturned box had them until the next move (INBOX 647).
-        d._linkedSketches = wbLinkedSketchesFor(d.id, "node");
-        d._gesture = wbBeginGesture(() => wbRestoreBox("node", d, d._rotateUndoBefore));
-      })
-      .on("drag", (event, d) => {
-        if (d._gesture?.cancelled) return;
-        const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        d.rotation = wbAngleFromCenterDeg(
-          rect.left + rect.width / 2, rect.top + rect.height / 2,
-          event.sourceEvent.clientX, event.sourceEvent.clientY,
-          event.sourceEvent.shiftKey
-        );
-        el.style.transform = wbItemTransform(d);
-        if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
-        wbQueueSelectionBar();
-      })
-      .on("end", async (event, d) => {
-        const before = d._rotateUndoBefore;
-        delete d._rotateUndoBefore;
-        delete d._linkedSketches;
-        const cancelled = wbEndGesture(d._gesture);
-        delete d._gesture;
-        //: A press that turned nothing (each half of a double-click is one)
-        //: saves nothing and leaves no undo step to press through.
-        if (cancelled || (before && (before.rotation || 0) === (d.rotation || 0))) return;
-        await wbSaveNode(d);
-        if (before) wbPushUndo({ action: "move", kind: "node", id: d.id, before });
-      });
-  }
-
   const nodeEnter = nodeSelection.enter()
     .append("div")
     .attr("class", "wb-card node-card")
@@ -3334,38 +3584,7 @@ function renderWhiteboard() {
     .style("width", (d) => (d.width ? `${d.width}px` : ""))
     .style("height", (d) => (d.height ? `${d.height}px` : ""))
     .style("z-index", (d) => stackRank.get(`node:${d.id}`))
-    .call(d3.drag()
-      .clickDistance(WB_CLICK_SLOP)
-      // Reported directly: drawing over a note "just moves the note
-      // instead" of drawing on it. Cards sit in `#wb-html-layer`, a sibling
-      // painted on top of `#wb-svg-layer`, a pointerdown that lands on a
-      // card never reaches the SVG layer's own draw listener at all, and
-      // this drag (bound directly to the card) intercepted it first
-      // regardless of which tool was active. Filtering it out here, rather
-      // than only inside the start/drag handlers below, stops d3 from
-      // capturing the gesture in the first place, so the same pointerdown
-      // is free to bubble to `containerEl`'s brush listener instead.
-      // A resize handle (below) owns its own drag, same reasoning as
-      // `objDrag`'s own filter, and a real bug this filter's absence caused:
-      // without the exclusion, this card-level drag also engaged for the
-      // exact same pointerdown, and whichever one's gesture-tracking the
-      // browser resolved first silently won, so a resize handle drag never
-      // visibly resized anything.
-      // `currentTool !== "lasso"`: reported directly ("the lasso tool
-      // doesn't work properly"), a lasso loop is meant to start from
-      // anywhere, including right at a card's own edge, but this filter
-      // (unlike the lasso's own pointerdown listener) never excluded the
-      // lasso tool the way it already excludes the brush tools, so a lasso
-      // gesture begun on top of a card silently moved the card instead of
-      // ever reaching the lasso's own draw logic.
-      // `.wb-card-more`: the Show more/less toggle added below, without this
-      // exclusion its pointerdown started a card drag the same way a resize
-      // handle's did before it was excluded (see that comment above), so the
-      // click never registered and the toggle silently did nothing.
-      .filter((event) => !wbIsSecondTouch(event) && !WB_BRUSH_TOOLS.has(window.currentTool) && window.currentTool !== "lasso" && !event.ctrlKey && !event.button && !event.target.closest(".wb-resize-handle, .wb-rotate-handle, .wb-card-more"))
-      .on("start", dragStart)
-      .on("drag", dragging)
-      .on("end", dragEndNode))
+    .call(renderWhiteboard.parts.wbNodeDrag())
     .on("click", (event, d) => {
       // ROADMAP row 0(b), asked for directly: with the Hand active, a plain
       // click on something switches to Select and selects it. A pan is a
@@ -3386,166 +3605,13 @@ function renderWhiteboard() {
       if (window.currentTool === "eraser" && wbErasing) wbDeleteNode(d);
     });
       
-  // Reported directly: "when I attach notes to a whiteboard I want to see
-  // the WHOLE note, not a cut-off version". This used to hard-truncate to
-  // 100 plain-text characters with no way back to the rest, worse than the
-  // Notes list's own long-note handling, which this now matches: render the
-  // full note through the app's real markdown renderer (not textContent: 
-  // a note can have headings, code, links), clamp it only past a height cap,
-  // and give it the same "Show more"/"Show less" control and wording as
-  // `.entry-more`, keyed by this whiteboard node's id in `wbExpandedNodes`
-  // (not the note's own id: the same note can sit on the board twice).
-  //: A card that is showing its whole note sizes to the note, with the stored
-  //: height kept as a floor so collapsing puts the box back exactly where the
-  //: person left it and an expanded card never becomes *smaller* than the one
-  //: they sized by hand. `height: ""` rather than `auto` so the element falls
-  //: back to the stylesheet's own rule rather than to a second hard value.
-  function wbCardExpandHeight(el, d) {
-    if (!el) return;
-    const stored = d.height ? `${d.height}px` : "";
-    if (wbExpandedNodes.has(d.id)) {
-      el.style.height = "";
-      el.style.minHeight = stored;
-    } else {
-      el.style.height = stored;
-      el.style.minHeight = "";
-    }
-  }
+  nodeEnter.each(function (d) { renderWhiteboard.parts.wbBuildCard.call(this, d, entriesById); });
 
-  nodeEnter.each(function (d) {
-    const card = d3.select(this);
-    const entry = entriesById.get(String(d.entry_id));
-    if (!entry) {
-      // **"Loading…" with nothing loading.** `entriesById` is built from
-      // `allEntries`, the app's in-memory note list, so a card whose note
-      // was created *after* the last `loadEntries()` said "Loading…"
-      // forever, because nothing here ever fetched it. Every path that
-      // creates a note and immediately places it now refreshes that list
-      // first (`wbMindMapAddCard`), which is the real
-      // fix; this branch is the honest fallback for the case that remains:
-      // a card pointing at a note that has actually been deleted.
-      card.append("div").attr("class", "wb-card-content muted").node().textContent =
-        "This note is no longer here";
-      return;
-    }
-    // A sketch's actual content is a file attachment, not text, never
-    // reflected here before (§89 item 10): thumb_attachment_id/thumb_url
-    // covers that, entry.attachments covers a note with a real attached
-    // image. Same priority libraryCard() (library.js) already uses. A
-    // pasted/dropped image living as inline markdown in entry.content is
-    // NOT handled here: that already renders through renderMarkdown below,
-    // and would be shown twice if it were.
-    const firstImageAttachment = (entry.attachments || []).find((a) => a.is_image);
-    const thumbSrc = entry.thumb_attachment_id
-      ? mediaSrc(`/files/${entry.thumb_attachment_id}`)
-      : entry.thumb_url && !isRemoteImage(entry.thumb_url)
-      ? mediaSrc(entry.thumb_url)
-      : firstImageAttachment
-      ? mediaSrc(`/files/${firstImageAttachment.id}`)
-      : null;
-    if (thumbSrc) {
-      card.append("img").attr("class", "wb-card-thumb").attr("src", thumbSrc).attr("alt", "").attr("loading", "lazy");
-    }
-    const contentEl = card.append("div").attr("class", "wb-card-content").node();
-    const text = entry.content || entry.preview || "";
-    if (!text) {
-      // The thumbnail above IS the content for a sketch/image-only note, 
-      // "Empty note" next to a picture would read as a bug, not a note.
-      if (!thumbSrc) contentEl.textContent = "Empty note";
-      return;
-    }
-    renderMarkdown(contentEl, text);
-    //: A clipped row (first 300 characters) is drawn again with the whole note once it arrives.
-    if (entry.content_truncated) fullEntry(entry.id).then((whole) => {
-      if (!contentEl.isConnected || contentEl.querySelector("textarea")) return;
-      contentEl.replaceChildren();
-      renderMarkdown(contentEl, whole.content);
-      wbScheduleCardClampSync();
-    }, () => {});
-    //: **Whether a note needs a "Show more" is a question about the box, not
-    //: about the note.** This used to ask `text.length > LONG_NOTE_CHARS ||
-    //: lines > LONG_NOTE_LINES`, the Notes list's own rule, and returned
-    //: early for anything under it. But the Notes list shows a note in a
-    //: column as tall as the page, while a board card is exactly as tall as
-    //: the person dragged it to, so the two questions have different
-    //: answers: measured, a 324-character note (well under the 500-character
-    //: threshold) in a 320x120 card laid out 215px of text, 112px of it
-    //: below the card's own bottom edge, with no clamp and no way to ask for
-    //: the rest. That is INBOX 238's "the text goes out of the panel
-    //: border".
-    //:
-    //: So the toggle is built for every note that has text, and
-    //: `wbSyncCardClamps` below hides it again on the cards where everything
-    //: already fits. Hidden rather than absent because the answer changes
-    //: whenever the card is resized, and a button that has to be created on
-    //: a resize is a button that will be missing after one.
-    const expanded = () => wbExpandedNodes.has(d.id);
-    contentEl.classList.toggle("wb-card-content-clamped", !expanded());
-    const toggle = card.append("button")
-      .attr("type", "button")
-      .attr("class", "entry-more wb-card-more")
-      .attr("hidden", "")
-      .text(expanded() ? "Show less" : "Show more");
-    toggle.on("click", (event) => {
-      event.stopPropagation();
-      if (expanded()) wbExpandedNodes.delete(d.id);
-      else wbExpandedNodes.add(d.id);
-      contentEl.classList.toggle("wb-card-content-clamped", !expanded());
-      toggle.text(expanded() ? "Show less" : "Show more");
-      //: The box has to grow with what is now inside it. Reported with a
-      //: screenshot of a poem running three paragraphs out through the
-      //: bottom edge of its own card: a placed note carries a stored
-      //: `height`, written below as an inline style, and "Show more" only
-      //: ever unclamped the text, so the extra lines were laid out beyond a
-      //: box that still measured what it did when the text was clipped.
-      //: Applied to this card directly as well as in the merge below,
-      //: because nothing redraws the board on a toggle.
-      wbCardExpandHeight(this.closest(".wb-node") || card.node(), d);
-      //: Collapsing brings the clip back, which can make the toggle itself
-      //: unnecessary (a note that fits the box it was collapsed into), so
-      //: the answer is recomputed rather than assumed to still hold.
-      wbSyncCardClamps();
-      wbSaveExpandedNodes();
-    });
-  });
-
-  nodeEnter.each(function () {
-    const card = d3.select(this);
-    wbArmHandles(this, () => {
-      for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
-        card.append("div")
-          .attr("class", "wb-resize-handle")
-          .attr("data-handle", handle)
-          //: The same title the object handles carry, for the same reason: the
-          //: double-click-to-fit gesture had nothing on screen saying it existed.
-          .attr("title", "Drag to resize: Shift keeps the proportions, double-click fits the card to its note")
-          .call(nodeResizeDrag(handle));
-      }
-      card.append("div")
-        .attr("class", "wb-rotate-handle")
-        .attr("title", "Drag to rotate: Shift snaps to 15°, double-click stands it upright")
-        .call(nodeRotateDrag());
-    });
-  });
+  nodeEnter.each(renderWhiteboard.parts.wbArmCardHandles);
 
   wbWireContextMenu(nodeEnter, "node");
 
-  nodeSelection.merge(nodeEnter)
-    .style("transform", wbItemTransform)
-    .style("width", (d) => (d.width ? `${d.width}px` : ""))
-    //: An expanded card is sized by its text, not by the height it was saved
-    //: at (see `wbCardExpandHeight`), so a redraw does not clip it again.
-    .style("height", (d) => (d.height && !wbExpandedNodes.has(d.id) ? `${d.height}px` : ""))
-    .style("min-height", (d) => (d.height && wbExpandedNodes.has(d.id) ? `${d.height}px` : ""))
-    .style("z-index", (d) => stackRank.get(`node:${d.id}`))
-    //: The eight-line cap is for the card that has never been resized and so
-    //: has no height of its own to clip against. A card with a stored height
-    //: does, and applying both would clamp a 700px card to eight lines and
-    //: leave the rest of it empty under a "Show more" hiding nothing.
-    .each(function (d) {
-      this.querySelector(".wb-card-content")
-        ?.classList.toggle("wb-card-content-capped", !d.height);
-    });
+  renderWhiteboard.parts.wbUpdateCards(nodeSelection, nodeEnter, stackRank);
 
   nodeSelection.exit().remove();
 

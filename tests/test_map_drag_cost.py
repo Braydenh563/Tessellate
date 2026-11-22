@@ -157,10 +157,10 @@ def test_an_object_is_raised_once_a_gesture_not_once_a_frame() -> None:
     frame paid for a full re-layout of the board."""
     assert WB.count('d3.select(this.closest(".wb-object")).raise();') == 1
     assert (
-        """    if (!d._raised) {
-      d3.select(this.closest(".wb-object")).raise();
-      d._raised = true;
-    }"""
+        """  if (!d._raised) {
+    d3.select(this.closest(".wb-object")).raise();
+    d._raised = true;
+  }"""
         in WB
     )
 

@@ -1,54 +1,176 @@
 (() => {
   // whiteboard-pan.js: middle-button pan, wheel and pinch zoom, the board settings controls (background, sticky fold, rough) and the export button; a section of initWhiteboard (L634).
   // Wrapped: initWhiteboard calls it once, passing the names it shares; nothing here runs at load.
-  function wbInitPan({ selectWbTool }) {
-    const container = d3.select("#whiteboard-container");
-    //: **Middle button: the pan, and nothing else** (INBOX 167: "when I push
-    //: down my middle scroll wheel on my mouse to pan the whiteboard, it is
-    //: very glitch and jittery"). On Windows, Chromium and Edge start their
-    //: own autoscroll on a middle-button press over anything scrollable unless
-    //: the `mousedown` is default-prevented, so the page scrolled with the
-    //: pointer while d3-zoom panned the board with it: two scrolls of one
-    //: gesture, fighting. `mousedown`, not `pointerdown`: preventing the
-    //: pointer event would also suppress the compatibility mouse event d3-zoom
-    //: listens for and the pan would never start. Reasoned from the browser's
-    //: documented behaviour; this sandbox has no autoscroll to observe.
-    //: Registered in the capture phase and before the zoom behaviour: d3-zoom's
-    //: own mousedown handler stops immediate propagation, so a bubbling
-    //: listener added after it on the same element never runs at all
-    //: (measured: the first version of this, added below `call(wbZoom)`,
-    //: prevented nothing).
-    //: On the window rather than the container: measured with a real press,
-    //: the event's target was a layer over the board and the container's own
-    //: capture listener never saw it, while a synthetic press on the container
-    //: was prevented. Anything inside the boards view counts.
-    //: The second half of the same report (INBOX 183: "panning ... by pressing
-    //: down the scrollwheel with a mouse is horrible and doesnt work"). The
-    //: autoscroll guard below was already here and is not enough on its own,
-    //: because nothing else about the gesture said it was a pan: the cursor
-    //: stayed an arrow over the board while the board moved under it, and the
-    //: release fired an `auxclick`, which on Linux is also the primary-selection
-    //: paste. A hand tool drag says "grabbing" the whole time; this now says the
-    //: same thing through the same class the held-space pan uses, so the three
-    //: ways to pan look identical while they run.
-    //: A second finger on the board puts any drag in flight back and leaves the
-    //: gesture to the zoom (INBOX 888; `wbIsSecondTouch` above). Capture, on the
-    //: window, for the reason the middle-button listener below gives.
-    //: **And the zoom has to be able to hear the first finger.** d3-drag listens
-    //: for a touch's moves and ends on the element the touch began on, and ends
-    //: each with `stopImmediatePropagation`, so with the first finger on a card
-    //: its moves never reach d3-zoom on the container: measured, a pinch from a
-    //: note moved the scale 1 to 1 (`wbpinch.js`) because the zoom only ever
-    //: heard the second finger. For as long as two fingers are down the events
-    //: are told not to stop, which leaves d3-drag's own bookkeeping to run its
-    //: course (it ends its gesture on the finger's lift, and its handlers read
-    //: the cancelled gesture and save nothing).
-    let wbPinching = false;
+  let selectWbTool;
+  let container;
+  //: **Middle button: the pan, and nothing else** (INBOX 167: "when I push
+  //: down my middle scroll wheel on my mouse to pan the whiteboard, it is
+  //: very glitch and jittery"). On Windows, Chromium and Edge start their
+  //: own autoscroll on a middle-button press over anything scrollable unless
+  //: the `mousedown` is default-prevented, so the page scrolled with the
+  //: pointer while d3-zoom panned the board with it: two scrolls of one
+  //: gesture, fighting. `mousedown`, not `pointerdown`: preventing the
+  //: pointer event would also suppress the compatibility mouse event d3-zoom
+  //: listens for and the pan would never start. Reasoned from the browser's
+  //: documented behaviour; this sandbox has no autoscroll to observe.
+  //: Registered in the capture phase and before the zoom behaviour: d3-zoom's
+  //: own mousedown handler stops immediate propagation, so a bubbling
+  //: listener added after it on the same element never runs at all
+  //: (measured: the first version of this, added below `call(wbZoom)`,
+  //: prevented nothing).
+  //: On the window rather than the container: measured with a real press,
+  //: the event's target was a layer over the board and the container's own
+  //: capture listener never saw it, while a synthetic press on the container
+  //: was prevented. Anything inside the boards view counts.
+  //: The second half of the same report (INBOX 183: "panning ... by pressing
+  //: down the scrollwheel with a mouse is horrible and doesnt work"). The
+  //: autoscroll guard below was already here and is not enough on its own,
+  //: because nothing else about the gesture said it was a pan: the cursor
+  //: stayed an arrow over the board while the board moved under it, and the
+  //: release fired an `auxclick`, which on Linux is also the primary-selection
+  //: paste. A hand tool drag says "grabbing" the whole time; this now says the
+  //: same thing through the same class the held-space pan uses, so the three
+  //: ways to pan look identical while they run.
+  //: A second finger on the board puts any drag in flight back and leaves the
+  //: gesture to the zoom (INBOX 888; `wbIsSecondTouch` above). Capture, on the
+  //: window, for the reason the middle-button listener below gives.
+  //: **And the zoom has to be able to hear the first finger.** d3-drag listens
+  //: for a touch's moves and ends on the element the touch began on, and ends
+  //: each with `stopImmediatePropagation`, so with the first finger on a card
+  //: its moves never reach d3-zoom on the container: measured, a pinch from a
+  //: note moved the scale 1 to 1 (`wbpinch.js`) because the zoom only ever
+  //: heard the second finger. For as long as two fingers are down the events
+  //: are told not to stop, which leaves d3-drag's own bookkeeping to run its
+  //: course (it ends its gesture on the finger's lift, and its handlers read
+  //: the cancelled gesture and save nothing).
+  let wbPinching = false;
+  let midPanClass;
+  let navMap;
+  let searchInput;
+  let btnAddSketch;
+  let boardSelect;
+  let radialSlot;
+  let linkNode;
+  let linkSlot;
+  let crossSlot;
+  let labelLook;
+  let bgColorPicker;
+  let bgColorReset;
+  let wbPanelMetricsRoot;
+  let resetPanelsBtn;
+  let gridSelect;
+  let snapToggle;
+  let bgImageInput;
+
+  // Draggable toolbar panels, asked for directly. Only the small ⠿ grip
+  // starts a drag: the panels are almost entirely buttons and inputs, so
+  // "grab anywhere on the panel" would fight every click they already
+  // handle. Clamped to `#library-view-whiteboard`'s own box, which is the
+  // visible window for this view (it fills the tab below the header), so a
+  // dragged panel stops at the edge instead of sliding out under the tab bar
+  // or off the side of the screen.
+  function makeWbPanelDraggable(panel, storageKey) {
+    const grip = panel.querySelector(".wb-panel-grip");
+    const bounds = document.getElementById("library-view-whiteboard");
+    if (!grip || !bounds) return;
+
+    function clamp(left, top) {
+      const boundsRect = bounds.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const maxLeft = Math.max(0, boundsRect.width - panelRect.width);
+      const maxTop = Math.max(0, boundsRect.height - panelRect.height);
+      return [Math.min(Math.max(0, left), maxLeft), Math.min(Math.max(0, top), maxTop)];
+    }
+
+    function place(left, top) {
+      panel.style.left = `${left}px`;
+      panel.style.top = `${top}px`;
+      panel.style.right = "auto";
+      panel.style.bottom = "auto";
+      // The bottom-center panel is horizontally centred via `left: 50%` +
+      // `transform: translateX(-50%)`, a centring trick, not a drag offset.
+      // Left uncleared, an explicit `left` still renders shifted left by
+      // half the panel's own width, so a drag ends up visibly ~200px from
+      // wherever the pointer actually released it (found by measuring, not
+      // by reading the CSS, the rendered box and the styled `left` disagreed
+      // by exactly panelWidth / 2).
+      panel.style.transform = "none";
+    }
+
+    const saved = prefs.get(storageKey, null);
+    if (saved) {
+      try {
+        const { left, top } = JSON.parse(saved);
+        const [cLeft, cTop] = clamp(left, top);
+        place(cLeft, cTop);
+      } catch {
+        // A corrupt saved value is not worth failing over, the panel just
+        // keeps its CSS-anchored corner instead.
+      }
+    }
+
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startLeft = 0;
+    let startTop = 0;
+
+    grip.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      wbBoardState.capture(grip, e.pointerId);
+      grip.classList.add("is-dragging");
+      const panelRect = panel.getBoundingClientRect();
+      const boundsRect = bounds.getBoundingClientRect();
+      // Converts from whichever CSS corner (top-left/top-right/…) the panel
+      // started anchored to into an explicit left/top box, so the first drag
+      // of a session moves it from wherever it visually is rather than
+      // snapping somewhere else first.
+      startLeft = panelRect.left - boundsRect.left;
+      startTop = panelRect.top - boundsRect.top;
+      startX = e.clientX;
+      startY = e.clientY;
+      place(startLeft, startTop);
+      e.preventDefault();
+    });
+
+    grip.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const [left, top] = clamp(startLeft + (e.clientX - startX), startTop + (e.clientY - startY));
+      place(left, top);
+    });
+
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      grip.classList.remove("is-dragging");
+      if (e?.pointerId != null) grip.releasePointerCapture?.(e.pointerId);
+      prefs.set(
+        storageKey,
+        JSON.stringify({ left: parseFloat(panel.style.left) || 0, top: parseFloat(panel.style.top) || 0 })
+      );
+    }
+    grip.addEventListener("pointerup", endDrag);
+    grip.addEventListener("pointercancel", endDrag);
+
+    // The box can resize (window resize, the library sidebar opening) after
+    // a position was saved for a larger one, reclamp so a panel never ends
+    // up partly or fully off-screen.
+    new ResizeObserver(() => {
+      if (!panel.style.left) return;
+      const [left, top] = clamp(wbNum(panel.style.left), wbNum(panel.style.top));
+      place(left, top);
+    }).observe(bounds);
+  }
+
+  function wbInitMiddlePan() {
+    container = d3.select("#whiteboard-container");
+
     window.addEventListener("touchstart", (event) => {
       if (event.touches.length < 2 || !event.target?.closest?.("#library-view-whiteboard")) return;
       wbPinching = true;
       wbCancelGesture();
     }, { capture: true, passive: true });
+
     for (const type of ["touchmove", "touchend", "touchcancel"]) {
       window.addEventListener(type, (event) => {
         if (!wbPinching) return;
@@ -56,16 +178,19 @@
         if (type !== "touchmove" && event.touches.length === 0) wbPinching = false;
       }, { capture: true, passive: true });
     }
-    const midPanClass = (on) => {
+
+    midPanClass = (on) => {
       wbMidPanHeld = on;
       wbInstances.container()?.classList.toggle("wb-mid-pan", on);
     };
+
     window.addEventListener("mousedown", (event) => {
       if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) {
         event.preventDefault();
         midPanClass(true);
       }
     }, true);
+
     //: On the window, not the container: a pan that ends with the pointer over
     //: the top bar or off the window would otherwise leave the grabbing cursor
     //: on for good, which is exactly the shape the stray marquee had.
@@ -74,15 +199,21 @@
         if (end !== "mouseup" || event.button === 1) midPanClass(false);
       }, true);
     }
+
     //: The middle release itself: an `auxclick` inside the board is the tail of
     //: a pan and never a command, and letting it through is what makes a pan
     //: paste on Linux or open a link in a card in a new tab.
     window.addEventListener("auxclick", (event) => {
       if (event.button === 1 && event.target?.closest?.("#library-view-whiteboard")) event.preventDefault();
     }, true);
+
     container.call(wbZoom).on("dblclick.zoom", null);
+
     //: Pan and zoom listeners: `view`, so a read-only embed gets them too.
     wbInstances.on("scroll", wbFoldNativeScroll, undefined, true);
+  }
+
+  function wbInitZoomControls() {
     // Shift+wheel pans sideways; every other wheel is d3-zoom's, by
     // `wbZoomFilter`, which prevents the page scrolling too. `passive: false`
     // here so the page behind the board does not scroll on a shifted wheel.
@@ -119,13 +250,16 @@
         el.call(wbZoom.translateBy, -dx / k, -dy / k);
       }, { passive: false }, true);
     }
-    
+
     // Toolbar hooks
     document.getElementById("wb-zoom-in").addEventListener("click", () => wbZoomStep(1.2, { duration: 250, usePointer: false }));
+
     document.getElementById("wb-zoom-out").addEventListener("click", () => wbZoomStep(0.8, { duration: 250, usePointer: false }));
+
     // Was `wbZoom.transform(d3.zoomIdentity)`, a reset to 100% at the origin,
     // under a button labelled "Fit to Screen". See `wbZoomToFit`.
     document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
+
     //: The level is a typeable field (value-field.js); drawn now, since the markup holds only its host.
     wbShowZoomLevel(d3.zoomTransform(wbInstances.container()).k || 1);
 
@@ -139,8 +273,13 @@
 
     // --- Navigator ----------------------------------------------------------
     document.getElementById("wb-navigator-close")?.addEventListener("click", () => wbToggleNavigator(false));
+
     document.getElementById("wb-navigator-fit")?.addEventListener("click", () => wbZoomToFit());
-    const navMap = document.getElementById("wb-navigator-map");
+  }
+
+  function wbInitNavigatorAndSearch() {
+    navMap = document.getElementById("wb-navigator-map");
+
     if (navMap) {
       // Pointer events rather than mouse events, so a pen or a touch drag on a
       // tablet moves the viewport too, this is a drawing app, and the board is
@@ -152,6 +291,7 @@
       navMap.addEventListener("pointercancel", wbNavigatorDragEnd);
       navMap.addEventListener("lostpointercapture", wbNavigatorDragEnd);
     }
+
     try {
       if (prefs.get("wb-navigator-open", null) === "1") wbToggleNavigator(true);
     } catch {
@@ -160,9 +300,13 @@
 
     // --- Find a card on this board ------------------------------------------
     document.getElementById("wb-search-close")?.addEventListener("click", wbCloseBoardSearch);
+
     document.getElementById("wb-search-prev")?.addEventListener("click", () => wbBoardSearchGo(-1));
+
     document.getElementById("wb-search-next")?.addEventListener("click", () => wbBoardSearchGo(1));
-    const searchInput = document.getElementById("wb-search-input");
+
+    searchInput = document.getElementById("wb-search-input");
+
     if (searchInput) {
       searchInput.addEventListener("input", () => wbBoardSearchRun(searchInput.value));
       searchInput.addEventListener("keydown", (event) => {
@@ -177,7 +321,9 @@
         }
       });
     }
-    
+  }
+
+  function wbInitBoardControls() {
     //: The top bar's Sidebar button opens and closes the board's sidebar
     //: (decision 26, whiteboard-library.js) on the tab it was left on.
     $("wb-add-note").addEventListener("click", () => {
@@ -186,14 +332,16 @@
       else wbOpenSidebar(null);
     });
 
-    const btnAddSketch = document.getElementById("wb-add-sketch");
+    btnAddSketch = document.getElementById("wb-add-sketch");
+
     if (btnAddSketch) {
       btnAddSketch.addEventListener("click", () => {
         openSketch();
       });
     }
 
-    const boardSelect = document.getElementById("wb-board-select");
+    boardSelect = document.getElementById("wb-board-select");
+
     if (boardSelect) {
       boardSelect.addEventListener("change", async (e) => {
         window.currentBoardId = e.target.value || null;
@@ -204,11 +352,14 @@
         wbApplyBackground();
       });
     }
+
     //: Not `createNewBoard` itself: passed as the listener it received the click
     //: event as `preset`, and an Event is truthy, so the dialog opened with a
     //: kind nothing in the segment could match (INBOX 197).
     $("wb-new-board")?.addEventListener("click", () => createNewBoard());
+
     $("wb-rename-board")?.addEventListener("click", renameCurrentBoard);
+
     //: L348: the model names the board from what is on it, else its first words do; renamed through Rename's undoable path.
     $("wb-suggest-board-name")?.addEventListener("click", async () => {
       const boardId = window.currentBoardId;
@@ -224,35 +375,54 @@
         toast(err.message || voiceLine("failed", { what: "rename that board" }), true);
       }
     });
+  }
+
+  function wbInitMapToolbar() {
     $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
+
     $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
+
     for (const type of ["pointerover", "focusin"]) {
       wbInstances.on(type, (e) => {
         const node = e.target.closest?.(".wb-map-node");
         if (node) wbMapCache.part(node, "grip");
       }, { passive: true });
     }
+
     //: Phase 5's controls (§5 items 18 to 21). Wired here with the rest of the
     //: board chrome rather than inside their own render functions, which is the
     //: shape `tests/test_frontend_handlers.py` exists to keep: a listener added
     //: where an element is drawn is a listener added again every time it is
     //: redrawn.
     $("wb-map-perspective")?.addEventListener("change", (e) => wbMapSetPerspective(e.target.value));
+
     $("wb-map-theme-item")?.addEventListener("click", wbMapThemeDialog);
+
     $("wb-map-numbered")?.addEventListener("change", (e) => wbMapSetNumbered(e.target.checked));
+
     $("wb-map-dim")?.addEventListener("change", (e) => wbMapSetDim(e.target.checked));
+
     $("wb-map-stats-item")?.addEventListener("click", wbShowMapStats);
+
     $("wb-zoom-actual")?.addEventListener("click", wbZoomTo100);
+
     $("wb-map-expand-all")?.addEventListener("click", wbMapExpandAll);
+
     $("wb-map-fold-all")?.addEventListener("click", () => wbMapFoldToLevel(1));
+
     $("wb-map-focus-less")?.addEventListener("click", () => wbMapStepFocus(-1));
+
     $("wb-map-focus-more")?.addEventListener("click", () => wbMapStepFocus(1));
+
     $("wb-map-focus-clear")?.addEventListener("click", wbMapClearFocus);
+
     $("wb-map-templates-dismiss")?.addEventListener("click", wbDismissMapTemplates);
+
     //: A root, because there is nothing on the map to hang it off: `null` as the
     //: parent is exactly what `wbMapAddChild` already means by a top-level
     //: topic, and it opens the new node for typing like every other add does.
     $("wb-map-empty-add")?.addEventListener("click", () => wbMapAddChild(null));
+
     //: The map dock (MINDMAP_PLAN.md §12.1 item 1). Every one of these already
     //: existed as a key or a hover affordance and nothing else, which is the
     //: owner's complaint in one line: "the mindmap needs to be more separated
@@ -260,12 +430,14 @@
     //: these call the same functions Tab, Enter, F and the node's own chevron
     //: call, so the two routes cannot drift.
     $("wb-map-add-root")?.addEventListener("click", () => wbMapAddChild(null));
+
     //: The emoji and icon library, on the dock of both surfaces (the owner,
     //: 2026-10-10: "Idk where it is or how to use it"); the picker opens
     //: beside the button that asked.
     for (const id of ["wb-add-sticker", "wb-map-add-sticker"]) {
       $(id)?.addEventListener("click", (event) => wbOpenStickerPicker(event.currentTarget));
     }
+
     //: Focus is one key in both directions (see the F handler), so it is one
     //: button in both directions too.
     $("wb-map-focus-here")?.addEventListener("click", () => {
@@ -274,6 +446,9 @@
       if (wbMapFocusState && wbMapFocusState.id === node.id) wbMapClearFocus();
       else wbMapSetFocus(node.id);
     });
+  }
+
+  function wbInitRadialMenu() {
     //: **The ring names what is under the pointer.** See the caption's own rule
     //: in 07-whiteboard-misc.css: eight icon-only circles are eight guesses
     //: otherwise, and a tooltip arrives late and lands over the slot it
@@ -351,27 +526,33 @@
         event.stopPropagation();
       });
     }
+
     //: The node radial (§12.1 item 3). Each slot reads the node the ring was
     //: opened for, acts, and closes: a ring that stayed open over a map that has
     //: just been re-laid-out would be pointing at empty canvas.
-    const radialSlot = (id, run) => {
+    radialSlot = (id, run) => {
       $(id)?.addEventListener("click", async (event) => {
         const node = wbMapRadialNode();
         wbCloseMapRadial();
         if (node) await run(node, event);
       });
     };
+
     radialSlot("wb-radial-child", (node, event) => (
       // Alt swaps the adds for the removes, which is Coggle's gesture. Read
       // from the event rather than from a flag the ring kept, so a keyboard
       // activation with Alt held is the same as a click with Alt held.
       event.altKey ? wbMapDeleteSubtree(node.id) : wbMapAddChild(node.id)
     ));
+
     radialSlot("wb-radial-sibling", (node, event) => (
       event.altKey ? wbMapRemoveKeepingBranch(node.id) : wbMapAddSibling(node.id)
     ));
+
     radialSlot("wb-radial-collapse", (node) => wbMapToggleCollapse(node.id));
+
     radialSlot("wb-radial-delete", (node) => wbMapDeleteSubtree(node.id));
+
     //: **Connect, from the topic in hand** (§12.5, INBOX 180: "I cant properly
     //: reconnect things that are disconnected"). The connector was a tool in the
     //: dock and nothing on the node, so joining a loose topic to the tree meant
@@ -383,6 +564,9 @@
       selectWbTool("link-straight");
       toast("Drag from this topic to the one it should join.");
     });
+  }
+
+  function wbInitRadialMore() {
     //: **More: the node's own menu** (§12.5). A right-click on a map node opens
     //: the ring, which means the flat menu it used to open was unreachable: the
     //: audit found all eight of its items dead on a map node. The ring keeps six
@@ -400,6 +584,7 @@
       const slot = $("wb-radial-more");
       if (slot) slot._menuWasOpen = event.target.closest?.("#wb-radial-more") ? Boolean(wbCtxMenuEl && !wbCtxMenuEl.classList.contains("hidden")) : undefined;
     }, true);
+
     $("wb-radial-more")?.addEventListener("pointerdown", (event) => {
       const slot = event.currentTarget;
       const rect = wbMapRadialSectorRect(slot);
@@ -410,6 +595,7 @@
         at: Date.now(),
       };
     });
+
     $("wb-radial-more")?.addEventListener("click", (event) => {
       event.stopPropagation();
       const slot = event.currentTarget;
@@ -456,29 +642,33 @@
       const live = wbMapRadialSectorRect(slot);
       wbOpenMapNodeMenu(node, x, y, pressed?.rect || (wbMenuAnchorOk(live) ? live : null));
     });
+  }
 
+  function wbInitLinkSlots() {
     //: The link ring (§12.1 item 4). Same shape as the node ring's slots, one
     //: difference: the colour well is an `<input>`, so it listens for `change`
     //: and closes the ring itself rather than on the click that opened the
     //: browser's own picker.
-    const linkNode = () => {
+    linkNode = () => {
       if (wbMapLinkRadialFor == null) return null;
       const node = (wbState.objects || []).find((o) => o.id === wbMapLinkRadialFor);
       if (!node) wbCloseMapLinkRadial();
       return node || null;
     };
-    const linkSlot = (id, run) => {
+
+    linkSlot = (id, run) => {
       $(id)?.addEventListener("click", async () => {
         const node = linkNode();
         wbCloseMapLinkRadial();
         if (node) await run(node);
       });
     };
+
     //: Each slot is two actions, one per kind of line, chosen from the subject
     //: the ring was opened on rather than from what the slot last said: the
     //: words are re-written by `wbSyncMapLinkRadial` on open, and a handler that
     //: read them back would be reading its own label.
-    const crossSlot = (id, onBranch, onCross) => {
+    crossSlot = (id, onBranch, onCross) => {
       $(id)?.addEventListener("click", async () => {
         const sketchId = wbMapLinkRadialCross;
         const node = sketchId == null ? linkNode() : null;
@@ -487,12 +677,19 @@
         else if (node) await onBranch(node);
       });
     };
-    crossSlot("wb-link-reverse", (node) => wbMapReverseEdge(node.id), (id) => wbMapReverseCrossLink(id));
-    crossSlot("wb-link-label", (node) => wbMapLabelEdge(node.id), (id) => wbMapCrossLinkToBranch(id));
-    crossSlot("wb-link-cut", (node) => wbMapSever(node.id), (id) => wbMapCutCrossLink(id));
 
+    crossSlot("wb-link-reverse", (node) => wbMapReverseEdge(node.id), (id) => wbMapReverseCrossLink(id));
+
+    crossSlot("wb-link-label", (node) => wbMapLabelEdge(node.id), (id) => wbMapCrossLinkToBranch(id));
+
+    crossSlot("wb-link-cut", (node) => wbMapSever(node.id), (id) => wbMapCutCrossLink(id));
+  }
+
+  function wbInitMapLook() {
     wbWireMapChoices();
+
     wbWireMapMulti();
+
     //: The node edit strip (§12.1 item 2). Every handler reads the selection at
     //: the moment it fires rather than closing over a node: the strip is one set
     //: of controls that moves between nodes, so a captured node is a control
@@ -511,6 +708,7 @@
         if (node) wbMapSetNodeStyle(node, { [field]: wbMapToggleValue(node, field) });
       });
     }
+
     //: **A core idea, stored as nothing at all when it is off.** `|| null`
     //: rather than `false` for the same reason "M" stores no font size: a map
     //: made before core nodes existed and one whose node was marked and then
@@ -520,6 +718,7 @@
       const node = wbSelectedMapNode();
       if (node) wbMapSetNodeStyle(node, { core: !node.data?.core || null });
     });
+
     $("wb-map-text-size")?.addEventListener("change", (e) => {
       if (wbMapStripSyncing) return;
       const node = wbSelectedMapNode();
@@ -528,6 +727,7 @@
       const raw = e.target.value;
       if (node) wbMapSetNodeStyle(node, { font_size: raw === "0" ? 0 : (Number(raw) || null) });
     });
+
     $("wb-map-align")?.addEventListener("change", (e) => {
       if (wbMapStripSyncing) return;
       const node = wbSelectedMapNode();
@@ -536,11 +736,13 @@
       // the same on screen and must not read the same in an export.
       if (node) wbMapSetNodeStyle(node, { align: e.target.value || null });
     });
+
     $("wb-map-strip-icon")?.addEventListener("change", (e) => {
       if (wbMapStripSyncing) return;
       const node = wbSelectedMapNode();
       if (node) wbMapSetNodeStyle(node, { icon: e.target.value || null });
     });
+
     $("wb-map-shape")?.addEventListener("change", (e) => {
       if (wbMapStripSyncing) return;
       const node = wbSelectedMapNode();
@@ -549,6 +751,7 @@
       // set back to rounded are the same map, and neither should carry a field.
       if (node) wbMapSetNodeStyle(node, { shape: e.target.value || null });
     });
+
     //: The bar on the node's edge (item 177). Same empty-is-the-default rule as
     //: the shape above it: solid is what a map has always drawn, so choosing it
     //: stores nothing rather than pinning the node to today's stylesheet.
@@ -559,11 +762,13 @@
       const node = wbSelectedMapNode();
       if (node) wbMapSetNodeStyle(node, { effect: e.target.value || null });
     });
+
     $("wb-map-spine")?.addEventListener("change", (e) => {
       if (wbMapStripSyncing) return;
       const node = wbSelectedMapNode();
       if (node) wbMapSetNodeStyle(node, { spine: e.target.value || null });
     });
+
     //: The fill. Re-renders the board rather than the one node, the way the
     //: colour does: "Fill with its branch" changes every topic under this one.
     $("wb-map-fill")?.addEventListener("change", async (e) => {
@@ -574,6 +779,7 @@
       renderWhiteboardNow();
       wbSyncMapFill(node);
     });
+
     //: The line into the selected topic (item 177). All three re-render the
     //: board rather than only the node, the way the link ring's own slots do: an
     //: edge belongs to two nodes and is drawn in the shared `.wb-map-edges`
@@ -585,28 +791,36 @@
       await wbMapSetNodeStyle(node, { edge_width: e.target.value || null });
       renderWhiteboardNow();
     });
+
     $("wb-map-edge-dashed")?.addEventListener("click", async () => {
       const node = wbSelectedMapNode();
       if (!node) return;
       await wbMapSetNodeStyle(node, { edge_dashed: wbMapToggleValue(node, "edge_dashed") });
       renderWhiteboardNow();
     });
+  }
+
+  function wbInitMapEdgeLook() {
     //: The label's look on that line (the board connector's four: size, colour,
     //: bold, chip), written beside `edge_label` and painted by `wbRenderMapEdges`.
-    const labelLook = async (patch) => {
+    labelLook = async (patch) => {
       const node = wbSelectedMapNode();
       if (!node) return;
       await wbMapSetNodeStyle(node, patch);
       renderWhiteboardNow();
     };
+
     $("wb-map-label-size")?.addEventListener("change", (e) => {
       const size = Math.max(8, Math.min(72, Math.round(Number(e.target.value) || 0)));
       labelLook({ edge_label_size: size && size !== 12 ? size : null });
     });
+
     $("wb-map-label-color")?.addEventListener("change", (e) => labelLook({ edge_label_color: e.target.value }));
+
     for (const [id, key] of [["wb-map-label-bold", "edge_label_bold"], ["wb-map-label-chip", "edge_label_chip"]]) {
       $(id)?.addEventListener("click", (e) => labelLook({ [key]: e.currentTarget.getAttribute("aria-pressed") === "true" ? null : true }));
     }
+
     $("wb-map-edge-arrow")?.addEventListener("click", async () => {
       const node = wbSelectedMapNode();
       if (!node) return;
@@ -620,6 +834,7 @@
       });
       renderWhiteboardNow();
     });
+
     //: The line's shape, from the link ring (§12.5). `curve` is stored as no
     //: value at all, the way the strip's "M" is: the default has to stay the
     //: default, or a map full of nodes pinned to "curve" would stop following a
@@ -631,12 +846,14 @@
       await wbMapSetNodeStyle(node, { edge_style: e.target.value || null });
       renderWhiteboardNow();
     });
+
     //: Back to the branch, from the node ring (§12.5): it drops every choice the
     //: rest of this strip makes, so it is the last control in it.
     $("wb-map-reset")?.addEventListener("click", () => {
       const node = wbSelectedMapNode();
       if (node) wbMapResetToBranch(node.id);
     });
+
     $("wb-map-strip-color")?.addEventListener("change", async (e) => {
       const node = wbSelectedMapNode();
       if (!node) return;
@@ -647,26 +864,33 @@
       await wbSaveObject(node);
       renderWhiteboardNow();
     });
+
     $("wb-map-tidy")?.addEventListener("click", async () => {
       const moved = await wbMapTidy({ quiet: true });
       toast(moved
         ? `Tidied ${nounCount(moved, "node")}.`
         : "Everything is already where this layout puts it.");
     });
+
     //: A card put away leaves its one line on the empty board (`#wb-empty-cue`, audit 1028 B34).
     $("wb-empty-hint-close")?.addEventListener("click", () => {
       $("wb-empty-hint")?.classList.add("hidden");
       $("wb-empty-cue")?.classList.remove("hidden");
     });
+
     $("wb-empty-hint-dismiss")?.addEventListener("click", () => {
       prefs.set("wbEmptyHintDismissed", "1");
       wbHintForcedOpen = false;
       $("wb-empty-hint")?.classList.add("hidden");
       $("wb-empty-cue")?.classList.remove("hidden");
     });
+  }
+
+  function wbInitHintsAndBackground() {
     //: The board's help is its own sheet now (INBOX 566): the Board menu's row
     //: and the empty board's card open it, as "?" does.
     $("wb-help-btn")?.addEventListener("click", () => wbOpenHelpSheet());
+
     //: The card dismissed with "Don't show on new boards" has a way back (1031
     //: BD11: only the Help sheet did); it also turns the preference off.
     $("wb-show-hints")?.addEventListener("click", () => {
@@ -675,6 +899,7 @@
       $("wb-empty-hint")?.classList.remove("hidden");
       $("wb-empty-cue")?.classList.add("hidden");
     });
+
     $("wb-empty-hint-keys")?.addEventListener("click", () => wbOpenHelpSheet());
 
     // Board background colour, asked for directly, the ambient generative-art
@@ -685,8 +910,10 @@
     // hues doesn't write ten times.
     //: The colour is the board's (decision 24): `input` previews while the
     //: swatch is dragged, `change` (once, on release) writes it to the board.
-    const bgColorPicker = document.getElementById("wb-bg-color-picker");
-    const bgColorReset = document.getElementById("wb-bg-color-reset");
+    bgColorPicker = document.getElementById("wb-bg-color-picker");
+
+    bgColorReset = document.getElementById("wb-bg-color-reset");
+
     if (bgColorPicker) {
       bgColorPicker.addEventListener("input", (e) => {
         wbInstances.container().style.setProperty("--wb-board-bg", e.target.value);
@@ -695,6 +922,7 @@
         wbSetBackground({ color: e.target.value });
       });
     }
+
     // Back to the theme's own board colour, still the current theme's after a
     // light/dark switch, not a hex remembered once.
     if (bgColorReset && bgColorPicker) {
@@ -702,107 +930,9 @@
         if (await wbSetBackground({ color: null })) toast("Board background reset to the theme default.");
       });
     }
+  }
 
-    // Draggable toolbar panels, asked for directly. Only the small ⠿ grip
-    // starts a drag: the panels are almost entirely buttons and inputs, so
-    // "grab anywhere on the panel" would fight every click they already
-    // handle. Clamped to `#library-view-whiteboard`'s own box, which is the
-    // visible window for this view (it fills the tab below the header), so a
-    // dragged panel stops at the edge instead of sliding out under the tab bar
-    // or off the side of the screen.
-    function makeWbPanelDraggable(panel, storageKey) {
-      const grip = panel.querySelector(".wb-panel-grip");
-      const bounds = document.getElementById("library-view-whiteboard");
-      if (!grip || !bounds) return;
-
-      function clamp(left, top) {
-        const boundsRect = bounds.getBoundingClientRect();
-        const panelRect = panel.getBoundingClientRect();
-        const maxLeft = Math.max(0, boundsRect.width - panelRect.width);
-        const maxTop = Math.max(0, boundsRect.height - panelRect.height);
-        return [Math.min(Math.max(0, left), maxLeft), Math.min(Math.max(0, top), maxTop)];
-      }
-
-      function place(left, top) {
-        panel.style.left = `${left}px`;
-        panel.style.top = `${top}px`;
-        panel.style.right = "auto";
-        panel.style.bottom = "auto";
-        // The bottom-center panel is horizontally centred via `left: 50%` +
-        // `transform: translateX(-50%)`, a centring trick, not a drag offset.
-        // Left uncleared, an explicit `left` still renders shifted left by
-        // half the panel's own width, so a drag ends up visibly ~200px from
-        // wherever the pointer actually released it (found by measuring, not
-        // by reading the CSS, the rendered box and the styled `left` disagreed
-        // by exactly panelWidth / 2).
-        panel.style.transform = "none";
-      }
-
-      const saved = prefs.get(storageKey, null);
-      if (saved) {
-        try {
-          const { left, top } = JSON.parse(saved);
-          const [cLeft, cTop] = clamp(left, top);
-          place(cLeft, cTop);
-        } catch {
-          // A corrupt saved value is not worth failing over, the panel just
-          // keeps its CSS-anchored corner instead.
-        }
-      }
-
-      let dragging = false;
-      let startX = 0;
-      let startY = 0;
-      let startLeft = 0;
-      let startTop = 0;
-
-      grip.addEventListener("pointerdown", (e) => {
-        dragging = true;
-        wbBoardState.capture(grip, e.pointerId);
-        grip.classList.add("is-dragging");
-        const panelRect = panel.getBoundingClientRect();
-        const boundsRect = bounds.getBoundingClientRect();
-        // Converts from whichever CSS corner (top-left/top-right/…) the panel
-        // started anchored to into an explicit left/top box, so the first drag
-        // of a session moves it from wherever it visually is rather than
-        // snapping somewhere else first.
-        startLeft = panelRect.left - boundsRect.left;
-        startTop = panelRect.top - boundsRect.top;
-        startX = e.clientX;
-        startY = e.clientY;
-        place(startLeft, startTop);
-        e.preventDefault();
-      });
-
-      grip.addEventListener("pointermove", (e) => {
-        if (!dragging) return;
-        const [left, top] = clamp(startLeft + (e.clientX - startX), startTop + (e.clientY - startY));
-        place(left, top);
-      });
-
-      function endDrag(e) {
-        if (!dragging) return;
-        dragging = false;
-        grip.classList.remove("is-dragging");
-        if (e?.pointerId != null) grip.releasePointerCapture?.(e.pointerId);
-        prefs.set(
-          storageKey,
-          JSON.stringify({ left: parseFloat(panel.style.left) || 0, top: parseFloat(panel.style.top) || 0 })
-        );
-      }
-      grip.addEventListener("pointerup", endDrag);
-      grip.addEventListener("pointercancel", endDrag);
-
-      // The box can resize (window resize, the library sidebar opening) after
-      // a position was saved for a larger one, reclamp so a panel never ends
-      // up partly or fully off-screen.
-      new ResizeObserver(() => {
-        if (!panel.style.left) return;
-        const [left, top] = clamp(wbNum(panel.style.left), wbNum(panel.style.top));
-        place(left, top);
-      }).observe(bounds);
-    }
-
+  function wbInitPanelMetrics() {
     document.querySelectorAll(".whiteboard-floating-panel[data-panel-id]").forEach((panel) => {
       makeWbPanelDraggable(panel, `wb-panel-pos-${panel.dataset.panelId}`);
     });
@@ -830,7 +960,8 @@
     // Deliberately *not* wired into the drag system: a panel the reader has
     // dragged carries inline `top`/`left`, which wins over these rules anyway,
     // so a custom position keeps working exactly as before.
-    const wbPanelMetricsRoot = document.getElementById("library-view-whiteboard");
+    wbPanelMetricsRoot = document.getElementById("library-view-whiteboard");
+
     if (wbPanelMetricsRoot && typeof ResizeObserver !== "undefined") {
       // "library" is gone (its controls are in the top bar now) but the token
       // stays declared for the one rule in 06-timeline-dialogs.css that the
@@ -900,7 +1031,8 @@
     // bottom/transform, all set by `place()` above) so each panel's own
     // top-left/top-right/bottom-center CSS class: never removed, only ever
     // overridden by the inline styles, takes back over.
-    const resetPanelsBtn = document.getElementById("wb-reset-panels");
+    resetPanelsBtn = document.getElementById("wb-reset-panels");
+
     if (resetPanelsBtn) {
       resetPanelsBtn.addEventListener("click", () => {
         document.querySelectorAll(".whiteboard-floating-panel[data-panel-id]").forEach((panel) => {
@@ -914,12 +1046,15 @@
         toast("Panel positions reset.");
       });
     }
+  }
 
+  function wbInitGridAndBackground() {
     // Grid, snap-to-grid and a board background image (all asked for
     // directly). Each is a per-browser display preference like the board
     // colour beside them, so all three live in localStorage rather than
     // costing the notebook a schema column the server would never read.
-    const gridSelect = $("wb-grid-select");
+    gridSelect = $("wb-grid-select");
+
     if (gridSelect) {
       gridSelect.value = wbGridType();
       gridSelect.addEventListener("change", (e) => {
@@ -930,9 +1065,13 @@
         $("wb-snap-toggle").disabled = e.target.value === "none";
       });
     }
+
     $("wb-sticky-fold")?.addEventListener("change", (e) => wbSetBackground({ sticky_fold: e.target.checked }));
+
     $("wb-rough-toggle")?.addEventListener("change", (e) => wbSetBackground({ rough: e.target.checked }));
-    const snapToggle = $("wb-snap-toggle");
+
+    snapToggle = $("wb-snap-toggle");
+
     if (snapToggle) {
       snapToggle.checked = prefs.get("wb-snap", null) === "on";
       snapToggle.disabled = wbGridType() === "none";
@@ -940,7 +1079,9 @@
         prefs.set("wb-snap", e.target.checked ? "on" : "off");
       });
     }
-    const bgImageInput = $("wb-bg-image-input");
+
+    bgImageInput = $("wb-bg-image-input");
+
     $("wb-bg-image")?.addEventListener("click", async () => {
       // A background already set means the button's job is to offer removing
       // it: a second "clear it" control for something most boards never use
@@ -953,6 +1094,7 @@
       }
       bgImageInput?.click();
     });
+
     bgImageInput?.addEventListener("change", async () => {
       const file = bgImageInput.files?.[0];
       bgImageInput.value = "";
@@ -971,25 +1113,55 @@
         toast(err.message || voiceLine("failed", { what: "set that background image" }), true);
       }
     });
+  }
+
+  function wbInitBoardActions() {
     wbApplyGrid();
+
     wbApplyBackground();
 
     $("wb-clear-board")?.addEventListener("click", wbClearBoard);
+
     $("wb-delete-board")?.addEventListener("click", wbDeleteCurrentBoard);
+
     $("wb-add-to-note")?.addEventListener("click", wbAddBoardToNote);
+
     $("wb-map-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
+
     $("wb-board-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
+
     $("wb-map-study")?.addEventListener("click", () => wbMapStartStudy());
+
     $("wb-map-build")?.addEventListener("click", () => wbMapBuild.start());
+
     $("wb-copy-link")?.addEventListener("click", () => {
       const id = window.currentBoardId ?? null;
       if (id === null) return toast("The default board has no address. Make a board first.");
       copyObjectAddress(wbIsMap() ? "map" : "board", id);
     });
+
     $("wb-export")?.addEventListener("click", () => wbExportBoard());
 
     // Tool Selection
     window.currentTool = "pan";
+  }
+
+  function wbInitPan(args) {
+    ({ selectWbTool } = args);
+    wbInitMiddlePan();
+    wbInitZoomControls();
+    wbInitNavigatorAndSearch();
+    wbInitBoardControls();
+    wbInitMapToolbar();
+    wbInitRadialMenu();
+    wbInitRadialMore();
+    wbInitLinkSlots();
+    wbInitMapLook();
+    wbInitMapEdgeLook();
+    wbInitHintsAndBackground();
+    wbInitPanelMetrics();
+    wbInitGridAndBackground();
+    wbInitBoardActions();
   }
 
   //: The file's surface: what other files call (L634).

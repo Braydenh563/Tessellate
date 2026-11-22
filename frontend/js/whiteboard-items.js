@@ -608,238 +608,243 @@
     }
   }
 
-  function renderWbObjects(canvas, stackRank = wbStackRanks()) {
-    wbScheduleStickyDates();
+  function wbObjectHeight(d) {
+    // A map node is `height: auto`, its own text decides how tall it is, so a
+    // long topic grows its box instead of being sliced by `overflow: hidden`,
+    // which is the failure CLAUDE.md records costing six rounds on one popup.
+    return WB_MAP_KINDS.has(d.kind) ? "auto" : `${d.height}px`;
+  }
 
-    // Shared by both `objDrag` (bound to the whole `.wb-object`) and `gripDrag` (bound only to `.wb-object-grip`, see
-    // below): `this` is whichever element the gesture actually started on, so every DOM write goes through
-    // `this.closest(".wb-object")` rather than `this` directly, the same convention `resizeDrag`'s own "drag" handler
-    // already uses.
-    function objDragStart(event, d) {
-      if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
-      // A link tool on a text box starts a *link* from it, through the same
-      // three handlers the cards use, see `wbLinkItem`.
-      if (window.currentTool?.startsWith("link-")) { d._linkKind = "object"; return dragStart.call(this, event, d); }
-      d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
-      // A map node's tree edges are not sketches (see `wbMapEdgesFor`), so the line above finds none of them: collected
-      // here for the same reason and at the same moment.
-      d._mapEdges = wbMapEdgesFor(d.id);
-      //: The canvas box for the whole gesture, measured at the press before any move has written: the drop target, the
-      //: cull and the edge pan read it after a step's writes, where a fresh measure forces a restyle.
-      wbCanvasOrigin();
-      // `.raise()` deliberately does NOT happen here, moved to objDragMove.
-      // See the matching comment on the card drag's own `dragging` for the
-      // real bug this caused (raising mid-`start` breaks the browser's click
-      // synthesis, so a plain click-to-select on an object never fired).
-      // See the matching comment on the card drag's own `dragStart`: a raw,
-      // never-snapped running position, so small per-frame deltas actually
-      // accumulate instead of being rounded away against the previous
-      // frame's already-snapped value.
-      d._rawX = d.x;
-      d._rawY = d.y;
-      d._dragOriginX = d.x;
-      d._dragOriginY = d.y;
-      d._raised = false;
-      d._moveUndoBefore = WB_KIND_INFO.object.payload(d);
-      d._altCopy = Boolean(event.sourceEvent?.altKey);
-      d._gesture = wbBeginGesture(() => wbRestoreMove("object", d), true);
-      // Bulk-move detection deliberately waits for the first real "drag" frame below, not decided here, see the
-      // matching comment on the sketch drag's own "start" for the click-toggle bug that caused.
+  // Shared by both `objDrag` (bound to the whole `.wb-object`) and `gripDrag` (bound only to `.wb-object-grip`, see
+  // below): `this` is whichever element the gesture actually started on, so every DOM write goes through
+  // `this.closest(".wb-object")` rather than `this` directly, the same convention `resizeDrag`'s own "drag" handler
+  // already uses.
+  function objDragStart(event, d) {
+    if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
+    // A link tool on a text box starts a *link* from it, through the same
+    // three handlers the cards use, see `wbLinkItem`.
+    if (window.currentTool?.startsWith("link-")) { d._linkKind = "object"; return dragStart.call(this, event, d); }
+    d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
+    // A map node's tree edges are not sketches (see `wbMapEdgesFor`), so the line above finds none of them: collected
+    // here for the same reason and at the same moment.
+    d._mapEdges = wbMapEdgesFor(d.id);
+    //: The canvas box for the whole gesture, measured at the press before any move has written: the drop target, the
+    //: cull and the edge pan read it after a step's writes, where a fresh measure forces a restyle.
+    wbCanvasOrigin();
+    // `.raise()` deliberately does NOT happen here, moved to objDragMove.
+    // See the matching comment on the card drag's own `dragging` for the
+    // real bug this caused (raising mid-`start` breaks the browser's click
+    // synthesis, so a plain click-to-select on an object never fired).
+    // See the matching comment on the card drag's own `dragStart`: a raw,
+    // never-snapped running position, so small per-frame deltas actually
+    // accumulate instead of being rounded away against the previous
+    // frame's already-snapped value.
+    d._rawX = d.x;
+    d._rawY = d.y;
+    d._dragOriginX = d.x;
+    d._dragOriginY = d.y;
+    d._raised = false;
+    d._moveUndoBefore = WB_KIND_INFO.object.payload(d);
+    d._altCopy = Boolean(event.sourceEvent?.altKey);
+    d._gesture = wbBeginGesture(() => wbRestoreMove("object", d), true);
+    // Bulk-move detection deliberately waits for the first real "drag" frame below, not decided here, see the
+    // matching comment on the sketch drag's own "start" for the click-toggle bug that caused.
+  }
+  function objDragMove(event, d) {
+    if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
+    if (window.currentTool?.startsWith("link-")) return dragging.call(this, event, d);
+    if (d._gesture?.cancelled) return;
+    const step = wbTouchSlopStep(d._gesture, event);
+    if (!step) return;
+    if (d._bulkOrigin === undefined) {
+      //: **A map node drags its branch with it** (MINDMAP_PLAN.md §12.1 item
+      //: 8). Decided on the first real drag frame, like the marquee case
+      //: beside it and for the same reason (see the sketch drag's own "start"
+      //: comment): deciding at `start` turns a click into a bulk move.
+      //: Ctrl held means the topic travels alone, and is read here because
+      //: that is the frame the decision is made in.
+      d._dragAlone = Boolean(event.sourceEvent?.ctrlKey || event.sourceEvent?.metaKey);
+      d._bulkOrigin = wbDragIsBulkMove("object", d.id)
+        ? wbCaptureBulkMoveOrigin(wbMultiKey("object", d.id))
+        : wbMapBranchDragOrigin(d, d._dragAlone) || wbFrameDragOrigin(d, d._dragAlone);
+      if (d._bulkOrigin?.branchOf === d.id) wbMapDragLayer.open(d._bulkOrigin, d, this.closest(".wb-object"));
     }
-    function objDragMove(event, d) {
-      if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
-      if (window.currentTool?.startsWith("link-")) return dragging.call(this, event, d);
-      if (d._gesture?.cancelled) return;
-      const step = wbTouchSlopStep(d._gesture, event);
-      if (!step) return;
-      if (d._bulkOrigin === undefined) {
-        //: **A map node drags its branch with it** (MINDMAP_PLAN.md §12.1 item
-        //: 8). Decided on the first real drag frame, like the marquee case
-        //: beside it and for the same reason (see the sketch drag's own "start"
-        //: comment): deciding at `start` turns a click into a bulk move.
-        //: Ctrl held means the topic travels alone, and is read here because
-        //: that is the frame the decision is made in.
-        d._dragAlone = Boolean(event.sourceEvent?.ctrlKey || event.sourceEvent?.metaKey);
-        d._bulkOrigin = wbDragIsBulkMove("object", d.id)
-          ? wbCaptureBulkMoveOrigin(wbMultiKey("object", d.id))
-          : wbMapBranchDragOrigin(d, d._dragAlone) || wbFrameDragOrigin(d, d._dragAlone);
-        if (d._bulkOrigin?.branchOf === d.id) wbMapDragLayer.open(d._bulkOrigin, d, this.closest(".wb-object"));
-      }
-      //: Once per gesture, not once per move: the card drag beside this one took the same fix (INBOX 114, and see its
-      //: own comment). `raise()` reappends the element even when it is already last, and a DOM move invalidates layout,
-      //: so every frame's first `getBoundingClientRect` (the drop target's, below) paid for a full re-layout of the
-      //: board.
-      if (!d._raised) {
-        d3.select(this.closest(".wb-object")).raise();
-        d._raised = true;
-      }
-      // d3.drag's dx/dy are raw screen pixels, not board-space, the resize handles below already divide by the zoom
-      // scale for exactly this reason; a plain drag has to as well, or a card/object moves faster than the cursor when
-      // zoomed out and slower when zoomed in.
-      const transform = d3.zoomTransform(wbInstances.container());
-      d._rawX = (d._rawX ?? d.x) + step.dx / transform.k;
-      d._rawY = (d._rawY ?? d.y) + step.dy / transform.k;
-      const bypassSnap = event.sourceEvent?.altKey;
-      //: **Snapped by how far it moved, not by where it is** (the owner:
-      //: "dragging a objects doesnt stay on the mouse and goes off to the side
-      //: of where my mouse was on the object when I started dragging it").
-      //: Rounding the absolute position means an item that was not already on a
-      //: grid line jumps up to half a cell the instant the drag begins and then
-      //: stays that far from the cursor for the rest of it: the item is under
-      //: your pointer when you press and beside it when you move. Rounding the
-      //: *delta* keeps the grab point exactly where you took hold of it and
-      //: still moves in whole grid steps, and for the ordinary case (an item
-      //: that is already on the grid, because it was placed or dragged with
-      //: snap on) the two are the same number.
-      //: Shift keeps the move on one axis (see `wbAxisLock`).
-      const lock = wbAxisLock(d._rawX - d._dragOriginX, d._rawY - d._dragOriginY, event.sourceEvent?.shiftKey);
-      d.x = d._dragOriginX + (lock === "y" ? 0 : wbSnap(d._rawX - d._dragOriginX, bypassSnap));
-      d.y = d._dragOriginY + (lock === "x" ? 0 : wbSnap(d._rawY - d._dragOriginY, bypassSnap));
-      // Smart alignment guides: asked for directly ("draw.io and Microsoft PowerPoint have... dotted alignment rule
-      // guides"). Same Alt bypass as grid-snap just above: holding it means "no snap assistance at all for this drag",
-      // one concept, not two separate modifier keys to learn.
-      if (!bypassSnap) {
-        //: The group's own box when several things are moving, the item's when one is. Either way the delta lands on
-        //: `d`, and `wbApplyBulkMove` below carries the rest of the selection by the same amount.
-        const group = wbBulkGroupBox(d, "object");
-        const own = wbRotatedBounds(d.x, d.y, d.width, d.height, wbItemRotation("object", d));
-        const { dx, dy, guideLines } = wbAlignmentGuides(
-          wbDragExcludeKeys(d, "object"),
-          group ? group.x : own.x,
-          group ? group.y : own.y,
-          group ? group.w : own.w,
-          group ? group.h : own.h,
-          wbAlignTol()
-        );
-        if (lock !== "y") d.x += dx;
-        if (lock !== "x") d.y += dy;
-        wbShowAlignmentGuides(guideLines);
-      } else {
-        wbClearAlignmentGuides();
-      }
-      //: In a branch's layer the grabbed topic rides the layer's translate too.
-      if (!d._bulkOrigin?.layer) d3.select(this.closest(".wb-object")).style("transform", wbItemTransform(d));
-      //: The branch first and this topic's own lines after it, for the reason
-      //: `wbApplyBulkMove` gives: a line drawn before its other end has moved
-      //: is a line a frame behind.
-      if (d._bulkOrigin) wbApplyBulkMove(d._bulkOrigin, d.x - d._dragOriginX, d.y - d._dragOriginY);
-      if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
-      if (d._mapEdges?.length) wbUpdateMapEdges(d._mapEdges);
-      wbQueueSelectionBar();
-      // The topic this branch would land on, lit as you pass over it. From the
-      // pointer's own position rather than the node's, because what you aim at
-      // is where you are pointing, not where the box has caught up to.
-      const source = event.sourceEvent;
-      if (source && wbIsMap() && WB_MAP_KINDS.has(d.kind)) {
-        d._dropTarget = wbMapDropTargetAt(d, source.clientX, source.clientY);
-        wbMapShowDropTarget(d._dropTarget?.id ?? null);
-        //: Not over a topic: a gap among its siblings, where the layout stacks
-        //: them. One topic only: a group drag stays a placement.
-        d._siblingSlot = d._dropTarget || d._dragAlone || d._bulkOrigin ? null : wbMapSiblingSlotAt(d, source.clientX, source.clientY);
-        wbMapShowSlotCue(d._siblingSlot);
-      }
+    //: Once per gesture, not once per move: the card drag beside this one took the same fix (INBOX 114, and see its
+    //: own comment). `raise()` reappends the element even when it is already last, and a DOM move invalidates layout,
+    //: so every frame's first `getBoundingClientRect` (the drop target's, below) paid for a full re-layout of the
+    //: board.
+    if (!d._raised) {
+      d3.select(this.closest(".wb-object")).raise();
+      d._raised = true;
     }
-    async function objDragEnd(event, d) {
-      if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
-      if (window.currentTool?.startsWith("link-")) { const r = dragEndNode.call(this, event, d); d._linkKind = null; return r; }
-      //: The branch's layer first: everything after this reads the topics' own elements.
-      if (d._bulkOrigin?.layer) wbMapDragLayer.close(d._bulkOrigin);
-      //: Dropped on the delete target: put back, then deleted (INBOX 660).
-      wbTrashTake(d._gesture, "object", d);
-      d._linkedSketches = null;
-      // Dropped: the paths this drag held references to are about to be
-      // replaced by the next render, and a stale element would be updated in
-      // place forever (invisibly, since it is no longer in the document).
-      d._mapEdges = null;
+    // d3.drag's dx/dy are raw screen pixels, not board-space, the resize handles below already divide by the zoom
+    // scale for exactly this reason; a plain drag has to as well, or a card/object moves faster than the cursor when
+    // zoomed out and slower when zoomed in.
+    const transform = d3.zoomTransform(wbInstances.container());
+    d._rawX = (d._rawX ?? d.x) + step.dx / transform.k;
+    d._rawY = (d._rawY ?? d.y) + step.dy / transform.k;
+    const bypassSnap = event.sourceEvent?.altKey;
+    //: **Snapped by how far it moved, not by where it is** (the owner:
+    //: "dragging a objects doesnt stay on the mouse and goes off to the side
+    //: of where my mouse was on the object when I started dragging it").
+    //: Rounding the absolute position means an item that was not already on a
+    //: grid line jumps up to half a cell the instant the drag begins and then
+    //: stays that far from the cursor for the rest of it: the item is under
+    //: your pointer when you press and beside it when you move. Rounding the
+    //: *delta* keeps the grab point exactly where you took hold of it and
+    //: still moves in whole grid steps, and for the ordinary case (an item
+    //: that is already on the grid, because it was placed or dragged with
+    //: snap on) the two are the same number.
+    //: Shift keeps the move on one axis (see `wbAxisLock`).
+    const lock = wbAxisLock(d._rawX - d._dragOriginX, d._rawY - d._dragOriginY, event.sourceEvent?.shiftKey);
+    d.x = d._dragOriginX + (lock === "y" ? 0 : wbSnap(d._rawX - d._dragOriginX, bypassSnap));
+    d.y = d._dragOriginY + (lock === "x" ? 0 : wbSnap(d._rawY - d._dragOriginY, bypassSnap));
+    // Smart alignment guides: asked for directly ("draw.io and Microsoft PowerPoint have... dotted alignment rule
+    // guides"). Same Alt bypass as grid-snap just above: holding it means "no snap assistance at all for this drag",
+    // one concept, not two separate modifier keys to learn.
+    if (!bypassSnap) {
+      //: The group's own box when several things are moving, the item's when one is. Either way the delta lands on
+      //: `d`, and `wbApplyBulkMove` below carries the rest of the selection by the same amount.
+      const group = wbBulkGroupBox(d, "object");
+      const own = wbRotatedBounds(d.x, d.y, d.width, d.height, wbItemRotation("object", d));
+      const { dx, dy, guideLines } = wbAlignmentGuides(
+        wbDragExcludeKeys(d, "object"),
+        group ? group.x : own.x,
+        group ? group.y : own.y,
+        group ? group.w : own.w,
+        group ? group.h : own.h,
+        wbAlignTol()
+      );
+      if (lock !== "y") d.x += dx;
+      if (lock !== "x") d.y += dy;
+      wbShowAlignmentGuides(guideLines);
+    } else {
       wbClearAlignmentGuides();
-      const bulkOrigin = d._bulkOrigin;
-      // Reset unconditionally: a solo drag sets this to `null` (see
-      // "drag" above), and leaving it there would make the *next* gesture's
-      // `=== undefined` check think bulk-move was already decided and skip
-      // redetecting it, permanently treating this object as "never bulk"
-      // even after it later joins a multi-selection.
-      delete d._bulkOrigin;
-      //: Dropped on another topic: that is a transplant, not a placement, and
-      //: it replaces the ordinary save below entirely (`/move` is the only
-      //: endpoint that may write `parent_id`, and it re-lays the branch after).
-      const dropTarget = d._dropTarget;
-      const slot = d._siblingSlot;
-      delete d._siblingSlot;
-      const alone = d._dragAlone;
-      delete d._dropTarget;
-      delete d._dragAlone;
-      wbMapClearDropTarget();
-      const altCopy = d._altCopy;
-      delete d._altCopy;
-      if (wbEndGesture(d._gesture)) {
-        delete d._gesture;
-        delete d._moveUndoBefore;
-        return;
-      }
-      delete d._gesture;
-      if (dropTarget) {
-        //: Where the branch was picked up, so the transplant's one Undo puts it
-        //: back there rather than where it was let go (INBOX 410).
-        const before = new Map();
-        if (d._moveUndoBefore) before.set(d.id, { x: d._moveUndoBefore.x, y: d._moveUndoBefore.y });
-        for (const entry of bulkOrigin?.values() || []) {
-          if (entry.kind === "object" && !before.has(entry.id)) before.set(entry.id, { x: entry.x, y: entry.y });
-        }
-        delete d._moveUndoBefore;
-        if (bulkOrigin) await wbSaveBulkMove(bulkOrigin);
-        await wbMapTransplant(d, dropTarget.id, alone, { before });
-        return;
-      }
-      if (slot) {
-        const origins = new Map();
-        if (d._moveUndoBefore) origins.set(d.id, { x: d._moveUndoBefore.x, y: d._moveUndoBefore.y });
-        for (const entry of bulkOrigin?.values() || []) {
-          if (entry.kind === "object" && !origins.has(entry.id)) origins.set(entry.id, { x: entry.x, y: entry.y });
-        }
-        delete d._moveUndoBefore;
-        await wbMapDropAmongSiblings(d, slot, origins);
-        return;
-      }
-      const moveBefore = d._moveUndoBefore;
-      delete d._moveUndoBefore;
-      //: **A click is not a drop, and must not save.** `objDrag` runs for a
-      //: plain click too (d3-drag listens for `mousedown`, and a click is a
-      //: mousedown with no movement), and this used to PUT the object every
-      //: time regardless. On its own that is only a wasted request; the bug is
-      //: that the PUT carries whatever `d.data` held when the gesture ended,
-      //: and a click on a control *inside* the node (the chevron, the count
-      //: badge, the two add buttons) fires its own save in the same tick. Two
-      //: PUTs to one row with no defined order: measured on the fold chevron,
-      //: one click sent `collapsed: null` and `collapsed: true` and the map
-      //: kept whichever landed second, so a branch folded on screen and came
-      //: back unfolded on the next refresh. Found by `mindmap.js`'s SVG export
-      //: check, which counted two edges where the map had four.
-      //:
-      //: The same "did it really move" test the undo entry below already used,
-      //: hoisted above the save so it governs both.
-      const reallyMoved = !moveBefore || moveBefore.x !== d.x || moveBefore.y !== d.y;
-      if (reallyMoved) await wbSaveObject(d);
-      if (d._unsaved) {
-        //: A drop that could not be saved (offline, or the item is gone) goes back where it was taken
-        //: from, with a word, rather than staying where the server does not have it (`_unsaved`, set by
-        //: the save's catch).
-        delete d._unsaved;
-        if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
-        wbScheduleRender();
-        toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
-        return;
-      }
-      const primary = moveBefore && reallyMoved
-        ? { action: "move", kind: "object", id: d.id, before: moveBefore }
-        : null;
-      await wbFinishDrag(primary, bulkOrigin, altCopy);
-      // A map node that was actually moved is now pinned, see
-      // `wbMapPinOnDrag`. Gated on the same "did it really move" check the
-      // undo entry uses, so a click is never mistaken for a placement.
-      if (primary) await wbMapPinOnDrag(d);
     }
+    //: In a branch's layer the grabbed topic rides the layer's translate too.
+    if (!d._bulkOrigin?.layer) d3.select(this.closest(".wb-object")).style("transform", wbItemTransform(d));
+    //: The branch first and this topic's own lines after it, for the reason
+    //: `wbApplyBulkMove` gives: a line drawn before its other end has moved
+    //: is a line a frame behind.
+    if (d._bulkOrigin) wbApplyBulkMove(d._bulkOrigin, d.x - d._dragOriginX, d.y - d._dragOriginY);
+    if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
+    if (d._mapEdges?.length) wbUpdateMapEdges(d._mapEdges);
+    wbQueueSelectionBar();
+    // The topic this branch would land on, lit as you pass over it. From the
+    // pointer's own position rather than the node's, because what you aim at
+    // is where you are pointing, not where the box has caught up to.
+    const source = event.sourceEvent;
+    if (source && wbIsMap() && WB_MAP_KINDS.has(d.kind)) {
+      d._dropTarget = wbMapDropTargetAt(d, source.clientX, source.clientY);
+      wbMapShowDropTarget(d._dropTarget?.id ?? null);
+      //: Not over a topic: a gap among its siblings, where the layout stacks
+      //: them. One topic only: a group drag stays a placement.
+      d._siblingSlot = d._dropTarget || d._dragAlone || d._bulkOrigin ? null : wbMapSiblingSlotAt(d, source.clientX, source.clientY);
+      wbMapShowSlotCue(d._siblingSlot);
+    }
+  }
+  async function objDragEnd(event, d) {
+    if (window.currentTool === "eraser" || window.currentTool === "delete" || window.currentTool === "bucket") return;
+    if (window.currentTool?.startsWith("link-")) { const r = dragEndNode.call(this, event, d); d._linkKind = null; return r; }
+    //: The branch's layer first: everything after this reads the topics' own elements.
+    if (d._bulkOrigin?.layer) wbMapDragLayer.close(d._bulkOrigin);
+    //: Dropped on the delete target: put back, then deleted (INBOX 660).
+    wbTrashTake(d._gesture, "object", d);
+    d._linkedSketches = null;
+    // Dropped: the paths this drag held references to are about to be
+    // replaced by the next render, and a stale element would be updated in
+    // place forever (invisibly, since it is no longer in the document).
+    d._mapEdges = null;
+    wbClearAlignmentGuides();
+    const bulkOrigin = d._bulkOrigin;
+    // Reset unconditionally: a solo drag sets this to `null` (see
+    // "drag" above), and leaving it there would make the *next* gesture's
+    // `=== undefined` check think bulk-move was already decided and skip
+    // redetecting it, permanently treating this object as "never bulk"
+    // even after it later joins a multi-selection.
+    delete d._bulkOrigin;
+    //: Dropped on another topic: that is a transplant, not a placement, and
+    //: it replaces the ordinary save below entirely (`/move` is the only
+    //: endpoint that may write `parent_id`, and it re-lays the branch after).
+    const dropTarget = d._dropTarget;
+    const slot = d._siblingSlot;
+    delete d._siblingSlot;
+    const alone = d._dragAlone;
+    delete d._dropTarget;
+    delete d._dragAlone;
+    wbMapClearDropTarget();
+    const altCopy = d._altCopy;
+    delete d._altCopy;
+    if (wbEndGesture(d._gesture)) {
+      delete d._gesture;
+      delete d._moveUndoBefore;
+      return;
+    }
+    delete d._gesture;
+    if (dropTarget) {
+      //: Where the branch was picked up, so the transplant's one Undo puts it
+      //: back there rather than where it was let go (INBOX 410).
+      const before = new Map();
+      if (d._moveUndoBefore) before.set(d.id, { x: d._moveUndoBefore.x, y: d._moveUndoBefore.y });
+      for (const entry of bulkOrigin?.values() || []) {
+        if (entry.kind === "object" && !before.has(entry.id)) before.set(entry.id, { x: entry.x, y: entry.y });
+      }
+      delete d._moveUndoBefore;
+      if (bulkOrigin) await wbSaveBulkMove(bulkOrigin);
+      await wbMapTransplant(d, dropTarget.id, alone, { before });
+      return;
+    }
+    if (slot) {
+      const origins = new Map();
+      if (d._moveUndoBefore) origins.set(d.id, { x: d._moveUndoBefore.x, y: d._moveUndoBefore.y });
+      for (const entry of bulkOrigin?.values() || []) {
+        if (entry.kind === "object" && !origins.has(entry.id)) origins.set(entry.id, { x: entry.x, y: entry.y });
+      }
+      delete d._moveUndoBefore;
+      await wbMapDropAmongSiblings(d, slot, origins);
+      return;
+    }
+    const moveBefore = d._moveUndoBefore;
+    delete d._moveUndoBefore;
+    //: **A click is not a drop, and must not save.** `objDrag` runs for a
+    //: plain click too (d3-drag listens for `mousedown`, and a click is a
+    //: mousedown with no movement), and this used to PUT the object every
+    //: time regardless. On its own that is only a wasted request; the bug is
+    //: that the PUT carries whatever `d.data` held when the gesture ended,
+    //: and a click on a control *inside* the node (the chevron, the count
+    //: badge, the two add buttons) fires its own save in the same tick. Two
+    //: PUTs to one row with no defined order: measured on the fold chevron,
+    //: one click sent `collapsed: null` and `collapsed: true` and the map
+    //: kept whichever landed second, so a branch folded on screen and came
+    //: back unfolded on the next refresh. Found by `mindmap.js`'s SVG export
+    //: check, which counted two edges where the map had four.
+    //:
+    //: The same "did it really move" test the undo entry below already used,
+    //: hoisted above the save so it governs both.
+    const reallyMoved = !moveBefore || moveBefore.x !== d.x || moveBefore.y !== d.y;
+    if (reallyMoved) await wbSaveObject(d);
+    if (d._unsaved) {
+      //: A drop that could not be saved (offline, or the item is gone) goes back where it was taken
+      //: from, with a word, rather than staying where the server does not have it (`_unsaved`, set by
+      //: the save's catch).
+      delete d._unsaved;
+      if (moveBefore) Object.assign(d, { x: moveBefore.x, y: moveBefore.y });
+      wbScheduleRender();
+      toast(voiceLine("failed", { what: "save the move", why: "the item went back where it was" }), true, { action: ["Reload the board", () => fetchWhiteboardState().then(wbScheduleRender)] });
+      return;
+    }
+    const primary = moveBefore && reallyMoved
+      ? { action: "move", kind: "object", id: d.id, before: moveBefore }
+      : null;
+    await wbFinishDrag(primary, bulkOrigin, altCopy);
+    // A map node that was actually moved is now pinned, see
+    // `wbMapPinOnDrag`. Gated on the same "did it really move" check the
+    // undo entry uses, so a click is never mistaken for a placement.
+    if (primary) await wbMapPinOnDrag(d);
+  }
 
-    const objDrag = d3.drag()
+  function wbObjectDrag() {
+    return d3.drag()
       // A resize handle owns its own drag (below); a text box's own text
       // needs plain clicks/selection to reach it, not a canvas-wide drag. And,
       // same reasoning as the card drag's own filter above: a brush tool must
@@ -896,8 +901,10 @@
     // The grip's own drag instance (see the comment above), `stopPropagation`
     // on start is the same fix `resizeDrag`/`objectRotateDrag` already use to
     // keep their own handle grabs from also bubbling into the object's own
-    // `objDrag` listener.
-    const gripDrag = d3.drag()
+  }
+
+  function wbObjectGripDrag() {
+    return d3.drag()
       // The grip sits inside the box it moves, see `wbStableDragContainer`.
       .container(wbStableDragContainer(".wb-object"))
       .filter((event) => !wbIsSecondTouch(event) && !event.button && !WB_BRUSH_TOOLS.has(window.currentTool) && window.currentTool !== "lasso")
@@ -907,144 +914,510 @@
       })
       .on("drag", objDragMove)
       .on("end", objDragEnd);
+  }
 
-    function resizeDrag(handle) {
-      return d3.drag()
-        // The handle sits inside the object it resizes, see
-        // `wbStableDragContainer`. Matters for `w`/`n`, which move x/y too.
-        .container(wbStableDragContainer(".wb-object"))
-        .on("start", function (event, d) {
-          event.sourceEvent.stopPropagation(); // don't also start objDrag
-          d._resizeUndoBefore = WB_KIND_INFO.object.payload(d);
-          //: From where the gesture began rather than frame on frame, like the
-          //: card's resize: a proportion held with Shift is a proportion of the
-          //: box you took hold of, and a per-frame delta has no memory of it.
-          d._resizeStart = { x: d.x, y: d.y, w: d.width, h: d.height, dx: 0, dy: 0 };
-          d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
-          d._gesture = wbBeginGesture(() => wbRestoreBox("object", d, d._resizeUndoBefore));
-        })
-        .on("drag", function (event, d) {
-          const start = d._resizeStart;
-          if (!start || d._gesture?.cancelled) return;
-          const transform = d3.zoomTransform(wbInstances.container());
-          start.dx += event.dx / transform.k;
-          start.dy += event.dy / transform.k;
-          const box = wbResizeBox(start, handle, start.dx, start.dy,
-            event.sourceEvent.shiftKey || wbKeepsRatio("object", d), event.sourceEvent.altKey, WB_OBJECT_MIN_SIZE);
-          let newWidth = box.w, newHeight = box.h, newX = box.x, newY = box.y;
-          if (!event.sourceEvent.shiftKey && !event.sourceEvent.altKey) {
-            ({ width: newWidth, height: newHeight } = wbGuidedResize("object", d, handle, start, newWidth, newHeight, { off: false }));
-            newX = handle.includes("w") ? start.x + start.w - newWidth : start.x;
-            newY = handle.includes("n") ? start.y + start.h - newHeight : start.y;
-          } else {
-            //: Shift (keep the ratio) and Alt (no guides) skip the guided
-            //: resize, which is what draws the size readout; it shows anyway.
-            wbShowAlignmentGuides([]);
-            wbShowSizeReadout({ x: newX, y: newY, w: newWidth, h: newHeight });
-          }
-          d.x = newX;
-          d.y = newY;
-          d.width = newWidth;
-          d.height = newHeight;
-          const el = d3.select(this.closest(".wb-object"));
-          el.style("width", `${d.width}px`)
-            .style("height", `${d.height}px`)
-            .style("transform", wbItemTransform(d));
-          //: A sticker's glyph is its box (decision 44), so it grows with the
-          //: grip, not on the next render (the 22-10 bug doc: "Emojis don't
-          //: size or scale with its borders").
-          if (d.data?.sticker) el.select(".wb-text-content").style("font-size", `${wbStickerSize(d)}px`);
-          //: **The lines and the clone arrows follow a resize as they follow a
-          //: move** (INBOX 746's "the arrows dont resize either"). The box a
-          //: link aims at is read from the measured size the last render
-          //: cached, so that entry goes first; without both lines a stretched
-          //: sticky kept its links ending where its old sides were until the
-          //: next render (measured 14.7 and 48 board units off the outline).
-          wbMapNodeSizeCache?.delete(d.id);
-          if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
-          wbQueueSelectionBar();
-        })
-        .on("end", async (event, d) => {
-          wbClearAlignmentGuides();
-          delete d._resizeStart;
-          delete d._linkedSketches;
-          const before = d._resizeUndoBefore;
-          delete d._resizeUndoBefore;
-          const cancelled = wbEndGesture(d._gesture);
-          delete d._gesture;
-          if (cancelled || (before && before.width === d.width && before.height === d.height)) return;
-          await wbSaveObject(d);
+  function resizeDrag(handle) {
+    return d3.drag()
+      // The handle sits inside the object it resizes, see
+      // `wbStableDragContainer`. Matters for `w`/`n`, which move x/y too.
+      .container(wbStableDragContainer(".wb-object"))
+      .on("start", function (event, d) {
+        event.sourceEvent.stopPropagation(); // don't also start objDrag
+        d._resizeUndoBefore = WB_KIND_INFO.object.payload(d);
+        //: From where the gesture began rather than frame on frame, like the
+        //: card's resize: a proportion held with Shift is a proportion of the
+        //: box you took hold of, and a per-frame delta has no memory of it.
+        d._resizeStart = { x: d.x, y: d.y, w: d.width, h: d.height, dx: 0, dy: 0 };
+        d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
+        d._gesture = wbBeginGesture(() => wbRestoreBox("object", d, d._resizeUndoBefore));
+      })
+      .on("drag", function (event, d) {
+        const start = d._resizeStart;
+        if (!start || d._gesture?.cancelled) return;
+        const transform = d3.zoomTransform(wbInstances.container());
+        start.dx += event.dx / transform.k;
+        start.dy += event.dy / transform.k;
+        const box = wbResizeBox(start, handle, start.dx, start.dy,
+          event.sourceEvent.shiftKey || wbKeepsRatio("object", d), event.sourceEvent.altKey, WB_OBJECT_MIN_SIZE);
+        let newWidth = box.w, newHeight = box.h, newX = box.x, newY = box.y;
+        if (!event.sourceEvent.shiftKey && !event.sourceEvent.altKey) {
+          ({ width: newWidth, height: newHeight } = wbGuidedResize("object", d, handle, start, newWidth, newHeight, { off: false }));
+          newX = handle.includes("w") ? start.x + start.w - newWidth : start.x;
+          newY = handle.includes("n") ? start.y + start.h - newHeight : start.y;
+        } else {
+          //: Shift (keep the ratio) and Alt (no guides) skip the guided
+          //: resize, which is what draws the size readout; it shows anyway.
+          wbShowAlignmentGuides([]);
+          wbShowSizeReadout({ x: newX, y: newY, w: newWidth, h: newHeight });
+        }
+        d.x = newX;
+        d.y = newY;
+        d.width = newWidth;
+        d.height = newHeight;
+        const el = d3.select(this.closest(".wb-object"));
+        el.style("width", `${d.width}px`)
+          .style("height", `${d.height}px`)
+          .style("transform", wbItemTransform(d));
+        //: A sticker's glyph is its box (decision 44), so it grows with the
+        //: grip, not on the next render (the 22-10 bug doc: "Emojis don't
+        //: size or scale with its borders").
+        if (d.data?.sticker) el.select(".wb-text-content").style("font-size", `${wbStickerSize(d)}px`);
+        //: **The lines and the clone arrows follow a resize as they follow a
+        //: move** (INBOX 746's "the arrows dont resize either"). The box a
+        //: link aims at is read from the measured size the last render
+        //: cached, so that entry goes first; without both lines a stretched
+        //: sticky kept its links ending where its old sides were until the
+        //: next render (measured 14.7 and 48 board units off the outline).
+        wbMapNodeSizeCache?.delete(d.id);
+        if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
+        wbQueueSelectionBar();
+      })
+      .on("end", async (event, d) => {
+        wbClearAlignmentGuides();
+        delete d._resizeStart;
+        delete d._linkedSketches;
+        const before = d._resizeUndoBefore;
+        delete d._resizeUndoBefore;
+        const cancelled = wbEndGesture(d._gesture);
+        delete d._gesture;
+        if (cancelled || (before && before.width === d.width && before.height === d.height)) return;
+        await wbSaveObject(d);
+        if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
+        //: The save repaints nothing, and what a box draws from its size (a
+        //: sticker's glyph, a frame's title, a table's grid) waited for some
+        //: later render to catch up.
+        wbScheduleRender();
+      });
+  }
+
+  //: Same as `nodeRotateDrag` above: kept as two small copies rather than
+  //: one shared function because they close over different elements/PUT
+  //: helpers (`.node-card` vs `.wb-object`, `wbSaveNode` vs `wbSaveObject`),
+  //: the same reasoning `nodeResizeDrag`'s own comment already gives for not
+  //: sharing with `resizeDrag`.
+  function objectRotateDrag() {
+    //: Not d3's default filter, which refuses a Ctrl press: Ctrl is how a
+    //: frame is turned without what it holds.
+    return d3.drag()
+      .clickDistance(WB_CLICK_SLOP)
+      .filter((event) => !event.button)
+      .on("start", (event, d) => {
+        event.sourceEvent.stopPropagation();
+        d._rotateUndoBefore = WB_KIND_INFO.object.payload(d);
+        //: The links touching it, found once: a turn moves their endpoints
+        //: as much as a move does, and without this they stayed where the
+        //: unturned box had them until the next move (INBOX 647).
+        d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
+        //: Decided here, not per frame: the set a turn carries is the set
+        //: inside the frame when the grip was taken.
+        const alone = Boolean(event.sourceEvent.ctrlKey || event.sourceEvent.metaKey);
+        d._turnFrom = d.rotation || 0;
+        d._turnOrigin = wbFrameTurnOrigin(d, alone);
+        d._gesture = wbBeginGesture(() => {
+          wbRestoreBox("object", d, d._rotateUndoBefore);
+          wbFrameTurnRevert(d);
+        });
+      })
+      .on("drag", (event, d) => {
+        if (d._gesture?.cancelled) return;
+        const el = wbInstances.query(`.wb-object[data-id="${d.id}"]`);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        d.rotation = wbAngleFromCenterDeg(
+          rect.left + rect.width / 2, rect.top + rect.height / 2,
+          event.sourceEvent.clientX, event.sourceEvent.clientY,
+          event.sourceEvent.shiftKey
+        );
+        el.style.transform = wbItemTransform(d);
+        wbFrameTurnLive(d);
+        if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
+        wbQueueSelectionBar();
+      })
+      .on("end", async (event, d) => {
+        const before = d._rotateUndoBefore;
+        delete d._rotateUndoBefore;
+        delete d._linkedSketches;
+        const cancelled = wbEndGesture(d._gesture);
+        delete d._gesture;
+        if (cancelled || (before && (before.rotation || 0) === (d.rotation || 0))) {
+          wbFrameTurnRevert(d);
+          return;
+        }
+        await wbSaveObject(d);
+        wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
+        if (!d._turnOrigin) {
           if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
-          //: The save repaints nothing, and what a box draws from its size (a
-          //: sticker's glyph, a frame's title, a table's grid) waited for some
-          //: later render to catch up.
-          wbScheduleRender();
-        });
-    }
+          return;
+        }
+        await wbFrameTurnEnd(d, before && { action: "move", kind: "object", id: d.id, before });
+      });
+  }
 
-    //: Same as `nodeRotateDrag` above: kept as two small copies rather than
-    //: one shared function because they close over different elements/PUT
-    //: helpers (`.node-card` vs `.wb-object`, `wbSaveNode` vs `wbSaveObject`),
-    //: the same reasoning `nodeResizeDrag`'s own comment already gives for not
-    //: sharing with `resizeDrag`.
-    function objectRotateDrag() {
-      //: Not d3's default filter, which refuses a Ctrl press: Ctrl is how a
-      //: frame is turned without what it holds.
-      return d3.drag()
-        .clickDistance(WB_CLICK_SLOP)
-        .filter((event) => !event.button)
-        .on("start", (event, d) => {
-          event.sourceEvent.stopPropagation();
-          d._rotateUndoBefore = WB_KIND_INFO.object.payload(d);
-          //: The links touching it, found once: a turn moves their endpoints
-          //: as much as a move does, and without this they stayed where the
-          //: unturned box had them until the next move (INBOX 647).
-          d._linkedSketches = wbLinkedSketchesFor(d.id, "object");
-          //: Decided here, not per frame: the set a turn carries is the set
-          //: inside the frame when the grip was taken.
-          const alone = Boolean(event.sourceEvent.ctrlKey || event.sourceEvent.metaKey);
-          d._turnFrom = d.rotation || 0;
-          d._turnOrigin = wbFrameTurnOrigin(d, alone);
-          d._gesture = wbBeginGesture(() => {
-            wbRestoreBox("object", d, d._rotateUndoBefore);
-            wbFrameTurnRevert(d);
-          });
-        })
-        .on("drag", (event, d) => {
-          if (d._gesture?.cancelled) return;
-          const el = wbInstances.query(`.wb-object[data-id="${d.id}"]`);
-          if (!el) return;
-          const rect = el.getBoundingClientRect();
-          d.rotation = wbAngleFromCenterDeg(
-            rect.left + rect.width / 2, rect.top + rect.height / 2,
-            event.sourceEvent.clientX, event.sourceEvent.clientY,
-            event.sourceEvent.shiftKey
-          );
-          el.style.transform = wbItemTransform(d);
-          wbFrameTurnLive(d);
-          if (d._linkedSketches?.length) wbUpdateLinkedSketches(d.id, d._linkedSketches);
-          wbQueueSelectionBar();
-        })
-        .on("end", async (event, d) => {
-          const before = d._rotateUndoBefore;
-          delete d._rotateUndoBefore;
-          delete d._linkedSketches;
-          const cancelled = wbEndGesture(d._gesture);
-          delete d._gesture;
-          if (cancelled || (before && (before.rotation || 0) === (d.rotation || 0))) {
-            wbFrameTurnRevert(d);
-            return;
-          }
-          await wbSaveObject(d);
-          wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
-          if (!d._turnOrigin) {
-            if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
-            return;
-          }
-          await wbFrameTurnEnd(d, before && { action: "move", kind: "object", id: d.id, before });
-        });
+  //: The eight sizes and the turn grip of one object, built on first need
+  //: (`wbArmHandles`).
+  function wbBuildObjectHandles(el, kind) {
+    for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
+      el.append("div")
+        .attr("class", "wb-resize-handle")
+        .attr("data-handle", handle)
+        //: **The gesture says it exists.** The rotate grip beside these has
+        //: carried a title explaining its own modifier since it was built;
+        //: these had none, so double-tapping to fit was real and invisible,
+        //: which is indistinguishable from missing and was duly reported as
+        //: missing.
+        .attr("title", wbResizeHandleTitle(kind))
+        .call(resizeDrag(handle));
     }
+    //: A table's grid holds nothing square once turned. A frame does turn
+    //: (INBOX 1327, reversing decision 14's "no rotation"), and what lies
+    //: wholly inside it turns with it (decision 42, `wbFrameTurnOrigin`).
+    if (kind === "table") return;
+    el.append("div")
+      .attr("class", "wb-rotate-handle")
+      .attr("title", wbRotateGripTitle(kind))
+      .call(objectRotateDrag());
+  }
 
+  function wbBuildObjectImage(el, d) {
+    // Asked for directly: an image deleted out from under a board (via
+    // the Library gallery's own delete, or by hand off disk) left a
+    // plain broken-image glyph: "there should probably be a placeholder
+    // or closable box that says it is deleted in its place." The close
+    // button removes the object outright rather than leaving a
+    // permanently-broken box on the board.
+    el.append("img").attr("src", mediaSrc(d.data.url) || "").attr("alt", "")
+      .on("error", function () {
+        d3.select(this).remove();
+        if (el.select(".wb-object-deleted").empty()) {
+          const placeholder = el.append("div").attr("class", "wb-object-deleted");
+          placeholder.append("span").text("Image deleted");
+          placeholder.append("button")
+            .attr("type", "button")
+            .attr("class", "ghost small icon-button")
+            .attr("title", "Remove this")
+            .attr("aria-label", "Remove this")
+            //: `setLabel`, not `.text("\u2715")`: a typed cross renders in
+            //: the page font at the text's own weight beside Phosphor icons
+            //: everywhere else in this bar. d3 has no icon idiom, so the
+            //: element is handed to the app's own one.
+            .each(function () { setLabel(this, "ph:x"); })
+            .on("click", (event) => { event.stopPropagation(); wbDeleteObject(d); });
+        }
+      });
+  }
+
+  function wbBuildObjectText(el, d, gripDrag) {
+    // Fill/border, asked for directly (the properties panel): set on the
+    // outer object div, which is what `.wb-object-text`'s own default
+    // background/border style, so an unset value falls back to the CSS
+    // default rather than an empty override.
+    el.style("background", wbPaperPaint(d.data)).style("border-color", d.data.border_color || "");
+    // Asked for directly ("objects are also difficult and annoying to
+    // move around"): `.wb-text-content` fills the entire box and both
+    // the filter above and its own pointerdown handler below correctly
+    // keep drag away from it while typing, which meant the *only*
+    // draggable surface left was the ~0.5rem padding strip around the
+    // text, the same width as the resize handles that sit right on top
+    // of it. A dedicated grip, same convention as the panels' own
+    // `.wb-panel-grip`, gives a guaranteed, adequately-sized place to
+    // grab regardless of how much text is in the box. Text objects only: 
+    // an image has no competing contenteditable claim on its body, so it
+    // was already fully draggable once the resize-handle bug above was
+    // fixed.
+    el.append("div")
+      .attr("class", "wb-object-grip")
+      .attr("title", "Drag to move")
+      .text("⠿")
+      .call(gripDrag);
+    const content = el.append("div")
+      .attr("class", "wb-text-content")
+      // Not editable until asked, see `wbBeginTextEdit` for why.
+      .attr("contenteditable", "false")
+      .style("color", d.data.color ? wbReadableInk(d.data.color, d.data.bg || wbBoardBg()) : "")
+      .style("font-size", d.data.font_size ? `${d.data.font_size}px` : "")
+      .text(d.data.content || "");
+    // Saved on blur, not on every keystroke, a PUT per character would
+    // flood the server and make undo/redo of everything *else* land
+    // between two half-typed states.
+    content.on("blur", function () {
+      wbEndTextEdit(this);
+      const edited = wbEditedText(this);
+      //: Unchanged: nothing to save or record, but the box still goes back
+      //: from its raw source to the rendered view.
+      //: Formatted from the selection bar or Ctrl+B: shown rendered (K24).
+      const formatted = this.dataset.wbFormatted === "1";
+      delete this.dataset.wbFormatted;
+      const grownFrom = this.wbBeforeGrow;
+      delete this.wbBeforeGrow;
+      if (d.data.content === edited) {
+        if (grownFrom) {
+          wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom });
+          wbSaveObject(d);
+        }
+        wbScheduleRender();
+        return;
+      }
+      wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom || WB_KIND_INFO.object.payload(d) });
+      d.data = formatted ? { ...d.data, content: edited, md: true } : { ...d.data, content: edited };
+      wbGrowBoxToWords(this, d);
+      wbSaveObject(d);
+      //: A formatted edit is shown rendered (K24), and nothing else asked for
+      //: that: the box kept its raw `**x**` or `{{size=24|x}}` source on
+      //: screen until some other change repainted the board.
+      if (formatted) wbScheduleRender();
+    });
+    content.on("input", function () {
+      if (this.isContentEditable) wbGrowBoxToWords(this, d);
+    });
+    // Typing is text-box business, not the canvas's: Delete/Backspace
+    // here must edit the text, not delete the whole box the way the same
+    // keys do when an object is merely *selected*. Both of these are gated
+    // on actually being in edit mode now: a box that is not being edited
+    // has to let the pointer through to the object's own drag, and its
+    // Delete key belongs to the canvas again.
+    content.on("keydown", function (event) {
+      if (!this.isContentEditable) return;
+      event.stopPropagation();
+      //: **Escape ends the edit and leaves the box selected** (INBOX 445),
+      //: what Excalidraw, tldraw and Figma all do. The line above stopped
+      //: every key, Escape with them, so the caret stayed in the box after
+      //: Escape and the next tool letter (T, R) was typed into the sticky
+      //: instead of picking the tool. Blurring runs the save above.
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.blur();
+        selectWbItem("object", d.id);
+        wbInstances.container()?.focus({ preventScroll: true });
+        return;
+      }
+      if (event.key === "Tab" && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        if (wbIndentEditableLines(this, event.shiftKey)) event.preventDefault();
+      }
+      if (wbTextFormatKey(event)) return;
+      //: **Sticky chain** (WHITEBOARD_PLAN gap row 6, Miro's Tab): Ctrl+Enter
+      //: ends this sticky and starts the next beside it, same paper and size.
+      //: Not Tab, which indents a sticky's lines here.
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && wbIsSticky(d)) {
+        event.preventDefault();
+        this.blur();
+        wbCreateSticky(0, 0, { x: d.x + d.width + 24, y: d.y, w: d.width, h: d.height }, d);
+      }
+    });
+    content.on("pointerdown", function (event) {
+      if (this.isContentEditable) event.stopPropagation();
+    });
+    content.on("dblclick", function (event) {
+      event.stopPropagation();
+      if (wbJustDrilled()) return;
+      wbBeginTextEdit(this);
+    });
+  }
+
+  // One object entering: its body by kind, then the handles. `this` is its element (call with `.call`).
+  function wbBuildObject(d, gripDrag) {
+    const el = d3.select(this);
+    //: A topic coming back out of a fold keeps the body it was built with
+    //: (`wbMapNodeTakeBack`): its handlers close over this same datum. The
+    //: class line above reset its classes, so the one the build adds goes
+    //: back on, and the paint below runs in full because its key is gone.
+    if (this._wbTakenBack) {
+      delete this._wbTakenBack;
+      el.classed("wb-map-node", true);
+      this._wbPaintKey = undefined;
+      return;
+    }
+    if (d.kind === "image") {
+      wbBuildObjectImage(el, d);
+    } else if (d.kind === "frame") {
+      wbBuildFrame(el, d);
+    } else if (d.kind === "table") {
+      wbBuildTable(el, d);
+    } else if (d.kind === "diagram") {
+      wbBuildDiagram(el, d);
+    } else if (WB_MAP_KINDS.has(d.kind)) {
+      // A map node, not a text box. Checked before the `else` below because
+      // that branch is "everything that isn't an image", which is what drew a
+      // topic as a bare, unlabelled text box for as long as the kinds existed
+      // without this: stored, served, and on screen as nothing recognisable.
+      wbBuildMapNode(el, d);
+    } else {
+      wbBuildObjectText(el, d, gripDrag);
+    }
+    // A map node gets neither. Its height is its text's (see `objectHeight`),
+    // so a vertical resize handle would fight the content and lose; and a
+    // rotated node is a node whose edges no longer meet its anchors, which
+    // makes the tree unreadable for no gain a mind-mapper has ever asked for.
+    // The eight handles and the rotate grip also sit exactly where the
+    // chevron and the `+` do, and would swallow both.
+    if (WB_MAP_KINDS.has(d.kind)) return;
+    wbArmHandles(this, () => wbBuildObjectHandles(el, d.kind));
+  }
+
+  // One object repainted when its key changed (call with `.call`: `this` is its element); `pass` is the render pass's shared state.
+  function wbPaintObject(d, pass) {
+    const { stackRank, paintCtx, movesLater, repainted } = pass;
+    const { index: mapIndex, colors: mapColors, fills: mapFills } = paintCtx;
+    //: Before the paint-key skip: another item's order command moves this
+    //: one's rank without changing anything this one would repaint.
+    //: Kept on the element: this pass and the enter above are the only writers of an object's z-index, and
+    //: reading it back off `style` cost 0.6 ms for 500.
+    const rank = stackRank.get(`object:${d.id}`) ?? "";
+    if (this._wbRank !== rank) {
+      this.style.zIndex = String(rank);
+      this._wbRank = rank;
+    }
+    const key = wbObjectPaintKey(d, paintCtx);
+    //: **A move is a transform, not a repaint** (audit FEAT-02): the key left
+    //: out x and y so a tidy that shifts two hundred topics down for one new
+    //: one writes two hundred transforms, not two hundred full repaints
+    //: (measured: 409ms of `setAttribute` in one Tab at 301 topics).
+    if (this._wbPaintKey === key) {
+      const place = wbItemTransform(d);
+      if (this.style.transform !== place) movesLater.push([this, place]);
+      return;
+    }
+    repainted.add(this);
+    this._wbPaintKey = key;
+    //: Drawn live for this pass, so the measure below reads what the new
+    //: content really needs rather than the size it was culled at. The next
+    //: cull (queued at the end of the render) puts it back if it is still
+    //: off screen.
+    if (this.classList.contains("wb-culled")) this.classList.remove("wb-culled");
+    const el = d3.select(this);
+    this.style.transform = wbItemTransform(d);
+    this.style.width = `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`;
+    this.style.height = wbObjectHeight(d);
+    if (!WB_MAP_KINDS.has(d.kind)) {
+      this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";
+      this.style.filter = wbShadowCss(d.data) || "";
+      this.style.borderRadius = Array.isArray(d.data?.radii) ? d.data.radii.map((r) => `${r}px`).join(" ") : "";
+      if (d.kind === "text") this.style.padding = d.data?.pad != null ? `${d.data.pad}px` : "";
+      wbPaintVotes(this, d);
+    }
+    if (d.kind === "image") {
+      const pix = wbPixel(d.data, d.width, d.height);
+      const turned = pix.turn === 90 || pix.turn === 270;
+      //: The border is an outline drawn inside the box, so the picture keeps its size.
+      const edge = d.data.border_width > 0 ? d.data.border_width : 0;
+      this.style.outline = edge ? `${edge}px solid ${d.data.border_color && d.data.border_color !== "transparent" ? d.data.border_color : "#333333"}` : "";
+      this.style.outlineOffset = edge ? `-${edge}px` : "";
+      el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null)
+        .style("clip-path", wbCropClip(d.data.crop, d.data.trim) || null)
+        .style("transform", pix.transform || null).style("filter", pix.filter || null)
+        .style("position", turned ? "absolute" : null).style("left", turned ? "50%" : null).style("top", turned ? "50%" : null)
+        .style("width", turned ? `${pix.w}px` : null).style("height", turned ? `${pix.h}px` : null);
+    } else if (WB_MAP_KINDS.has(d.kind)) {
+      wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
+      //: The topic an add is about to type in is made editable here, before
+      //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
+      const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
+      if (typing) {
+        //: Selected, the old selection let go, in the same pass and before the
+        //: editable attribute (which restyles at once): the `selectWbItem` that
+        //: follows then finds the classes already right.
+        for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
+        this.classList.add("wb-selected");
+        (wbApplySelectionHighlight.marked ??= new Set()).add(this);
+        wbBeginTextEdit(typing, undefined, true);
+      }
+    } else if (d.kind === "frame") {
+      const title = this.querySelector(".wb-frame-title");
+      if (title && !title.isContentEditable) title.textContent = wbFrameTitle(d);
+      wbPaintFrame(this, d);
+    } else if (d.kind === "table") {
+      wbPaintTable(this, d);
+    } else if (d.kind === "diagram") {
+      wbPaintDiagram(this, d);
+    } else {
+      const sticky = wbIsSticky(d);
+      el.classed("wb-sticky", sticky);
+      el.classed("wb-no-fold", sticky && !wbStickyFolds(d));
+      //: The paper's colour is the fold's too (`.wb-sticky::after`); a
+      //: sticky's edge is its lift, never a drawn border.
+      if (sticky) this.style.setProperty("--wb-paper", d.data.bg || WB_STICKY_PAPERS[0].value);
+      else this.style.removeProperty("--wb-paper");
+      el.style("background", wbPaperPaint(d.data)).style("border-color", sticky ? "" : d.data.border_color || "");
+      const textEl = el.select(".wb-text-content");
+      //: **A sticker** (MINDMAP_PLAN.md decision 44): an emoji with no card,
+      //: its glyph sized to its box, so resizing it is resizing the emoji.
+      const sticker = Boolean(d.data.sticker);
+      el.classed("wb-sticker", sticker);
+      //: Up and down the box (the Format panel's Vertical row): the
+      //: stylesheet centres or bottoms the text from this.
+      if (d.data.valign === "middle" || d.data.valign === "bottom") this.dataset.valign = d.data.valign;
+      else delete this.dataset.valign;
+      //: A card with a fill and no ink of its own takes the ink that reads
+      //: on that fill (`wbCoreInkFor`), not the theme's: a dark blue card in
+      //: the light theme drew dark text on it (the owner at release, the
+      //: README's board shot).
+      textEl.style("color", d.data.color || (d.data.bg && wbCoreInkFor(d.data.bg)) || "")
+        .style("font-size", sticker ? `${wbStickerSize(d)}px` : d.data.font_size ? `${d.data.font_size}px` : "")
+        .style("text-align", d.data.align || "")
+        .style("line-height", d.data.line_height || "")
+        .style("letter-spacing", d.data.letter_spacing ? `${d.data.letter_spacing}px` : "")
+        .style("font-weight", d.data.bold ? "700" : "")
+        .style("font-style", d.data.italic ? "italic" : "")
+        .style("text-decoration", [d.data.underline && "underline", d.data.strike && "line-through"].filter(Boolean).join(" "))
+        .style("font-family", WB_ITEM_FONTS[d.data.font_family] || "");
+      wbPaintTextDir(textEl.node(), d.data.text_dir, d.data.text_alpha);
+      if (document.activeElement !== textEl.node()) wbPaintTextContent(textEl.node(), d);
+    }
+    wbFmtState.effects?.paintObject(this, d); // a sticky's flip side and its words' shadow (whiteboard-effects.js)
+  }
+
+  function wbMeasureMapNodes(objectUpdate, repainted) {
+    //: **Every topic measured in one pass, after every write, never between
+    //: them** (MINDMAP_PLAN.md §13a). This loop used to be the last two lines
+    //: of the `.each` above, one `offsetHeight` read per node interleaved with
+    //: that node's own style writes. A style write invalidates layout for the
+    //: whole document, so each of those reads flushed a fresh layout of the
+    //: entire board: 500 nodes cost 500 full layouts, which is where this
+    //: render's superlinearity actually lived (renderWbObjects: 405.6ms of a
+    //: 527ms render at 500 topics, against 32.1ms for the painting itself).
+    //: Reads on their own flush once and are then free, so the same
+    //: information now costs one layout.
+    //:
+    //: The stored `height` is what the bounds, the alignment guides and the
+    //: tidy layout all read, and a map node's real height is whatever its text
+    //: needed; the value rides along to the server on the node's next real
+    //: save. The size cache is filled from the same reads because
+    //: `wbRenderMapEdges` runs next and asks for both ends of every edge: that
+    //: is what keeps `wbMapNodeSize` off `document.querySelector` for a board
+    //: whose elements this pass is holding already.
+    if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
+    objectUpdate.each(function (d) {
+      if (!WB_MAP_KINDS.has(d.kind)) return;
+      //: A topic this pass did not repaint is the size it last measured (a
+      //: move is not a resize), and a culled one was not repainted either.
+      if (!repainted.has(this) || this.classList.contains("wb-culled")) {
+        //: **The height it was last measured at, not the stored one.** A state
+        //: fetched from the server hands every topic back the server's
+        //: placeholder height (120), while the element on screen is what its
+        //: text needs (44 for one line): a topic this pass did not repaint
+        //: took the 120 into the cache, and `wbMapNodeSize` then put a pan,
+        //: a ring and an edge end 38px off the box (`mapstrip.js` at 1440, 12px
+        //: at 390: the "94px" row, 2 x 47). An element measured once keeps its
+        //: own number; one never measured and not culled is read now below.
+        const known = this._wbMeasuredH;
+        if (d.width && (known || (d.height && this.classList.contains("wb-culled")))) {
+          wbMapNodeSizeCache.set(d.id, { w: d.width, h: known || d.height });
+          if (known) d.height = known;
+          return;
+        }
+        if (this.classList.contains("wb-culled")) return;
+      }
+      const h = this.offsetHeight;
+      if (!h) return;
+      wbMapNodeSizeCache.set(d.id, { w: this.offsetWidth, h });
+      this._wbMeasuredH = h;
+      d.height = h;
+    });
+  }
+
+  function renderWbObjects(canvas, stackRank = wbStackRanks()) {
+    wbScheduleStickyDates();
+    const objDrag = wbObjectDrag();
+    const gripDrag = wbObjectGripDrag();
     // The map facts for this render pass, computed once here rather than per
     // node: `wbMapColors` walks the whole tree by design (see its own comment),
     // and calling it from inside a per-node callback would walk it once per node.
@@ -1069,18 +1442,13 @@
     const objectSelection = canvas.selectAll(".wb-object")
       .data(objectData, (d) => d.id);
 
-    // A map node is `height: auto`, its own text decides how tall it is, so a
-    // long topic grows its box instead of being sliced by `overflow: hidden`,
-    // which is the failure CLAUDE.md records costing six rounds on one popup.
-    const objectHeight = (d) => (WB_MAP_KINDS.has(d.kind) ? "auto" : `${d.height}px`);
-
     const objectEnter = objectSelection.enter()
       .append((d) => wbMapNodeTakeBack(d) || document.createElement("div"))
       .attr("class", (d) => `wb-object wb-object-${d.kind}`)
       .attr("data-id", (d) => d.id)
       .style("transform", wbItemTransform)
       .style("width", (d) => `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`)
-      .style("height", objectHeight)
+      .style("height", wbObjectHeight)
       .style("z-index", (d) => stackRank.get(`object:${d.id}`))
       .call(objDrag)
       .on("click", (event, d) => {
@@ -1100,196 +1468,7 @@
         if (window.currentTool === "eraser" && wbErasing) wbDeleteObject(d);
       });
 
-    objectEnter.each(function (d) {
-      const el = d3.select(this);
-      //: A topic coming back out of a fold keeps the body it was built with
-      //: (`wbMapNodeTakeBack`): its handlers close over this same datum. The
-      //: class line above reset its classes, so the one the build adds goes
-      //: back on, and the paint below runs in full because its key is gone.
-      if (this._wbTakenBack) {
-        delete this._wbTakenBack;
-        el.classed("wb-map-node", true);
-        this._wbPaintKey = undefined;
-        return;
-      }
-      if (d.kind === "image") {
-        // Asked for directly: an image deleted out from under a board (via
-        // the Library gallery's own delete, or by hand off disk) left a
-        // plain broken-image glyph: "there should probably be a placeholder
-        // or closable box that says it is deleted in its place." The close
-        // button removes the object outright rather than leaving a
-        // permanently-broken box on the board.
-        el.append("img").attr("src", mediaSrc(d.data.url) || "").attr("alt", "")
-          .on("error", function () {
-            d3.select(this).remove();
-            if (el.select(".wb-object-deleted").empty()) {
-              const placeholder = el.append("div").attr("class", "wb-object-deleted");
-              placeholder.append("span").text("Image deleted");
-              placeholder.append("button")
-                .attr("type", "button")
-                .attr("class", "ghost small icon-button")
-                .attr("title", "Remove this")
-                .attr("aria-label", "Remove this")
-                //: `setLabel`, not `.text("\u2715")`: a typed cross renders in
-                //: the page font at the text's own weight beside Phosphor icons
-                //: everywhere else in this bar. d3 has no icon idiom, so the
-                //: element is handed to the app's own one.
-                .each(function () { setLabel(this, "ph:x"); })
-                .on("click", (event) => { event.stopPropagation(); wbDeleteObject(d); });
-            }
-          });
-      } else if (d.kind === "frame") {
-        wbBuildFrame(el, d);
-      } else if (d.kind === "table") {
-        wbBuildTable(el, d);
-      } else if (d.kind === "diagram") {
-        wbBuildDiagram(el, d);
-      } else if (WB_MAP_KINDS.has(d.kind)) {
-        // A map node, not a text box. Checked before the `else` below because
-        // that branch is "everything that isn't an image", which is what drew a
-        // topic as a bare, unlabelled text box for as long as the kinds existed
-        // without this: stored, served, and on screen as nothing recognisable.
-        wbBuildMapNode(el, d);
-      } else {
-        // Fill/border, asked for directly (the properties panel): set on the
-        // outer object div, which is what `.wb-object-text`'s own default
-        // background/border style, so an unset value falls back to the CSS
-        // default rather than an empty override.
-        el.style("background", wbPaperPaint(d.data)).style("border-color", d.data.border_color || "");
-        // Asked for directly ("objects are also difficult and annoying to
-        // move around"): `.wb-text-content` fills the entire box and both
-        // the filter above and its own pointerdown handler below correctly
-        // keep drag away from it while typing, which meant the *only*
-        // draggable surface left was the ~0.5rem padding strip around the
-        // text, the same width as the resize handles that sit right on top
-        // of it. A dedicated grip, same convention as the panels' own
-        // `.wb-panel-grip`, gives a guaranteed, adequately-sized place to
-        // grab regardless of how much text is in the box. Text objects only: 
-        // an image has no competing contenteditable claim on its body, so it
-        // was already fully draggable once the resize-handle bug above was
-        // fixed.
-        el.append("div")
-          .attr("class", "wb-object-grip")
-          .attr("title", "Drag to move")
-          .text("⠿")
-          .call(gripDrag);
-        const content = el.append("div")
-          .attr("class", "wb-text-content")
-          // Not editable until asked, see `wbBeginTextEdit` for why.
-          .attr("contenteditable", "false")
-          .style("color", d.data.color ? wbReadableInk(d.data.color, d.data.bg || wbBoardBg()) : "")
-          .style("font-size", d.data.font_size ? `${d.data.font_size}px` : "")
-          .text(d.data.content || "");
-        // Saved on blur, not on every keystroke, a PUT per character would
-        // flood the server and make undo/redo of everything *else* land
-        // between two half-typed states.
-        content.on("blur", function () {
-          wbEndTextEdit(this);
-          const edited = wbEditedText(this);
-          //: Unchanged: nothing to save or record, but the box still goes back
-          //: from its raw source to the rendered view.
-          //: Formatted from the selection bar or Ctrl+B: shown rendered (K24).
-          const formatted = this.dataset.wbFormatted === "1";
-          delete this.dataset.wbFormatted;
-          const grownFrom = this.wbBeforeGrow;
-          delete this.wbBeforeGrow;
-          if (d.data.content === edited) {
-            if (grownFrom) {
-              wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom });
-              wbSaveObject(d);
-            }
-            wbScheduleRender();
-            return;
-          }
-          wbPushUndo({ action: "move", kind: "object", id: d.id, before: grownFrom || WB_KIND_INFO.object.payload(d) });
-          d.data = formatted ? { ...d.data, content: edited, md: true } : { ...d.data, content: edited };
-          wbGrowBoxToWords(this, d);
-          wbSaveObject(d);
-          //: A formatted edit is shown rendered (K24), and nothing else asked for
-          //: that: the box kept its raw `**x**` or `{{size=24|x}}` source on
-          //: screen until some other change repainted the board.
-          if (formatted) wbScheduleRender();
-        });
-        content.on("input", function () {
-          if (this.isContentEditable) wbGrowBoxToWords(this, d);
-        });
-        // Typing is text-box business, not the canvas's: Delete/Backspace
-        // here must edit the text, not delete the whole box the way the same
-        // keys do when an object is merely *selected*. Both of these are gated
-        // on actually being in edit mode now: a box that is not being edited
-        // has to let the pointer through to the object's own drag, and its
-        // Delete key belongs to the canvas again.
-        content.on("keydown", function (event) {
-          if (!this.isContentEditable) return;
-          event.stopPropagation();
-          //: **Escape ends the edit and leaves the box selected** (INBOX 445),
-          //: what Excalidraw, tldraw and Figma all do. The line above stopped
-          //: every key, Escape with them, so the caret stayed in the box after
-          //: Escape and the next tool letter (T, R) was typed into the sticky
-          //: instead of picking the tool. Blurring runs the save above.
-          if (event.key === "Escape") {
-            event.preventDefault();
-            this.blur();
-            selectWbItem("object", d.id);
-            wbInstances.container()?.focus({ preventScroll: true });
-            return;
-          }
-          if (event.key === "Tab" && !event.ctrlKey && !event.altKey && !event.metaKey) {
-            if (wbIndentEditableLines(this, event.shiftKey)) event.preventDefault();
-          }
-          if (wbTextFormatKey(event)) return;
-          //: **Sticky chain** (WHITEBOARD_PLAN gap row 6, Miro's Tab): Ctrl+Enter
-          //: ends this sticky and starts the next beside it, same paper and size.
-          //: Not Tab, which indents a sticky's lines here.
-          if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && wbIsSticky(d)) {
-            event.preventDefault();
-            this.blur();
-            wbCreateSticky(0, 0, { x: d.x + d.width + 24, y: d.y, w: d.width, h: d.height }, d);
-          }
-        });
-        content.on("pointerdown", function (event) {
-          if (this.isContentEditable) event.stopPropagation();
-        });
-        content.on("dblclick", function (event) {
-          event.stopPropagation();
-          if (wbJustDrilled()) return;
-          wbBeginTextEdit(this);
-        });
-      }
-      // A map node gets neither. Its height is its text's (see `objectHeight`),
-      // so a vertical resize handle would fight the content and lose; and a
-      // rotated node is a node whose edges no longer meet its anchors, which
-      // makes the tree unreadable for no gain a mind-mapper has ever asked for.
-      // The eight handles and the rotate grip also sit exactly where the
-      // chevron and the `+` do, and would swallow both.
-      if (WB_MAP_KINDS.has(d.kind)) return;
-      wbArmHandles(this, () => wbBuildObjectHandles(el, d.kind));
-    });
-
-    //: The eight sizes and the turn grip of one object, built on first need
-    //: (`wbArmHandles`).
-    function wbBuildObjectHandles(el, kind) {
-      for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
-        el.append("div")
-          .attr("class", "wb-resize-handle")
-          .attr("data-handle", handle)
-          //: **The gesture says it exists.** The rotate grip beside these has
-          //: carried a title explaining its own modifier since it was built;
-          //: these had none, so double-tapping to fit was real and invisible,
-          //: which is indistinguishable from missing and was duly reported as
-          //: missing.
-          .attr("title", wbResizeHandleTitle(kind))
-          .call(resizeDrag(handle));
-      }
-      //: A table's grid holds nothing square once turned. A frame does turn
-      //: (INBOX 1327, reversing decision 14's "no rotation"), and what lies
-      //: wholly inside it turns with it (decision 42, `wbFrameTurnOrigin`).
-      if (kind === "table") return;
-      el.append("div")
-        .attr("class", "wb-rotate-handle")
-        .attr("title", wbRotateGripTitle(kind))
-        .call(objectRotateDrag());
-    }
+    objectEnter.each(function (d) { wbBuildObject.call(this, d, gripDrag); });
 
     wbWireContextMenu(objectEnter, "object");
 
@@ -1336,114 +1515,7 @@
     //: after it, to be restyled once with the rest of the frame.
     const movesLater = [];
     const repainted = new Set();
-    objectUpdate.each(function (d) {
-      //: Before the paint-key skip: another item's order command moves this
-      //: one's rank without changing anything this one would repaint.
-      //: Kept on the element: this pass and the enter above are the only writers of an object's z-index, and
-      //: reading it back off `style` cost 0.6 ms for 500.
-      const rank = stackRank.get(`object:${d.id}`) ?? "";
-      if (this._wbRank !== rank) {
-        this.style.zIndex = String(rank);
-        this._wbRank = rank;
-      }
-      const key = wbObjectPaintKey(d, paintCtx);
-      //: **A move is a transform, not a repaint** (audit FEAT-02): the key left
-      //: out x and y so a tidy that shifts two hundred topics down for one new
-      //: one writes two hundred transforms, not two hundred full repaints
-      //: (measured: 409ms of `setAttribute` in one Tab at 301 topics).
-      if (this._wbPaintKey === key) {
-        const place = wbItemTransform(d);
-        if (this.style.transform !== place) movesLater.push([this, place]);
-        return;
-      }
-      repainted.add(this);
-      this._wbPaintKey = key;
-      //: Drawn live for this pass, so the measure below reads what the new
-      //: content really needs rather than the size it was culled at. The next
-      //: cull (queued at the end of the render) puts it back if it is still
-      //: off screen.
-      if (this.classList.contains("wb-culled")) this.classList.remove("wb-culled");
-      const el = d3.select(this);
-      this.style.transform = wbItemTransform(d);
-      this.style.width = `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`;
-      this.style.height = objectHeight(d);
-      if (!WB_MAP_KINDS.has(d.kind)) {
-        this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";
-        this.style.filter = wbShadowCss(d.data) || "";
-        this.style.borderRadius = Array.isArray(d.data?.radii) ? d.data.radii.map((r) => `${r}px`).join(" ") : "";
-        if (d.kind === "text") this.style.padding = d.data?.pad != null ? `${d.data.pad}px` : "";
-        wbPaintVotes(this, d);
-      }
-      if (d.kind === "image") {
-        const pix = wbPixel(d.data, d.width, d.height);
-        const turned = pix.turn === 90 || pix.turn === 270;
-        //: The border is an outline drawn inside the box, so the picture keeps its size.
-        const edge = d.data.border_width > 0 ? d.data.border_width : 0;
-        this.style.outline = edge ? `${edge}px solid ${d.data.border_color && d.data.border_color !== "transparent" ? d.data.border_color : "#333333"}` : "";
-        this.style.outlineOffset = edge ? `-${edge}px` : "";
-        el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null)
-          .style("clip-path", wbCropClip(d.data.crop, d.data.trim) || null)
-          .style("transform", pix.transform || null).style("filter", pix.filter || null)
-          .style("position", turned ? "absolute" : null).style("left", turned ? "50%" : null).style("top", turned ? "50%" : null)
-          .style("width", turned ? `${pix.w}px` : null).style("height", turned ? `${pix.h}px` : null);
-      } else if (WB_MAP_KINDS.has(d.kind)) {
-        wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
-        //: The topic an add is about to type in is made editable here, before
-        //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
-        const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
-        if (typing) {
-          //: Selected, the old selection let go, in the same pass and before the
-          //: editable attribute (which restyles at once): the `selectWbItem` that
-          //: follows then finds the classes already right.
-          for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
-          this.classList.add("wb-selected");
-          (wbApplySelectionHighlight.marked ??= new Set()).add(this);
-          wbBeginTextEdit(typing, undefined, true);
-        }
-      } else if (d.kind === "frame") {
-        const title = this.querySelector(".wb-frame-title");
-        if (title && !title.isContentEditable) title.textContent = wbFrameTitle(d);
-        wbPaintFrame(this, d);
-      } else if (d.kind === "table") {
-        wbPaintTable(this, d);
-      } else if (d.kind === "diagram") {
-        wbPaintDiagram(this, d);
-      } else {
-        const sticky = wbIsSticky(d);
-        el.classed("wb-sticky", sticky);
-        el.classed("wb-no-fold", sticky && !wbStickyFolds(d));
-        //: The paper's colour is the fold's too (`.wb-sticky::after`); a
-        //: sticky's edge is its lift, never a drawn border.
-        if (sticky) this.style.setProperty("--wb-paper", d.data.bg || WB_STICKY_PAPERS[0].value);
-        else this.style.removeProperty("--wb-paper");
-        el.style("background", wbPaperPaint(d.data)).style("border-color", sticky ? "" : d.data.border_color || "");
-        const textEl = el.select(".wb-text-content");
-        //: **A sticker** (MINDMAP_PLAN.md decision 44): an emoji with no card,
-        //: its glyph sized to its box, so resizing it is resizing the emoji.
-        const sticker = Boolean(d.data.sticker);
-        el.classed("wb-sticker", sticker);
-        //: Up and down the box (the Format panel's Vertical row): the
-        //: stylesheet centres or bottoms the text from this.
-        if (d.data.valign === "middle" || d.data.valign === "bottom") this.dataset.valign = d.data.valign;
-        else delete this.dataset.valign;
-        //: A card with a fill and no ink of its own takes the ink that reads
-        //: on that fill (`wbCoreInkFor`), not the theme's: a dark blue card in
-        //: the light theme drew dark text on it (the owner at release, the
-        //: README's board shot).
-        textEl.style("color", d.data.color || (d.data.bg && wbCoreInkFor(d.data.bg)) || "")
-          .style("font-size", sticker ? `${wbStickerSize(d)}px` : d.data.font_size ? `${d.data.font_size}px` : "")
-          .style("text-align", d.data.align || "")
-          .style("line-height", d.data.line_height || "")
-          .style("letter-spacing", d.data.letter_spacing ? `${d.data.letter_spacing}px` : "")
-          .style("font-weight", d.data.bold ? "700" : "")
-          .style("font-style", d.data.italic ? "italic" : "")
-          .style("text-decoration", [d.data.underline && "underline", d.data.strike && "line-through"].filter(Boolean).join(" "))
-          .style("font-family", WB_ITEM_FONTS[d.data.font_family] || "");
-        wbPaintTextDir(textEl.node(), d.data.text_dir, d.data.text_alpha);
-        if (document.activeElement !== textEl.node()) wbPaintTextContent(textEl.node(), d);
-      }
-      wbFmtState.effects?.paintObject(this, d); // a sticky's flip side and its words' shadow (whiteboard-effects.js)
-    });
+    objectUpdate.each(function (d) { wbPaintObject.call(this, d, { stackRank, paintCtx, movesLater, repainted }); });
 
     objectSelection.exit()
       .each(function (d) {
@@ -1458,54 +1530,7 @@
       if (!mapHidden?.has(id)) wbMapNodePool.delete(id);
     }
 
-    //: **Every topic measured in one pass, after every write, never between
-    //: them** (MINDMAP_PLAN.md §13a). This loop used to be the last two lines
-    //: of the `.each` above, one `offsetHeight` read per node interleaved with
-    //: that node's own style writes. A style write invalidates layout for the
-    //: whole document, so each of those reads flushed a fresh layout of the
-    //: entire board: 500 nodes cost 500 full layouts, which is where this
-    //: render's superlinearity actually lived (renderWbObjects: 405.6ms of a
-    //: 527ms render at 500 topics, against 32.1ms for the painting itself).
-    //: Reads on their own flush once and are then free, so the same
-    //: information now costs one layout.
-    //:
-    //: The stored `height` is what the bounds, the alignment guides and the
-    //: tidy layout all read, and a map node's real height is whatever its text
-    //: needed; the value rides along to the server on the node's next real
-    //: save. The size cache is filled from the same reads because
-    //: `wbRenderMapEdges` runs next and asks for both ends of every edge: that
-    //: is what keeps `wbMapNodeSize` off `document.querySelector` for a board
-    //: whose elements this pass is holding already.
-    if (mapIndex) {
-      if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
-      objectUpdate.each(function (d) {
-        if (!WB_MAP_KINDS.has(d.kind)) return;
-        //: A topic this pass did not repaint is the size it last measured (a
-        //: move is not a resize), and a culled one was not repainted either.
-        if (!repainted.has(this) || this.classList.contains("wb-culled")) {
-          //: **The height it was last measured at, not the stored one.** A state
-          //: fetched from the server hands every topic back the server's
-          //: placeholder height (120), while the element on screen is what its
-          //: text needs (44 for one line): a topic this pass did not repaint
-          //: took the 120 into the cache, and `wbMapNodeSize` then put a pan,
-          //: a ring and an edge end 38px off the box (`mapstrip.js` at 1440, 12px
-          //: at 390: the "94px" row, 2 x 47). An element measured once keeps its
-          //: own number; one never measured and not culled is read now below.
-          const known = this._wbMeasuredH;
-          if (d.width && (known || (d.height && this.classList.contains("wb-culled")))) {
-            wbMapNodeSizeCache.set(d.id, { w: d.width, h: known || d.height });
-            if (known) d.height = known;
-            return;
-          }
-          if (this.classList.contains("wb-culled")) return;
-        }
-        const h = this.offsetHeight;
-        if (!h) return;
-        wbMapNodeSizeCache.set(d.id, { w: this.offsetWidth, h });
-        this._wbMeasuredH = h;
-        d.height = h;
-      });
-    }
+    if (mapIndex) wbMeasureMapNodes(objectUpdate, repainted);
     if (wbAddGate.renderHold) wbAddGate.renderHold.moves.push(...movesLater);
     else for (const [el, place] of movesLater) el.style.transform = place;
   }

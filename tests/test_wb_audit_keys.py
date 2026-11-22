@@ -219,7 +219,7 @@ def test_undoing_a_create_selects_the_parent():
 
 def test_tab_adds_a_topic_only_when_the_map_was_engaged_and_focus_is_on_it():
     assert "let wbMapKeysArmed = false;" in WB
-    gate = WB.index("if (!wbMapKeysArmed || !onMap) return;")
+    gate = WB.index("if (!wbMapKeysArmed || !onMap) return true;")
     # Not armed, or focus on another control: return before preventDefault, so
     # the browser's own Tab runs.
     assert WB[gate:].index("e.preventDefault();") < WB[gate:].index("wbMapOutdent(mapNode.id)")
@@ -262,6 +262,12 @@ def test_nothing_outside_the_boards_setup_calls_its_private_tool_picker():
     code = re.sub(r"(?m)^\s*//.*$", "", WB)
     owners = ["initWhiteboard"] + re.findall(r"function (\w+)\(\{[^}]*\bselectWbTool\b[^}]*\}\)", code)
     inside = sum(len(re.findall(r"\bselectWbTool\(", re.sub(r"(?m)^\s*//.*$", "", _function_body(WB, n)))) for n in owners)
+    # The split sections (L-whiteboard-78) keep it in a `let` of their own file's closure, set from
+    # `args` when the board starts, so every call in such a file is inside a holder of the handle.
+    for name in ("whiteboard-pan.js", "whiteboard-menus.js", "whiteboard-pointer.js"):
+        text = frontend_text(name)
+        assert re.search(r"(?m)^let [^;]*\bselectWbTool\b", text), name
+        inside += len(re.findall(r"\bselectWbTool\(", re.sub(r"(?m)^\s*//.*$", "", text)))
     assert len(re.findall(r"\bselectWbTool\(", code)) == inside
 
 

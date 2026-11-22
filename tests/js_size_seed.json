@@ -125,22 +125,14 @@
  "whiteboard-handles.js::wbDrawSketchHandles": 245,
  "whiteboard-handles.js::wbRenderMultiSelectionHandles": 328,
  "whiteboard-interchange.js::arrow": 187,
- "whiteboard-items.js::function": 165,
- "whiteboard-items.js::renderWbObjects": 901,
  "whiteboard-library-more.js::openPicker": 170,
  "whiteboard-library.js::arrow": 271,
  "whiteboard-map-strip.js::wbSyncMapStrip": 205,
  "whiteboard-map.js::wbMapLayoutPositions": 249,
- "whiteboard-menus.js::arrow": 527,
- "whiteboard-menus.js::wbInitMenus": 978,
- "whiteboard-pan.js::wbInitPan": 990,
- "whiteboard-pointer.js::wbInitPointer": 1273,
  "whiteboard-strokes.js::wbInitStrokes": 263,
  "whiteboard-templates.js::wbMapThumbSpec": 152,
  "whiteboard-templates.js::wbOpenTemplateGallery": 184,
  "whiteboard-textedit.js::wbApplyHistoryEntry": 225,
  "whiteboard-toolsheet.js::wbInitToolsSheet": 310,
- "whiteboard.js::function": 158,
- "whiteboard.js::initWhiteboard": 558,
- "whiteboard.js::renderWhiteboard": 957
+ "whiteboard.js::initWhiteboard": 558
 }

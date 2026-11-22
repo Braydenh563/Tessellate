@@ -46,7 +46,7 @@ def test_the_panel_has_the_switch_with_help_and_the_board_paints_it():
     fmt = frontend_text("whiteboard-format.js")
     assert '"tshadow"' in fmt and 'case "tshadow": case "glass": case "fillimg"' in fmt
     board = frontend_text("whiteboard.js")
-    assert "wbFmtState.effects?.paintObject(this, d)" in board and "wbFmtState.effects?.paintShape(this, shapeData, pathData, d.id)" in board
+    assert "wbFmtState.effects?.paintObject(this, d)" in board and "wbFmtState.effects?.paintShape(node, shapeData, pathData, d.id)" in board
     effects = frontend_text("whiteboard-effects.js")
     assert '"label_shadow" : "text_shadow"' in effects
 

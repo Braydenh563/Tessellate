@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9058, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2927, tests 23323, plan headings 694, app scripts 29, boot scripts 38, script files 403.
+Counts: frontend functions 9138, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2927, tests 23323, plan headings 694, app scripts 29, boot scripts 38, script files 403.
 
-## Frontend functions (9058)
+## Frontend functions (9138)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -9693,12 +9693,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1689 |
 | `wbThumbMark` | frontend/js/whiteboard-interchange.js:1683 |
 
-### frontend/js/whiteboard-items.js (25)
+### frontend/js/whiteboard-items.js (39)
 
 | Name | File:line |
 |---|---|
-| `renderWbObjects` | frontend/js/whiteboard-items.js:611 |
+| `objDragEnd` | frontend/js/whiteboard-items.js:746 |
+| `objDragMove` | frontend/js/whiteboard-items.js:653 |
+| `objDragStart` | frontend/js/whiteboard-items.js:622 |
+| `objectRotateDrag` | frontend/js/whiteboard-items.js:998 |
+| `renderWbObjects` | frontend/js/whiteboard-items.js:1417 |
+| `resizeDrag` | frontend/js/whiteboard-items.js:919 |
 | `wbApplyMoveRun` | frontend/js/whiteboard-items.js:535 |
+| `wbBuildObject` | frontend/js/whiteboard-items.js:1217 |
+| `wbBuildObjectHandles` | frontend/js/whiteboard-items.js:1058 |
+| `wbBuildObjectImage` | frontend/js/whiteboard-items.js:1081 |
+| `wbBuildObjectText` | frontend/js/whiteboard-items.js:1109 |
 | `wbCardFitHeight` | frontend/js/whiteboard-items.js:210 |
 | `wbCloseOrphanedPopovers` | frontend/js/whiteboard-items.js:19 |
 | `wbDeleteNode` | frontend/js/whiteboard-items.js:57 |
@@ -9708,6 +9717,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbFitToText` | frontend/js/whiteboard-items.js:281 |
 | `wbImageFitHeight` | frontend/js/whiteboard-items.js:256 |
 | `wbMapNodeTakeBack` | frontend/js/whiteboard-items.js:549 |
+| `wbMeasureMapNodes` | frontend/js/whiteboard-items.js:1368 |
+| `wbObjectDrag` | frontend/js/whiteboard-items.js:846 |
+| `wbObjectGripDrag` | frontend/js/whiteboard-items.js:906 |
+| `wbObjectHeight` | frontend/js/whiteboard-items.js:611 |
+| `wbPaintObject` | frontend/js/whiteboard-items.js:1257 |
 | `wbPaintStickyDates` | frontend/js/whiteboard-items.js:563 |
 | `wbResetRotation` | frontend/js/whiteboard-items.js:158 |
 | `wbResizeHandleTitle` | frontend/js/whiteboard-items.js:247 |
@@ -10444,11 +10458,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbTidyNextRight` | frontend/js/whiteboard-map.js:3987 |
 | `wbWireEdgeLabelDrag` | frontend/js/whiteboard-map.js:2767 |
 
-### frontend/js/whiteboard-menus.js (1)
+### frontend/js/whiteboard-menus.js (16)
 
 | Name | File:line |
 |---|---|
-| `wbInitMenus` | frontend/js/whiteboard-menus.js:4 |
+| `syncPanelSwitches` | frontend/js/whiteboard-menus.js:84 |
+| `toggleBoardMenu` | frontend/js/whiteboard-menus.js:44 |
+| `wbInitBoardMenus` | frontend/js/whiteboard-menus.js:647 |
+| `wbInitHistoryButtons` | frontend/js/whiteboard-menus.js:932 |
+| `wbInitKeyHandlers` | frontend/js/whiteboard-menus.js:1013 |
+| `wbInitKeyTables` | frontend/js/whiteboard-menus.js:946 |
+| `wbInitKindAndInsertMenus` | frontend/js/whiteboard-menus.js:769 |
+| `wbInitMenus` | frontend/js/whiteboard-menus.js:1066 |
+| `wbInitPanelSwitches` | frontend/js/whiteboard-menus.js:823 |
+| `wbKeyArrange` | frontend/js/whiteboard-menus.js:465 |
+| `wbKeyBasic` | frontend/js/whiteboard-menus.js:139 |
+| `wbKeyEditing` | frontend/js/whiteboard-menus.js:352 |
+| `wbKeyGate` | frontend/js/whiteboard-menus.js:99 |
+| `wbKeyMapKeys` | frontend/js/whiteboard-menus.js:216 |
+| `wbKeyToolLetters` | frontend/js/whiteboard-menus.js:588 |
+| `wbSetSpaceHeld` | frontend/js/whiteboard-menus.js:92 |
 
 ### frontend/js/whiteboard-navigator.js (15)
 
@@ -10522,11 +10551,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbVoteTargets` | frontend/js/whiteboard-paint.js:203 |
 | `wbVotesAfter` | frontend/js/whiteboard-paint.js:198 |
 
-### frontend/js/whiteboard-pan.js (1)
+### frontend/js/whiteboard-pan.js (16)
 
 | Name | File:line |
 |---|---|
-| `wbInitPan` | frontend/js/whiteboard-pan.js:4 |
+| `makeWbPanelDraggable` | frontend/js/whiteboard-pan.js:72 |
+| `wbInitBoardActions` | frontend/js/whiteboard-pan.js:1118 |
+| `wbInitBoardControls` | frontend/js/whiteboard-pan.js:326 |
+| `wbInitGridAndBackground` | frontend/js/whiteboard-pan.js:1051 |
+| `wbInitHintsAndBackground` | frontend/js/whiteboard-pan.js:889 |
+| `wbInitLinkSlots` | frontend/js/whiteboard-pan.js:647 |
+| `wbInitMapEdgeLook` | frontend/js/whiteboard-pan.js:803 |
+| `wbInitMapLook` | frontend/js/whiteboard-pan.js:688 |
+| `wbInitMapToolbar` | frontend/js/whiteboard-pan.js:380 |
+| `wbInitMiddlePan` | frontend/js/whiteboard-pan.js:165 |
+| `wbInitNavigatorAndSearch` | frontend/js/whiteboard-pan.js:280 |
+| `wbInitPan` | frontend/js/whiteboard-pan.js:1149 |
+| `wbInitPanelMetrics` | frontend/js/whiteboard-pan.js:935 |
+| `wbInitRadialMenu` | frontend/js/whiteboard-pan.js:451 |
+| `wbInitRadialMore` | frontend/js/whiteboard-pan.js:569 |
+| `wbInitZoomControls` | frontend/js/whiteboard-pan.js:216 |
 
 ### frontend/js/whiteboard-pdf.js (11)
 
@@ -10573,11 +10617,47 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `puText` | frontend/js/whiteboard-plantuml.js:13 |
 | `puWords` | frontend/js/whiteboard-plantuml.js:8 |
 
-### frontend/js/whiteboard-pointer.js (1)
+### frontend/js/whiteboard-pointer.js (37)
 
 | Name | File:line |
 |---|---|
-| `wbInitPointer` | frontend/js/whiteboard-pointer.js:4 |
+| `getLogicalMouse` | frontend/js/whiteboard-pointer.js:51 |
+| `portHover` | frontend/js/whiteboard-pointer.js:337 |
+| `rectsIntersect` | frontend/js/whiteboard-pointer.js:116 |
+| `wbBeginMarqueeRect` | frontend/js/whiteboard-pointer.js:186 |
+| `wbBeginPlaceGhost` | frontend/js/whiteboard-pointer.js:174 |
+| `wbDrawMarquee` | frontend/js/whiteboard-pointer.js:238 |
+| `wbEdgePanSpeed` | frontend/js/whiteboard-pointer.js:302 |
+| `wbEdgePanTick` | frontend/js/whiteboard-pointer.js:309 |
+| `wbEdgePanWanted` | frontend/js/whiteboard-pointer.js:294 |
+| `wbEndLassoDrag` | frontend/js/whiteboard-pointer.js:373 |
+| `wbEndMarqueeDrag` | frontend/js/whiteboard-pointer.js:123 |
+| `wbEndSelectionDrag` | frontend/js/whiteboard-pointer.js:226 |
+| `wbEraseAt` | frontend/js/whiteboard-pointer.js:65 |
+| `wbEraseSettle` | frontend/js/whiteboard-pointer.js:55 |
+| `wbFitMarqueeCanvas` | frontend/js/whiteboard-pointer.js:284 |
+| `wbInitCanvasDblclick` | frontend/js/whiteboard-pointer.js:679 |
+| `wbInitCanvasMenus` | frontend/js/whiteboard-pointer.js:746 |
+| `wbInitDrawPointer` | frontend/js/whiteboard-pointer.js:452 |
+| `wbInitEdgePanPointer` | frontend/js/whiteboard-pointer.js:637 |
+| `wbInitLasso` | frontend/js/whiteboard-pointer.js:1183 |
+| `wbInitMarqueePointer` | frontend/js/whiteboard-pointer.js:559 |
+| `wbInitMarqueeRelease` | frontend/js/whiteboard-pointer.js:1070 |
+| `wbInitPictureInputs` | frontend/js/whiteboard-pointer.js:1349 |
+| `wbInitPicturePaste` | frontend/js/whiteboard-pointer.js:1273 |
+| `wbInitPointer` | frontend/js/whiteboard-pointer.js:1372 |
+| `wbInitPortHover` | frontend/js/whiteboard-pointer.js:918 |
+| `wbInitPortRelease` | frontend/js/whiteboard-pointer.js:1007 |
+| `wbInitRightPress` | frontend/js/whiteboard-pointer.js:842 |
+| `wbIsEmptyCanvasTarget` | frontend/js/whiteboard-pointer.js:109 |
+| `wbMoveSizeGhost` | frontend/js/whiteboard-pointer.js:275 |
+| `wbPastedPictureAddress` | frontend/js/whiteboard-pointer.js:386 |
+| `wbPictureTooBig` | frontend/js/whiteboard-pointer.js:379 |
+| `wbPlaceImageUrl` | frontend/js/whiteboard-pointer.js:433 |
+| `wbPlacePastedAddress` | frontend/js/whiteboard-pointer.js:397 |
+| `wbPlaceUploadedImage` | frontend/js/whiteboard-pointer.js:411 |
+| `wbPointInPolygon` | frontend/js/whiteboard-pointer.js:360 |
+| `wbSelectionDragMove` | frontend/js/whiteboard-pointer.js:211 |
 
 ### frontend/js/whiteboard-present.js (10)
 
@@ -10977,21 +11057,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:4217 |
-| `dragging` | frontend/js/whiteboard.js:3632 |
+| `addBoardToNote` | frontend/js/whiteboard.js:4283 |
+| `dragging` | frontend/js/whiteboard.js:3698 |
 | `handleWbZoom` | frontend/js/whiteboard.js:601 |
-| `highlighterBlend` | frontend/js/whiteboard.js:4237 |
+| `highlighterBlend` | frontend/js/whiteboard.js:4303 |
 | `initWhiteboard` | frontend/js/whiteboard.js:1969 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:3895 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:4129 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:3998 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:2632 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:3961 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:4195 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:4064 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:3514 |
 | `renderWhiteboardNow` | frontend/js/whiteboard.js:2604 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4054 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4120 |
 | `wbAlignTol` | frontend/js/whiteboard.js:1021 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:447 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:528 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3874 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3940 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:510 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:478 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:364 |
@@ -11007,7 +11087,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1058 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:980 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3859 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3925 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
 | `wbMultiKey` | frontend/js/whiteboard.js:1441 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:955 |
@@ -11022,8 +11102,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbScreenToBoard` | frontend/js/whiteboard.js:501 |
 | `wbShapeAt` | frontend/js/whiteboard.js:1181 |
 | `wbShapePoly` | frontend/js/whiteboard.js:1182 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3822 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:3809 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3888 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:3875 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:669 |
 | `wbSnap` | frontend/js/whiteboard.js:1004 |
 | `wbSnapOn` | frontend/js/whiteboard.js:991 |
@@ -32788,13 +32868,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3116 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4375 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4278 |
-| Needs hardware | docs/roadmap/LEDGER.md:663 |
+| Needs hardware | docs/roadmap/LEDGER.md:662 |
 | Next up | docs/ROADMAP.md:238 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1352 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:656 |
+| Owner calls | docs/roadmap/LEDGER.md:655 |
 | Owner input from the general rows (2026-11-21) | docs/roadmap/BACKLOG.md:4337 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4151 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:602 |
@@ -32976,7 +33056,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4177 |
-| Plan session briefs | docs/roadmap/LEDGER.md:821 |
+| Plan session briefs | docs/roadmap/LEDGER.md:820 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2663 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -33034,25 +33114,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1743 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1235 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:837 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:921 |
-| documents | docs/roadmap/LEDGER.md:282 |
-| documents | docs/roadmap/LEDGER.md:861 |
-| general | docs/roadmap/LEDGER.md:650 |
+| chat | docs/roadmap/LEDGER.md:836 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:920 |
+| documents | docs/roadmap/LEDGER.md:281 |
+| documents | docs/roadmap/LEDGER.md:860 |
+| general | docs/roadmap/LEDGER.md:649 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:825 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:933 |
+| graph | docs/roadmap/LEDGER.md:824 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:932 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4287 |
-| mindmap | docs/roadmap/LEDGER.md:285 |
-| mindmap | docs/roadmap/LEDGER.md:873 |
-| timeline | docs/roadmap/LEDGER.md:409 |
-| timeline | docs/roadmap/LEDGER.md:897 |
-| ui-modernisation | docs/roadmap/LEDGER.md:289 |
-| ui-modernisation | docs/roadmap/LEDGER.md:885 |
+| mindmap | docs/roadmap/LEDGER.md:284 |
+| mindmap | docs/roadmap/LEDGER.md:872 |
+| timeline | docs/roadmap/LEDGER.md:408 |
+| timeline | docs/roadmap/LEDGER.md:896 |
+| ui-modernisation | docs/roadmap/LEDGER.md:288 |
+| ui-modernisation | docs/roadmap/LEDGER.md:884 |
 | whiteboard | docs/roadmap/LEDGER.md:279 |
-| whiteboard | docs/roadmap/LEDGER.md:849 |
-| world-class | docs/roadmap/LEDGER.md:411 |
-| world-class | docs/roadmap/LEDGER.md:909 |
+| whiteboard | docs/roadmap/LEDGER.md:848 |
+| world-class | docs/roadmap/LEDGER.md:410 |
+| world-class | docs/roadmap/LEDGER.md:908 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2833 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2884 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2991 |
