@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11663, test files 3061, tests 24048, plan headings 691, app scripts 29, boot scripts 38, script files 420.
+Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11664, test files 3061, tests 24052, plan headings 691, app scripts 29, boot scripts 38, script files 420.
 
 ## Frontend functions (9110)
 
@@ -1193,27 +1193,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyStatusBarSlots` | frontend/js/spaces-find.js:20 |
 | `applyStatusClock` | frontend/js/spaces-find.js:41 |
 | `authHeaders` | frontend/js/spaces-find.js:200 |
-| `closeSpaceMenu` | frontend/js/spaces-find.js:407 |
+| `closeSpaceMenu` | frontend/js/spaces-find.js:426 |
 | `closeStatusClockDetail` | frontend/js/spaces-find.js:126 |
-| `customTemplates` | frontend/js/spaces-find.js:590 |
+| `customTemplates` | frontend/js/spaces-find.js:609 |
 | `hiddenStatusSlots` | frontend/js/spaces-find.js:14 |
-| `initSpaceSwitcher` | frontend/js/spaces-find.js:477 |
-| `loadSpaces` | frontend/js/spaces-find.js:428 |
-| `openSpaceCreate` | frontend/js/spaces-find.js:418 |
+| `initSpaceSwitcher` | frontend/js/spaces-find.js:496 |
+| `loadSpaces` | frontend/js/spaces-find.js:447 |
+| `openSpaceCreate` | frontend/js/spaces-find.js:437 |
 | `openStatusClockDetail` | frontend/js/spaces-find.js:99 |
 | `paintStatusClock` | frontend/js/spaces-find.js:32 |
 | `paintStatusClockDetail` | frontend/js/spaces-find.js:69 |
-| `renderSpaceMenu` | frontend/js/spaces-find.js:343 |
-| `renderTemplateSettings` | frontend/js/spaces-find.js:679 |
-| `saveTemplateList` | frontend/js/spaces-find.js:624 |
+| `renderSpaceMenu` | frontend/js/spaces-find.js:362 |
+| `renderTemplateSettings` | frontend/js/spaces-find.js:698 |
+| `saveTemplateList` | frontend/js/spaces-find.js:643 |
 | `setActiveSpace` | frontend/js/spaces-find.js:209 |
 | `spaceIconPicker` | frontend/js/spaces-find.js:213 |
 | `spaceMenuOption` | frontend/js/spaces-find.js:239 |
-| `startEditingTemplate` | frontend/js/spaces-find.js:594 |
-| `stopEditingTemplate` | frontend/js/spaces-find.js:613 |
-| `templateRow` | frontend/js/spaces-find.js:638 |
-| `toggleSpaceHidden` | frontend/js/spaces-find.js:310 |
-| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:459 |
+| `startEditingTemplate` | frontend/js/spaces-find.js:613 |
+| `stopEditingTemplate` | frontend/js/spaces-find.js:632 |
+| `templateRow` | frontend/js/spaces-find.js:657 |
+| `toggleSpaceHidden` | frontend/js/spaces-find.js:329 |
+| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:478 |
 
 ### frontend/js/agent-activity.js (17)
 
@@ -14890,7 +14890,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:54 |
 | `/export/board-folder` | POST | `export_board_folder` | src/tessellate/api/routes_settings_transfer.py:321 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:830 |
-| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:190 |
+| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:208 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:78 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:215 |
 | `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:1103 |
@@ -15444,7 +15444,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11663)
+## Backend modules (11664)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24169,17 +24169,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sample_notebook_state` | src/tessellate/api/routes_help.py:134 |
 | `topics` | src/tessellate/api/routes_help.py:63 |
 
-### src/tessellate/api/routes_import.py (9)
+### src/tessellate/api/routes_import.py (10)
 
 | Name | File:line |
 |---|---|
 | `_ManyFilesRoute` | src/tessellate/api/routes_import.py:37 |
 | `_excluded` | src/tessellate/api/routes_import.py:92 |
+| `_folder_export_name` | src/tessellate/api/routes_import.py:190 |
 | `_progress` | src/tessellate/api/routes_import.py:75 |
 | `_received` | src/tessellate/api/routes_import.py:59 |
 | `_refuse_open_private_while_locked` | src/tessellate/api/routes_import.py:106 |
 | `_summary` | src/tessellate/api/routes_import.py:86 |
-| `export_notebook_folder` | src/tessellate/api/routes_import.py:191 |
+| `export_notebook_folder` | src/tessellate/api/routes_import.py:209 |
 | `import_app` | src/tessellate/api/routes_import.py:121 |
 | `import_report_page` | src/tessellate/api/routes_import.py:182 |
 
@@ -30461,7 +30462,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24048)
+## Tests (24052)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31641,7 +31642,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_export_backup_whole.py | 1 |
 | tests/test_export_folder.py | 7 |
 | tests/test_export_paint.py | 4 |
-| tests/test_export_spaces_private.py | 9 |
+| tests/test_export_spaces_private.py | 13 |
 | tests/test_exports_list.py | 5 |
 | tests/test_extra_bounds_320.py | 3 |
 | tests/test_extra_downloads_retry.py | 13 |

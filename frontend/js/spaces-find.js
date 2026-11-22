@@ -268,20 +268,39 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }
   option.addEventListener("click", () => setActiveSpace(id));
   row.appendChild(option);
 
-  if (deletable) {
+  //: A closure, not a top-level function: the shared scope's name count is capped.
+  //: **Export a space** (L-world-class-22): the folder export scoped to the
+  //: space named, not to the one the window is in, so nothing is switched. A
+  //: private space asks for its sealed rows (`include_private_spaces`); while it
+  //: is locked the server answers 423 and its words are the toast's.
+  const exportSpaceFolder = async (id, name, isPrivate = false) => {
+    try {
+      const response = await api(`/export/folder${isPrivate ? "?include_private_spaces=1" : ""}`, { headers: { "X-Workspace-ID": id } });
+      const slug = String(name || "space").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "space";
+      await saveFile(`tessellate-${slug}.zip`, await response.blob());
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: `export ${name}` }), true);
+    }
+  };
+
+  if (id !== SPACE_ALL) {
     const actions = document.createElement("span");
     actions.className = "space-option-actions";
     actions.setAttribute("role", "none");
     //: Hide from All spaces (the glyph carries the state, the title says what
     //: pressing does), rename, delete, each naming its space (audit 1030 Y4).
     //: They close the menu before they run.
-    for (const [glyphName, title, run] of [
+    //: Export is the one action the default space has too: its notes are as
+    //: much the person's as any other's (L-world-class-22).
+    const exportAction = ["ph-export", `Export ${name} as a folder`, () => exportSpaceFolder(id, name, isPrivate)];
+    for (const [glyphName, title, run] of !deletable ? [exportAction] : [
       [
         hiddenFromAll ? "ph-eye-slash" : "ph-eye",
         hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
       ["ph-pencil-simple", `Rename ${name}`, () => privateSpaces("edit", id)],
+      exportAction,
       ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
     ]) {
       const action = document.createElement("button");
