@@ -1607,7 +1607,7 @@ MORE_TOPICS: list[dict] = [
             "Type insert template (or template and part of its name) in the "
             "command palette (Ctrl+K) to list your templates; Enter puts the one "
             "you choose where your cursor was, in any editor, with {date}, "
-            "{{time}} and {{clipboard}} filled in. With no editor open it goes "
+            "{{weekday}}, {{time}}, {{space}} and {{clipboard}} filled in. With no editor open it goes "
             "into the Capture box. The templates, yours and the built-in ones, "
             "are in Settings, Templates, where you write, edit and reset them."
         ),

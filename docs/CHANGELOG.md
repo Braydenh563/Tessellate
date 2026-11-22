@@ -11,6 +11,11 @@ below). Versioning is `0.x` while the app stabilises.
 - Tests: six Python 3.13 checks follow moved code (chat-list.js, the queued tool-group save, the map-drag close before a prune), and the build stamp reads the app clock.
 - UI: with a mouse the tab strip keeps its 32px row from 820 to 1200 (the 44px strip is for touch), so the header is 44px at 1093x614 and 1024x768 instead of 56 (22.4 shell pass).
 - Docs: UI_MODERNISATION 13.3 carries the 2026-11-22 recount of decisions 9 to 17 from the running app (`gate13.js`): every count at or under its ratchet, the 13a remainder is a LEDGER row, and INBOX 266 ask 1 (the usability and IA read) has its own row.
+- Plans: WORLD_CLASS_PLAN 27.1 Notes and Spaces rows built or measured built (L-world-class-22 closed; HISTORY "wc22-1122").
+- Note templates: `{{weekday}}` fills today's weekday and `{{space}}` the space the note lands in (the default one under All spaces), in the Capture picker, the editor preview and Insert template; the Settings hint and the Guide name both.
+- Dashboard: in one space the line under the greeting starts with that space ("In Work"), since every count on it is that space's; under All spaces it is as before.
+- Spaces: every space, the default one too, has Export on its row in the space picker: the notebook folder of that space alone, named for it (`tessellate-work.zip`), whichever space is on screen. The picker is 17rem wide so a name keeps 87px beside the four buttons.
+- Spaces: Move to space asks, when the notes link to notes staying behind, whether to bring those too ("Bring them too"), so the links stay in view; one Undo sends all of them back (the move answers with `linked`, and a link whose other end is already in the target space moves with it).
 - Tests: the answer pictures, citation order and copy-app-link checks read chat-list.js, where the saved-chat code moved from sheets-selects.js.
 - Sweeps: companioninteract passes above the face for its follow-off check (the old path crossed the face, and a pointer on the face is a touch that looks with the setting off too).
 - Sweeps: every sweep that runs a python seed takes it from one helper (`venvPython` in lib.js: VENV, else the repo .venv, else python3), so asktab and twelve others no longer spawn a .venv/bin/python CI does not have.

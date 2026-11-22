@@ -430,7 +430,10 @@ HELP_TOPICS: list[dict] = [
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
             "switch made in the first, and an answer still on its way from the old space is dropped. "
-            "A space can be private: Private in New space or Edit space seals everything in it."
+            "A space can be private: Private in New space or Edit space seals everything in it. "
+            "Selected notes move with Move to space under the selection bar's More, files and "
+            "reminders with them; when they link to notes staying behind, it asks whether to bring those too. "
+            "Each space exports itself: the export button on its row in the picker saves it as a notebook folder."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },

@@ -3972,7 +3972,7 @@ sources; three export shapes per document and one per note.
 
 | Feature | Offers today | Expected and missing | Place |
 | --- | --- | --- | --- |
-| Notes | capture, filing, tags, categories, spaces, properties, relations, wiki links, backlinks, history, duplicate, translate, remind, attach, move, download `.md`, explain, improve, expand into a document, add to a board | find and replace in a note; bulk edit (tags, category, properties) from a selection; pin and archive as first-class states; a note's versions visible (25e); templates with variables | 25a (bulk), 25e, Brief 42 |
+| Notes | capture, filing, tags, categories, spaces, properties, relations, wiki links, backlinks, history, duplicate, translate, remind, attach, move, download `.md`, explain, improve, expand into a document, add to a board | find and replace in a note; bulk edit (tags, category, properties) from a selection; a note's versions visible (25e); pin, archive and templates: HISTORY "wc22-1122" | 25a (bulk), 25e, Brief 42 |
 | The note menu | about 30 items in one list | a menu under nine items or grouped (1.3); the AI items as one "Atlas" group, the structure items as one, the destructive at the end | Brief 59 |
 | Filing | taxonomy votes to existing categories, model filing, the no-model keyword map, explanations in section 23 | confidence shown and a one-press correction that teaches (23); suggested merges of near-duplicate categories; a "why here" on every card | Brief 39b |
 | Search | hybrid retrieval, graph expansion, learned order | one box, operators, kinds, saved searches (25a) | Brief 47 |
@@ -3993,7 +3993,7 @@ sources; three export shapes per document and one per note.
 | Backups | create, list, restore, bundle, schedule line, second-copy folder | the tested restore, the boot check (25e, built) | Brief 51 |
 | Help | Guide chat, popovers, manual parity, the manual (25c) | none open here | Brief 49, built |
 | Skills and tools | 67 tools, 30 skills, MCP | Phase E; one file per tool family (26) | Briefs 54, 63 |
-| Spaces | create, edit, delete dialogs, the space guard | a space's own dashboard line and its export; moving a note between spaces with its links kept | Brief 59 row |
+| Spaces | create, edit, delete dialogs, the space guard | built: HISTORY "wc22-1122" | Brief 59 row |
 | Meetings | notes, summary | the redesign (INBOX 643, 644; ROADMAP "Next PR" item 1) | Brief 59 row |
 
 ### 27.2 The popups, one by one
