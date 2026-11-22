@@ -5744,8 +5744,11 @@ button.connection-row:is(:hover, :focus-visible) {
 /* A heading reads differently, so it is drawn differently, the one place
    the "kind" is more than a label. */
 
+/* Scrolls as one when the caption and the other readings above the list
+   leave it less than its floor (L806: the list was 0px at 1366x768). */
 .ocr-regions {
   min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
