@@ -69,6 +69,15 @@ def test_the_panels_after_first_paint_are_separate_tasks():
 def test_the_prose_rerun_after_the_word_list_is_a_frame_after_the_set():
     # The 93,000-word set and the re-run in one task were a 267 ms frame after a document's first paint.
     js = frontend_text("documents.js")
-    loader = js[js.index("function docLoadWordlist()") :][:3000]
-    later = loader[loader.index("docWordlist = words;") :]
+    later = js[js.index("function docWordlistReadyNow(words)") :][:1500]
+    assert "docWordlist = words;" in later
     assert later.index("afterFrames(() => setTimeout(() => {") < later.index("renderDocProse();")
+
+
+def test_the_word_list_set_is_built_in_slices():
+    # The 93,000 words in one task were up to 178 ms of the frame after first paint under load.
+    js = frontend_text("documents.js")
+    loader = js[js.index("function docLoadWordlist()") :][:4000]
+    assert "performance.now() + 8" in loader and "setTimeout(slice)" in loader
+    assert loader.index("setTimeout(slice)") < loader.index("docWordlistReadyNow(words)")
+    assert 'text.split("\\n")' not in loader

@@ -11755,23 +11755,24 @@ function docLoadWordlist() {
       //: (which this commit does as well): the attribute fixes the checkout,
       //: and this fixes every copy that already exists, plus any future list
       //: that arrives with trailing whitespace from wherever it was built.
-      for (const line of text.split("\n")) {
-        const word = line.trim();
-        if (word) words.add(word);
-      }
-      docWordlist = words;
-      docWordlistState.loading = false;
-      //: The ranked suggestions are drawn from the same pool, so it has to be
-      //: rebuilt, and the pass that ran without a dictionary has to run again
-      //: now that there is one. A frame after the 93,000-word set, not in its
-      //: task: the two together were a 267 ms frame after a document's first
-      //: paint (L-world-class-40).
-      docKnownWordsCache = null;
-      docSpellCache = new Map();
-      afterFrames(() => setTimeout(() => {
-        docCmApplySpellcheck();
-        renderDocProse();
-      }), 1);
+      let at = 0;
+      const slice = () => {
+        const stop = performance.now() + 8;
+        while (at < text.length && performance.now() < stop) {
+          for (let n = 0; n < 1000 && at < text.length; n++) {
+            const next = text.indexOf("\n", at) + 1 || text.length + 1;
+            const line = text.slice(at, next - 1);
+            const word = line.trim();
+            at = next;
+            if (word) words.add(word);
+          }
+        }
+        //: 8 ms slices, a task each (L-world-class-40): the 93,000 words in one go were up to 178 ms of the frame
+        //: after a document's first paint at 4 cores under load. `loading` stays set until the set is whole.
+        if (at < text.length) return void setTimeout(slice);
+        docWordlistReadyNow(words);
+      };
+      slice();
     })
     .catch(() => {
       //: Once, not on a loop: a failed fetch here means the file is missing
@@ -11780,6 +11781,23 @@ function docLoadWordlist() {
       docWordlistState.loading = false;
       docWordlistState.failed = true;
     });
+}
+
+//: The set is whole: the checker reads it from here on.
+function docWordlistReadyNow(words) {
+  docWordlist = words;
+  docWordlistState.loading = false;
+  //: The ranked suggestions are drawn from the same pool, so it has to be
+  //: rebuilt, and the pass that ran without a dictionary has to run again
+  //: now that there is one. A frame after the 93,000-word set, not in its
+  //: task: the two together were a 267 ms frame after a document's first
+  //: paint (L-world-class-40).
+  docKnownWordsCache = null;
+  docSpellCache = new Map();
+  afterFrames(() => setTimeout(() => {
+    docCmApplySpellcheck();
+    renderDocProse();
+  }), 1);
 }
 
 //: A word the checker is willing to have an opinion about. Everything refused
