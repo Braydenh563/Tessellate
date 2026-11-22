@@ -912,17 +912,26 @@
     const key = [erase ? "" : S.ink, S.paper, root.getAttribute("data-theme"), root.className].join("|");
     if (ring.dataset.tint === key) return;
     ring.dataset.tint = key;
-    const cs = getComputedStyle(root);
     const paper = spLuma(S.paper);
-    const gap = (token) => Math.abs(spLuma(cs.getPropertyValue(token)) - paper);
-    ring.style.setProperty("--sp-ring-ink", erase ? "var(--ink)" : S.ink);
-    ring.style.setProperty("--sp-ring-halo", gap("--ink") >= gap("--modal-bg-opaque") ? "var(--ink)" : "var(--modal-bg-opaque)");
+    //: A token can be a relative colour (a "from" colour), so it is read back
+    //: resolved, as the ring's own `color`, never parsed from its declared text.
+    const gap = (token) => {
+      ring.style.color = `var(${token})`;
+      const luma = spLuma(getComputedStyle(ring).color);
+      ring.style.color = "";
+      return Math.abs(luma - paper);
+    };
+    //: Inline, over sketch-pad.css's `.sp-ring` border and halo, which stay the eraser's and the default.
+    ring.style.borderColor = erase ? "" : S.ink;
+    ring.style.boxShadow = `0 0 0 1px var(${gap("--ink") >= gap("--modal-bg-opaque") ? "--ink" : "--modal-bg-opaque"})`;
   }
 
   //: Relative luminance of a `#rrggbb` or `rgb(...)` string, 0 to 1.
   function spLuma(colour) {
     const text = String(colour).trim();
-    const rgb = text.startsWith("#") ? spRgb(text) : (text.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number);
+    //: Computed colours come back as `rgb(...)` or `color(srgb r g b)` (0 to 1).
+    const nums = (text.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number);
+    const rgb = text.startsWith("#") ? spRgb(text) : text.startsWith("color(") ? nums.map((v) => v * 255) : nums;
     const [r, g, b] = rgb.map((v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   }

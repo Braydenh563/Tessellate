@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8583, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11596, test files 2979, tests 23333, plan headings 688, app scripts 29, boot scripts 38, script files 326.
+Counts: frontend functions 8585, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11596, test files 2980, tests 23337, plan headings 688, app scripts 29, boot scripts 38, script files 326.
 
-## Frontend functions (8583)
+## Frontend functions (8585)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7823,13 +7823,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sharedCaptureText` | frontend/js/shared-intake.js:21 |
 | `takeSharedIntake` | frontend/js/shared-intake.js:32 |
 
-### frontend/js/sketch-pad.js (143)
+### frontend/js/sketch-pad.js (145)
 
 | Name | File:line |
 |---|---|
 | `applyZoom` | frontend/js/sketch-pad.js:764 |
-| `arrowHead` | frontend/js/sketch-pad.js:1077 |
-| `brushWidth` | frontend/js/sketch-pad.js:904 |
+| `arrowHead` | frontend/js/sketch-pad.js:1112 |
+| `brushWidth` | frontend/js/sketch-pad.js:939 |
 | `build` | frontend/js/sketch-pad.js:497 |
 | `buildActions` | frontend/js/sketch-pad.js:395 |
 | `buildColours` | frontend/js/sketch-pad.js:327 |
@@ -7841,100 +7841,100 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `buildStroke` | frontend/js/sketch-pad.js:383 |
 | `buildTools` | frontend/js/sketch-pad.js:307 |
 | `camel` | frontend/js/sketch-pad.js:516 |
-| `cancelDrag` | frontend/js/sketch-pad.js:1416 |
-| `cancelPolygon` | frontend/js/sketch-pad.js:1140 |
-| `chordKey` | frontend/js/sketch-pad.js:1547 |
-| `clampBox` | frontend/js/sketch-pad.js:1312 |
+| `cancelDrag` | frontend/js/sketch-pad.js:1451 |
+| `cancelPolygon` | frontend/js/sketch-pad.js:1175 |
+| `chordKey` | frontend/js/sketch-pad.js:1582 |
+| `clampBox` | frontend/js/sketch-pad.js:1347 |
 | `clampMenu` | frontend/js/sketch-pad.js:451 |
-| `clearInk` | frontend/js/sketch-pad.js:1471 |
-| `clearPreview` | frontend/js/sketch-pad.js:1013 |
-| `clearSelection` | frontend/js/sketch-pad.js:1541 |
-| `closeOwnHelp` | frontend/js/sketch-pad.js:1533 |
-| `closePolygon` | frontend/js/sketch-pad.js:1130 |
+| `clearInk` | frontend/js/sketch-pad.js:1506 |
+| `clearPreview` | frontend/js/sketch-pad.js:1048 |
+| `clearSelection` | frontend/js/sketch-pad.js:1576 |
+| `closeOwnHelp` | frontend/js/sketch-pad.js:1568 |
+| `closePolygon` | frontend/js/sketch-pad.js:1165 |
 | `closeStyle` | frontend/js/sketch-pad.js:359 |
-| `commitSelection` | frontend/js/sketch-pad.js:1357 |
-| `commitText` | frontend/js/sketch-pad.js:1246 |
-| `composite` | frontend/js/sketch-pad.js:1150 |
-| `deleteSelection` | frontend/js/sketch-pad.js:1369 |
-| `downloadPng` | frontend/js/sketch-pad.js:1658 |
+| `commitSelection` | frontend/js/sketch-pad.js:1392 |
+| `commitText` | frontend/js/sketch-pad.js:1281 |
+| `composite` | frontend/js/sketch-pad.js:1185 |
+| `deleteSelection` | frontend/js/sketch-pad.js:1404 |
+| `downloadPng` | frontend/js/sketch-pad.js:1693 |
 | `drawPaper` | frontend/js/sketch-pad.js:732 |
-| `drawPolygonPreview` | frontend/js/sketch-pad.js:1108 |
-| `drawSelection` | frontend/js/sketch-pad.js:1340 |
-| `dropText` | frontend/js/sketch-pad.js:1273 |
-| `endMarquee` | frontend/js/sketch-pad.js:1305 |
-| `endShape` | frontend/js/sketch-pad.js:1032 |
-| `endStroke` | frontend/js/sketch-pad.js:994 |
+| `drawPolygonPreview` | frontend/js/sketch-pad.js:1143 |
+| `drawSelection` | frontend/js/sketch-pad.js:1375 |
+| `dropText` | frontend/js/sketch-pad.js:1308 |
+| `endMarquee` | frontend/js/sketch-pad.js:1340 |
+| `endShape` | frontend/js/sketch-pad.js:1067 |
+| `endStroke` | frontend/js/sketch-pad.js:1029 |
 | `fallbackMenu` | frontend/js/sketch-pad.js:414 |
-| `fillAt` | frontend/js/sketch-pad.js:1160 |
-| `finishClose` | frontend/js/sketch-pad.js:1763 |
-| `finishShape` | frontend/js/sketch-pad.js:1072 |
+| `fillAt` | frontend/js/sketch-pad.js:1195 |
+| `finishClose` | frontend/js/sketch-pad.js:1798 |
+| `finishShape` | frontend/js/sketch-pad.js:1107 |
 | `fit` | frontend/js/sketch-pad.js:788 |
 | `fitZoom` | frontend/js/sketch-pad.js:782 |
-| `flatten` | frontend/js/sketch-pad.js:1647 |
+| `flatten` | frontend/js/sketch-pad.js:1682 |
 | `forgetColour` | frontend/js/sketch-pad.js:673 |
 | `forgetRecentKey` | frontend/js/sketch-pad.js:688 |
-| `growText` | frontend/js/sketch-pad.js:1230 |
+| `growText` | frontend/js/sketch-pad.js:1265 |
 | `h` | frontend/js/sketch-pad.js:246 |
-| `highlighterWidth` | frontend/js/sketch-pad.js:914 |
+| `highlighterWidth` | frontend/js/sketch-pad.js:949 |
 | `icon` | frontend/js/sketch-pad.js:257 |
 | `iconButton` | frontend/js/sketch-pad.js:265 |
-| `inSelection` | frontend/js/sketch-pad.js:1282 |
-| `inkEmpty` | frontend/js/sketch-pad.js:1465 |
+| `inSelection` | frontend/js/sketch-pad.js:1317 |
+| `inkEmpty` | frontend/js/sketch-pad.js:1500 |
 | `keepColour` | frontend/js/sketch-pad.js:646 |
 | `labelSize` | frontend/js/sketch-pad.js:601 |
-| `landPreview` | frontend/js/sketch-pad.js:1001 |
-| `liftSelection` | frontend/js/sketch-pad.js:1321 |
+| `landPreview` | frontend/js/sketch-pad.js:1036 |
+| `liftSelection` | frontend/js/sketch-pad.js:1356 |
 | `mods` | frontend/js/sketch-pad.js:823 |
-| `moveMarquee` | frontend/js/sketch-pad.js:1297 |
+| `moveMarquee` | frontend/js/sketch-pad.js:1332 |
 | `moveRing` | frontend/js/sketch-pad.js:890 |
-| `moveSelection` | frontend/js/sketch-pad.js:1333 |
-| `moveShape` | frontend/js/sketch-pad.js:1024 |
-| `moveStroke` | frontend/js/sketch-pad.js:957 |
-| `nudge` | frontend/js/sketch-pad.js:1389 |
+| `moveSelection` | frontend/js/sketch-pad.js:1368 |
+| `moveShape` | frontend/js/sketch-pad.js:1059 |
+| `moveStroke` | frontend/js/sketch-pad.js:992 |
+| `nudge` | frontend/js/sketch-pad.js:1424 |
 | `onCancelPointer` | frontend/js/sketch-pad.js:872 |
 | `onDouble` | frontend/js/sketch-pad.js:881 |
 | `onDown` | frontend/js/sketch-pad.js:827 |
-| `onEscape` | frontend/js/sketch-pad.js:1523 |
+| `onEscape` | frontend/js/sketch-pad.js:1558 |
 | `onImagePicked` | frontend/js/sketch-pad.js:756 |
-| `onKey` | frontend/js/sketch-pad.js:1488 |
+| `onKey` | frontend/js/sketch-pad.js:1523 |
 | `onLeave` | frontend/js/sketch-pad.js:876 |
 | `onMove` | frontend/js/sketch-pad.js:846 |
 | `onRoveFocus` | frontend/js/sketch-pad.js:548 |
-| `onTextKey` | frontend/js/sketch-pad.js:1238 |
+| `onTextKey` | frontend/js/sketch-pad.js:1273 |
 | `onUp` | frontend/js/sketch-pad.js:863 |
 | `onWheel` | frontend/js/sketch-pad.js:806 |
-| `open` | frontend/js/sketch-pad.js:1708 |
+| `open` | frontend/js/sketch-pad.js:1743 |
 | `paintKeep` | frontend/js/sketch-pad.js:639 |
 | `paintRecent` | frontend/js/sketch-pad.js:699 |
-| `paintShape` | frontend/js/sketch-pad.js:1041 |
+| `paintShape` | frontend/js/sketch-pad.js:1076 |
 | `paintWells` | frontend/js/sketch-pad.js:623 |
-| `pickColour` | frontend/js/sketch-pad.js:1181 |
+| `pickColour` | frontend/js/sketch-pad.js:1216 |
 | `placeSwap` | frontend/js/sketch-pad.js:369 |
-| `placeText` | frontend/js/sketch-pad.js:1217 |
-| `placeTextInHand` | frontend/js/sketch-pad.js:1267 |
-| `plainKey` | frontend/js/sketch-pad.js:1577 |
-| `pngBlob` | frontend/js/sketch-pad.js:1654 |
+| `placeText` | frontend/js/sketch-pad.js:1252 |
+| `placeTextInHand` | frontend/js/sketch-pad.js:1302 |
+| `plainKey` | frontend/js/sketch-pad.js:1612 |
+| `pngBlob` | frontend/js/sketch-pad.js:1689 |
 | `point` | frontend/js/sketch-pad.js:817 |
-| `polygonDown` | frontend/js/sketch-pad.js:1089 |
-| `polygonPoint` | frontend/js/sketch-pad.js:1103 |
-| `popPolygonPoint` | frontend/js/sketch-pad.js:1598 |
-| `queueStatus` | frontend/js/sketch-pad.js:1617 |
-| `redo` | frontend/js/sketch-pad.js:1455 |
-| `redrawStraight` | frontend/js/sketch-pad.js:982 |
+| `polygonDown` | frontend/js/sketch-pad.js:1124 |
+| `polygonPoint` | frontend/js/sketch-pad.js:1138 |
+| `popPolygonPoint` | frontend/js/sketch-pad.js:1633 |
+| `queueStatus` | frontend/js/sketch-pad.js:1652 |
+| `redo` | frontend/js/sketch-pad.js:1490 |
+| `redrawStraight` | frontend/js/sketch-pad.js:1017 |
 | `refreshRove` | frontend/js/sketch-pad.js:539 |
 | `rememberColour` | frontend/js/sketch-pad.js:661 |
-| `requestClose` | frontend/js/sketch-pad.js:1755 |
-| `reset` | frontend/js/sketch-pad.js:1729 |
-| `restoreLast` | frontend/js/sketch-pad.js:1439 |
-| `restorePrefs` | frontend/js/sketch-pad.js:1695 |
+| `requestClose` | frontend/js/sketch-pad.js:1790 |
+| `reset` | frontend/js/sketch-pad.js:1764 |
+| `restoreLast` | frontend/js/sketch-pad.js:1474 |
+| `restorePrefs` | frontend/js/sketch-pad.js:1730 |
 | `roveItems` | frontend/js/sketch-pad.js:525 |
 | `roveKey` | frontend/js/sketch-pad.js:555 |
-| `saveNote` | frontend/js/sketch-pad.js:1669 |
-| `say` | frontend/js/sketch-pad.js:1628 |
-| `selectAll` | frontend/js/sketch-pad.js:1382 |
-| `selectDown` | frontend/js/sketch-pad.js:1287 |
+| `saveNote` | frontend/js/sketch-pad.js:1704 |
+| `say` | frontend/js/sketch-pad.js:1663 |
+| `selectAll` | frontend/js/sketch-pad.js:1417 |
+| `selectDown` | frontend/js/sketch-pad.js:1322 |
 | `setColour` | frontend/js/sketch-pad.js:616 |
-| `setDirty` | frontend/js/sketch-pad.js:1638 |
+| `setDirty` | frontend/js/sketch-pad.js:1673 |
 | `setImage` | frontend/js/sketch-pad.js:744 |
 | `setMode` | frontend/js/sketch-pad.js:717 |
 | `setPaper` | frontend/js/sketch-pad.js:726 |
@@ -7942,10 +7942,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setStop` | frontend/js/sketch-pad.js:530 |
 | `setTool` | frontend/js/sketch-pad.js:582 |
 | `setWell` | frontend/js/sketch-pad.js:607 |
-| `showBox` | frontend/js/sketch-pad.js:1612 |
-| `showPos` | frontend/js/sketch-pad.js:1607 |
-| `showPreviewAlpha` | frontend/js/sketch-pad.js:953 |
-| `snapshotInk` | frontend/js/sketch-pad.js:1431 |
+| `showBox` | frontend/js/sketch-pad.js:1647 |
+| `showPos` | frontend/js/sketch-pad.js:1642 |
+| `showPreviewAlpha` | frontend/js/sketch-pad.js:988 |
+| `snapshotInk` | frontend/js/sketch-pad.js:1466 |
 | `spArrow` | frontend/js/sketch-pad.js:134 |
 | `spBox` | frontend/js/sketch-pad.js:102 |
 | `spFillRun` | frontend/js/sketch-pad.js:171 |
@@ -7953,22 +7953,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `spGrow` | frontend/js/sketch-pad.js:189 |
 | `spHex` | frontend/js/sketch-pad.js:201 |
 | `spLineEnds` | frontend/js/sketch-pad.js:125 |
+| `spLuma` | frontend/js/sketch-pad.js:930 |
 | `spRgb` | frontend/js/sketch-pad.js:205 |
 | `spSnap45` | frontend/js/sketch-pad.js:116 |
-| `startShape` | frontend/js/sketch-pad.js:1020 |
-| `startStroke` | frontend/js/sketch-pad.js:921 |
-| `startText` | frontend/js/sketch-pad.js:1200 |
+| `startShape` | frontend/js/sketch-pad.js:1055 |
+| `startStroke` | frontend/js/sketch-pad.js:956 |
+| `startText` | frontend/js/sketch-pad.js:1235 |
 | `stepZoom` | frontend/js/sketch-pad.js:800 |
-| `strokeCtx` | frontend/js/sketch-pad.js:938 |
-| `styleStroke` | frontend/js/sketch-pad.js:942 |
+| `strokeCtx` | frontend/js/sketch-pad.js:973 |
+| `styleStroke` | frontend/js/sketch-pad.js:977 |
 | `swapColours` | frontend/js/sketch-pad.js:653 |
 | `swatch` | frontend/js/sketch-pad.js:377 |
-| `textPx` | frontend/js/sketch-pad.js:1193 |
+| `textPx` | frontend/js/sketch-pad.js:1228 |
+| `tintRing` | frontend/js/sketch-pad.js:909 |
 | `toggleFit` | frontend/js/sketch-pad.js:793 |
 | `toggleStyle` | frontend/js/sketch-pad.js:350 |
-| `tracePolygon` | frontend/js/sketch-pad.js:1114 |
-| `typingIn` | frontend/js/sketch-pad.js:1516 |
-| `undo` | frontend/js/sketch-pad.js:1444 |
+| `tracePolygon` | frontend/js/sketch-pad.js:1149 |
+| `typingIn` | frontend/js/sketch-pad.js:1551 |
+| `undo` | frontend/js/sketch-pad.js:1479 |
 | `wireHelp` | frontend/js/sketch-pad.js:567 |
 
 ### frontend/js/space-swap.js (5)
@@ -29344,7 +29346,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23333)
+## Tests (23337)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31799,6 +31801,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sketch_media.py | 15 |
 | tests/test_sketch_pad.py | 18 |
 | tests/test_sketch_recent_remove.py | 6 |
+| tests/test_sketch_ring_colour.py | 4 |
 | tests/test_sketch_swatch_1447.py | 5 |
 | tests/test_skill_composer.py | 11 |
 | tests/test_skill_evals.py | 3 |

@@ -25,17 +25,18 @@ def test_ring_is_tinted_on_every_move() -> None:
 
 def test_ring_border_takes_the_ink_and_halo_a_token() -> None:
     body = _fn("tintRing")
-    assert '"--sp-ring-ink"' in body and "S.ink" in body
-    assert 'var(--ink)' in body and 'var(--modal-bg-opaque)' in body
+    assert "ring.style.borderColor" in body and "S.ink" in body
+    assert '"--ink"' in body and '"--modal-bg-opaque"' in body and "ring.style.boxShadow" in body
+    assert "getComputedStyle(ring).color" in body, "tokens are read resolved, never parsed as text"
     assert "S.paper" in body, "the halo is chosen against the paper, not the theme"
     assert "#" not in body.replace("`#", "")
 
 
-def test_ring_css_reads_the_variables_with_token_fallbacks() -> None:
+def test_ring_css_keeps_the_theme_ink_and_halo_as_its_default() -> None:
     start = CSS.index("\n.sp-ring {\n  position") + 1
     rule = CSS[start : CSS.index("}", start)]
-    assert "border: 1px solid var(--sp-ring-ink, var(--ink))" in rule
-    assert "var(--sp-ring-halo, var(--modal-bg-opaque))" in rule
+    assert "border: 1px solid var(--ink)" in rule
+    assert "box-shadow: 0 0 0 1px var(--modal-bg-opaque)" in rule
 
 
 def test_ring_size_still_follows_the_brush() -> None:
