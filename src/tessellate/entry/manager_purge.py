@@ -314,8 +314,32 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
         .where(Entry.parent_id.in_(ids))
         .values(parent_id=None)
     )
+    # The filer's "looks like a duplicate of" pointer is no foreign key, and an
+    # id is handed to the next note made (no AUTOINCREMENT): left set, it would
+    # name an unrelated new note as the duplicate.
+    session.execute(
+        Entry.__table__.update()
+        .where(Entry.filing_similar_id.in_(ids))
+        .values(filing_similar_id=None)
+    )
     session.execute(delete(Entry).where(Entry.id.in_(ids)))
     return len(ids)
+
+
+def clear_dangling_filing_similar(session: Session) -> int:
+    """Clear `filing_similar_id` values whose note is gone. Commits.
+
+    Run once per launch beside the bin's auto-clear: `_hard_delete` clears the
+    pointer as it deletes, and this catches the ones left by an older build or
+    by a whole space purged at once, before a reused id gives them a new meaning.
+    """
+    result = session.execute(
+        Entry.__table__.update()
+        .where(Entry.filing_similar_id.is_not(None), Entry.filing_similar_id.not_in(select(Entry.id).correlate(None).scalar_subquery()))
+        .values(filing_similar_id=None)
+    )
+    session.commit()
+    return result.rowcount or 0
 
 
 @events.writes("entry", "purged")

@@ -612,6 +612,7 @@ def _purge_expired_bin_entries() -> None:
                 from tessellate.entry import bin as other_bin
 
                 other_bin.purge_expired(session, days)
+            manager_purge.clear_dangling_filing_similar(session)
         finally:
             session.close()
     except Exception:  # noqa: BLE001  # a failed purge must never block startup
