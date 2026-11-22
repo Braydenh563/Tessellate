@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- RELEASING: the version check, the installer's left-out packages and the 1.0 criterion now say what is true (L-general-24).
 - ARCHITECTURE: document revisions, the packaged app's MCP, the MSI and asset caching now say what the code does (L-general-22).
 - Filing: a purged note's id is no longer left on another note as its "looks like a duplicate of" pointer, which named an unrelated new note once the id was reused; a launch sweep clears ones already left (L-general-21).
 - Web fetch guard: a NAT64 address (64:ff9b::/96) is judged by the IPv4 address it carries, so NAT64 forms of loopback and the metadata service are refused on Python 3.11 and 3.12 too (L-general-1).

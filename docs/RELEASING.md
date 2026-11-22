@@ -76,7 +76,7 @@ build if they are missed, and two you must remember:
 | --- | --- |
 | every `?v=` stamp in `frontend/index.html` | `tests/test_asset_cache_busting.py` |
 | the README's "Version 0.x.y." line | `tests/test_readme_freshness.py` |
-| `pyproject.toml`, the `version` line | nothing: do it by hand |
+| `pyproject.toml`, the `version` line | `tests/test_version_agreement.py` |
 | the same `?v=` stamps in `frontend/capture.html` and `frontend/clip.html` | nothing: do it by hand |
 
 The README line is also where the test count, the tool count and the skill count
@@ -154,10 +154,10 @@ tag, with its description taken from `CHANGELOG.md`'s matching section.
 **3. `build-windows-installer`** (about 10 to 15 minutes, on `windows-latest`),
 after the release exists:
 
-- Installs a trimmed dependency set, deliberately **without**
-  `sentence-transformers` and torch. Settings, Packages treats those as an
-  optional post-install, like voice dictation, and a multi-hundred-MB download in
-  the base installer would contradict that.
+- Installs a trimmed dependency set, deliberately **without** fastembed and
+  ONNX Runtime (about 60 MB, search by meaning). Settings, Packages treats those
+  as an optional post-install, like voice dictation; `tessellate.spec` excludes
+  them, and torch and sentence-transformers (the engine before), by name.
 - Runs PyInstaller against `packaging/windows/tessellate.spec`. It is a onedir
   build: a onefile build would re-extract itself on every launch, a poor fit for
   an app meant to open like a normal desktop app.
@@ -254,5 +254,5 @@ This project is `0.x` while it stabilises (see the README's status line and
   how existing features behave.
 - **Minor** (`0.3.0` to `0.4.0`): new features and meaningful behaviour changes,
   the normal case for most releases at this stage.
-- There is no written criterion for `1.0`. That is a decision to make
-  deliberately when it comes up, not a rule to follow automatically.
+- The criterion for `1.0` is written: the gates in `docs/ROADMAP.md`, "The road
+  to 1.0: milestones with exit criteria". A build passes them or it does not.
