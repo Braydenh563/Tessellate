@@ -92,6 +92,7 @@ let answer = { status: 200, responseText: '<section class="settings-section" id=
 class XMLHttpRequest { open() {} send() { requests++; Object.assign(this, answer); } }
 let fetches = 0;
 globalThis.fetch = async () => { fetches++; return { ok: answer.status === 200, text: async () => answer.responseText }; };
+globalThis.api = (path) => globalThis.fetch(path); // the load goes through the API door (test_no_bare_fetch)
 globalThis.setTimeout = () => 0;
 """
 

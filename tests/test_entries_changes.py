@@ -116,7 +116,7 @@ def test_the_client_follows_changes_while_visible():
     body = source[start:start + 2500]
     assert "/entries/changes" in body
     assert 'appState.get("note")' in body
-    assert 'addEventListener("visibilitychange"' in source[start - 2000:start + 4000]
+    assert 'addEventListener("visibilitychange"' in source[max(0, start - 2000):start + 4000]  # a negative start wrapped to the end
 
 
 def test_the_client_slows_down_after_four_empty_answers_and_stops_hidden():

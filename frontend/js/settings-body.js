@@ -80,7 +80,7 @@ const SURFACES = Object.assign(new Map(), {
     const entry = SURFACES.get(name);
     const src = entry?.tpl?.dataset?.src;
     if (!src || entry.fetched != null || entry.frag) return Promise.resolve();
-    entry.fetching ||= fetch(src)
+    entry.fetching ||= api(src, { silent: true })
       .then((response) => (response.ok ? response.text() : null))
       .then((text) => {
         if (text == null || entry.done || entry.frag) return;
