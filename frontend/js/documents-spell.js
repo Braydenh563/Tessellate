@@ -273,7 +273,8 @@
       while (at < text.length && performance.now() < stop) {
         for (let n = 0; n < 1000 && at < text.length; n++) {
           const next = text.indexOf("\n", at) + 1 || text.length + 1;
-          const word = text.slice(at, next - 1).trim();
+          const line = text.slice(at, next - 1);
+          const word = line.trim();
           at = next;
           if (word) words.add(word);
         }
