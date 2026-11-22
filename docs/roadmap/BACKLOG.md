@@ -2,13 +2,9 @@
 
 > **The other three:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · [LEDGER.md](LEDGER.md) (every open item outside the plans; licence: AGPL-3.0) · [HISTORY.md](HISTORY.md) (already built).
 
-Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This
-file is the **standing backlog**: everything that is still work, numbered as it
-always was, so every §-reference elsewhere still resolves.
+Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This file is the **standing backlog**: everything that is still work, numbered as it always was, so every §-reference elsewhere still resolves.
 
-The live list: what to do next, and the two sections of freshly reported work
-(§35, §36): stays in [ROADMAP.md](../ROADMAP.md). Open items outside the plans
-are in [LEDGER.md](LEDGER.md); finished work is in [HISTORY.md](HISTORY.md).
+The live list: what to do next, and the two sections of freshly reported work (§35, §36): stays in [ROADMAP.md](../ROADMAP.md). Open items outside the plans are in [LEDGER.md](LEDGER.md); finished work is in [HISTORY.md](HISTORY.md).
 
 > **Status, 2026-09-07.** Every UI/UX item in this file (§2 quick wins, §15
 > Appearance, §16 Sweeping UI quality-of-life, §19 Accessibility, §24
@@ -4497,3 +4493,4 @@ Moved from LEDGER (the hub: finish, or BACKLOG with two measured attempts). Run 
 - **Board:** mapmorezoom (the More box 42px off the drawn wedge at zoom 100 and 115, both runs); toolgrid (448.72px, both); connlabel (button not shown, both); wbrail (history and present bars draw the card radius and 8px padding while the tool row and zoom are pills at 4px/6.4px: a design call, which shape a one-row bar on the board takes).
 - **Shell and notes:** verify1011 (206: the document AI panel not shown; 218: stepper radii 2.4 on 36px buttons); laptopfold (1093: 3 whole cards for 4); iphone1011 (notes foot 752; sheets with overscroll contain/auto; run 2 timed out at 300s); anchorsmotion (rowmenu and graph surfaces not found at 1440x900 and 1440x600); libtlscroll (table); graphcoldlayout (tree stored and checked, physics not dimmed).
 - **Companion:** companionsleeptab, locomotion, companionsmooth, perchall (16 window-bar perches while a panel is free), companionmenulow (5 of 54 menus), viewerpose (an arm 131 degrees from rest at 300 ms), atlasaura (1), atlasmoodfx (paints/s, above), and the measure exits companionacts, napgait, peekdown, viewerclash; companioneyes (masculine look, lie and hang with thinking: 2 of 16 pupil-edge samples outside the white, 17 cases, worst 0.13).
+- **L-world-class-106, needs the owner (devibecode programme after the shell pass, 2026-11-22):** 22.4 step 7 is the owner's review of the shell pass (HISTORY, "Devibecode programme, the shell pass"), and each next surface starts only after it. **Owner-review gate:** the owner reads that HISTORY section and the two shots, then says go (or names fixes) on this bullet; no session starts Notes before that. Then, in 22.4's order: Notes, Dashboard, Chat, Settings, Library, Documents, Graph, Whiteboard and maps, Timeline, Reminders, Help and the palette, the companion and Atlas, each through the same seven steps.
