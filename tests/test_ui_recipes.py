@@ -8194,3 +8194,16 @@ def test_no_stylesheet_declares_the_weight_650() -> None:
         css = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         hits += [path.name for _ in re.finditer(r"font-weight:\s*650\b", css)]
     assert not hits, f"declare 600, not 650: {hits}"
+
+
+def test_the_map_of_meaning_names_groups_and_draws_ties_with_one_recipe() -> None:
+    """Owner 2026-11-22: the Map of meaning is names, nearest-meaning ties and a fallback line, all from
+    the one projection route; the layout control carries its own help, and DESIGN.md indexes it."""
+    graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    canvas = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "mapLinks" in graph and "gcDrawMeaningNames" in canvas
+    assert 'data-help-for="graph-layout-help"' in html and 'id="graph-layout-help"' in html
+    assert "The meaning map" in design and "gcDrawMeaningNames" in design
+    assert "mapLinks" not in canvas.replace("graphLate.mapLinks", "")  # one tie builder, in graph.js

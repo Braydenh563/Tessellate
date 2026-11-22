@@ -4228,7 +4228,14 @@ Link to another note with [[its first few words]]."></textarea>
               <p>Match strength appears while Similarity (under Show) is on: raise it to keep only the closest matches.</p>
             </div>
             <div class="graph-option-row">
-              <label for="graph-layout" id="graph-layout-label">Layout</label>
+              <span class="graph-option-lead">
+                <label for="graph-layout" id="graph-layout-label">Layout</label>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="graph-layout-help" aria-controls="graph-layout-help" aria-expanded="false"
+                  title="What distance means on the Map of meaning" aria-label="What distance means on the Map of meaning">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </span>
               <!-- A list like Colour and Size beside it (INBOX 670): four
                    layouts were a well of four. The id and the `change` event
                    are what navigation.js and the saved views use. -->
@@ -4242,6 +4249,11 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="treemap">Treemap</option>
                 <option value="tessellation">Tessellation</option>
               </select>
+            </div>
+            <div class="help-body hidden" id="graph-layout-help" role="dialog"
+              aria-label="What distance means on the Map of meaning">
+              <p>Map of meaning: the closer two notes sit, the more alike they are in meaning, and a name over a group says what its notes share. Faint lines join each note to its nearest by meaning.</p>
+              <p>With no search model installed it places notes by the words they share instead; Settings, Search and index installs one for the real map.</p>
             </div>
             <!-- Q31: the Tessellation view's two looks; shown under that layout only
                  (`setGraphPhysicsEnabled`). -->

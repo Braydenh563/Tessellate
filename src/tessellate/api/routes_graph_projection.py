@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from tessellate.api import routes_graph
+from tessellate.api import meaning_map, routes_graph
 from tessellate.core import deps
 from tessellate.core.deps import get_session
 
@@ -44,17 +44,16 @@ def sample(ids: list[int], cap: int) -> list[int]:
     return [ids[round(k * step)] for k in range(cap)]
 
 
-def project(vectors: dict[int, np.ndarray], cap: int = MAX_PROJECTED) -> dict[int, tuple[float, float]]:
-    """`{id: (x, y)}` in the unit square, one scale on both axes so the
-    picture is not stretched."""
+def lay_out(vectors: dict[int, np.ndarray], cap: int = MAX_PROJECTED):
+    """`(ids, plane, idx, sim)`: the notes in the unit square, one scale on
+    both axes so the picture is not stretched, each drawn toward its nearest
+    neighbours by meaning (`meaning_map.pull_together`), and those neighbours."""
     # Imported here: numpy stays out of the app's start (test_lazy_heavy_imports).
     import numpy as np
 
-    if not vectors:
-        return {}
     ids = sample(sorted(vectors), cap)
     if len(ids) == 1:
-        return {ids[0]: (0.5, 0.5)}
+        return ids, np.array([[0.5, 0.5]]), np.zeros((1, 0), dtype=np.int64), np.zeros((1, 0), dtype=np.float32)
     matrix = np.stack([np.asarray(vectors[i], dtype=np.float32) for i in ids])
     centred = matrix - matrix.mean(axis=0)
     # `eigh` answers in ascending order: the last two columns are the axes.
@@ -66,12 +65,50 @@ def project(vectors: dict[int, np.ndarray], cap: int = MAX_PROJECTED) -> dict[in
         # An axis is only defined up to its sign: pin it to the notes.
         if plane[np.argmax(np.abs(plane[:, k])), k] < 0:
             plane[:, k] = -plane[:, k]
+    idx, sim = meaning_map.neighbours(matrix, meaning_map.PULL_K)
+    plane = meaning_map.pull_together(plane, idx, sim)
     low = plane.min(axis=0)
     span = max(float((plane.max(axis=0) - low).max()), 1e-9)
     scaled = (plane - low) / span
     pad = (1.0 - scaled.max(axis=0)) / 2
-    scaled = scaled + pad
-    return {i: (round(float(x), 4), round(float(y), 4)) for i, (x, y) in zip(ids, scaled)}
+    return ids, scaled + pad, idx, sim
+
+
+def project(vectors: dict[int, np.ndarray], cap: int = MAX_PROJECTED) -> dict[int, tuple[float, float]]:
+    """`{id: (x, y)}` in the unit square."""
+    if not vectors:
+        return {}
+    ids, plane, _, _ = lay_out(vectors, cap)
+    return {i: (round(float(x), 4), round(float(y), 4)) for i, (x, y) in zip(ids, plane)}
+
+
+def build(session: Session, backend: str, limit: int) -> dict:
+    """The picture: points, the faint ties between near notes, the named
+    clusters, and what placed them (`model`, or the notes' `words` when no
+    embedding model has made a vector yet)."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import Entry
+    from tessellate.repo import graph_layers
+
+    vectors = routes_graph._note_vectors(session, backend)
+    source = "model"
+    wanted = graph_layers.vector_note_ids(session)
+    texts = dict(session.execute(select(Entry.id, Entry.content).where(Entry.id.in_(wanted))).all()) if wanted else {}
+    if not vectors:
+        source = "words"
+        vectors = meaning_map.word_vectors(dict(sorted(texts.items())[:MAX_PROJECTED * 2]))
+    if not vectors:
+        return {"points": [], "ties": [], "clusters": [], "source": source}
+    ids, plane, idx, sim = lay_out(vectors, limit)
+    return {
+        "points": [
+            {"id": i, "x": round(float(x), 4), "y": round(float(y), 4)} for i, (x, y) in zip(ids, plane)
+        ],
+        "ties": meaning_map.ties(ids, idx, sim, source),
+        "clusters": meaning_map.clusters(ids, plane, texts),
+        "source": source,
+    }
 
 
 @router.get("/graph/projection")
@@ -81,7 +118,4 @@ def graph_projection(
 ) -> dict:
     backend = deps.get_embeddings().backend_id()
     fingerprint = (*routes_graph._vector_fingerprint(session, backend), limit)
-    points = routes_graph._cached(
-        "projection", fingerprint, lambda: project(routes_graph._note_vectors(session, backend), limit)
-    )
-    return {"points": [{"id": i, "x": x, "y": y} for i, (x, y) in points.items()]}
+    return routes_graph._cached("projection", fingerprint, lambda: build(session, backend, limit))
