@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docker: the image reports its health from /health, and the build reads its ignore file, so the local virtualenv, git history and notebook are no longer sent with every build (L-general-5).
 - Maintenance: the scheduled database tidy clears a note's near-duplicate pointer when the note it named has been purged (L-general-21).
 - Security: the outbound fetch guard reads a NAT64 address (64:ff9b::/96) by the IPv4 address inside it, so the metadata service and loopback can no longer be reached that way (L-general-1).
 - Documents: the spelling list's 93,000-word set is built in short slices, so opening a document from the Library paints in about 190 ms with no script-heavy frame after it (L-world-class-40).

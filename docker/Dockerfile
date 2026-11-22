@@ -52,4 +52,7 @@ USER mm
 # TESSELLATE_ALLOWED_HOSTS (comma-separated, names only) or the app answers 421.
 ENV TESSELLATE_BIND=0.0.0.0 \
     TESSELLATE_PORT=8000
+# The slim image has no curl, so Python asks /health on the port the app binds.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD python -c "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('TESSELLATE_PORT', '8000') + '/health', timeout=4)"
 CMD ["python", "-m", "tessellate"]
