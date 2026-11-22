@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Filing settles a note before the model's tag suggestions are asked for, keeping the notebook's own in the same commit and the model's in a second; a suggestion that fails is rolled back in a savepoint and no longer fails the filing (PR 242 review).
+- Closing core sweep (L-mindmap-16): open_scan hits in src (not ai or chat), start.sh, .github, .claude, INBOX, HANDOVER and tests (not composer or chat) from 129 to 2 (the strict xfails on chat row L150 and on L-timeline-9, which PR 241 builds); the PR 216 work order closed (L-general-33); open_scan skips the PR template form, and strips SQLAlchemy's `deferred=True` and two exact verb phrases before it looks, so a marker on the same line is still found.
+- Filing keeps a note's tag suggestions in the same commit as its settled `filing_state`, so a reader that stops polling on the settled state no longer reads them as empty; `jobs.in_flight(None)` is False.
 - Models: a finished download reads as still running until a model list asked after it finished comes back, so "success" never arrives beside the list from before it (CI on PR 222, 3.12: the runner listed slower than the poll waits).
 - LAN mode: a network read that misses the router's hardware address for a moment, behind the same gateway, keeps the last network instead of closing the port (CI on PRs 242 and 253: the closed port reset a connection mid-handshake).
 - Review of PR 222: every note write tells the timeline's streak (not the composer's Save alone) and a failed streak ask is not kept for the day; Overdue triage keeps an Undo for the rows a part-failed bulk act moved, cannot move with the date cleared, keeps focus on the row in its place and announces the count; an outcome's Undo takes off only its line; the write counter moves again at commit, under a lock.

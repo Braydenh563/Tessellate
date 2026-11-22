@@ -111,7 +111,7 @@ def platform_key() -> str:
 
     `linux-x86_64`, `linux-x86_64-musl`, `linux-aarch64`, `macos-arm64`,
     `macos-x86_64`, `windows-x86_64`, `windows-arm64`; anything else comes
-    back as `<sys.platform>-<machine>` so the "not built for" message can
+    back as `<sys.platform>-<machine>` so the "no build for" message can
     name it.
     """
     machine = (_platform.machine() or "").lower()
@@ -155,12 +155,12 @@ def platform_reason(extra) -> str:
     offered: its Install button is greyed with this sentence beside it, and
     `extras.start` refuses it, the same two places `unavailable` is held.
     """
-    built = sorted({d.platform for d in extra.downloads if d.platform})
-    if not built or platform_key() in built:
+    platforms = sorted({d.platform for d in extra.downloads if d.platform})
+    if not platforms or platform_key() in platforms:
         return ""
     return (
         f"There is no prebuilt engine for this computer ({platform_key()}). "
-        f"It is built for {', '.join(built)}."
+        f"It is built for {', '.join(platforms)}."
     )
 
 
