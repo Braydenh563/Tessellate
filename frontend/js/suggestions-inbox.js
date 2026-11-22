@@ -668,7 +668,7 @@
     const name = (raw) => notePreviewText(raw || "").replace(/\s+/g, " ").trim() || "Untitled note";
     const noteName = (raw) => {
       const made = inboxEl("span", "link-suggestion-note");
-      const icon = inboxEl("i", "ph ph-note");
+      const icon = inboxEl("i", "ph ph-note ph-lead");
       icon.setAttribute("aria-hidden", "true");
       const words = inboxEl("span", "link-suggestion-name");
       words.textContent = name(raw);

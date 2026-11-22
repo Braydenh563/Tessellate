@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8588, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11602, test files 2977, tests 23332, plan headings 688, app scripts 29, boot scripts 38, script files 326.
+Counts: frontend functions 8588, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11602, test files 2978, tests 23333, plan headings 688, app scripts 29, boot scripts 38, script files 326.
 
 ## Frontend functions (8588)
 
@@ -29356,7 +29356,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23332)
+## Tests (23333)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31899,6 +31899,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_subtab_strip_surface.py | 2 |
 | tests/test_suggest_candidate_rows.py | 1 |
 | tests/test_suggest_category_draft.py | 4 |
+| tests/test_suggest_links_icon_lead.py | 1 |
 | tests/test_suggest_tags_no_model.py | 3 |
 | tests/test_suggested_tag_chip_1583.py | 3 |
 | tests/test_suggestions_inbox_kg9.py | 21 |
