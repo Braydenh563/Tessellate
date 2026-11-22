@@ -901,10 +901,21 @@ flows.select = async (env) => {
     await env.wait(500);
     for (const n of [a, b]) {
       env.at(`tick note ${n.id}`);
-      const row = env.page.locator(`${rowSel(n.id)} .entry-content`).first();
-      await row.scrollIntoViewIfNeeded();
-      if (env.phone) await row.tap({ position: { x: 30, y: 6 } });
-      else await row.click({ position: { x: 30, y: 6 } });
+      //: The list repaints when the fixture notes' save events land, which on a
+      //: slow runner is after Select is on: a row found before that repaint is
+      //: detached by the time it is scrolled to (CI 2026-11-22). Find it again.
+      for (let tries = 0; ; tries++) {
+        const row = env.page.locator(`${rowSel(n.id)} .entry-content`).first();
+        try {
+          await row.scrollIntoViewIfNeeded();
+          if (env.phone) await row.tap({ position: { x: 30, y: 6 } });
+          else await row.click({ position: { x: 30, y: 6 } });
+          break;
+        } catch (e) {
+          if (tries >= 2 || !/not attached/.test(String(e))) throw e;
+          await env.wait(300);
+        }
+      }
       await env.wait(350);
       if (await env.page.$('.sheet-overlay[data-sheet="note"]')) throw new Error('a tap in Select mode opened the note page');
     }
