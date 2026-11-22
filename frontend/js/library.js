@@ -778,16 +778,14 @@ function renderLibrary(options) {
     // unfinished by definition, and a draft appearing as a first-class card
     // here was reported and fixed once already (see _notes() in
     // routes_library.py). The Drafts chip is how you ask for them.
-    items = items.filter((i) => i.kind !== "activity" && i.kind !== "draft" && i.kind !== "highlight");
-    if (!$("library-show-binned")?.checked) {
-      items = items.filter((i) => i.kind !== "archived");
-    }
     // Shelved notes get the same "kept, out of the way" treatment as
     // activity: no extra checkbox, since the "Archived" chip already
     // gives full access, and this is the one place "kept out of the way"
     // actually matters: the mixed view is exactly where an archived note
     // would otherwise clutter the notebook it was archived to get out of.
-    items = items.filter((i) => i.kind !== "shelved");
+    // One pass for all of it: the bin only comes in with its toggle ticked.
+    const showBinned = Boolean($("library-show-binned")?.checked);
+    items = items.filter((i) => !["activity", "draft", "highlight", "shelved"].includes(i.kind) && (showBinned || i.kind !== "archived"));
   }
   if (query) {
     // Title *and* preview, for the same reason the conversation search reads

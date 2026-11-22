@@ -540,23 +540,27 @@
         }
       }
     }
-    const coversDisc = (box) => {
-      const x0 = Math.floor(box.left / cell);
-      const x1 = Math.floor(box.right / cell);
-      const y0 = Math.floor(box.top / cell);
-      const y1 = Math.floor(box.bottom / cell);
+    //: One walk over the grid cells a box (grown by `pad`, and `margin` cells more) touches; `hit` is asked of
+    //: each dot filed there and the first true ends it. The two questions below differ only in what they ask.
+    const scan = (box, pad, margin, hit) => {
+      const x0 = Math.floor((box.left - pad) / cell) - margin;
+      const x1 = Math.floor((box.right + pad) / cell) + margin;
+      const y0 = Math.floor((box.top - pad) / cell) - margin;
+      const y1 = Math.floor((box.bottom + pad) / cell) + margin;
       for (let cx = x0; cx <= x1; cx++) {
         for (let cy = y0; cy <= y1; cy++) {
-          for (const disc of grid.get(`${cx},${cy}`) || []) {
-            if (disc.id === box.id) continue;
-            const nx = Math.max(box.left, Math.min(disc.x, box.right));
-            const ny = Math.max(box.top, Math.min(disc.y, box.bottom));
-            if ((nx - disc.x) ** 2 + (ny - disc.y) ** 2 < disc.r * disc.r) return true;
-          }
+          for (const disc of grid.get(`${cx},${cy}`) || []) if (hit(disc)) return true;
         }
       }
       return false;
     };
+    const coversDisc = (box) =>
+      scan(box, 0, 0, (disc) => {
+        if (disc.id === box.id) return false;
+        const nx = Math.max(box.left, Math.min(disc.x, box.right));
+        const ny = Math.max(box.top, Math.min(disc.y, box.bottom));
+        return (nx - disc.x) ** 2 + (ny - disc.y) ** 2 < disc.r * disc.r;
+      });
     //: **A name is nearer its own dot than any other** (INBOX 1300 C41, the
     //: owner: "labels overlap nodes"; measured at the fit on the 57-note seed,
     //: 6 of 16 names stood nearer another note's dot, and so read as its
@@ -571,18 +575,7 @@
       const mine = own.get(box.id);
       if (!mine) return false;
       const reach = edgeGap(box, mine);
-      const x0 = Math.floor((box.left - reach) / cell) - 1;
-      const x1 = Math.floor((box.right + reach) / cell) + 1;
-      const y0 = Math.floor((box.top - reach) / cell) - 1;
-      const y1 = Math.floor((box.bottom + reach) / cell) + 1;
-      for (let cx = x0; cx <= x1; cx++) {
-        for (let cy = y0; cy <= y1; cy++) {
-          for (const disc of grid.get(`${cx},${cy}`) || []) {
-            if (disc.id !== box.id && edgeGap(box, disc) < reach) return true;
-          }
-        }
-      }
-      return false;
+      return scan(box, reach, 1, (disc) => disc.id !== box.id && edgeGap(box, disc) < reach);
     };
     //: A place past the edge of the canvas is no place (INBOX 693: names "cut
     //: by the viewport"); `bounds` is the canvas in world units.
@@ -662,27 +655,20 @@
     for (const box of items) {
       if (box.cand && !box.force && candPlaced >= candCap) continue;
       const spots = [box, ...(box.alts || []).map((spot) => ({ ...box, ...spot, alts: undefined }))];
+      const clear = (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot);
       if (box.force) {
         //: Asked for by name: drawn whatever it lands on, at the clearest
         //: place that covers no label and no dot if there is one.
         placed.push(
-          best(spots, (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot)) ||
+          best(spots, clear) ||
             best(spots, (spot) => !clashes(spot) && !coversDisc(spot)) ||
             gcClampBox(box, bounds)
         );
         continue;
       }
-      const clear = (spot) => !clashes(spot) && !coversDisc(spot) && !nearerOther(spot);
-      if (box.landmark) {
-        const pick = best(spots, clear);
-        if (pick) {
-          placed.push(pick);
-          if (box.cand) candPlaced += 1;
-        }
-        continue;
-      }
+      //: A landmark takes the least-crossed clear place; any other name only a place that crosses no line.
       const pick = best(spots, clear);
-      if (pick && fewest === 0) {
+      if (pick && (box.landmark || fewest === 0)) {
         placed.push(pick);
         if (box.cand) candPlaced += 1;
       }
@@ -6757,6 +6743,29 @@
     });
   }
 
+  //: **A note with no position yet is placed here, not in the worker.**
+  //: d3-force assigns its phyllotaxis spiral inside `forceSimulation`, which
+  //: means the main thread has no positions at all until the first tick comes
+  //: back: so the frame drawn the instant the payload arrives would be an
+  //: empty canvas, and the gate's "first frame after data" would be timing a
+  //: blank. The same spiral is laid down here (identical constants, so the
+  //: worker keeps these rather than re-placing anything) and the first frame
+  //: is a real picture of the notebook that then relaxes into its layout.
+  //: Lifted out of `renderGraphCanvas` for the size cap; a tree layout never calls it.
+  function gcSeedSpiral(s, nodes, width, height) {
+    const centreX = width / 2;
+    const centreY = height / 2;
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    gcSeedBesideNeighbours(s, nodes);
+    nodes.forEach((node, index) => {
+      if (Number.isFinite(node.x) && Number.isFinite(node.y)) return;
+      const radius = 10 * Math.sqrt(0.5 + index);
+      const angle = index * goldenAngle;
+      node.x = centreX + radius * Math.cos(angle);
+      node.y = centreY + radius * Math.sin(angle);
+    });
+  }
+
   async function renderGraphCanvas(s = gcTab) {
     if (!gcEnsureCanvas(s)) return;
     const sequence = ++s.renderSeq;
@@ -7046,27 +7055,7 @@
     const titleCount = new Map();
     for (const node of nodes) if (gcIsNote(node) && node.preview) titleCount.set(node.preview, (titleCount.get(node.preview) || 0) + 1);
     s.dupTitles = new Set([...titleCount].filter(([, n]) => n > 1).map(([title]) => title));
-    //: **A note with no position yet is placed here, not in the worker.**
-    //: d3-force assigns its phyllotaxis spiral inside `forceSimulation`, which
-    //: means the main thread has no positions at all until the first tick comes
-    //: back: so the frame drawn the instant the payload arrives would be an
-    //: empty canvas, and the gate's "first frame after data" would be timing a
-    //: blank. The same spiral is laid down here (identical constants, so the
-    //: worker keeps these rather than re-placing anything) and the first frame
-    //: is a real picture of the notebook that then relaxes into its layout.
-    if (!s.tree) {
-      const centreX = width / 2;
-      const centreY = height / 2;
-      const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-      gcSeedBesideNeighbours(s, nodes);
-      nodes.forEach((node, index) => {
-        if (Number.isFinite(node.x) && Number.isFinite(node.y)) return;
-        const radius = 10 * Math.sqrt(0.5 + index);
-        const angle = index * goldenAngle;
-        node.x = centreX + radius * Math.cos(angle);
-        node.y = centreY + radius * Math.sin(angle);
-      });
-    }
+    if (!s.tree) gcSeedSpiral(s, nodes, width, height);
     // Everything the worker could still be about is now gone: whatever it says
     // next is about the previous node array and is dropped on arrival.
     //: From the map that was there (`gcTweenFromPrior`): a computed layout

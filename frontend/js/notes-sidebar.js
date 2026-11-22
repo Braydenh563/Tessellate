@@ -5,6 +5,37 @@
 // reads a return value.
 
 (() => {
+//: **A category row's press**: filter the list to it (clearing the Drafts and Favourites filters) and bring the
+//: list on screen. Lifted out of `drawSidebar` for the size cap; the row itself is still built there.
+function sidebarPickCategory(category) {
+  activeCategory = category;
+  draftsOnly = false; // exclusive with the Drafts filter below
+  favouritesOnly = false; // and with Favourites, for the same reason
+  // The list this filters lives in the "browse" sub-tab, and the sidebar
+  // is visible from all four, so picking a category while writing a note
+  // or asking a question filtered a list that was `display: none`, and the
+  // click appeared to do nothing at all. Reported. The same fix
+  // `flashEntry` already carries for jumping to a note, for the same
+  // reason: a sidebar that is always on screen must be able to bring the
+  // thing it controls on screen with it.
+  showNotesSection("browse");
+  renderSidebar();
+  renderEntries();
+}
+
+//: **The Drafts or Favourites row's press**: each is exclusive with the other and with a category. Lifted out of
+//: `drawSidebar` for the size cap.
+const sidebarToggleFilter = (drafts) => () => {
+  if (drafts) draftsOnly = !draftsOnly;
+  else favouritesOnly = !favouritesOnly;
+  if (drafts) favouritesOnly = false;
+  else draftsOnly = false;
+  activeCategory = null;
+  showNotesSection("browse");
+  renderSidebar();
+  renderEntries();
+};
+
 function drawSidebar() {
   // Categories + counts are derived from the loaded entries, the
   // simplest thing that works; no extra endpoint needed yet.
@@ -49,21 +80,7 @@ function drawSidebar() {
     badge.className = "count";
     badge.textContent = count;
     li.append(name, badge);
-    li.addEventListener("click", () => {
-      activeCategory = category;
-      draftsOnly = false; // exclusive with the Drafts filter below
-      favouritesOnly = false; // and with Favourites, for the same reason
-      // The list this filters lives in the "browse" sub-tab, and the sidebar
-      // is visible from all four, so picking a category while writing a note
-      // or asking a question filtered a list that was `display: none`, and the
-      // click appeared to do nothing at all. Reported. The same fix
-      // `flashEntry` already carries for jumping to a note, for the same
-      // reason: a sidebar that is always on screen must be able to bring the
-      // thing it controls on screen with it.
-      showNotesSection("browse");
-      renderSidebar();
-      renderEntries();
-    });
+    li.addEventListener("click", () => sidebarPickCategory(category));
 
     // Rename/delete for real categories only, "All" is a filter, and
     // Uncategorised is where notes land when a category goes away.
@@ -107,19 +124,9 @@ function drawSidebar() {
     ul.appendChild(li);
     return li;
   };
-  const toggleFilter = (drafts) => () => {
-    if (drafts) draftsOnly = !draftsOnly;
-    else favouritesOnly = !favouritesOnly;
-    if (drafts) favouritesOnly = false;
-    else draftsOnly = false;
-    activeCategory = null;
-    showNotesSection("browse");
-    renderSidebar();
-    renderEntries();
-  };
 
   // Drafts: a filter row beside the categories, always shown (even at 0) so it stays findable.
-  filterRow("ph:pencil-simple-line Drafts", allEntries.filter((e) => e.is_draft).length, draftsOnly, "", toggleFilter(true));
+  filterRow("ph:pencil-simple-line Drafts", allEntries.filter((e) => e.is_draft).length, draftsOnly, "", sidebarToggleFilter(true));
 
   // **Favourites**: built like Drafts, over the pinned notes (see `favouritesOnly`); no second place to star.
   filterRow(
@@ -127,7 +134,7 @@ function drawSidebar() {
     allEntries.filter((e) => e.pinned && noteListed(e)).length,
     favouritesOnly,
     "Notes you have starred, they also float to the top of every list",
-    toggleFilter(false)
+    sidebarToggleFilter(false)
   );
 
   //: **Meetings** (INBOX 644: "tucked away"; the Library had a Meetings chip,

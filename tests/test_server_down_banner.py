@@ -105,7 +105,7 @@ def test_a_write_while_the_server_is_down_is_refused_with_the_banners_message() 
     so a server that came back clears the banner without the 30 s backoff."""
     app = app_js_text()
     api_fn = _function(app, "api")
-    before_fetch = api_fn[: api_fn.index("response = await fetch(")]
+    before_fetch = api_fn[: api_fn.index("response = await (send || fetch)(")]
     assert "serverUnreachable" in before_fetch and "retryServerNow();" in before_fetch
     assert "throw new TypeError(showServerDownBanner());" in before_fetch
     assert "readOnly" in before_fetch
@@ -117,5 +117,5 @@ def test_a_write_while_the_server_is_down_is_refused_with_the_banners_message() 
 def test_sign_in_and_health_are_never_refused_by_the_banner() -> None:
     """They are how the app finds out the server is back."""
     api_fn = _function(app_js_text(), "api")
-    before_fetch = api_fn[: api_fn.index("response = await fetch(")]
+    before_fetch = api_fn[: api_fn.index("response = await (send || fetch)(")]
     assert "/auth/" in before_fetch and "/health" in before_fetch

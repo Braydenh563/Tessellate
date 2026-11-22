@@ -347,6 +347,136 @@
     };
   }
 
+  //: **Constellation links** (the star web): every pair of points `from..to` within `link` pixels, found through
+  //: the grid `build` filled, each written once (j > i) into `seg` (quarter-pixel ends) with its strength bucket in
+  //: `segB`; returns how many it wrote. Lifted out of the style's frame so that stays under the size cap.
+  function bgLinkSegments(grid, sx, sy, from, to, link, BUCKETS, seg, segB, segMax) {
+    const cols = grid.cols, st = grid.start, items = grid.items;
+    const reach2 = link * link;
+    let ns = 0;
+    for (let i = from; i < to && ns < segMax; i++) {
+      const c = grid.cell[i];
+      const cx = c % cols, cy = (c - cx) / cols;
+      for (let oy = -1; oy <= 1; oy++) {
+        const ry = cy + oy;
+        if (ry < 0 || ry >= grid.rows) continue;
+        for (let ox = -1; ox <= 1; ox++) {
+          const rx = cx + ox;
+          if (rx < 0 || rx >= cols) continue;
+          const cell = ry * cols + rx;
+          for (let k = st[cell]; k < st[cell + 1]; k++) {
+            const j = items[k];
+            if (j <= i) continue;
+            const dx = sx[j] - sx[i], dy = sy[j] - sy[i];
+            const d2 = dx * dx + dy * dy;
+            if (d2 >= reach2 || ns >= segMax) continue;
+            const o = ns * 4;
+            seg[o] = (sx[i] * 4) | 0; seg[o + 1] = (sy[i] * 4) | 0; seg[o + 2] = (sx[j] * 4) | 0; seg[o + 3] = (sy[j] * 4) | 0;
+            segB[ns] = Math.min(BUCKETS - 1, Math.floor((1 - Math.sqrt(d2) / link) * BUCKETS));
+            ns++;
+          }
+        }
+      }
+    }
+    return ns;
+  }
+
+  const BG_MICROBE_BLOB = new Float32Array(16); // the amoeba's outline, reused
+  // The microbes' bodies, drawn as vector paths batched per species: every
+  // organism of a species adds its outline to one path, which is filled
+  // and stroked once, then its organelles to a second and its flagella to
+  // a third. Each point is rotated by hand (`c`, `s`: the heading's cosine
+  // and sine) instead of through a canvas transform, because a transform
+  // per organism means a path per organism. Measured, sixty bodies: a
+  // rotated image each cost 3.5ms to raster (rotated bitmaps are the slow
+  // path in a software canvas), vector outlines batched like this 0.8ms.
+  // `ph` is the organism's animation phase: the flagellum's beat, the
+  // amoeba's wobble.
+  function bgMicrobeOutline(g, sp, x, y, c, s, r, ph) {
+    switch (sp.form) {
+      case "bacillus": {
+        const len = r * 1.4, wid = r * 0.62, th = Math.atan2(s, c);
+        const ax = x + c * len, ay = y + s * len, bx = x - c * len, by = y - s * len;
+        g.moveTo(bx + s * wid, by - c * wid);
+        g.lineTo(ax + s * wid, ay - c * wid);
+        g.arc(ax, ay, wid, th - Math.PI / 2, th + Math.PI / 2);
+        g.lineTo(bx - s * wid, by + c * wid);
+        g.arc(bx, by, wid, th + Math.PI / 2, th + Math.PI * 1.5);
+        g.closePath();
+        break;
+      }
+      case "vibrio": {
+        const th = Math.atan2(s, c);
+        const cx = x - s * r * 0.5, cy = y + c * r * 0.5;
+        const a0 = Math.PI * 1.15 + th, a1 = Math.PI * 1.85 + th;
+        g.moveTo(cx + Math.cos(a0) * r * 1.2, cy + Math.sin(a0) * r * 1.2);
+        g.arc(cx, cy, r * 1.2, a0, a1);
+        g.arc(cx, cy, r * 0.55, a1, a0, true);
+        g.closePath();
+        break;
+      }
+      case "diatom": {
+        const m = sp.sides, th = Math.atan2(s, c);
+        for (let ring = 0; ring < 2; ring++) {
+          const rr = ring ? r * 0.62 : r * 1.2, off = ring ? Math.PI / m : 0;
+          for (let k = 0; k <= m; k++) {
+            const q = (k / m) * Math.PI * 2 + off + th;
+            const px = x + Math.cos(q) * rr, py = y + Math.sin(q) * rr;
+            if (k === 0) g.moveTo(px, py);
+            else g.lineTo(px, py);
+          }
+        }
+        break;
+      }
+      case "amoeba": {
+        const m = 8, th = Math.atan2(s, c);
+        for (let k = 0; k < m; k++) {
+          const q = (k / m) * Math.PI * 2 + th;
+          const rr = r * (1 + 0.24 * Math.sin(ph + k * 1.9));
+          BG_MICROBE_BLOB[k * 2] = x + Math.cos(q) * rr;
+          BG_MICROBE_BLOB[k * 2 + 1] = y + Math.sin(q) * rr;
+        }
+        g.moveTo((BG_MICROBE_BLOB[0] + BG_MICROBE_BLOB[2]) / 2, (BG_MICROBE_BLOB[1] + BG_MICROBE_BLOB[3]) / 2);
+        for (let k = 1; k <= m; k++) {
+          const a = (k % m) * 2, b = ((k + 1) % m) * 2;
+          g.quadraticCurveTo(BG_MICROBE_BLOB[a], BG_MICROBE_BLOB[a + 1], (BG_MICROBE_BLOB[a] + BG_MICROBE_BLOB[b]) / 2, (BG_MICROBE_BLOB[a + 1] + BG_MICROBE_BLOB[b + 1]) / 2);
+        }
+        g.closePath();
+        break;
+      }
+      case "flagellate": {
+        g.moveTo(x + c * r * 1.25, y + s * r * 1.25);
+        g.ellipse(x, y, r * 1.25, r * 0.85, Math.atan2(s, c), 0, Math.PI * 2);
+        break;
+      }
+      default: { // coccus
+        g.moveTo(x + r, y);
+        g.arc(x, y, r, 0, Math.PI * 2);
+      }
+    }
+  }
+  // A point at (lx, ly) in the body's own frame, rotated and placed.
+  function bgMicrobeDot(g, x, y, c, s, lx, ly, rad) {
+    const px = x + c * lx - s * ly, py = y + s * lx + c * ly;
+    g.moveTo(px + rad, py);
+    g.arc(px, py, rad, 0, Math.PI * 2);
+  }
+  function bgMicrobeOrganelles(g, sp, x, y, c, s, r) {
+    switch (sp.form) {
+      case "bacillus": {
+        const len = r * 1.4, wid = r * 0.62;
+        bgMicrobeDot(g, x, y, c, s, -len * 0.45, 0, wid * 0.32);
+        bgMicrobeDot(g, x, y, c, s, len * 0.45, 0, wid * 0.32);
+        break;
+      }
+      case "diatom": bgMicrobeDot(g, x, y, c, s, 0, 0, r * 0.18); break;
+      case "amoeba": bgMicrobeDot(g, x, y, c, s, r * 0.2, -r * 0.1, r * 0.3); break;
+      case "flagellate": bgMicrobeDot(g, x, y, c, s, r * 0.35, 0, r * 0.3); break;
+      case "vibrio": break;
+      default: bgMicrobeDot(g, x, y, c, s, r * 0.25, -r * 0.2, r * 0.34);
+    }
+  }
+
   // Opacities as numbers boxed once: a number read from a plain array is the same heap object each time, where
   // a computed one is a new box per assignment to `globalAlpha`. 32 steps (a twinkle moves by far less).
   const BG_ALPHA_STEPS = 32;
@@ -767,33 +897,7 @@
             // written once (j > i) into the segment buffer with its strength.
             const grid = grids[li];
             grid.build(sx, sy, from, to);
-            const cols = grid.cols, st = grid.start, items = grid.items;
-            const reach2 = L.link * L.link;
-            let ns = 0;
-            for (let i = from; i < to && ns < segMax; i++) {
-              const c = grid.cell[i];
-              const cx = c % cols, cy = (c - cx) / cols;
-              for (let oy = -1; oy <= 1; oy++) {
-                const ry = cy + oy;
-                if (ry < 0 || ry >= grid.rows) continue;
-                for (let ox = -1; ox <= 1; ox++) {
-                  const rx = cx + ox;
-                  if (rx < 0 || rx >= cols) continue;
-                  const cell = ry * cols + rx;
-                  for (let k = st[cell]; k < st[cell + 1]; k++) {
-                    const j = items[k];
-                    if (j <= i) continue;
-                    const dx = sx[j] - sx[i], dy = sy[j] - sy[i];
-                    const d2 = dx * dx + dy * dy;
-                    if (d2 >= reach2 || ns >= segMax) continue;
-                    const o = ns * 4;
-                    seg[o] = (sx[i] * 4) | 0; seg[o + 1] = (sy[i] * 4) | 0; seg[o + 2] = (sx[j] * 4) | 0; seg[o + 3] = (sy[j] * 4) | 0;
-                    segB[ns] = Math.min(BUCKETS - 1, Math.floor((1 - Math.sqrt(d2) / L.link) * BUCKETS));
-                    ns++;
-                  }
-                }
-              }
-            }
+            const ns = bgLinkSegments(grid, sx, sy, from, to, L.link, BUCKETS, seg, segB, segMax);
             g.lineWidth = L.width * 4;
             p.quarter(true);
             for (let b = 0; b < BUCKETS; b++) {
@@ -1158,7 +1262,6 @@
       const AQN = new Int32Array(5 * 5); // bodies per species per opacity quarter
       let nMotes = 0, mx, my, mz, ms, moteFill = "";
       let FH, FA, FB, MFX, MFY, SPS, SCX, SCY; // the frame's flow values, filled by bgFlowFill
-      const blob = new Float32Array(16); // the amoeba's outline, reused
       const ink = ctx.dark ? 74 : 40;
       const fillL = ctx.dark ? 58 : 60;
 
@@ -1179,101 +1282,7 @@
         HY.copyWithin(dst * HL, src * HL, src * HL + HL);
       };
 
-      // The bodies, drawn as vector paths batched per species: every
-      // organism of a species adds its outline to one path, which is filled
-      // and stroked once, then its organelles to a second and its flagella to
-      // a third. Each point is rotated by hand (`c`, `s`: the heading's cosine
-      // and sine) instead of through a canvas transform, because a transform
-      // per organism means a path per organism. Measured, sixty bodies: a
-      // rotated image each cost 3.5ms to raster (rotated bitmaps are the slow
-      // path in a software canvas), vector outlines batched like this 0.8ms.
-      // `ph` is the organism's animation phase: the flagellum's beat, the
-      // amoeba's wobble.
       const PHASE_RATE = { vibrio: 0.3, flagellate: 0.22, amoeba: 0.05 };
-      const outline = (g, sp, x, y, c, s, r, ph) => {
-        switch (sp.form) {
-          case "bacillus": {
-            const len = r * 1.4, wid = r * 0.62, th = Math.atan2(s, c);
-            const ax = x + c * len, ay = y + s * len, bx = x - c * len, by = y - s * len;
-            g.moveTo(bx + s * wid, by - c * wid);
-            g.lineTo(ax + s * wid, ay - c * wid);
-            g.arc(ax, ay, wid, th - Math.PI / 2, th + Math.PI / 2);
-            g.lineTo(bx - s * wid, by + c * wid);
-            g.arc(bx, by, wid, th + Math.PI / 2, th + Math.PI * 1.5);
-            g.closePath();
-            break;
-          }
-          case "vibrio": {
-            const th = Math.atan2(s, c);
-            const cx = x - s * r * 0.5, cy = y + c * r * 0.5;
-            const a0 = Math.PI * 1.15 + th, a1 = Math.PI * 1.85 + th;
-            g.moveTo(cx + Math.cos(a0) * r * 1.2, cy + Math.sin(a0) * r * 1.2);
-            g.arc(cx, cy, r * 1.2, a0, a1);
-            g.arc(cx, cy, r * 0.55, a1, a0, true);
-            g.closePath();
-            break;
-          }
-          case "diatom": {
-            const m = sp.sides, th = Math.atan2(s, c);
-            for (let ring = 0; ring < 2; ring++) {
-              const rr = ring ? r * 0.62 : r * 1.2, off = ring ? Math.PI / m : 0;
-              for (let k = 0; k <= m; k++) {
-                const q = (k / m) * Math.PI * 2 + off + th;
-                const px = x + Math.cos(q) * rr, py = y + Math.sin(q) * rr;
-                if (k === 0) g.moveTo(px, py);
-                else g.lineTo(px, py);
-              }
-            }
-            break;
-          }
-          case "amoeba": {
-            const m = 8, th = Math.atan2(s, c);
-            for (let k = 0; k < m; k++) {
-              const q = (k / m) * Math.PI * 2 + th;
-              const rr = r * (1 + 0.24 * Math.sin(ph + k * 1.9));
-              blob[k * 2] = x + Math.cos(q) * rr;
-              blob[k * 2 + 1] = y + Math.sin(q) * rr;
-            }
-            g.moveTo((blob[0] + blob[2]) / 2, (blob[1] + blob[3]) / 2);
-            for (let k = 1; k <= m; k++) {
-              const a = (k % m) * 2, b = ((k + 1) % m) * 2;
-              g.quadraticCurveTo(blob[a], blob[a + 1], (blob[a] + blob[b]) / 2, (blob[a + 1] + blob[b + 1]) / 2);
-            }
-            g.closePath();
-            break;
-          }
-          case "flagellate": {
-            g.moveTo(x + c * r * 1.25, y + s * r * 1.25);
-            g.ellipse(x, y, r * 1.25, r * 0.85, Math.atan2(s, c), 0, Math.PI * 2);
-            break;
-          }
-          default: { // coccus
-            g.moveTo(x + r, y);
-            g.arc(x, y, r, 0, Math.PI * 2);
-          }
-        }
-      };
-      // A point at (lx, ly) in the body's own frame, rotated and placed.
-      const dot = (g, x, y, c, s, lx, ly, rad) => {
-        const px = x + c * lx - s * ly, py = y + s * lx + c * ly;
-        g.moveTo(px + rad, py);
-        g.arc(px, py, rad, 0, Math.PI * 2);
-      };
-      const organelles = (g, sp, x, y, c, s, r) => {
-        switch (sp.form) {
-          case "bacillus": {
-            const len = r * 1.4, wid = r * 0.62;
-            dot(g, x, y, c, s, -len * 0.45, 0, wid * 0.32);
-            dot(g, x, y, c, s, len * 0.45, 0, wid * 0.32);
-            break;
-          }
-          case "diatom": dot(g, x, y, c, s, 0, 0, r * 0.18); break;
-          case "amoeba": dot(g, x, y, c, s, r * 0.2, -r * 0.1, r * 0.3); break;
-          case "flagellate": dot(g, x, y, c, s, r * 0.35, 0, r * 0.3); break;
-          case "vibrio": break;
-          default: dot(g, x, y, c, s, r * 0.25, -r * 0.2, r * 0.34);
-        }
-      };
       // The flagella of the bodies of species `si` whose opacity rounds to `q` quarters, added to the current path
       // in the quarter-pixel space (`p.quarter`, set by the frame): whole numbers, so no coordinate is boxed, and
       // the body is named by its index, so no fractional argument is passed. Two flagella while it divides.
@@ -1343,14 +1352,14 @@
               const x = a * cell + cell / 2, y = ph * cell + cell / 2;
               const phase = (ph / phases) * Math.PI * 2;
               g.beginPath();
-              outline(g, sp, x, y, c, sn, r, phase);
+              bgMicrobeOutline(g, sp, x, y, c, sn, r, phase);
               g.fillStyle = sp.cFill;
               g.strokeStyle = sp.cStroke;
               g.fill();
               g.stroke();
               if (sp.form !== "vibrio") {
                 g.beginPath();
-                organelles(g, sp, x, y, c, sn, r);
+                bgMicrobeOrganelles(g, sp, x, y, c, sn, r);
                 g.fillStyle = sp.cCore;
                 g.fill();
               }

@@ -149,7 +149,8 @@ def test_every_popup_has_one_way_in():
     assert block.count(which) == 1, "one rule for every overlay"
     flat = " ".join(block.split())
     # The cards are named by class, not `& > *` (2026-11-21, test_css_invalidation).
-    assert "@starting-style { opacity: 0; & > :where(.card, .modal-card, .sheet-card) { translate: 0 var(--space-2); scale: 0.985; }" in flat
+    #: One argument per selector, still zero-weight (test_css_rule_buckets, L342).
+    assert "@starting-style { opacity: 0; & > :where(.card), & > :where(.modal-card), & > :where(.sheet-card) { translate: 0 var(--space-2); scale: 0.985; }" in flat
     assert "var(--ui-base)" in block and "var(--ui-slow)" in block and "var(--ui-exit)" in block
 
 

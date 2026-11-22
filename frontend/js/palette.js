@@ -1029,6 +1029,19 @@ async function agentCommitFiles() {
   return sent;
 }
 
+//: **The "Finished N steps" fold of the palette's reply**: an empty `<details>` with its summary and body, the
+//: shape the Chat tab's answer folds its tool calls into. Lifted out of `cmdPaletteAsk` for the size cap.
+function cmdPaletteStepFold() {
+  const fold = document.createElement("details");
+  fold.className = "agent-step agent-step-group";
+  const summary = document.createElement("summary");
+  summary.className = "agent-step-group-summary";
+  const body = document.createElement("div");
+  body.className = "agent-step-group-body";
+  fold.append(summary, body);
+  return fold;
+}
+
 async function cmdPaletteAsk(text, { plan = null } = {}) {
   //: The reply's drawing (chat-turn.js, answer-kit.js) is lazy; fetched at the first key typed here (lazy-entries.js).
   if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
@@ -1161,13 +1174,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   };
   const addStep = (event) => {
     if (!stepsFold) {
-      stepsFold = document.createElement("details");
-      stepsFold.className = "agent-step agent-step-group";
-      const summary = document.createElement("summary");
-      summary.className = "agent-step-group-summary";
-      const body = document.createElement("div");
-      body.className = "agent-step-group-body";
-      stepsFold.append(summary, body);
+      stepsFold = cmdPaletteStepFold();
       groupCount = 0;
       placeStep(stepsFold);
     }
