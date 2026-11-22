@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the answer pictures, citation order and copy-app-link checks read chat-list.js, where the saved-chat code moved from sheets-selects.js.
 - Sweeps: companioninteract passes above the face for its follow-off check (the old path crossed the face, and a pointer on the face is a touch that looks with the setting off too).
 - Sweeps: every sweep that runs a python seed takes it from one helper (`venvPython` in lib.js: VENV, else the repo .venv, else python3), so asktab and twelve others no longer spawn a .venv/bin/python CI does not have.
 - Sweeps: the seeded sweeps run the python CI gives them (VENV) rather than a .venv CI does not have, and libtlscroll seeds its own thousand notes once per data dir (in a shared CI dir it found 15 rows and no scroller).

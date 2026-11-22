@@ -190,7 +190,7 @@ COPY_LINK_SITES = [
     ("boards-gallery.js", 'appLinkMenuItem(board.type === "map" ? "map" : "board", board.id)'),
     ("documents.js", 'appLinkMenuItem("document", doc.id)'),
     ("documents.js", 'copyObjectAddress("document", currentDoc.id)'),
-    ("sheets-selects.js", 'appLinkMenuItem("chat", conversation.id)'),
+    ("chat-list.js", 'appLinkMenuItem("chat", conversation.id)'),
     ("chat.js", 'appLinkMenuItem("chat", () => chatConv.id)'),
     ("whiteboard.js", 'copyObjectAddress(wbIsMap() ? "map" : "board", id)'),
 ]

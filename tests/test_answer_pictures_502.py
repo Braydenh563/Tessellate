@@ -83,7 +83,7 @@ def test_the_client_draws_thumbnails_beside_the_chip():
     # Every caller hands the alts on: live Chat, live Ask, a reopened chat.
     assert "meta?.picture_alts || null" in with_pieces("chat-attach.js")
     assert "answerMeta?.picture_alts || null" in ask
-    assert "message.picture_alts || null" in (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    assert "message.picture_alts || null" in (JS / "chat-list.js").read_text(encoding="utf-8")
 
 
 # INBOX 526: the picture inside the bubble itself, by a `[picture N]` token.
@@ -186,7 +186,7 @@ def test_the_client_places_figures_from_tokens():
     # Every surface that shows an answer places them: live Ask, live Chat, a reopened chat, a reopened Ask.
     assert "placeAnswerFigures(answerBox, answerMeta, question)" in ask
     assert "placeAnswerFigures(" in with_pieces("chat-attach.js")
-    assert "placeAnswerFigures(" in (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    assert "placeAnswerFigures(" in (JS / "chat-list.js").read_text(encoding="utf-8")
     assert "placeAnswerFigures(" in (JS / "ask-history.js").read_text(encoding="utf-8")
 
 
