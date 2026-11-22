@@ -1312,12 +1312,21 @@ function showNoDocument() {
 
 //: Runs `paint` once the frame with the new text has been drawn, if no later
 //: open has started since (`docOpenSeq`).
-function docAfterFirstPaint(seq, paint) {
-  requestAnimationFrame(() =>
-    setTimeout(() => {
-      if (seq === docOpenSeq) paint();
-    }, 0)
-  );
+//: Each paint is its own task after the frame, so the panels never make one long task between the text and the next
+//: key (L-world-class-40: the six in one task were a 180 ms frame at 4 cores under load).
+function docAfterFirstPaint(seq, ...paints) {
+  const step = () => {
+    const paint = paints.shift();
+    if (!paint) return;
+    //: A frame apart, not just a task apart: timeouts chained at 0 ms all ran before the next render.
+    requestAnimationFrame(() =>
+      setTimeout(() => {
+        if (seq === docOpenSeq) paint();
+        step();
+      }, 0)
+    );
+  };
+  step();
 }
 
 async function openDocument(id) {
@@ -1400,9 +1409,12 @@ async function openDocument(id) {
   //: writes (INBOX 1530 c), and the status bar and prose check need no layout.
   docAfterFirstPaint(seq, () => {
     renderDocOutline();
+  }, () => {
     renderDocTools();
+  }, () => {
     renderDocNotes();
     renderDocBacklinks();
+  }, () => {
     renderDocBookmarks();
     renderDocComments();
   });
@@ -11751,11 +11763,15 @@ function docLoadWordlist() {
       docWordlistState.loading = false;
       //: The ranked suggestions are drawn from the same pool, so it has to be
       //: rebuilt, and the pass that ran without a dictionary has to run again
-      //: now that there is one.
+      //: now that there is one. A frame after the 93,000-word set, not in its
+      //: task: the two together were a 267 ms frame after a document's first
+      //: paint (L-world-class-40).
       docKnownWordsCache = null;
       docSpellCache = new Map();
-      docCmApplySpellcheck();
-      renderDocProse();
+      afterFrames(() => setTimeout(() => {
+        docCmApplySpellcheck();
+        renderDocProse();
+      }), 1);
     })
     .catch(() => {
       //: Once, not on a loop: a failed fetch here means the file is missing

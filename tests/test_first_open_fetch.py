@@ -55,3 +55,20 @@ def test_a_tab_visit_runs_the_prose_pass_only_when_the_type_table_has_just_lande
     assert "const had = docFileTypes.length > 0;" in body
     assert body.index("const had") < body.index("await loadDocTypeTable()")
     assert "syncDocFileType({ prose: !had });" in body
+
+
+def test_the_panels_after_first_paint_are_separate_tasks():
+    # The six panels in one task were a 180 ms frame between the text and the next key.
+    js = frontend_text("documents.js")
+    helper = js[js.index("function docAfterFirstPaint(seq, ...paints)") :][:400]
+    assert "paints.shift()" in helper and "requestAnimationFrame(() =>" in helper and "step();" in helper
+    opener = js[js.index("docAfterFirstPaint(seq, () => {") :][:400]
+    assert opener.count("}, () => {") >= 3
+
+
+def test_the_prose_rerun_after_the_word_list_is_a_frame_after_the_set():
+    # The 93,000-word set and the re-run in one task were a 267 ms frame after a document's first paint.
+    js = frontend_text("documents.js")
+    loader = js[js.index("function docLoadWordlist()") :][:3000]
+    later = loader[loader.index("docWordlist = words;") :]
+    assert later.index("afterFrames(() => setTimeout(() => {") < later.index("renderDocProse();")
