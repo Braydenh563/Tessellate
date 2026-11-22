@@ -475,7 +475,7 @@ input.backup-retention-input {
 }
 /* `!important` on a utility class, deliberately. `.hidden` is one class, so
    any other single class that sets `display` and happens to be written later
-   in this file beats it, which is how the hidden "🤖 Agent mode" checkbox
+   in this file beats it, which is how the hidden "Agent mode" checkbox
    came back on screen next to the Chat/Agent buttons that replaced it
    (`.tools-toggle` is three lines below and sets `display: inline-flex`).
    The one-off `#id.hidden` / `.class.hidden` rules further down this file are

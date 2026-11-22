@@ -17,6 +17,7 @@ and find no tests in it.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 
 FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
@@ -183,8 +184,9 @@ CSS_FILES = [
 ]
 
 
+@lru_cache(maxsize=1)
 def css_text() -> str:
-    """All of CSS_FILES, concatenated in load order.
+    """All of CSS_FILES, concatenated in load order (one shared copy: a str per caller was 7 MB a worker each).
 
     Byte-for-byte what `frontend/style.css` used to return from
     `.read_text()`, see the split's own diff, or diff this against a
