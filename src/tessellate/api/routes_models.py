@@ -277,7 +277,24 @@ def _recent_pulls(pulls: dict[str, dict], now: float) -> tuple[list[str], list[s
         return new, recent, min((_pull_done_seen[n] for n in recent), default=now)
 
 
-def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> tuple[list[dict], dict[str, dict]]:  # noqa: ANN001
+    """`(installed, pulls)`. A download whose model the list does not show yet is reported still running, for
+    up to `PULL_LIST_RETRY_SECONDS`: "Downloaded" then never arrives beside the list from before it, however
+    long the runner's list takes on a loaded machine (CI on #230, 3.13), and no poll waits longer for it."""
+    listed = _installed_listing_pulls(client, installed, pulls)
+    now = time.monotonic()
+    with _installed_lock:
+        waiting = {
+            n for n, job in pulls.items()
+            if job.get("status") == "success" and n in _pull_done_seen
+            and now - _pull_done_seen[n] < PULL_LIST_RETRY_SECONDS and not _name_matches(n, listed)
+        }
+    if waiting:
+        pulls = {n: ({**job, "status": "running"} if n in waiting else job) for n, job in pulls.items()}
+    return listed, pulls
+
+
+def _installed_listing_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
     now = time.monotonic()
     new, recent, since = _recent_pulls(pulls, now)
     fresh = [n for n in recent if not _name_matches(n, installed)]
@@ -705,7 +722,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         ollama_client.note_online(ollama.base_url)
     pulls = jobs.pull_statuses()
     if running:
-        installed = _installed_after_pulls(ollama, installed, pulls)
+        installed, pulls = _installed_after_pulls(ollama, installed, pulls)
     chat_model = manager.chat_model()
     utility_resolved, utility_reason = manager.utility_resolution()
     # Resolved once. It walks the installed models asking each whether it can
