@@ -3084,19 +3084,30 @@ const graphLate = {
 //: that mean alike sit together. The layout is synchronous, so the first call
 //: starts the fetch and draws the notes in a row until it arrives; a note the
 //: server has no point for (no vector yet, private) stays in that row below
-//: the map. No lines: the picture is about distance.
+//: the map. With no embedding model the server places notes by their shared
+//: words and says so (`source: "words"`; the canvas names it). Faint lines
+//: join each note to its nearest by meaning (`ties`) beside the person's own
+//: links (`graphLate.mapLinks`), and `clusters` carry the names the canvas
+//: draws over each group (`gcDrawMeaningNames`).
 graphLate.projection = null;
 graphLate.layoutMap = function (nodes, width, height) {
-  const done = { nodes: [], links: [], radial: false, arc: false, vertical: false };
-  const fresh = graphLate.projection && Date.now() - graphLate.projection.at < 60000;
+  const done = { nodes: [], links: [], radial: false, arc: false, vertical: false, map: true };
+  //: Fresh for a minute, or for five seconds once a note has no point (written since): the
+  //: row it waits in is the picture's weakest part, so it is asked about again soon.
+  const held = graphLate.projection;
+  const unplaced = held && nodes.some((n) => !held.points.has(n.id));
+  const fresh = held && Date.now() - held.at < (unplaced ? 5000 : 60000);
   if (!graphLate.projection || (!fresh && !graphLate.projection.busy)) {
-    const held = graphLate.projection;
-    graphLate.projection = { at: held ? held.at : 0, busy: true, points: held ? held.points : new Map() };
+    graphLate.projection = { ...(held || { points: new Map(), ties: [], clusters: [], source: "model" }), at: held ? held.at : 0, busy: true };
     apiJson("/graph/projection")
       .then((data) => {
         const points = new Map(data.points.map((p) => [p.id, p]));
-        graphLate.projection = { at: Date.now(), busy: false, points };
-        if (graphLayout() === "map") renderGraph();
+        graphLate.projection = { at: Date.now(), busy: false, points, ties: data.ties || [], clusters: data.clusters || [], source: data.source || "model" };
+        if (graphLayout() === "map") {
+          //: The camera framed the row the notes waited in; frame the map unless the person has moved it.
+          if (!gcTab.userZoomed) graphAutoFitDone = false;
+          renderGraph();
+        }
       })
       .catch(() => {
         graphLate.projection.busy = false;
@@ -3127,7 +3138,23 @@ graphLate.layoutMap = function (nodes, width, height) {
     node.shared = false;
     done.nodes.push(node);
   }
+  done.clusters = graphLate.projection.clusters;
+  done.source = graphLate.projection.source;
   return done;
+};
+//: The lines the map draws: the notes' own links as they are shown, and under
+//: them each note's nearest two by meaning (a pair the map already draws is
+//: not drawn twice). Ties are `similar` lines, so they wear the dotted accent
+//: look; the canvas fades the whole set (`gcDrawEdges`, `s.tree.map`).
+graphLate.mapLinks = function (shown, ids) {
+  const links = shown.map((e) => ({ ...e }));
+  const idOf = (end) => (end && end.id != null ? end.id : end);
+  const pairs = new Set(shown.map((e) => [idOf(e.source), idOf(e.target)].sort().join("|")));
+  for (const [a, b, score] of graphLate.projection?.ties || []) {
+    if (!ids.has(a) || !ids.has(b) || pairs.has([a, b].sort().join("|"))) continue;
+    links.push({ source: a, target: b, kind: "similar", score });
+  }
+  return links;
 };
 function watchGraphPopupSize(popup, place) {
   if (typeof ResizeObserver !== "function" || popup.dataset.placeWatch) return;

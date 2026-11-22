@@ -8327,3 +8327,14 @@ def test_the_capture_strip_recipe_holds() -> None:
     assert re.search(r"background:\s*transparent", rest) and "box-shadow: none" in rest, rest
     on = _css_block("#note-toolbar > #entry-view-seg > button[aria-pressed=\"true\"]")
     assert "var(--accent-soft)" in on and "var(--accent)" in on and "box-shadow: none" in on, on
+def test_the_map_of_meaning_names_groups_and_draws_ties_with_one_recipe() -> None:
+    """Owner 2026-11-22: the Map of meaning is names, nearest-meaning ties and a fallback line, all from
+    the one projection route; the layout control carries its own help, and DESIGN.md indexes it."""
+    graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    canvas = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "mapLinks" in graph and "gcDrawMeaningNames" in canvas
+    assert 'data-help-for="graph-layout-help"' in html and 'id="graph-layout-help"' in html
+    assert "The meaning map" in design and "gcDrawMeaningNames" in design
+    assert "mapLinks" not in canvas.replace("graphLate.mapLinks", "")  # one tie builder, in graph.js

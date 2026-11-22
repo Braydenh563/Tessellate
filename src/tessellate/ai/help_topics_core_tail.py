@@ -1608,8 +1608,8 @@ TAIL_TOPICS.extend(
                 "menu and choose Compose into a draft: one document opens with a section per note, "
                 "oldest first, and a line naming the notes it came from. The notes stay as they are, "
                 "private notes are left out, and no AI is needed. Options, View, Layout, Map of meaning "
-                "places each note by what it means, so notes about the same thing sit together; "
-                "notes with no meaning data yet wait in a row at the bottom. In Similar notes, hover "
+                "places each note by what it means: closer is more alike, groups are named, faint lines "
+                "join near notes. With no search model it uses shared words. In Similar notes, hover "
                 "a note to see why it is offered: a shared tag, name or week, else similar in meaning."
             ),
             "badge": {"label": "Graph", "tab": "graph"},

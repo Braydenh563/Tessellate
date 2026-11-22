@@ -1544,6 +1544,82 @@
     ctx.restore();
   }
 
+  //: **The Map of meaning names its groups** (owner, 2026-11-22: "almost no
+  //: labels, no sense of what it means"). `/graph/projection` sends clusters
+  //: of notes that sit together, each named by the words its notes share; here
+  //: each is a faint outline and its name on a plate above it, seated clear of
+  //: the dots and of the other plates (`gcSeatTopicPlates`), and entered in
+  //: `topicPlates` so a note's own name keeps off it. The map's one muted line
+  //: says when notes are placed by shared words, not meaning, and how to get
+  //: the real map.
+  function gcDrawMeaningNames(ctx, s, k) {
+    const tree = s.size === "full" ? s.tree : null;
+    if (!tree || !tree.map) return;
+    const placed = new Map(s.nodes.filter((n) => Number.isFinite(n.x) && !n.isGroup).map((n) => [n.id, n]));
+    const shapes = [];
+    ctx.save();
+    ctx.font = `600 ${12 / k}px ${gcTokens.font}`;
+    for (const group of tree.clusters || []) {
+      const points = [];
+      for (const id of group.ids) {
+        const node = placed.get(id);
+        if (!node || !gcVisibleAtTime(node, s)) continue;
+        const pad = (node.r || 6) + 10;
+        for (let i = 0; i < 8; i++) points.push([node.x + pad * Math.cos(i * Math.PI / 4), node.y + pad * Math.sin(i * Math.PI / 4)]);
+      }
+      if (points.length < 24) continue;
+      const hull = d3.polygonHull(points);
+      if (!hull) continue;
+      const top = hull.reduce((a, b) => (b[1] < a[1] ? b : a));
+      shapes.push({
+        id: group.id, hull, text: group.label, size: points.length,
+        entry: {
+          topic: group.id, cx: top[0], top: top[1], w: ctx.measureText(group.label).width + 10 / k,
+          minX: hull.reduce((a, b) => Math.min(a, b[0]), Infinity), maxX: hull.reduce((a, b) => Math.max(a, b[0]), -Infinity),
+        },
+      });
+    }
+    shapes.sort((a, b) => b.size - a.size);
+    const dots = [];
+    for (const node of placed.values()) if (gcVisibleAtTime(node, s)) dots.push({ x: node.x, y: node.y, r: node.r || 6 });
+    const seats = gcSeatTopicPlates(shapes.map((p) => p.entry), dots, k);
+    s.topicPlates = s.topicPlates || [];
+    shapes.forEach((shape, i) => {
+      const seat = seats[i];
+      ctx.beginPath();
+      shape.hull.forEach(([x, y], j) => (j ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+      ctx.globalAlpha = 0.05;
+      ctx.fillStyle = gcTokens.accent;
+      ctx.fill();
+      ctx.globalAlpha = 0.88;
+      ctx.fillStyle = gcTokens.card;
+      ctx.fillRect(seat.left, seat.top, seat.right - seat.left, seat.bottom - seat.top);
+      s.topicPlates.push({ left: seat.left, right: seat.right, top: seat.top, bottom: seat.bottom, topic: shape.id });
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = gcTokens.ink;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(shape.text, seat.x, (seat.top + seat.bottom) / 2);
+    });
+    ctx.restore();
+    if (tree.source === "words") {
+      //: In screen pixels, along the bottom.
+      ctx.save();
+      ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
+      ctx.font = `12px ${gcTokens.font}`;
+      ctx.fillStyle = gcTokens.muted;
+      ctx.textBaseline = "bottom";
+      //: Centred between the legend (left) and the zoom strip (right), the short form when it does not fit.
+      const long = "Placed by shared words, not meaning. Install the search model in Settings for the real map.";
+      const room = s.dims.w - 400 - 200;
+      const text = ctx.measureText(long).width <= room ? long : "Placed by shared words, not meaning.";
+      ctx.textAlign = "center";
+      ctx.fillText(text, 400 + room / 2, s.dims.h - 10);
+      ctx.restore();
+    }
+  }
+
   //: GRAPH_PLAN KG8: the kinds of link taken off the map (a link's
   //: `link_type`, "untyped" for none), kept between visits, and the property
   //: chip that lights its notes.
@@ -3202,6 +3278,7 @@
       gcTess.paint(ctx, s, k);
       gcDrawTreemap(ctx, s, k);
       gcDrawTopicHulls(ctx, s, k);
+      gcDrawMeaningNames(ctx, s, k);
     }
     //: Read from the switch itself, like the labels above, so what the menu
     //: shows and what is drawn cannot disagree (the owner: "it is showing
@@ -3339,7 +3416,7 @@
         const [from, to] = a.id === scoreFor ? [a, b] : [b, a];
         s.simScoreLabels.push({ from, to, score: edge.score });
       }
-      if (s.tree) {
+      if (s.tree && !s.tree.map) {
         // A tree's edges are curves between fixed points. `hierarchyPath` and
         // `arcPath` already return SVG path data, and Path2D speaks it, so the
         // curve maths is shared with the SVG renderer rather than rewritten.
@@ -3369,7 +3446,8 @@
       ctx.strokeStyle = bucket.tint || gcTokens[style.colour] || gcTokens.muted;
       // `.graph-edge.graph-dim` is opacity 0.06 in the stylesheet; kept, because
       // a dimmed edge that is still readable defeats the spotlight.
-      const alpha = (over ? 0 : 0.06) + (style.alpha - (over ? 0 : 0.06)) * (bucket.level / 10);
+      //: The Map of meaning is about distance: its lines are a footnote, 0.6 of a link's strength.
+      const alpha = ((over ? 0 : 0.06) + (style.alpha - (over ? 0 : 0.06)) * (bucket.level / 10)) * (s.tree?.map ? 0.6 : 1);
       //: An arrowed link thins from its source half to its target half.
       gcSetStroke(ctx, s, style.width * widthScale * (bucket.wide ? 0.8 : 1), k, alpha, !!style.dash);
       ctx.setLineDash(style.dash ? style.dash.map((v) => v / k) : []);
@@ -3521,6 +3599,22 @@
     //: neighbourhood (degree 2 or more), so a map of islands does not name
     //: twelve arbitrary dots. They join the queue below as ordinary labels:
     //: the collision pass decides whether each has room.
+    //: **The Map of meaning names the notes at the heart of each group** (owner, 2026-11-22: "almost
+    //: no labels"): its notes have few links, so the degree rule below left four names on 33 notes.
+    //: The two nearest each group's middle, so a group reads as a name plate and four notes it holds.
+    if (labelsOn && s.tree?.map && labelled.length < drawn.length) {
+      const already = new Set(labelled.map((node) => node.id));
+      const byId = new Map(drawn.map((node) => [node.id, node]));
+      for (const group of s.tree.clusters || []) {
+        const held = group.ids.map((id) => byId.get(id)).filter((node) => node && !node._dim);
+        if (!held.length) continue;
+        const cx = held.reduce((a, node) => a + node.x, 0) / held.length;
+        const cy = held.reduce((a, node) => a + node.y, 0) / held.length;
+        held.sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy));
+        for (const node of held.slice(0, 4)) if (!already.has(node.id)) labelled.push(node);
+      }
+      return;
+    }
     if (labelsOn && labelled.length < drawn.length && k <= labelZoom && s.nodes.length > GC_LABEL_ALL_SMALL) {
       const already = new Set(labelled.map((node) => node.id));
       const degree = (node) => (s.adj.get(node.id) || { size: 0 }).size;
@@ -4162,7 +4256,7 @@
       ctx.lineWidth = (style.width + 2) / k;
       ctx.setLineDash([]);
       ctx.beginPath();
-      if (s.tree && edge._path2d) {
+      if (s.tree && !s.tree.map && edge._path2d) {
         ctx.stroke(edge._path2d);
         continue;
       }
@@ -6788,6 +6882,8 @@
       s.layoutKind === "force"
         ? null
         : layoutHierarchy(visibleNodes.map((n) => ({ ...n })), s.layoutKind, width, height, gcTess.info(visibleEdges), gcWorkerParams(s));
+    //: The Map of meaning draws its links faintly, with each note's nearest by meaning under them.
+    if (s.tree?.map) s.tree.links = graphLate.mapLinks(visibleEdges, new Set(visibleNodes.map((n) => n.id)));
 
     // A note already on screen keeps the spot it had settled into, so a legend
     // toggle or a slider change does not replay the whole "explode outward"

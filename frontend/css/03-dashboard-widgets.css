@@ -3927,6 +3927,15 @@ button.answer-figure-open {
   flex: 0 0 auto;
 }
 
+/* A row's name with its '?' beside it (Layout): the pair stays left, the
+   picker keeps the one control column, and the '?' ring is not clipped. */
+.graph-option-row > span.graph-option-lead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow: visible;
+}
+
 /* Trace and Legend, Unpin all, Suggest links and Reset: the panel's actions
    are menu rows (`.doc-dock-menu-item`), the popover recipe's row, icon and
    words at the row's left edge. They were bordered tonal buttons, two to a
