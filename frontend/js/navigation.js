@@ -1913,7 +1913,8 @@ async function switchTab(name) {
   // old one was still running or already stopped.
   const leavingGraph = prefs.get("activeTab", null) === "graph" && name !== "graph";
   //: Leaving Notes forgets the last card clicked (L709): it is the open note only while you are there.
-  if (name !== "notes") delete $("entry-list")?.dataset.lastCard;
+  //: `getElementById`, not `$`: an unbuilt Notes surface has no card to forget, and `$` would build it (1,092 elements) on a Documents open.
+  if (name !== "notes") delete document.getElementById("entry-list")?.dataset.lastCard;
   recordTabVisit(name);
   //: The next 400ms belong to the page arriving (INBOX 580): the companion's
   //: paced animations hold still through them (`nameMarkBuddyTempo`), so the
@@ -2030,18 +2031,13 @@ async function switchTab(name) {
     const layoutSelect = $("graph-layout");
     if (layoutSelect) layoutSelect.value = layout;
     
-    // Same for what the colours mean: a saved setting the control does not
-    // show is a control that lies about the map beside it.
-    const savedColour = prefs.get("graph-colour", null);
-    const colourSelect = $("graph-colour");
-    if (savedColour && colourSelect && [...colourSelect.options].some((o) => o.value === savedColour)) {
-      colourSelect.value = savedColour;
-    }
-    //: And what the sizes mean (INBOX 430), the same way.
-    const savedSize = prefs.get("graph-size", null);
-    const sizeSelect = $("graph-size");
-    if (savedSize && sizeSelect && [...sizeSelect.options].some((o) => o.value === savedSize)) {
-      sizeSelect.value = savedSize;
+    // Same for what the colours mean (and, INBOX 430, what the sizes mean): a
+    // saved setting the control does not show is a control that lies about the
+    // map beside it.
+    for (const id of ["graph-colour", "graph-size"]) {
+      const saved = prefs.get(id, null);
+      const select = $(id);
+      if (saved && select && [...select.options].some((o) => o.value === saved)) select.value = saved;
     }
     // Match the saved layout on arrival, not only on change, otherwise a
     // notebook left on Tree comes back with two live-looking dead sliders.

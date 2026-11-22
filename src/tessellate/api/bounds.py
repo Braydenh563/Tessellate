@@ -88,6 +88,10 @@ def _is_its_type(head: bytes, suffix: str) -> bool:
         return head[4:8] == b"ftyp"
     if suffix == ".pdf":
         return b"%PDF-" in head
+    if suffix == ".mp4":
+        return head[4:8] == b"ftyp"
+    if suffix == ".webm":
+        return head.startswith(b"\x1a\x45\xdf\xa3")
     opens = _OPENS_WITH.get(suffix)
     return opens is None or head.startswith(opens)
 
@@ -98,4 +102,5 @@ def check_image_upload(head: bytes, size: int, suffix: str = "") -> None:
     if size <= 0:
         raise HTTPException(status_code=422, detail="That file is empty.")
     if head.lstrip()[:1] == b"<" or not _is_its_type(head, suffix):
-        raise HTTPException(status_code=415, detail="That file is not an image or PDF.")
+        what = "a video" if suffix in (".mp4", ".webm") else "an image or PDF"
+        raise HTTPException(status_code=415, detail=f"That file is not {what}.")

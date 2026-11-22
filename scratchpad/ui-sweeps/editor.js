@@ -572,7 +572,7 @@ function ok(name, condition, detail) {
     });
     const pick = async (ext) => {
       if (!docFileTypes.some((t) => t.ext === ext)) return null;
-      await docTypeChoose(ext);
+      await docTypeState.choose(ext);
       await new Promise((r) => setTimeout(r, 1200));
       return read();
     };

@@ -11,8 +11,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
-DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS = documents_text()
 QUICK = (JS / "quick-note.js").read_text(encoding="utf-8")
 
 

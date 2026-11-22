@@ -1309,8 +1309,11 @@ def _function_body(text: str, name: str) -> str:
     brace-matching parse of 11,000 lines of JS to answer that would be a second
     thing to get wrong.
     """
-    start = text.index(f"function {name}(")
-    after = re.search(r"\n(?:async )?function ", text[start + 1 :])
+    #: The last definition: a lazy piece's stand-in in documents.js has the same name as the real function in
+    #: documents-suggest.js, and the lints ask about the real one. A wrapped piece indents its functions.
+    start = text.rindex(f"function {name}(")
+    indent = "  " if text[max(0, start - 8) : start].endswith("  ") or text[max(0, start - 8) : start].endswith("  async ") else ""
+    after = re.search(rf"\n{indent}(?:async )?function ", text[start + 1 :])
     return text[start : start + 1 + after.start()] if after else text[start:]
 
 
@@ -1632,7 +1635,7 @@ FAILING_SURFACES = {
     #: SVG renderer's copy until that renderer was removed (audit 1029 row 60).
     "frontend/js/graph-canvas.js": ("map",),
     "frontend/js/library.js": ("library",),
-    "frontend/js/documents.js": ("documents",),
+    "frontend/js/documents-surface.js": ("documents",),
 }
 
 
@@ -2876,7 +2879,7 @@ def test_code_diagnostics_are_drawn_in_the_apps_ink() -> None:
     #: out of documents.js on 2026-09-24), joined.
     docs = "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("documents.js", "documents-code.js", "documents-cm.js", "documents-cm-theme.js")
+        for name in ("documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-code.js", "documents-cm.js", "documents-cm-theme.js")
     )
     theme = docs.split("function docCmTheme(CM) {", 1)[1].split("\nfunction ", 1)[0]
     for selector in (
@@ -3488,7 +3491,7 @@ def test_a_script_built_dialog_opens_with_the_dialog_head() -> None:
 #: 25; DESIGN.md, "A grid of things you place"). The icon and emoji picker is
 #: the third grid of glyphs (MINDMAP_PLAN decision 43; DESIGN.md, "An icon or
 #: an emoji, picked or dragged"): its tiles are dragged as well as picked.
-HAND_BUILT_OPTION_ROWS = {"documents.js": 1, "icon-picker.js": 1, "sheets-selects.js": 1, "search.js": 1, "whiteboard-library.js": 1}
+HAND_BUILT_OPTION_ROWS = {"documents-prose-check.js": 1, "icon-picker.js": 1, "sheets-selects.js": 1, "search.js": 1, "whiteboard-library.js": 1}
 
 
 def test_only_the_rich_picker_stamps_its_anatomy() -> None:
@@ -4424,7 +4427,7 @@ def test_a_document_thread_is_a_sidecar_drawn_in_the_comments_rows() -> None:
     remarks where 4 fit), the panel is not redrawn under a reply being typed,
     and the styles live in the lazy sheet, out of the boot budget."""
     comments = (ROOT / "frontend" / "js" / "documents-comments.js").read_text(encoding="utf-8")
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = frontend_text("documents.js")
     lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     boot_css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
     assert "threads: renderDocComments.threads()" in docs, "every save carries the sidecar"
@@ -4483,7 +4486,8 @@ FLOATING_PANELS = (
 
 def test_floating_panels_open_and_close_on_the_menu_recipe() -> None:
     css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-    enter = css.index(":is(.space-menu, .notif-panel,")
+    # Each panel is its own selector, filed under its class (L342).
+    enter = css.index(":where(.space-menu):is(.space-menu, #status-clock-detail):not(.hidden),")
     enter_block = css[enter : css.index("}", enter)]
     assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-spring) 1ms;" in enter_block
     assert ":not(.hidden)" in enter_block.split("{")[0]
@@ -5705,7 +5709,7 @@ FIRST_LINE_NOT_A_NAME = {
     "documents-code.js": 3,  # parser messages and a search seed from code
     "documents-codekit.js": 2,  # a snippet's first line of code
     "documents-prose.js": 1,  # a prose-check option's text
-    "documents.js": 1,  # a placeholder
+    "documents-wiring.js": 1,  # a placeholder (note surfaces, moved out of documents.js, L-documents-117)
     "documents-replace.js": 1,  # the editor selection that seeds the find field (moved out of documents.js, DC13)
     "editor.js": 2,  # the link target a [[wiki link]] resolves by (stored words, brackets stripped)
     "quick-note.js": 1,  # the quick-note field's own typed title
@@ -6637,7 +6641,7 @@ def test_a_live_view_mark_reveals_per_span() -> None:
     assert "| A markdown mark in Live view" in design and "`docLiveSpanTouched(ranges, from, to)`" in design
     js = ROOT / "frontend" / "js"
     defined = [p.name for p in js.glob("*.js") if "function docLiveSpanTouched(" in p.read_text(encoding="utf-8")]
-    assert defined == ["documents.js"], f"the span rule is defined in {defined}; one recipe, one place"
+    assert defined == ["documents-live-table.js"], f"the span rule is defined in {defined}; one recipe, one place"
     documents = documents_text()
     assert documents.count("touched(doc.lineAt(from).from, doc.lineAt(to).to)") == 1, (
         "an inline span reveals by its line again; the line-wide rule is only `blockRevealed`"
@@ -7027,6 +7031,7 @@ SEG_SHARES_ROW: dict[tuple[str, str], str] = {
     ("dashboard.js", "seg focus-presets-seg"): "`.focus-presets`, beside the stepper",
     ("index.html", "doc-history-filter"): "`.doc-history-bar`, beside Name this version",
     ("index.html", "seg notes-view-toggle"): "the Notes dock, beside Sort and Select",
+    ("index.html", "entry-view-seg"): "the new-note box's formatting strip, between its tools and the Insert menu",
     ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
     ("index.html", "timeline-view-seg"): "the Timeline dock",
     ("index.html", "doc-view-seg"): "the Documents dock, beside the cluster's other controls",
@@ -7655,7 +7660,7 @@ def test_a_zoom_readout_is_a_value_field():
     assert "A number you read and may type" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     readout = re.compile(r"textContent = `[^`]*%`")
     frozen = {
-        "documents.js": 1, "graph.js": 1, "library.js": 2, "settings-controls.js": 5, "settings-panes.js": 1,
+        "documents-instruments.js": 1, "graph.js": 1, "library.js": 2, "settings-controls.js": 5, "settings-panes.js": 1,
         "settings.js": 5, "suggestions-inbox.js": 1, "whiteboard-format.js": 2,
     }
     found = {}
@@ -7983,7 +7988,8 @@ def test_a_scroll_rows_arrows_are_for_a_pointer_not_touch() -> None:
 
 def test_the_document_status_bar_gives_way_instead_of_overflowing() -> None:
     """L-world-class-36: #doc-statusbar was 80px over at 320 to 820 (overlap.js)."""
-    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    #: The status bar's rules sit in the lazy Library sheet with the rest of the editor's (L-documents-1).
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     m = re.search(r"\.doc-statusbar > #doc-caret,\s*\.doc-statusbar > \.doc-statusbar-button \{([^}]*)\}", css)
     assert m and "min-width: 0" in m.group(1) and "overflow: hidden" in m.group(1)
     assert re.search(r"\.doc-statusbar > #doc-caret \{\s*flex-shrink: 8;\s*text-overflow: ellipsis;", css)
@@ -8178,6 +8184,41 @@ def test_the_sheet_host_has_its_geometry_and_no_native_dialog_rules_left_for_it(
     every = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
     assert ".dash-widgets-dialog[open]" not in every, "a closed host is `hidden`, not a native [open] dialog"
     assert "#doc-history-dialog {" not in every, "a host's width is its class, so the phone rule can win"
+
+
+def test_a_show_all_button_repeated_down_a_picker_is_the_quiet_text_action() -> None:
+    """INBOX 1566 sweep (L-documents-46): four bordered ghosts down the icon picker at 390 became `ghost quiet`
+    (border transparent, accent text, the edge back under [data-contrast="on"]); the Reminders filter chips
+    and the widget dialog's rows were already borderless."""
+    assert 'more.classList.add("icon-picker-more", "quiet")' in frontend_text("icon-picker.js")
+
+
+def test_a_document_in_a_list_is_a_page_not_a_line_of_grey() -> None:
+    """INBOX 1325 / L-documents-54: the Library Documents row draws `.doc-list-page` (DESIGN.md "A document in a
+    list"): 3:4, tokens only, decoration (aria-hidden), text through `textContent`, between the tick and the words."""
+    css = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    rules = {sel: body for sel, body in _rules(css) if sel.startswith(".doc-list-page")}
+    page, leaf = rules[".doc-list-page"], rules[".doc-list-page-leaf"]
+    assert "aspect-ratio: 3 / 4" in page and "overflow: hidden" in page
+    for token in ("var(--page)", "var(--border)", "var(--radius-sm)", "var(--shadow-sm)"):
+        assert token in page, token
+    assert "aspect-ratio: 3 / 4" in leaf and "scale(" in leaf
+    assert not re.search(r"#[0-9a-fA-F]{3,8}\b|rgba?\(", "".join(rules.values()))
+    js = frontend_text("library.js")
+    assert 'page.setAttribute("aria-hidden", "true")' in js and "open.append(top, page, body, menu)" in js
+    assert "innerHTML" not in js[js.index('page.className = "doc-list-page"') :][:900]
+
+
+def test_a_row_with_rows_under_it_has_a_disclosure() -> None:
+    """DOCUMENTS_PLAN D14 (L-documents-44): a parent row's disclosure is a quiet icon button with `aria-expanded`
+    whose caret turns, and a child steps in by a spacing token per level (DESIGN.md "A list row with rows under it")."""
+    css = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    rules = dict(_rules(css))
+    assert "margin-inline-start: var(--space-7)" in rules["#library-docs-list > li.doc-tree-child"]
+    assert "rotate(90deg)" in rules['.doc-tree-toggle[aria-expanded="true"] .ph']
+    js = (ROOT / "frontend" / "js" / "documents-subpages.js").read_text(encoding="utf-8")
+    assert 'toggle.className = "ghost icon-btn doc-tree-toggle"' in js and 'toggle.setAttribute("aria-expanded"' in js
+    assert "calc(${at.depth} * var(--space-7))" in js and "style=" not in js
 
 
 def test_a_board_tag_is_a_chip_a_fold_is_a_view_rule_and_a_drop_target_has_no_blur() -> None:

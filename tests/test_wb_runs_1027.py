@@ -11,7 +11,7 @@ per-run tspans. The pure parts run under node here; the page is measured by
 
 from __future__ import annotations
 
-from tests._app_js import frontend_text
+from tests._app_js import documents_text, frontend_text
 import json
 import re
 import shutil
@@ -25,7 +25,7 @@ JS = ROOT / "frontend" / "js"
 NOTES = (JS / "notes-list.js").read_text(encoding="utf-8")
 BOARD = frontend_text("whiteboard.js")
 MAP = frontend_text("whiteboard-map.js")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
 

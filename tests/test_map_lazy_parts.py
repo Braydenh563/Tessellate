@@ -19,6 +19,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+#: The note, task, icon and picture painters moved here in the L286 split.
+MAP_NOTES = (ROOT / "frontend" / "js" / "whiteboard-map-notes.js").read_text(encoding="utf-8")
 PW = "/opt/node22/lib/node_modules/playwright"
 needs_pw = pytest.mark.skipif(
     not shutil.which("node") or not Path(PW).exists(), reason="needs node and playwright"

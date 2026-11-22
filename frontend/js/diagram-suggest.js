@@ -71,7 +71,7 @@
 
   const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   const SHAPE_NAME = { rect: "box", round: "rounded box", stadium: "pill", circle: "circle", diamond: "decision", hexagon: "hexagon", cylinder: "database", parallelogram: "input or output" };
-  const NOUN = { flowchart: "flowchart", mindmap: "mind map", timeline: "timeline", sequence: "sequence diagram" };
+  const NOUN = { flowchart: "flowchart", mindmap: "mind map", timeline: "timeline", sequence: "sequence diagram", gantt: "Gantt chart", pie: "pie chart", state: "state diagram", class: "class diagram", er: "ER diagram" };
 
   //: Whether the diagram has nothing in it a suggestion could clash with.
   const isEmpty = (m) => !m.nodes.length && !m.subgraphs.length && !m.edges.length && !(m.kept || []).length;
@@ -100,6 +100,7 @@
     const kind = diagramModel.builder.kindOf(source);
     const mine = S.k ? S.k.name : "flowchart";
     if (kind !== "flowchart" && !(await ensureModule("diagramKinds"))) return reason(S, h, "The block editor did not load."), false;
+    if (kind !== "flowchart" && !(await diagramModel.kinds.load(kind))) return reason(S, h, "The block editor did not load."), false;
     const A = kind === "flowchart" ? null : diagramModel.kinds[kind];
     const inc = A ? A.parse(source) : diagramModel.parse(source);
     //: Blank: nothing in the diagram a suggestion could clash with, so it becomes the diagram.

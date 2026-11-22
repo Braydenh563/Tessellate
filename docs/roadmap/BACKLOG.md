@@ -192,7 +192,6 @@ in the Library's Whiteboards gallery. **Pointer:** every open whiteboard questio
 section 4 (the gap matrix), section 5 (draw.io) and section 8 (the object library).
 The raster-versus-structured reasoning that stood here is in this file's git history.
 
-
 ---
 
 ## 4b. Templates and base layouts (boards, maps, documents)
@@ -318,6 +317,9 @@ like using Obsidian or Notion."* Ordered by how much each one gets in the way.
   are (it is a hub over them, which is exactly what `document_links` records);
   on the timeline it wants to be a band or a marker rather than a dot, because
   a document is written over weeks and a note happens at a moment.
+- **Writing desk Stop against a real model** (L-documents-94). Stop mid-pass is verified on a delayed reasoning stub only (`scratchpad/ui-sweeps/hw889.js`: Stop reaches the model). Check: `scratchpad/llama-dev.sh serve`, start a writing desk pass on a long note, press Stop mid-stream, and confirm the server log shows the request cancelled and no further tokens arrive.
+- **Adding a block to a large flowchart in one short task** (L-documents-112). Owner decided 2026-11-21: parked until Mermaid offers incremental layout. Measured 2026-11-21 at 390 px, load about 2: the first task of each add to a 40-block flowchart is 100 to 174 ms (102, 100, 174, 141), later ones 60 to 83 ms; the first is the single `mermaid.render` layout with no yield point (htmlLabels already off, mermaid-frame.js:101; the redundant parse removed). Check: `scratchpad/ui-sweeps/dgm40.js` at 390, every task under 50 ms, when Mermaid offers incremental layout.
+- **Diagram pan p95 under 16 ms** (L-documents-102). Owner decided 2026-11-21: parked; what is left is the browser's scroll commit of the picture layer. Measured 2026-11-21 at 1440 and 4x CPU, 5 interleaved runs: p50 median 7.0 ms (met), p95 median 19.6 to 22.9 ms; the minimap frame is throttled; a 0.4x raster during the pan gave 19.2, and 2048 px tiles gave 25.0 to 29.5 (worse). Check: `scratchpad/ui-sweeps/diagram-pan-latency.js` at 1440 and 4x CPU on a quiet box, p95 under 16 ms.
 
 ---
 
@@ -4461,6 +4463,9 @@ Each row is the one step that needs the owner's own machine, a device or a real 
 
 - **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
 - **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
+
+- **Documents device checks:** the three device groups (phone, desktop webview or Word, screen reader) moved to HISTORY.md, "Moved from the plans, 2026-11-22 (BACKLOG size cap)"; each is still the LEDGER's blocked-hardware rows.
+
 ## Placed from IDEAS.md, 2026-11-14
 
 - **Compressing the notebook on disk** (IDEAS.md, the owner's list). **Why it waits:** notes are small text rows in SQLite, and the large files (models, recordings, images) are already compressed formats, so a compression layer buys little and costs every read. **Check before building:** measure the notebook folder's size split (database against attachments and models) on a real notebook; build only if text is a large share.

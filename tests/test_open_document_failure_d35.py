@@ -7,6 +7,7 @@ def test_a_failed_fetch_toasts_and_repaints_the_list() -> None:
     text = documents_text()
     start = text.index("async function openDocument(id)")
     body = text[start : start + 4000]
+    #: The fetch starts before the editor bundle (`early`) and is awaited after it; the failure check still follows the awaited result.
     fetch = body.index("const doc = await (early || get())")
     after = body[fetch : fetch + 600]
     assert "if (!doc) {" in after

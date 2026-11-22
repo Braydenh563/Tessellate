@@ -82,13 +82,13 @@ SURFACES = {
     ),
     "library": (
         "tab-library",
-        ("<boot>",),
+        ("<boot>", "library.js", "boards-gallery.js"),
         ("switchTab",),
         ("library-subtabs", "library-boards-grid", "library-bulk-delete", "library-binbar", "library-activitybar"),
     ),
     "notes": (
         "tab-notes",
-        ("<boot>",),
+        ("<boot>", "documents-focus.js", "library.js", "boards-gallery.js"),
         ("switchTab",),
         ("entry-content", "entry-list", "sidebar", "category-list", "note-sort"),
     ),
@@ -187,8 +187,9 @@ def _boot_scripts() -> tuple[str, ...]:
 
 
 def _files(globs: tuple[str, ...]) -> list[Path]:
-    if globs == ("<boot>",):
-        globs = _boot_scripts()
+    #: `<boot>` stands for the scripts loaded at boot; names beside it are lazy files a Documents open runs
+    #: (L-documents-83), which must not build the Notes or Library page at their load either.
+    globs = tuple(g2 for g in globs for g2 in (_boot_scripts() if g == "<boot>" else (g,)))
     return sorted({p for g in globs for p in JS.glob(g)})
 
 
@@ -297,12 +298,12 @@ def test_load_time_wiring_of_the_surface_waits_for_it(name):
         text = _unwrapped(path)
         functions = _top_level_functions(text)
         for number, head, block in _load_time_blocks(text):
-            if head.startswith(f'onSurface("{name}"'):
+            if head.startswith((f'onSurface("{name}"', f'onDomReady(() => onSurface("{name}"')):
                 continue
             if (path.name, name) in INSIDE_FUNCTIONS:
                 continue
             reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
-            if head.startswith("onSurface("):
+            if head.startswith(("onSurface(", "onDomReady(() => onSurface(")):
                 # Another surface's hook runs later, when a user opens it, and what its handlers call runs later
                 # still: only the hook's own text counts. `document.getElementById` never builds this one, so only `$` is the harm.
                 reached = block
@@ -398,3 +399,14 @@ def test_unlocking_does_not_build_the_notes_pane_to_look_at_its_strip():
     body = nav[nav.index("function resetNavigationToDefaults() {") :][:1400]
     assert 'document.getElementById("notes-subtabs")?.dataset.ready' in body
     assert '$("notes-subtabs")' not in body
+
+
+def test_a_documents_open_does_not_build_the_notes_or_library_pages():
+    """L-documents-83: `switchTab` forgot the last card with `$("entry-list")`, which built the Notes page (1,092
+    elements) on any other tab, and the Documents files wired notes and library ids with a bare `$` at load.
+    The load-time lint above reads those files; these are the two calls it cannot see."""
+    nav = _src("navigation.js")
+    assert 'document.getElementById("entry-list")?.dataset.lastCard' in nav
+    assert '$("entry-list")?.dataset.lastCard' not in nav
+    focus = _src("documents-focus.js")
+    assert 'onSurface("notes", () => {' in focus and "#tab-notes .doc-toolbar" in focus

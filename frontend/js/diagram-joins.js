@@ -61,6 +61,11 @@
         group: "edit",
       },
       {
+        label: "ph:fast-forward Animation…",
+        run: async () => (await ensureModule("diagramStyle")) && diagramModel.style.animate(S, h, edge),
+        group: "edit",
+      },
+      {
         label: "ph:text-t Label",
         run: async () => {
           const text = await promptDialog(`Label for the connector to ${to}`, edge.label, { confirmLabel: "Save" });

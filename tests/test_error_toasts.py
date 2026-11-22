@@ -67,18 +67,20 @@ EXPECTED = {
     'web-panel.js': [
         '"Turn on Web search first, reading a page needs it."',
     ],
-    'documents-code.js': [
-        '`Emmet cannot read "${abbr}" as an abbreviation.`',
+    'documents-code-format.js': [
         '"Formatting is for code documents."',
         '"Select the lines to format first."',
         'refusal',
         '"The text changed while it was being checked. Format again."',
         'result.error',
+    ],
+    'documents-code.js': [
+        '`Emmet cannot read "${abbr}" as an abbreviation.`',
         '"That fix no longer applies: the text has changed since it was offered."',
     ],
     'documents-prose.js': [
-        '"That text has changed since it was checked."',
         '"Save the document first."',
+        '"That text has changed since it was checked."',
         '"This window has no speech voices to read with."',
     ],
     'documents-embeds.js': [
@@ -89,17 +91,29 @@ EXPECTED = {
     ],
     'documents.js': [
         '`${what} is not available here.`',
+    ],
+    'documents-focus.js': [
+        '"Full screen is not available in this window."',
+    ],
+    'documents-commands.js': [
         '"That section cannot go inside itself."',
+    ],
+    'documents-prose-check.js': [
+        '"That text has changed, the list is refreshed."',
+        '"Nothing left to fix."',
+    ],
+    'documents-blockref.js': [
         '"Give the document a title first, a block link is named by it."',
         '"Put the caret in a paragraph first."',
         '"That block is not in this document any more."',
-        '"Full screen is not available in this window."',
-        '"That text has changed, the list is refreshed."',
-        '"Nothing left to fix."',
+    ],
+    'documents-suggest.js': [
         '"Save the document first."',
         '(body && body.message) || "No other wordings came back for that one."',
         '"Nothing to discuss yet."',
         '"Nothing to check yet."',
+    ],
+    'documents-dictionary.js': [
         '"One word at a time: letters, with an apostrophe or hyphen inside."',
         '"No words found in that file. One word per line."',
         '"The dictionary is empty, so there is nothing to export."',
@@ -226,7 +240,7 @@ EXPECTED = {
 
 #: Rule 4 (2026-10-10): situations the app expects, moved here from FAULTS.
 EXPECTED_RULE4 = {'settings-wiring.js': ['body.warning'], 'attachment-actions.js': ['"That upload is no longer in the Library; it may have been deleted."',
-        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
+        '"That file is no longer in the Library; it may have been deleted."'], 'documents-code-format.js': ['"Formatting needs the code editor, which has not loaded."'], 'whiteboard-library.js': ['"That icon is not in the library\'s set."'], 'documents-suggest.js': ['"The chat isn\'t available right now."'], 'library.js': ['"The chat isn\'t available right now."'], 'documents-prose.js': ['`Reading stopped: ${event.error || "the voice did not answer"}.`']}
 for _name, _messages in EXPECTED_RULE4.items():
     EXPECTED.setdefault(_name, []).extend(_messages)
 
@@ -259,20 +273,44 @@ FAULTS = {
         'voiceLine("failed", { what: "delete this chat" })': 'delete request failed',
     },
     'documents-code.js': {
+        '"The formatter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Emmet could not be loaded, so nothing was wrapped."': 'the Emmet module failed to load: a broken asset',
     },
     'documents-history.js': {
         'voiceLine("failed", { what: "open that version" })': 'fetching a saved version failed',
     },
-    'documents.js': {
+    'documents-export-ops.js': {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        'voiceLine("failed", { what: "open that document", why: "the one on screen is unchanged" })': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-surface.js': {
+        'voiceLine("failed", { what: "open that document", why: "the one on screen is unchanged" })': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
+    },
+    'documents-md-actions.js': {
         'voiceLine("failed", { what: "upload that picture", why: "add its address by hand" })': 'the picture upload to the media store failed (audit 1028 U10)',
+    },
+    'documents-wiring.js': {
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-ai-edit.js': {
+        '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-check-ai.js': {
+        '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-cm-load.js': {
+        '"The PHP highlighter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-links-panels.js': {
+        '"The links panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-block-ids.js': {
+        '"The block references could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-suggest-panel.js': {
+        '"The suggestions could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'graph-canvas.js': {
         '"The moved notes were not pinned where you left them."': 'the pin save after a group drag failed: the places shown are not the places kept',

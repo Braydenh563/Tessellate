@@ -196,8 +196,8 @@ def test_the_m_chord_key_map_is_unchanged_by_the_redesign():
 
 
 def test_every_document_command_key_is_in_the_editor_entries():
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
-    table = _table(docs, "const DOC_COMMANDS = [", "\n];")
+    docs = (FRONTEND / "js" / "documents-commands.js").read_text(encoding="utf-8")
+    table = _table(docs, "const DOC_COMMANDS = [", "\n  ];")
     #: "none" is a decision recorded in the table, not a key to name.
     #: Read as the string it is: "Ctrl+\\" in the source is the chord Ctrl+\.
     keys = {k.replace("\\\\", "\\") for k in re.findall(r'keys: "([^"]*)"', table) if k and k != "none"}

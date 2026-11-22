@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 KINDBAR = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
@@ -96,7 +98,7 @@ def test_the_turn_it_sideways_offer_needs_a_shrunk_drawing_lives_in_the_stage_an
     assert "12rem" in rule
 
 
-DOCS_JS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS_JS = documents_text()
 OPS = (JS / "diagram-ops.js").read_text(encoding="utf-8")
 KINDBAR = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
 DRAW = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
@@ -104,7 +106,7 @@ DRAW = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
 
 def test_opening_a_document_closes_the_block_hover_toolbar():
     """Reopening from the embed's link left the pencil/copy/trash bar (1091,161 to 1193,199) over Suggest."""
-    start = DOCS_JS.index("const seq = ++docOpenSeq;")
+    start = DOCS_JS.index("const seq = ++docOpenSeq;", DOCS_JS.index("async function openDocument("))
     assert "docBlockBarClose();" in DOCS_JS[start : start + 400]
 
 

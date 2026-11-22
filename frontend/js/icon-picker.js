@@ -744,7 +744,7 @@
             expanded.add(key);
             draw();
           });
-          more.classList.add("icon-picker-more");
+          more.classList.add("icon-picker-more", "quiet");
           parts.push(more);
         }
       };

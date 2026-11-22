@@ -113,9 +113,15 @@ class _Documents(_Adapter):
         return row.deleted_at is not None
 
     def restore(self, session: Session, row: Document) -> None:
+        """With the sub-pages binned in the same moment as it (D14), and not
+        one binned on its own before: that one stays in the bin."""
         from tessellate.entry.manager import log_action
+        from tessellate.repo.documents import subtree
 
-        row.deleted_at = None
+        binned_at, row.deleted_at = row.deleted_at, None
+        for child in subtree(session, row.id):
+            if binned_at is not None and child.deleted_at == binned_at:
+                child.deleted_at = None
         log_action(session, "restored", "document", row.id, row.title[:80])
         session.flush()
 

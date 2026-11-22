@@ -125,7 +125,9 @@ def test_render_functions_do_not_add_page_level_listeners():
     found = []
     for path in sorted(root.glob("*.js")):
         text = path.read_text(encoding="utf-8")
-        for fn in re.finditer(r"(?ms)^(?:async )?function ((?:render|draw|paint|mount)\w*)\(.*?\n\}\n", text):
+        #: documents-focus.js is a wrapped piece (L-documents-117): its functions sit at two spaces, so the same line, indented, still sees them.
+        indent = " {2}" if path.name == "documents-focus.js" else ""
+        for fn in re.finditer(rf"(?ms)^{indent}(?:async )?function ((?:render|draw|paint|mount)\w*)\(.*?\n{indent}\}}\n", text):
             for line in fn.group(0).splitlines():
                 if re.search(r"\b(document|window)\.addEventListener\(", line) and "once" not in line:
                     found.append(f"{path.name}:{fn.group(1)}")

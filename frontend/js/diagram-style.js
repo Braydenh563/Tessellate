@@ -72,6 +72,88 @@
     });
   }
 
+  //: L-documents-58: an arrow's animation (`e.animate`: on, fast or slow; Mermaid's `e1@-->` and `e1@{ animate: true }`). The id is the
+  //: model's to make when it prints. The picture holds still under reduced motion (mermaid-draw.js).
+  function animate(S, h, link) {
+    const to = h.ops.node(S.m, link.to)?.text ?? h.ops.group(S.m, link.to)?.title ?? link.to;
+    const ways = [["", "Still"], ["on", "Moving"], ["slow", "Moving, slowly"], ["fast", "Moving, quickly"]];
+    openSheet({
+      label: `Animation for the arrow to ${to}`,
+      sub: "Draws the arrow moving on the picture. It holds still when motion is reduced.",
+      name: "diagram-animate",
+      build: (card, close) => {
+        const list = h.el("div", "dgm-animate-list");
+        for (const [way, name] of ways) {
+          const button = h.el("button", "ghost");
+          button.type = "button";
+          button.textContent = name;
+          button.setAttribute("aria-pressed", String((link.animate || "") === way));
+          button.addEventListener("click", () => {
+            close();
+            if (way) link.animate = way;
+            else delete link.animate;
+            h.commit(S, way ? `The arrow to ${to} is now ${name.toLowerCase()}.` : `The arrow to ${to} holds still.`);
+          });
+          list.append(button);
+        }
+        card.append(list);
+      },
+    });
+  }
+
+  //: L-documents-55. A block's class (`n.cls`, a `classDef` in `m.classes`, props kept raw): a new name makes the class
+  //: from a pale blue and a blank takes the block out of it.
+  async function cls(S, h, key) {
+    const n = h.ops.node(S.m, h.ops.split(key)[1]);
+    const names = (S.m.classes || []).map((c) => c.name);
+    const text = await promptDialog(`Class for ${n.text}${names.length ? ` (now: ${names.join(", ")})` : ""}`, n.cls || "", { confirmLabel: "Save" });
+    if (text === null) return;
+    const name = text.trim();
+    if (name && !/^[\w-]+$/.test(name)) return h.say(S, "A class name is letters, digits, - and _.");
+    if (name && !names.includes(name)) (S.m.classes ||= []).push({ name, css: "fill:#e8f0fe,stroke:#4a6fa5,color:#1a1a1a" });
+    if (name) n.cls = name;
+    else delete n.cls;
+    h.commit(S, name ? `${n.text} is in the class ${name}. Its look is a classDef line in Source.` : `${n.text} is out of its class.`);
+  }
+
+  //: A block's link (`n.href`): http(s) or a `[[note]]`, nothing else (no `javascript:`). Opened through the document's own
+  //: link path (`docOpenLink`, `docOpenWikiTarget`), never by the picture, which is an image.
+  async function link(S, h, key) {
+    const n = h.ops.node(S.m, h.ops.split(key)[1]);
+    const text = await promptDialog(`Link for ${n.text}: an https address or [[a note]]`, n.href || "", { confirmLabel: "Save" });
+    if (text === null) return;
+    const url = text.trim();
+    if (url && !/^(?:https?:\/\/[^\s"]+|\[\[[^\]"\n]+\]\])$/i.test(url)) return h.say(S, "Only https addresses and [[note]] links are kept.");
+    if (url) n.href = url;
+    else delete n.href, delete n.tip;
+    h.commit(S, url ? `${n.text} links to ${url}.` : `Removed the link from ${n.text}.`);
+  }
+
+  function follow(S, h, key) {
+    const href = h.ops.node(S.m, h.ops.split(key)[1])?.href || "";
+    if (href.startsWith("[[")) docOpenWikiTarget(href.slice(2, -2));
+    else docOpenLink(href);
+  }
+
+  //: The block menu's own rows for a flowchart block (diagram-builder.js `blockItems` adds them once this file is loaded, which `show` asks for): a block's
+  //: Markdown text, Class and Link (and Open link), a group's Direction (`g.dir`, the group's own flow, L-documents-59, 60, 55).
+  function items(S, h, key) {
+    const [type, id] = h.ops.split(key);
+    if (type === "n") {
+      const n = h.ops.node(S.m, id);
+      const flip = () => ((n.md = !n.md), n.md || delete n.md, h.commit(S, `${n.text} is now ${n.md ? "markdown text: **bold**, *italic*" : "plain text"}.`));
+      return [
+        { label: "ph:shapes Class…", run: () => cls(S, h, key), group: "edit" },
+        { label: "ph:link-simple Link…", run: () => link(S, h, key), group: "edit" },
+        ...(n.href ? [{ label: "ph:arrow-square-out Open link", run: () => follow(S, h, key), group: "edit" }] : []),
+        { label: n.md ? "ph:text-aa Plain text" : "ph:text-b Markdown text", run: flip, group: "edit" },
+      ];
+    }
+    const g = h.ops.group(S.m, id);
+    const turn = (dir) => () => (dir ? (g.dir = dir) : delete g.dir, h.commit(S, dir ? `${g.title} flows ${S.bar.dirs.find(([d]) => d === dir)[2].toLowerCase()}.` : `${g.title} follows the diagram's direction.`));
+    return [{ label: "ph:arrows-out-line-horizontal Direction", items: [...S.bar.dirs.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: turn(d) })), { label: "Same as the diagram", run: turn("") }], group: "edit" }];
+  }
+
   function shortcuts(S, h) {
     const rows = [...shapeRows(h), ...OTHER];
     openSheet({
@@ -113,5 +195,5 @@
     });
   }
 
-  diagramModel.style = { colour, edge, shortcuts };
+  diagramModel.style = { colour, edge, animate, shortcuts, items };
 })();

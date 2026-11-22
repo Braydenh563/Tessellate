@@ -15,7 +15,7 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, documents_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -384,7 +384,7 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "Picture" in docs and "A diagram has Picture, List, Split and Source." in docs
 
 
@@ -765,11 +765,47 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     from tessellate.ai import help_topics_more_mid as topics
 
     text = " ".join(str(topic) for topic in vars(topics).values() if isinstance(topic, (list, dict, str)))
-    for word in ("Grid edits a CSV or TSV as cells", "Add and Delete row and column", "Ctrl+Z undoes"):
+    for word in ("Grid edits a CSV or TSV as cells", "Add and Delete row and column", "Ctrl+Z undoes", "Sort the file", "Filters adds a box", "Header row says", "Drag a column's edge", "Pasting tabbed text"):
         assert word in text, word
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
     for label in ("Add row", "Add column", "Delete row", "Delete column"):
         assert f'"{label}"' in js, label
+    #: L-documents-39: the new controls are named in the dock's help too, in the words the buttons carry.
+    for label in ("Header row", "Filters", "Sort the file A to Z", "Sort the file Z to A"):
+        assert f'"{label}"' in js, label
+    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    for word in ("Sort the file", "Filters adds a box", "Header row says", "Drag the edge of a column", "Pasting text with tabs"):
+        assert word in html, word
+
+
+def test_sub_pages_are_in_the_guide_and_the_popovers_in_the_controls_words() -> None:
+    """L-documents-44: New sub-page, Move under, /subpage and the breadcrumb are named in the Guide, the Library's
+    Documents help and the document bar's help, in the words the menu rows carry."""
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "frontend" / "js" / "documents-subpages.js").read_text(encoding="utf-8")
+    for label in ("ph:file-plus New sub-page", "ph:tree-view Move under", "ph:arrow-line-left Move to the top level"):
+        assert f'"{label}"' in js, label
+    from tessellate.ai.help_topics_more import MORE_TOPICS
+
+    #: The topic's body as the Guide shows it (the source splits its sentences across lines).
+    text = next(t["body"] for t in MORE_TOPICS if t["id"] == "document-subpages")
+    for word in ("New sub-page", "Move under", "Move to the top level", "type /subpage", "its parents are shown after Documents", "cannot go under itself"):
+        assert word in text, word
+    html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
+    for word in ("New sub-page and Move under", "its parents follow Documents", "/subpage makes a sub-page here"):
+        assert word in html, word
+
+
+def test_a_board_window_in_a_document_is_in_the_guide_in_its_buttons_words() -> None:
+    """L-documents-11 (decision 83), then L-documents-104: Edit in place, the fallback window's Refresh and its zoom are named
+    in the Guide as the buttons say them (Show live became Edit in place when the board's instances landed)."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "document-board"))
+    js = (FRONTEND / "js" / "documents-embeds.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "documents-board.js").read_text(encoding="utf-8")
+    for label in ("Edit in place", "Refresh", "Edit here"):
+        assert f"{label}" in js and label in body, label
+    assert "zoom and pan" in body and "plus and minus" in body
 
 
 def test_the_guide_says_the_apps_undo_is_session_only_and_a_board_or_document_keeps_its_own():

@@ -15,6 +15,9 @@
 // only when a print starts. One closure; what other files call is the
 // `Object.assign` at the foot.
 (() => {
+  //: State that moved here from documents.js (L-documents-118).
+  // =============================================================================
+  let docPrintComments = false;
   //: **A plain Ctrl+P prints the document, not the application**
   //: (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet).
   //:
@@ -183,4 +186,9 @@
 
   //: The file's whole surface: what documents.js and documents-cm.js call.
   Object.assign(window, { docCodePrintFill, docCodePrintClear, DOC_PRINT_KEY, docPrintSetupRead, docPrintMarginBoxes, docApplyPrintSetup });
+
+  //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
+  for (const [name, get, set] of [
+    ["docPrintComments", () => docPrintComments, (value) => { docPrintComments = value; }],
+  ]) Object.defineProperty(window, name, { get, set, configurable: true });
 })();

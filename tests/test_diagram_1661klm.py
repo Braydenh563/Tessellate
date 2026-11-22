@@ -60,7 +60,7 @@ def test_each_menu_row_has_its_sample_and_what_it_makes_and_a_change_says_its_co
 @needs_node
 def test_every_kind_has_a_sample_and_an_about_line_short_enough_for_one_row():
     out = _kindbar("k.KINDS.map(([key,,,about])=>[key, !!k.SAMPLE[key], about.length])")
-    assert [row[0] for row in out] == ["flowchart", "sequence", "mindmap", "timeline"]
+    assert [row[0] for row in out] == ["flowchart", "sequence", "mindmap", "timeline", "gantt", "pie", "state", "class", "er"]
     # 45 characters fit one line of the menu at 390 (measured: a 62-character line wrapped to a 73 px row)
     assert all(has and length <= 45 for _, has, length in out), out
 

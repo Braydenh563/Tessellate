@@ -22,7 +22,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY_JS = ROOT / "frontend" / "js" / "library.js"
@@ -138,7 +138,7 @@ def test_the_page_scrollers_ask_for_compositor_scrolling():
 
 
 def test_the_caret_readout_rewrites_its_text_in_place():
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = documents_text()  # the status bar lives in documents-scroll-status.js now (L-documents-107)
     caret = _function_source(text, "renderDocCaret")
     assert "docSetStatusText(caret" in caret and "caret.textContent =" not in caret
 

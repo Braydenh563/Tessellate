@@ -973,21 +973,20 @@ function appendInlineRun(element, text, terms, compact, options) {
   const pattern = new RegExp((underscoreSyntax ? INLINE_MD_LEGACY : INLINE_MD).source, "g");
   let cursor = 0;
   let match;
+  // Same reasoning as the clear-first skip above: appendInline appended
+  // plain prose as a bare text node, never wrapped in a <span> (it never
+  // had search terms to mark). Keeping that distinction means neither
+  // mode's DOM shape moves for its own callers.
+  const appendProse = (prose) => {
+    if (underscoreSyntax) return appendPlainText(element, prose);
+    const span = document.createElement("span");
+    highlightIconsInto(span, prose, terms);
+    element.appendChild(span);
+  };
   while ((match = pattern.exec(text)) !== null) {
-    if (match.index > cursor) {
-      const chunk = text.slice(cursor, match.index);
-      // Same reasoning as the clear-first skip above: appendInline appended
-      // plain prose as a bare text node, never wrapped in a <span> (it never
-      // had search terms to mark). Keeping that distinction means neither
-      // mode's DOM shape moves for its own callers.
-      if (underscoreSyntax) {
-        appendPlainText(element, chunk);
-      } else {
-        const before = document.createElement("span");
-        highlightIconsInto(before, chunk, terms);
-        element.appendChild(before);
-      }
-    }
+    if (match.index > cursor) appendProse(text.slice(cursor, match.index));
+    // Every branch below consumes the whole match, so the cursor moves now.
+    cursor = pattern.lastIndex;
     let code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, bareUrl, runSpec, runText;
     if (underscoreSyntax) {
       let boldStar, boldUnderscore, italicStar, italicUnderscore;
@@ -1013,6 +1012,11 @@ function appendInlineRun(element, text, terms, compact, options) {
         element.appendChild(document.createTextNode(imageAlt || "Image"));
       } else if (isRemoteImage(imageUrl)) {
         appendPictureBox(element, remoteImageNote(imageUrl));
+      } else if (isRenderableUrl(imageUrl) && window.imageLayout?.isVideo(imageUrl)) {
+        appendPictureBox(element, window.imageLayout.video(imageUrl, imageAlt));
+      } else if (isRenderableUrl(imageUrl) && !window.imageLayout && /\.(?:mp4|webm)(?:[?#]|$)/i.test(imageUrl)) {
+        //: Drawn before the library bundle (image-layout.js) has loaded: a bare player, never a broken <img> (L-documents-75).
+        element.appendChild(Object.assign(document.createElement("video"), { controls: true, preload: "metadata", src: mediaSrc(imageUrl) }));
       } else if (isRenderableUrl(imageUrl)) {
         const img = document.createElement("img");
         img.src = mediaSrc(imageUrl);
@@ -1022,7 +1026,6 @@ function appendInlineRun(element, text, terms, compact, options) {
         if (!dismissible) {
           element.appendChild(img);
           window.imageLayout?.(img);
-          cursor = pattern.lastIndex;
           continue;
         }
         const wrapper = document.createElement("span");
@@ -1072,7 +1075,6 @@ function appendInlineRun(element, text, terms, compact, options) {
       } else {
         element.appendChild(document.createTextNode(match[0]));
       }
-      cursor = pattern.lastIndex;
       continue;
     }
     if (linkUrl !== undefined) {
@@ -1124,7 +1126,6 @@ function appendInlineRun(element, text, terms, compact, options) {
       } else {
         element.appendChild(document.createTextNode(match[0]));
       }
-      cursor = pattern.lastIndex;
       continue;
     }
     if (bareUrl !== undefined) {
@@ -1143,7 +1144,6 @@ function appendInlineRun(element, text, terms, compact, options) {
         highlightInto(span, bareUrl, terms);
         element.appendChild(span);
       }
-      cursor = pattern.lastIndex;
       continue;
     }
     //: A run (`{{size=24 ink=red|words}}`, documents.js `mdRunNode`): its words
@@ -1154,7 +1154,6 @@ function appendInlineRun(element, text, terms, compact, options) {
       const [node, host] = typeof mdRunNode === "function" ? mdRunNode(runSpec) : Array(2).fill(document.createElement("span"));
       appendInlineRun(host, runText, terms, compact, options);
       element.appendChild(node);
-      cursor = pattern.lastIndex;
       continue;
     }
     const tag = code
@@ -1195,18 +1194,8 @@ function appendInlineRun(element, text, terms, compact, options) {
     if (code) node.textContent = code;
     else highlightInto(node, bold || strike || mark || ink || italic, terms);
     element.appendChild(node);
-    cursor = pattern.lastIndex;
   }
-  if (cursor < text.length) {
-    const rest = text.slice(cursor);
-    if (underscoreSyntax) {
-      appendPlainText(element, rest);
-    } else {
-      const restSpan = document.createElement("span");
-      highlightIconsInto(restSpan, rest, terms);
-      element.appendChild(restSpan);
-    }
-  }
+  if (cursor < text.length) appendProse(text.slice(cursor));
 }
 
 // Inline formatting: **bold**/__bold__, *italic*/_italic_, `code`, ~~strike~~,

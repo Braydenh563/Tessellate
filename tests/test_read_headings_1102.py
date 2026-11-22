@@ -11,6 +11,7 @@ out of its entries (it is not the author's text).
 from __future__ import annotations
 
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -24,7 +25,7 @@ def test_every_demoted_heading_keeps_its_level_in_aria_level() -> None:
 
 
 def test_the_contents_list_leaves_the_added_title_out() -> None:
-    documents = (JS / "documents.js").read_text(encoding="utf-8")
+    documents = documents_text()
     preview = documents[documents.index("function renderDocPreview("):]
     preview = preview[: preview.index("\n}\n")]
     assert preview.index("head?.remove()") < preview.index("mdFillTocs(preview)") < preview.index("preview.prepend(head)")

@@ -596,10 +596,35 @@
   //: clicks and drags are the figure's: the pencil on its corner puts the caret in the text.
   const FENCES = {
     graph: { module: "docGraph", cls: "md-graph", wrap: "cm-md-graph-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 420, fill: (figure, source) => docMathRender.graph.fill(figure, source) },
-    base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source) => docMathRender.base.fill(figure, source) },
+    base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source, write) => docMathRender.base.fill(figure, source, write) },
+    query: { module: "docBase", cls: "md-query md-base", wrap: "cm-md-query-wrap", pending: "md-base-pending", edit: "db-edit", height: 120, fill: (figure, source) => docMathRender.base.queryFill(figure, source) },
+    //: The document's own labelled sections and their links (documents-sections.js, L-documents-49). It draws from the whole
+    //: text, so Live's figure is drawn again when a label or a link line changes (`key`), not only its own fence.
+    sections: { module: "docSections", cls: "md-sections", wrap: "cm-md-sections-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 320, fill: (figure, source) => docMathRender.sections.fill(figure, source),
+      key: (text) => text.split("\n").filter((l) => /\[\[#\^| \^[\w-]+\s*$/.test(l)).join("\n") },
+  };
+  //: The Outline tab's Section links list, asked on every facts pass (documents-commands.js `renderDocOutline`): the module
+  //: is fetched only once a `[[#^name]]` is written, and draws the list itself from then on.
+  //: Registered here, not in lazy-entries.js: that file is a boot script under the gzip total, and nothing but this file asks.
+  LAZY_MODULES.docSections = ["/css/doc-graph-lazy.css", "/js/documents-sections.js"];
+  docMathRender.sections = {
+    links(text) {
+      const s = docMathRender.sections;
+      if (s.renderLinks) s.renderLinks(text);
+      else if (text.includes("[[#^")) ensureModule("docSections").then((ok) => ok && s.renderLinks(docText()));
+    },
   };
   const fenceBlocks = (lang) => (text) =>
     [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
+  const fenceWrite = (lang, pick, next, view) => {
+    const surface = view || window.docSurface?.();
+    const text = view ? docStr(view.state.doc) : surface?.text;
+    const block = text == null ? null : pick(fenceBlocks(lang)(text));
+    if (!block) return;
+    const from = block.from + text.slice(block.from).indexOf("\n") + 1;
+    if (view) view.dispatch({ changes: { from, to: from + block.source.length, insert: next } });
+    else surface.replaceRange(from, from + block.source.length, next);
+  };
   const fenceIn = (lang) => (container) => {
     const spec = FENCES[lang];
     const codes = [...container.querySelectorAll(`.code-block code[data-lang="${lang}"]`)];
@@ -611,7 +636,8 @@
         const figure = document.createElement("figure");
         figure.className = spec.cls;
         //: A fence that draws nothing stays the code it is, with the reasons under it.
-        if (spec.fill(figure, code.textContent)) block.replaceWith(figure);
+        const n = codes.indexOf(code);
+        if (spec.fill(figure, code.textContent, (next) => fenceWrite(lang, (blocks) => (blocks[n]?.source.trim() === code.textContent.trim() ? blocks[n] : null), next))) block.replaceWith(figure);
         else block.after(figure);
       }
     });
@@ -623,13 +649,14 @@
     const { StateField } = CM.state;
     const { Decoration, EditorView, WidgetType } = CM.view;
     class DocFenceWidget extends WidgetType {
-      constructor(source) {
+      constructor(source, key) {
         super();
         this.source = source;
+        this.key = key;
       }
-      //: The source alone: a key typed above a block must not draw it again and lose its sliders.
+      //: The source alone (and the spec's `key`): a key typed above a block must not draw it again and lose its sliders.
       eq(other) {
-        return other.source === this.source;
+        return other.source === this.source && other.key === this.key;
       }
       get estimatedHeight() {
         return spec.height;
@@ -651,7 +678,7 @@
         ensureModule(spec.module).then((ok) => {
           if (!ok) return;
           figure.classList.remove(spec.pending);
-          spec.fill(figure, this.source);
+          spec.fill(figure, this.source, (next) => fenceWrite(lang, (blocks) => blocks.find((b) => b.from === view.posAtDOM(wrap)), next, view));
           view.requestMeasure();
         });
         return wrap;
@@ -660,22 +687,25 @@
     //: The fences once per text, as the mermaid field does: a caret move rescanned the whole document.
     const blocksOf = new WeakMap();
     const find = fenceBlocks(lang);
-    const build = (state) => {
+    const opener = new RegExp("```[ \\t]*" + lang);
+    const build = (state, tr) => {
       let blocks = blocksOf.get(state.doc);
       if (!blocks) {
-        //: Through the Documents file's cached reader where it is loaded (a long text read twice per keystroke is the cost it avoids).
-        const text = window.docStr ? window.docStr(state.doc) : state.doc.sliceString(0);
-        blocks = new RegExp("```[ \\t]*" + lang).test(text) ? find(text) : [];
+        //: Through the Documents file's cached reader where it is loaded (a long text read twice per keystroke is the cost it avoids);
+        //: an edit to a text with no opener asks only the lines it touched (`docStr.lacks`, L-documents-26).
+        const text = window.docStr?.lacks?.(state, opener, tr) ? "" : window.docStr ? window.docStr(state.doc) : state.doc.sliceString(0);
+        blocks = text && opener.test(text) ? find(text) : [];
+        if (blocks.length && spec.key) blocks.key = spec.key(text);
         blocksOf.set(state.doc, blocks);
       }
       const ranges = blocks
         .filter((block) => !docLiveSpanTouched.anchorIn(state.selection.ranges, block.from, block.to))
-        .map((block) => Decoration.replace({ widget: new DocFenceWidget(block.source), block: true }).range(block.from, block.to));
+        .map((block) => Decoration.replace({ widget: new DocFenceWidget(block.source, blocks.key || ""), block: true }).range(block.from, block.to));
       return ranges.length ? Decoration.set(ranges, true) : Decoration.none;
     };
     fenceFieldCache[lang] = StateField.define({
       create: (state) => build(state),
-      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state) : value),
+      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state, tr) : value),
       provide: (field) => EditorView.decorations.from(field),
     });
     return fenceFieldCache[lang];
@@ -687,5 +717,10 @@
     baseBlocks: fenceBlocks("base"),
     baseIn: fenceIn("base"),
     baseField: fenceField("base"),
+    queryBlocks: fenceBlocks("query"),
+    queryIn: fenceIn("query"),
+    queryField: fenceField("query"),
+    sectionsIn: fenceIn("sections"),
+    sectionsField: fenceField("sections"),
   });
 })();
