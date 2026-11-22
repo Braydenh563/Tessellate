@@ -5,7 +5,9 @@ Measured 2026-11-14: 29 lines, its stages on `chatSendTurn.stage`."""
 import re
 from pathlib import Path
 
-JS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "chat-turn.js").read_text(encoding="utf-8")
+from tests._js_scope import unwrapped
+
+JS = unwrapped((Path(__file__).resolve().parent.parent / "frontend" / "js" / "chat-turn.js").read_text(encoding="utf-8"))
 
 
 def test_chat_send_turn_stays_a_short_driver():

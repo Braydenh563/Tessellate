@@ -2425,6 +2425,38 @@ function sourcesByFirstMention(sources, sentences) {
   return out;
 }
 
+//: **Kept pages** (CHAT_PLAN web-search store): a web source read in a chat is
+//: kept on this computer for 7 days. One line each under the cards, outside
+//: them because a card is itself a link: how long ago, and Fetch again.
+function chatKeptPagesRow(body, sources) {
+  const urls = [...new Set(sources.filter((s) => s.kind === "web" && s.url).map((s) => s.url))].slice(0, 50);
+  if (!urls.length) return;
+  apiJson("/websearch/stored/ages", { method: "POST", body: JSON.stringify({ urls }), silent: true })
+    .then(({ ages }) => {
+      for (const url of urls) {
+        if (!ages[url]) continue;
+        const line = document.createElement("p");
+        line.className = "chat-source-kept muted";
+        const when = document.createElement("span");
+        const show = (iso) => (when.textContent = `${sourceHost(url) || url}: fetched ${relativeTime(iso)}`);
+        show(ages[url]);
+        const again = smallButton("ph:arrow-clockwise Fetch again", `Fetch ${url} again`, async () => {
+          again.disabled = true;
+          try {
+            const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
+            show(fresh.ages[url] || new Date().toISOString());
+          } catch (error) {
+            toast(error.message || voiceLine("failed", "fetch that page"), "info");
+          }
+          again.disabled = false;
+        });
+        line.append(when, " ", again);
+        body.appendChild(line);
+      }
+    })
+    .catch(() => {});
+}
+
 //: **The Sources panel: cards, previews and real links.**
 //:
 //: Reported twice: *"improve the ui of the sources as well in the chat"* and
@@ -2448,37 +2480,6 @@ function chatSourcesPanel(input) {
   //: Two derivations of "the same" order is how they drift apart, which is
   //: what INBOX 81's second half is about.
   const sources = input.sources || chatSourcesFrom(input);
-  //: **Kept pages** (CHAT_PLAN web-search store): a web source read in a chat is
-  //: kept on this computer for 7 days. One line each under the cards, outside
-  //: them because a card is itself a link: how long ago, and Fetch again.
-  const keptPagesRow = (body, sources) => {
-    const urls = [...new Set(sources.filter((s) => s.kind === "web" && s.url).map((s) => s.url))].slice(0, 50);
-    if (!urls.length) return;
-    apiJson("/websearch/stored/ages", { method: "POST", body: JSON.stringify({ urls }), silent: true })
-      .then(({ ages }) => {
-        for (const url of urls) {
-          if (!ages[url]) continue;
-          const line = document.createElement("p");
-          line.className = "chat-source-kept muted";
-          const when = document.createElement("span");
-          const show = (iso) => (when.textContent = `${sourceHost(url) || url}: fetched ${relativeTime(iso)}`);
-          show(ages[url]);
-          const again = smallButton("ph:arrow-clockwise Fetch again", `Fetch ${url} again`, async () => {
-            again.disabled = true;
-            try {
-              const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
-              show(fresh.ages[url] || new Date().toISOString());
-            } catch (error) {
-              toast(error.message || voiceLine("failed", "fetch that page"), "info");
-            }
-            again.disabled = false;
-          });
-          line.append(when, " ", again);
-          body.appendChild(line);
-        }
-      })
-      .catch(() => {});
-  };
   if (!sources.length) return null;
   //: **The number on a card is the number in the answer**, which stops being
   //: the card's own position the moment this panel is handed a subset (the
@@ -2646,7 +2647,7 @@ function chatSourcesPanel(input) {
     grid.appendChild(card);
   });
   body.appendChild(grid);
-  keptPagesRow(body, sources);
+  chatKeptPagesRow(body, sources);
   details.appendChild(body);
   //: **On a phone the sources are a sheet** (UI_MODERNISATION_PLAN Phase 11
   //: item 3). Opened in place, the grid of cards unfolds inside a bubble in

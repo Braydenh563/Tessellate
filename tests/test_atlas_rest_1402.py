@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
 ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
-MOTION = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
+MOTION = unwrapped((ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8"))
 MICRO = (ROOT / "frontend" / "js" / "atlas-micro.js").read_text(encoding="utf-8")
 AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

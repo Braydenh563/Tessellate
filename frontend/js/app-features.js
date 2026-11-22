@@ -323,6 +323,21 @@ function renderToolShortcutList(list) {
   }
 }
 
+//: The palette's filter rows: the fastest route to "the notes I mean" without remembering the operator syntax (`paletteCommands`).
+function paletteFilterRows() {
+  return [
+    ["ph:star Show favourites", "is:favourite"],
+    ["ph:tag Show untagged notes", "is:untagged"],
+    ["ph:lock Show private notes", "is:private"],
+    ["ph:link Show linked notes", "is:linked"],
+    ["ph:check-square Show filings to check", "is:review"],
+  ].map(([label, query]) => ({
+    label,
+    about: `The notes list, filtered to ${query}.`,
+    act: () => showNotesFilter(query),
+  }));
+}
+
 //: **The palette's registry, and the Quick access row that reads it** (boot diet
 //: 3, 2026-11-01): `paletteCommands` and the dashboard's Quick access draw were
 //: 5 KB and 3 KB gzipped of boot script that only a dashboard draw, the palette
@@ -513,17 +528,7 @@ function paletteCommands() {
     },
     // Filters as commands: the fastest route to "the notes I mean" without
     // remembering the operator syntax.
-    ...[
-      ["ph:star Show favourites", "is:favourite"],
-      ["ph:tag Show untagged notes", "is:untagged"],
-      ["ph:lock Show private notes", "is:private"],
-      ["ph:link Show linked notes", "is:linked"],
-      ["ph:check-square Show filings to check", "is:review"],
-    ].map(([label, query]) => ({
-      label,
-      about: `The notes list, filtered to ${query}.`,
-      act: () => showNotesFilter(query),
-    })),
+    ...paletteFilterRows(),
     //: UX-08: places Ctrl+K could not reach (tests/test_palette_synonyms.py).
     { label: "ph:trash Open the bin", reveal: "library-bin", keywords: "bin trash deleted binned restore recover", about: "Everything you threw away, in the Library, ready to restore." },
     { label: "ph:question Questions your notes ask", reveal: "notes-questions", keywords: "questions open questions", about: "The open questions found in your notes." },

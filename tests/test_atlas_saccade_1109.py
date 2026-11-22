@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped, unwrapped_copy
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
@@ -43,7 +44,7 @@ console.log(JSON.stringify({ n: ts.length, first: ts[0], maxGap: Math.max(...gap
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 @pytest.mark.parametrize("seed", [1, 7, 42])
 def test_a_held_gaze_has_a_step_of_the_eyes_every_point_six_to_one_point_eight_seconds(seed: int) -> None:
-    out = subprocess.run(["node", "-e", HARNESS, str(JS / "atlas-motion.js"), str(seed)], capture_output=True, text=True, timeout=60, check=True).stdout
+    out = subprocess.run(["node", "-e", HARNESS, str(unwrapped_copy(JS / "atlas-motion.js")), str(seed)], capture_output=True, text=True, timeout=60, check=True).stdout
     r = json.loads(out)
     # 60 s held: a step about every 1.2 s (33 to 100), none more than 1.8 s apart, so no eye is still over 2 s
     assert 33 <= r["n"] <= 100 and r["maxGap"] <= 1800 and r["minGap"] >= 600 and r["first"] <= 1800
@@ -55,5 +56,5 @@ def test_the_aim_arms_the_saccade_and_nothing_runs_without_a_look() -> None:
     avatars = (JS / "avatars.js").read_text(encoding="utf-8")
     i = avatars.index('buddy.classList.add("nmb-attend");')
     assert "atlasBlink.saccade?.()" in avatars[i : i + 200]
-    motion = (JS / "atlas-motion.js").read_text(encoding="utf-8")
+    motion = unwrapped((JS / "atlas-motion.js").read_text(encoding="utf-8"))
     assert "if (!buddy?.classList.contains(\"nmb-attend\")) return false;" in motion  # released: the loop ends

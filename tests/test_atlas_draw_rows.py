@@ -19,7 +19,8 @@ def test_atlasrest1402_setup_uses_prefs_not_removed_selects():
 
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
-MOTION = (ROOT / "frontend/js/atlas-motion.js").read_text(encoding="utf-8")
+from tests._js_scope import unwrapped
+MOTION = unwrapped((ROOT / "frontend/js/atlas-motion.js").read_text(encoding="utf-8"))
 
 
 def _node(src: str):

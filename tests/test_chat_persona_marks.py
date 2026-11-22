@@ -57,7 +57,7 @@ def test_the_default_assistant_wears_atlas_and_no_reply_wears_the_app_logo() -> 
 
 
 def test_a_reopened_reply_is_drawn_with_its_saved_persona() -> None:
-    reopen = _function("openConversation")
+    reopen = _function("openConversation") + _function("replaySavedAssistantMessage")
     assert "addAssistantBubble(message.persona" in reopen, (
         "openConversation draws replies without the persona saved on them"
     )

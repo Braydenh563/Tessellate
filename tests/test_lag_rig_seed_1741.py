@@ -12,7 +12,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-MOTION = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
+from tests._js_scope import unwrapped
+
+MOTION = unwrapped((Path(__file__).resolve().parents[1] / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8"))
 
 
 def _fn(name: str) -> str:
