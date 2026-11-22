@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 180 | 58 | 0 | 72 | 368 |
-| general | 0 | 4 | 0 | 0 | 5 | 4 |
-| all | 402 | 493 | 122 | 2 | 153 | 1017 |
+| general | 0 | 3 | 0 | 0 | 5 | 3 |
+| all | 402 | 492 | 122 | 2 | 153 | 1016 |
 
 ## graph
 
@@ -652,7 +652,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L-general-42** `general` open, M: Record and chip two more note sources: extracted from document, transcribed from audio. From L-general-13. Evidence: entry has no column for extracted-from-document or transcribed-from-audio (routes_entries.py:2938 extract_commit, routes_meetings.py:52 create_meeting record none); provenance chip covers source_url and source_path only
 - [ ] **L-general-46** `general` open, M: Atlas idle costs +564ms/s of main thread (budget 120): its idle draw lays out and restyles every frame. From companionperf two-pass 2026-11-21. Evidence: fresh dirs at load 4 to 6, both passes FAIL: atlas +564ms/s main thread idle over off (budget 120), 63 layouts/s, 229ms/s style; top atlasRigLower.morph.draw atlas-life.js:1311 55.6ms in 4s; me +0.209ms/frame idle (budget 0.2)
 - [ ] **L-general-47** `general` open, L: Atlas idle still costs +422ms/s of main thread on mains: its full-rate loops restyle and lay out every frame. From L-general-46 follow-up, companionperf 2026-11-21. Evidence: fresh dir after 240225a22: atlas +422 and +563ms/s idle over off in two fresh passes (budget 120), 69 layouts/s, style 160ms/s; in-page pausing every CSS loop in #nm-buddy takes style 117 to 66ms/s, pausing every animation leaves task about 265ms/s; the layer svg CSS loops (atl-layer) are the largest share, the torso breath (WAAPI scale on g.nmb-torso) gives the per-frame layout; atlasRigLower.morph atlas-life.js:1311 draws 10/s (INBOX 1709); alive on mains is owner decision 55. Note 2026-11-21: Motion at rest now defaults to still (866cd846d, the swap look 8c5aea9bf); one fresh companionperf PASS, atlas +37, persona +66, me +30, custom +41 ms/s; closes with L-general-46 after PR 224 lands and a two-pass on the merged result
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout

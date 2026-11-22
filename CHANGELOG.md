@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes: a note saved from Extract on a document now carries its provenance chip, "Extracted from <title>" (a generic label once the document is purged), from a new nullable `origin_document_id` on entries and its revision; a note with a transcribed recording, meetings included, already reads "Transcribed from audio" (L-general-42).
 - Desktop companion: a prop act keeps its drawn prop layer instead of redrawing and resizing it on most ticks (L-general-72); act ticks at dpi 192 went from a 31 ms median to 9 ms. A load-order test checks every name documents.js calls at load is defined before it.
 - Sweeps: noteobject reads every toast, since a stack now leads with its "+1 more" group.
 - Documents: the toolbar-state sweep reads what the caret is inside through `renderDocStatusBar.marksAt`, since the scroll and status file was wrapped and `docToolbarMarksAt` left the global scope.
