@@ -7,6 +7,28 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-22 (BACKLOG size cap, L-world-class-879)
+
+From BACKLOG.md section 16 (Sweeping UI quality-of-life), the built bullets moved whole:
+
+- ~~**A status bar along the bottom**~~ **done** (`#status-bar`/
+  `renderStatusBar()`), flagged stale by a backlog audit; see the
+  near-duplicate bullet further down this list too.
+- ~~**Undo toasts** for anything soft-deleted, instead of confirm dialogs~~ **Built, see `frontend/js/status.js:1190` (`pushUndo`, the undo bar and the toast's Undo).**
+- ~~**Optimistic UI**: a saved note appears instantly and reconciles~~ **Built where it matters, see `frontend/js/library.js:7404`, `7642` and `7801` (optimistic, corrected when the server refuses) and the draft that survives a failed save (`app.js:229`).**
+- ~~**Consistent empty states** and loading skeletons~~ **Built, see `docs/DESIGN.md:527` (`.empty-state`) and `:543` (`showSkeletons`/`clearSkeletons`, swept by `f2-skel.js`).**
+- ~~**Keyboard**~~ **Built, see `frontend/js/settings-wiring.js:915` (`/` jumps to search), `:1068` (`TAB_JUMP_KEYS`, `m` then a letter) and `activeOverlay()` (Escape and the Tab trap on every `aria-modal` dialog).** `/` focuses search, `g`+letter jumps tabs, Escape closes every
+  overlay
+- ~~**Bulk selection** in the note list~~ **Built, see `frontend/js/skills.js:1241-1377` (the selection bar: move to a category, tags, more) and `tag-manager.js:674` (`openBulkTags`).**
+- ~~**"What changed" after an AI action**~~ **Built, see `frontend/js/library.js:41` and `chat-agent.js` (`changeRow`, one row per write with View and Undo; the tool chip is a `<details>` with arguments and result).** Chips say what ran, not what it did
+- ~~**Confirm on close** with unsaved text~~ **Built, see `frontend/js/navigation.js:1703` (one `beforeunload` guard) and `confirmLeavingUnsavedWork`.**
+- ~~**Relative timestamps** everywhere, absolute on hover~~ **Built, see `frontend/js/note-cards.js:1945` (`relativeTime`) and about 35 other call sites across the tabs.**
+- ~~**Collapsible sidebars.**~~ **Done**: `makeSidebarResizable`'s
+  `sidebar-collapse-toggle` is wired on all three (Notes, Chat, Documents).
+- ~~**A status bar pinned to the bottom.**~~ **done, same item as above**,
+  a second, near-duplicate bullet for the same ask; both are satisfied by the
+  one `#status-bar` that now exists.
+
 ## Moved from the plans, 2026-11-14 (L982 closed by the owner)
 
 - [x] **L982** closed 2026-11-14: Settings panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms (INBOX 1726). Owner decided 2026-11-14: stale unless it recurs; reopen if the lag reporter flags it again. It did not reproduce off Windows at 4x CPU; settings-panes.js returns early on a plain key.
@@ -56572,6 +56594,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L-world-class-879** `world-class` open, M: Boot: the opening curtain waits for the slowest dashboard widget (digest, week); lift it on the visible first row, or serve those two widgets' data in one request, without bringing back the layout shift INBOX 577 fixed. From L603 (boot cost left). Evidence: scratch trace at phone width, 500 notes: the opening curtain lifts about 0.9 to 1.2 s after load, when the slowest dashboard widget settles (digest 340 to 400 ms and week 360 to 440 ms of server-bound fetches on a busy 4-core box; boards 370, art 260); widgets draw in parallel so the curtain waits for the longest Measured 2026-11-22 (390 px, 500 notes, idle, 4 boots): the curtain lifts at 713 to 828 ms with 0 shift after it. Lifting on the skeleton outline gave 467 to 675 ms but 0.024 to 0.053 shift: the hero line (`renderDashSubmessage`: stats, reminders, patterns, today line) grows one row to four above the grid. Waiting for the hero too held 0 shift at 661 to 884 ms, no gain, so it was not kept (patch in the session scratchpad). The cost is the hero line's slowest read, not the widgets: the next step is serving that line in one request or reserving its rows. Hub decided 2026-11-22: serve the hero line in one request; not reserved rows (a short line would leave a gap). Hub reversed 2026-11-22 on the measurement (one request would run the four reads in sequence, about 450 ms, against today's slowest single read of about 200 ms): instead start the reads at unlock, share /reminders, preload dash-day.js. Built and measured 2026-11-22 (390 px, 500 notes, 16 boots each, interleaved): the reads then started at 190 to 307 ms instead of 470 to 535, but the curtain lifted later, median 745 and 800 ms against 644 and 704 ms, so it was reverted (patch 879-full.patch in the session scratchpad). The dashboard's render starts at 576 to 818 ms and the hero line is ready by then; the curtain is bound by that start. Waiting for the hero line and the first steps as well as the widgets held 0 shift; the old wait showed 0.053 after the lift in 1 of 16 boots (first steps and hero line landing late). Left: why the dashboard render starts at about 580 ms, and that intermittent shift; /reminders is still read twice (`loadReminders` forces a fresh read). Built: moved to BACKLOG.md, section 11, 'The dashboard's first paint waits for the whole notebook', with the measurements; curtain shift fixed in 151e84bd, /reminders once in 6df3762f
 - [x] **L-world-class-874** `world-class` open, S: /categories fetched twice at boot. From wc-perf measure, 27897dbf. Evidence: boot network log: GET /categories requested twice before first interaction Built: de930cd6: tests/test_categories_once_874.py; 500-note boot 2 GETs to 1 (Playwright request count)
 - [x] **L-world-class-872** `world-class` open, M: Duplicate scan at 5,000 near-identical notes: cut the 31 s /tidy and the 100 MB per-block allocation. From L-world-class-410 follow-up, 04cc8653. Evidence: src/tessellate/entry/duplicates.py find_duplicates: GET /tidy took 31 s at 5,000 near-identical notes under load 2.5 to 6; each dense block allocates up to about 100 MB Built: 2ddefeb0: tests/test_duplicates_blocks_872.py; find_duplicates core 29.7 s to 1.7 s CPU at 5,000 notes; memory_410 and scan_speed pass
 - [x] **L-world-class-24** `world-class` open, S: Run the ten-minute browser memory check. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4186. Evidence: Open line in the plan's prose a session could miss. Real-browser memory run not done. Reopened 2026-11-14 (hardware audit): headless Chromium runs ten minutes with performance.memory and CDP heap numbers. Built: Built 0d2db415b (agent/checks-1122): ten-minute loop over a 5,000-note notebook (notes, search, 7 tabs, Settings; heap after forced GC) found CodeMirror views never destroyed, 104 listeners and 362 nodes per note opened; mountNoteSurface now destroys detached views. After: +4.9 MB heap, +650 nodes, +374 listeners from minute 1 to 10 (was +8,440 nodes, +2,480 listeners). tests/test_note_surface_released.py; the remaining 0.5 MB a minute is L-world-class-890
