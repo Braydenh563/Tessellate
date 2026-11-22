@@ -7940,20 +7940,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `findSettings` | frontend/js/settings-find.js:159 |
-| `helpAlternation` | frontend/js/settings-find.js:710 |
-| `helpApplySearch` | frontend/js/settings-find.js:839 |
-| `helpEmphasis` | frontend/js/settings-find.js:716 |
-| `helpFill` | frontend/js/settings-find.js:737 |
-| `helpMarks` | frontend/js/settings-find.js:750 |
-| `helpMatches` | frontend/js/settings-find.js:823 |
-| `helpQueryTerms` | frontend/js/settings-find.js:815 |
-| `helpSearchBind` | frontend/js/settings-find.js:896 |
-| `helpTopicLink` | frontend/js/settings-find.js:677 |
-| `helpTopicPaint` | frontend/js/settings-find.js:764 |
-| `helpTopicRow` | frontend/js/settings-find.js:781 |
+| `helpAlternation` | frontend/js/settings-find.js:713 |
+| `helpApplySearch` | frontend/js/settings-find.js:842 |
+| `helpEmphasis` | frontend/js/settings-find.js:719 |
+| `helpFill` | frontend/js/settings-find.js:740 |
+| `helpMarks` | frontend/js/settings-find.js:753 |
+| `helpMatches` | frontend/js/settings-find.js:826 |
+| `helpQueryTerms` | frontend/js/settings-find.js:818 |
+| `helpSearchBind` | frontend/js/settings-find.js:899 |
+| `helpTopicLink` | frontend/js/settings-find.js:680 |
+| `helpTopicPaint` | frontend/js/settings-find.js:767 |
+| `helpTopicRow` | frontend/js/settings-find.js:784 |
 | `openSettingRow` | frontend/js/settings-find.js:230 |
-| `renderCredits` | frontend/js/settings-find.js:919 |
-| `renderHelpTopics` | frontend/js/settings-find.js:967 |
+| `renderCredits` | frontend/js/settings-find.js:922 |
+| `renderHelpTopics` | frontend/js/settings-find.js:970 |
 | `renderSettingResults` | frontend/js/settings-find.js:282 |
 | `settingNearAdd` | frontend/js/settings-find.js:297 |
 | `settingQueryAlts` | frontend/js/settings-find.js:140 |
@@ -7972,7 +7972,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsIndexList` | frontend/js/settings-find.js:396 |
 | `settingsIndexMark` | frontend/js/settings-find.js:453 |
 | `settingsIndexOffset` | frontend/js/settings-find.js:390 |
-| `settingsIndexWatchSection` | frontend/js/settings-find.js:640 |
+| `settingsIndexWatchSection` | frontend/js/settings-find.js:643 |
 | `settingsNavFollow` | frontend/js/settings-find.js:432 |
 | `settingsPaneTitleHead` | frontend/js/settings-find.js:382 |
 

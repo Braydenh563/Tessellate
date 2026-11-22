@@ -581,7 +581,10 @@
     fold.type = "button";
     fold.className = "ghost disclosure-row settings-nav-fold";
     fold.setAttribute("aria-controls", list.id);
-    fold.innerHTML = '<i class="ph ph-caret-down contents-caret" aria-hidden="true"></i><span>On this page</span>';
+    const caret = document.createElement("i");
+    caret.className = "ph ph-caret-down contents-caret";
+    caret.setAttribute("aria-hidden", "true");
+    fold.append(caret, Object.assign(document.createElement("span"), { textContent: "On this page" }));
     const paintFold = (shut) => {
       list.classList.toggle("is-folded", shut);
       fold.setAttribute("aria-expanded", String(!shut));
