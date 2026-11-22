@@ -1,9 +1,10 @@
 """UX audit 1018 (uxfix2): source-level guards for the six findings."""
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX = (ROOT / "frontend/index.html").read_text()
-MAP_JS = (ROOT / "frontend/js/whiteboard-map.js").read_text()
+MAP_JS = frontend_text("whiteboard-map.js")
 
 
 def test_empty_map_shows_one_empty_state():
@@ -14,7 +15,7 @@ def test_empty_map_shows_one_empty_state():
 
 
 def test_boards_picker_drops_default_row_while_gallery_counts_none():
-    wb = (ROOT / "frontend/js/whiteboard.js").read_text() + (ROOT / "frontend/js/boards-gallery.js").read_text()  # the gallery split out (INBOX 1772)
+    wb = frontend_text("whiteboard.js") + (ROOT / "frontend/js/boards-gallery.js").read_text()  # the gallery split out (INBOX 1772)
     assert "audit 1018, item 11" in wb
     assert "onCanvas" in wb
 

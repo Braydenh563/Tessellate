@@ -398,6 +398,7 @@
   border-radius: var(--radius-sm);
   background: var(--accent-soft);
   pointer-events: none;
+  will-change: transform;
 }
 
 /* The shelf (1661 l): six blocks of the kind on the picture's top left. Each is the library's own tile, icon only, so a
@@ -667,7 +668,8 @@
   grid-area: grip;
 }
 
-.dgm-card-two > :is(i, .dgm-shape) {
+.dgm-card-two > :where(i):is(i, .dgm-shape),
+.dgm-card-two > .dgm-shape {
   grid-area: glyph;
 }
 
@@ -1389,7 +1391,8 @@
     grid-template-rows: minmax(0, 1fr);
   }
 
-  .dgm.dgm-phonelist.dgm-listless :is(.dgm-picture, .dgm-stage) {
+  .dgm.dgm-phonelist.dgm-listless .dgm-picture,
+  .dgm.dgm-phonelist.dgm-listless .dgm-stage {
     block-size: auto;
     min-block-size: 0;
   }
@@ -1839,7 +1842,8 @@
 
   /* The picture keeps 240 px (it was 96 beside a kind's pane); the blocks pane scrolls under it. */
   .dgm-dialog-body .dgm-picture,
-  .dgm-dialog-body .dgm.dgm-phonelist :is(.dgm-picture, .dgm-stage) {
+  .dgm-dialog-body .dgm.dgm-phonelist .dgm-picture,
+  .dgm-dialog-body .dgm.dgm-phonelist .dgm-stage {
     min-block-size: 240px;
   }
 
@@ -2348,7 +2352,8 @@
 
 @media (min-width: 600px) {
   .dgm-body.dgm-fold-left > :is(.dgm-listcol, .dgm-split-handle),
-  .dgm-body.dgm-fold-right > :is(.dgm-stage, .dgm-split-handle) {
+  .dgm-body.dgm-fold-right > .dgm-stage,
+  .dgm-body.dgm-fold-right > .dgm-split-handle {
     display: none;
   }
 
@@ -2771,4 +2776,15 @@ button.ghost.disclosure-row.dgm-ai-lints-head {
   align-items: center;
   gap: var(--space-2);
   min-block-size: 44px;
+}
+
+/* L-documents-58: the arrow animation sheet's four choices, one under another. */
+.dgm-animate-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dgm-animate-list button[aria-pressed="true"] {
+  border-color: var(--accent);
 }

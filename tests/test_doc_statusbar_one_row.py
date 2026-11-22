@@ -21,7 +21,8 @@ def _rule(css: str, selector: str) -> str:
 def test_the_strip_never_wraps_at_any_width():
     base = (CSS / "05-sidebars-themes.css").read_text(encoding="utf-8")
     assert "flex-wrap: nowrap" in _rule(base, ".doc-statusbar")
-    counts = _rule(base, "#doc-counts")
+    # The counts' rule moved to library-lazy.css with the Library bundle (L308).
+    counts = _rule((CSS / "library-lazy.css").read_text(encoding="utf-8"), "#doc-counts")
     assert "min-width: 0" in counts and "text-overflow: ellipsis" in counts
 
 

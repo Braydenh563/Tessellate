@@ -1,6 +1,6 @@
 """L-documents-2: a daily word goal and a writing streak, counted per day in prefs.
 
-The block between the `writing-streak` markers in documents.js is run in node with a fixed clock, a fake
+The block between the `writing-streak` markers in documents-instruments.js is run in node with a fixed clock, a fake
 prefs store and a fake status-bar element, so the day roll-over, the streak and the paste guard are
 checked without a browser. The menu and the bar are measured in Chromium (scratchpad/ui-sweeps).
 """
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from tests.test_code_documents import JS, _node
 
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = (JS / "documents-instruments.js").read_text(encoding="utf-8")
 BLOCK = DOCS[DOCS.index("// writing-streak:begin") : DOCS.index("// writing-streak:end")]
 
 PRELUDE = (

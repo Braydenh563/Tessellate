@@ -41,6 +41,8 @@ function prefsStore() {
 }
 
 const prefs = {
+  //: Counts writes, so a reader may keep a value until it moves (docGutterPref).
+  writes: 0,
   //: The stored string, the schema's default, or `fallback`, in that order.
   get(key, fallback = "") {
     let raw = null;
@@ -97,6 +99,7 @@ const prefs = {
     try {
       const store = prefsStore();
       if (!store) return false;
+      prefs.writes += 1;
       store.setItem(key, String(value));
       return true;
     } catch {
@@ -113,6 +116,7 @@ const prefs = {
     return prefs.set(key, text);
   },
   remove(key) {
+    prefs.writes += 1;
     try {
       prefsStore()?.removeItem(key);
     } catch {

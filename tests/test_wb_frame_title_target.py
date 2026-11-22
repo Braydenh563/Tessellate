@@ -14,13 +14,14 @@ frame, everything or the inner pair selected.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 #: The whiteboard blocks moved from 07-whiteboard-misc.css to library-lazy.css (L-world-class-350).
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-WB_JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB_JS = frontend_text("whiteboard.js")
 
 
 def _rules(selector: str) -> list[str]:

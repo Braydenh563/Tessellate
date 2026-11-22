@@ -12,7 +12,7 @@ const NAMES = ['UpdateLayoutTree', 'Layout', 'PrePaint', 'Paint', 'Layerize', 'C
   const { browser, page, ctx } = await boot({ viewport: { width: 1440, height: 900 } });
   const cdp = await ctx.newCDPSession(page);
   await page.getByRole('button', { name: "Don't check" }).click({ timeout: 3000 }).catch(() => {});
-  await page.evaluate(() => { const b = document.getElementById('avatar-buddy'); b.value = 'off'; b.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.evaluate(() => { const b = $('avatar-buddy'); b.value = 'off'; b.dispatchEvent(new Event('change', { bubbles: true })); });
   // KILL=substring (or ALL_HAS=1): delete the stylesheet rules whose selector contains it,
   // to cost a selector shape by experiment rather than by theory.
   if (process.env.KILL_RANGE) {

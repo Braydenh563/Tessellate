@@ -20,7 +20,7 @@ const { boot } = require('./lib.js');
   const routes = [];
   for (let i = 0; i < runs; i += 1) {
     const r = await page.evaluate(() => new Promise((done) => {
-      const sel = document.getElementById('avatar-buddy');
+      const sel = $('avatar-buddy');
       sel.value = 'off'; sel.dispatchEvent(new Event('change', { bubbles: true }));
       setTimeout(() => {
         localStorage.removeItem('nm-buddy-spots');

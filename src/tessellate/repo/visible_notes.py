@@ -39,3 +39,12 @@ def by_ids(session: Session, ids: Iterable[int]) -> list:
 def recent(session: Session, *, limit: int) -> list:
     """(id, content) of the newest visible notes: what an overview with no topic tells."""
     return session.execute(select(Entry.id, Entry.content).where(*_visible()).order_by(Entry.id.desc()).limit(limit)).all()
+
+
+def matching(session: Session, like: str, *, limit: int) -> list[Entry]:
+    """Visible notes whose text matches the escaped LIKE pattern `like`, newest first.
+
+    A private note is encrypted at rest, so its content would not match anyway;
+    the floor is here so that stays true by decision rather than by side effect."""
+    query = select(Entry).where(*_visible(), Entry.content.ilike(like, escape=LIKE_ESCAPE))
+    return list(session.scalars(query.order_by(Entry.id.desc()).limit(limit)))

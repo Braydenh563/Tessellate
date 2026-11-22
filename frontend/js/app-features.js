@@ -2,9 +2,43 @@
 // of dashboard.js (Brief bootdiet, 2026-10-10): about 195 lines of strings the
 // first screen never reads. Lazy (app.js `LAZY_MODULES.appPalette`); the
 // palette's bundle names it too, so `paletteFeatureRows` always finds it, and
-// `openFeatures`, Quick access and `paletteAbouts` (settings-panes.js) wait
+// `openFeatures`, Quick access and `paletteAbouts` (below) wait
 // for it. It is not a `LAZY_ENTRY_POINTS` stand-in on purpose: its callers read
 // the array straight away, and a stand-in returns a promise.
+//: Two of the palette's row helpers live here, not in settings-panes.js (boot): every caller
+//: (the palette, Quick access, Tools and features) loads this file first, and the boot
+//: scripts have no room (test_static_compression.py).
+//: **A row's keycap: the way to run it without the palette.** A chord the
+//: row declares by its registry name (`chord`, read from the live
+//: `shortcuts` table, so a rebinding shows here as it is), the editor's own
+//: rows' `keys`, and for a tab the "t" then a letter jump. A palette that only
+//: performs an action teaches nobody the key for it.
+function paletteKeys(match) {
+  if (match.keys) return match.keys;
+  if (match.chord && typeof shortcuts !== "undefined") return shortcuts[match.chord]?.keys || "";
+  if (match.tab && typeof TAB_JUMP_KEYS !== "undefined") {
+    const letter = Object.keys(TAB_JUMP_KEYS).find((key) => TAB_JUMP_KEYS[key] === match.tab);
+    if (letter) return `T ${letter.toUpperCase()}`;
+  }
+  return "";
+}
+
+//: **A row's one line of what it does.** Its own `about` first; then the
+//: line "Tools and features" already writes for the same place (the rows
+//: share their `reveal` with `featureCatalog`, so the two lists cannot
+//: describe one control two ways); then the shortcut registry's label.
+function paletteAbouts() {
+  const abouts = new Map();
+  const catalog = typeof featureCatalog === "function" ? featureCatalog() : [];
+  for (const group of catalog) {
+    for (const item of group.items || []) {
+      if (item.reveal && item.desc && !abouts.has(item.reveal)) abouts.set(item.reveal, item.desc);
+    }
+  }
+  return abouts;
+}
+
+
 // --- the "everything this app does" browser ----------------------------------
 // Grouped, searchable, and every entry either jumps you there or explains
 // itself: the fastest way to discover features you didn't know existed.
@@ -554,7 +588,7 @@ function paletteCommands() {
     ...(editor.some((c) => /equation/i.test(c.label)) ? [] : [{ label: "ph:function Insert equation", keywords: "equation formula maths math latex fraction root integral matrix insert write", about: "The equation editor, over the box you were writing in: Insert puts it there as TeX, or Copy takes it.", keys: "Alt+=", act: () => openMathEditor({ target: popupToolMaths.box(paletteCaughtNow().target) }) }]),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
-    { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
+    { label: "ph:translate Translate this", keywords: "translate translation spanish french german italian portuguese language offline selection passage", about: "The selected passage into another language, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
     { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
@@ -657,21 +691,6 @@ function renderQuickLinks() {
   group.append(head, row);
   box.replaceChildren(group);
   window.edgeFadeWire?.(row);
-}
-
-//: **A row's one line of what it does.** Its own `about` first; then the
-//: line "Tools and features" already writes for the same place (the rows
-//: share their `reveal` with `featureCatalog`, so the two lists cannot
-//: describe one control two ways); then the shortcut registry's label.
-function paletteAbouts() {
-  const abouts = new Map();
-  const catalog = typeof featureCatalog === "function" ? featureCatalog() : [];
-  for (const group of catalog) {
-    for (const item of group.items || []) {
-      if (item.reveal && item.desc && !abouts.has(item.reveal)) abouts.set(item.reveal, item.desc);
-    }
-  }
-  return abouts;
 }
 
 function paletteRowParts(match, abouts) {

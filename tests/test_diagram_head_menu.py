@@ -4,9 +4,10 @@ Driven in Chromium 2026-11-10 (1440 x 900, a fresh .mmd document, the head's ...
 diagram (Download or print, Connections, History, Replace in every document, Copy app link, Model for this feature, Delete).
 """
 
-from pathlib import Path
 
-DOCS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+from tests._app_js import documents_text
+
+DOCS = documents_text()
 
 
 def test_the_writing_groups_and_rows_follow_the_file_type():

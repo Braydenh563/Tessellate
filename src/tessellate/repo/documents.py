@@ -73,6 +73,62 @@ def create(session: Session, *, title: str, content: str, file_type: str) -> Doc
     return document
 
 
+#: Deeper than any real outline and short enough that a corrupt chain (a
+#: cycle written by hand into the file) ends the walk rather than the request.
+MAX_DEPTH = 64
+
+
+def parents(session: Session, document: Document) -> list[Document]:
+    """The live documents above this one, root first: the breadcrumb (D14).
+    A parent this request cannot see (binned, or another space's) ends it."""
+    chain: list[Document] = []
+    seen = {document.id}
+    parent_id = document.parent_id
+    while parent_id is not None and parent_id not in seen and len(chain) < MAX_DEPTH:
+        parent = session.get(Document, parent_id)
+        if parent is None:
+            break
+        chain.append(parent)
+        seen.add(parent.id)
+        parent_id = parent.parent_id
+    return chain[::-1]
+
+
+def would_cycle(session: Session, document_id: int, parent_id: int) -> bool:
+    """Whether putting `document_id` under `parent_id` makes a loop: the
+    parent is the document itself or one of its own sub-pages. Read through
+    the bin too, so a binned middle page cannot hide a loop until restored."""
+    from tessellate.entry.bin import including_binned
+
+    seen: set[int] = set()
+    with including_binned(session):
+        current: int | None = parent_id
+        while current is not None and current not in seen and len(seen) < MAX_DEPTH:
+            if current == document_id:
+                return True
+            seen.add(current)
+            row = session.get(Document, current)
+            current = row.parent_id if row is not None else None
+    return current is not None
+
+
+def subtree(session: Session, document_id: int) -> list[Document]:
+    """Every document under this one, at any depth, binned ones included
+    (the caller filters): what binning, restoring and purging a parent reach."""
+    from tessellate.entry.bin import including_binned
+
+    found: list[Document] = []
+    frontier, seen = [document_id], {document_id}
+    with including_binned(session):
+        while frontier and len(found) < 10_000:
+            rows = list(session.scalars(select(Document).where(Document.parent_id.in_(frontier))))
+            rows = [r for r in rows if r.id not in seen]
+            seen.update(r.id for r in rows)
+            found.extend(rows)
+            frontier = [r.id for r in rows]
+    return found
+
+
 def page(
     session: Session, *, term: str, since: datetime | None, until: datetime | None, limit: int, offset: int
 ) -> tuple[list[Document], int]:

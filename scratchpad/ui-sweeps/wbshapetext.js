@@ -11,7 +11,7 @@
 //
 //   BASE=http://127.0.0.1:8850 SCRATCH=/tmp/x THEME=light \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/wbshapetext.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 let pass = 0;
 let fail = 0;
@@ -38,15 +38,7 @@ const rgb = (s) => (String(s).match(/[\d.]+/g) || []).slice(0, 3).map(Number);
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", "Shape text sweep");
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, "Shape text sweep", 'board');
   await page.keyboard.press("Escape");
   const box = await page.evaluate(() => {
     const r = document.getElementById("whiteboard-container").getBoundingClientRect();

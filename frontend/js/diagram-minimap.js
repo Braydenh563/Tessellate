@@ -51,21 +51,50 @@
     stage.append(bar);
 
     const image = () => fig.querySelector(".md-mermaid-img");
-    const place = (box, left, top, w, h) => Object.assign(box.style, { left: `${left}px`, top: `${top}px`, width: `${w}px`, height: `${h}px` });
     const pic = (img) => ({ x: img.offsetLeft, y: img.offsetTop, w: img.offsetWidth, h: img.offsetHeight });
     const view = () => ({ left: fig.scrollLeft, top: fig.scrollTop, w: fig.clientWidth, h: fig.clientHeight });
+    //: What a scroll needs, measured when the picture or the pane changes (a zoom, a redraw, a resize), not on every scroll
+    //: event of a pan: the picture's box, the pane's size and the thumbnail's.
+    let geo = null;
     const refresh = () => {
       const img = image();
       const p = img && img.offsetWidth ? pic(img) : null;
       const show = Boolean(p) && math.over({ w: fig.scrollWidth, h: fig.scrollHeight }, { w: fig.clientWidth, h: fig.clientHeight });
       bar.classList.toggle("hidden", !show);
+      geo = null;
       if (!show) return;
       if (thumb.src !== img.src) thumb.src = img.src;
       const t = math.thumb({ w: p.w, h: p.h });
       holder.style.width = `${t.w}px`;
       holder.style.height = `${t.h}px`;
       const w = math.window(p, view());
-      place(frame, w.x * t.w, w.y * t.h, w.w * t.w, w.h * t.h);
+      Object.assign(frame.style, { left: "0px", top: "0px", width: `${w.w * t.w}px`, height: `${w.h * t.h}px` });
+      geo = { p, t, w: fig.clientWidth, h: fig.clientHeight };
+      //: Placed now, not through the throttle: after a zoom or a resize the frame must not sit on the old spot for 48 ms.
+      clearTimeout(tail);
+      tail = 0;
+      move();
+    };
+    //: A scroll moves the frame by a transform from the stored boxes: it reads the scroll position only and writes no
+    //: layout property, so a pan costs the picture's move and nothing more (L-documents-89).
+    //: One frame move per 48 ms (L-documents-102): each write repaints the overview and, with the 9,679 px picture as its thumbnail,
+    //: cost 4 to 6 ms a frame at 4x CPU; a trailing call settles the frame on the last position.
+    let movedAt = 0;
+    let tail = 0;
+    const pan = () => {
+      //: The overview left the page (the diagram closed or redrew): its timer and listener go with it.
+      if (!bar.isConnected) return void (clearTimeout(tail), (tail = 0), fig.removeEventListener("scroll", pan));
+      if (!geo) return;
+      const wait = 48 - (performance.now() - movedAt);
+      if (wait > 0) return void (tail ||= setTimeout(() => ((tail = 0), pan()), wait));
+      //: A pane that changed size is measured again (these two reads are free: nothing in a pan dirties the layout).
+      if (fig.clientWidth !== geo.w || fig.clientHeight !== geo.h) return refresh();
+      move();
+    };
+    const move = () => {
+      movedAt = performance.now();
+      const w = math.window(geo.p, { left: fig.scrollLeft, top: fig.scrollTop, w: geo.w, h: geo.h });
+      frame.style.transform = `translate(${w.x * geo.t.w}px, ${w.y * geo.t.h}px)`;
     };
 
     //: Press, and drag with the pointer held: the pane is centred on the spot under the pointer.
@@ -83,7 +112,7 @@
     });
     holder.addEventListener("pointermove", (event) => holder.hasPointerCapture(event.pointerId) && go(event));
 
-    fig.addEventListener("scroll", refresh, { passive: true });
+    fig.addEventListener("scroll", pan, { passive: true });
     (fig.onzoom ||= []).push(refresh);
     refresh();
   }

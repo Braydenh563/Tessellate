@@ -170,6 +170,9 @@ PIECE_CAP = 32_000
 #: caller; the chord guide was already lazy (bundle `chordGuide`). The cap did not move.
 #: 2026-11-14, -263 (250,517 to 250,254): `paletteAbouts` and `paletteRowParts` from settings-panes.js into
 #: the lazy app-features.js, which the palette's bundle and Quick access both load before any caller. The cap did not move.
+#: 2026-11-22, -273 (250,468 to 250,195): eight more board files (L634) in the boards list
+#: put the total 18 over; the phone's ⋯ sheet (`openKebabSheet`) moved from sheets-selects.js
+#: to the lazy gesture-kit.js behind a stand-in, since only a tap reaches it. The cap did not move.
 TOTAL_CAP = 250_450
 
 

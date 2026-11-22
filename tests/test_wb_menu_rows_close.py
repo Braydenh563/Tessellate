@@ -11,6 +11,7 @@ pressed: Playwright reported the menu "intercepts pointer events"
 fixed the same way by taking the `wb-menu-item` class (see the listener's own
 comment); these rows are a label and a button, so they carry `data-wb-closes`.
 """
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from tests._css_paths import CSS_FILES
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-WHITEBOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WHITEBOARD = frontend_text("whiteboard.js")
 
 #: Rows that do something once and are done with the menu. A switch or a
 #: stepper in the same menu (grid size, the panels) must stay open, so this is

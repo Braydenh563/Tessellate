@@ -145,15 +145,15 @@ function measure(opIdx) {
     && !(e.closest('.select-menu') && !menu.matches('.select-menu')));
   rows = rows.filter((r) => !rows.some((o) => o !== r && o.contains(r)));
   rows = rows.filter((r) => r.getBoundingClientRect().height < 120 && r.getBoundingClientRect().width > menuW * 0.4);
+  //: The leftmost mark in the row's first half, not the first in the DOM: a switch row's switch comes
+  //: first in its markup but is drawn at the end (`order: 1`), and taking it hid the icon before the words.
   const iconOf = (r) => {
-    //: The icon first, then a box: a switch row may write its input before its icon and draw it last.
-    const i = r.querySelector('i.ph, svg, img, .swatch, [class*="dot"]') || r.querySelector('input[type="checkbox"], input[type="radio"]');
-    if (!i || !visible(i)) return null;
     const rr = r.getBoundingClientRect();
-    const ir = i.getBoundingClientRect();
-    // a trailing mark (a chevron, a check at the end) is not the icon column
-    if (ir.left - rr.left > rr.width / 2) return null;
-    return ir;
+    const marks = [...r.querySelectorAll('i.ph, svg, img, .swatch, [class*="dot"], input[type="checkbox"], input[type="radio"]')]
+      .filter(visible).map((i) => i.getBoundingClientRect())
+      // a trailing mark (a chevron, a check at the end) is not the icon column
+      .filter((ir) => ir.left - rr.left <= rr.width / 2);
+    return marks.length ? marks.reduce((a, b) => (b.left < a.left ? b : a)) : null;
   };
   const textStart = (r) => {
     const tw = document.createTreeWalker(r, NodeFilter.SHOW_TEXT, {
@@ -193,12 +193,11 @@ function measure(opIdx) {
   //: stand on the column the command rows' icons stand on.
   const heads = [...menu.querySelectorAll('.dock-menu-label, .wb-panel-group-label, .select-group-label, .menu-group-label, .wb-menu-row > span:first-child, .dock-menu-section > .select-shell > .select-opener, .dock-menu-section > .segmented-control')]
     .filter(visible).map((h) => {
-      //: A switch row's label span leads with its icon: the column it stands on
-      //: is the icon's (like a command row's), not where its words start.
-      const lead = h.matches('.wb-menu-row > span:first-child') && h.querySelector(':scope > i.ph:first-child');
-      const t = h.matches('.select-opener, .segmented-control') ? { x: h.getBoundingClientRect().left, text: '[' + (h.getAttribute('aria-label') || h.className.split(' ')[0]).slice(0, 18) + ']' }
-        : lead ? { x: lead.getBoundingClientRect().left, text: (h.textContent || '').trim().slice(0, 24) } : textStart(h);
-      return t ? { text: t.text, x: r1(t.x), left: Math.round(h.getBoundingClientRect().left) } : null;
+      const t = h.matches('.select-opener, .segmented-control') ? { x: h.getBoundingClientRect().left, text: '[' + (h.getAttribute('aria-label') || h.className.split(' ')[0]).slice(0, 18) + ']' } : textStart(h);
+      // A head that leads with an icon (a View menu row's own label) starts at the icon, as a row's lead does.
+      const hi = h.querySelector(':scope > .ph:first-child, :scope > i:first-child');
+      const hx = t && hi && visible(hi) ? Math.min(t.x, hi.getBoundingClientRect().left) : t?.x;
+      return t ? { text: t.text, x: r1(hx), left: Math.round(h.getBoundingClientRect().left) } : null;
     }).filter(Boolean);
   const seps = [...menu.querySelectorAll('[role="separator"], .menu-sep, hr, .doc-dock-menu-sep, [class*="-sep"], [class*="divider"]')]
     // A hairline is 1px tall, which `visible` (more than 2px) would drop.
@@ -238,9 +237,14 @@ function measure(opIdx) {
     box: { l: Math.round(mr.left), t: Math.round(mr.top), r: Math.round(mr.right), b: Math.round(mr.bottom), w: Math.round(mr.width), h: Math.round(mr.height) },
     lifted: !!lifted,
     op: or ? { l: Math.round(or.left), t: Math.round(or.top), r: Math.round(or.right), b: Math.round(or.bottom) } : null,
+    // A tool's kind list lifted clear of the board's options bar (INBOX 823) sits the bar's
+    // height from its opener by design: the gap is measured to the bar's far edge instead.
+    bar: (() => { const c = document.getElementById('wb-context'); const cr = c && !c.classList.contains('hidden') && c.checkVisibility() ? c.getBoundingClientRect() : null; return cr && cr.width ? { t: Math.round(cr.top), b: Math.round(cr.bottom) } : null; })(),
     natural: Math.round(natural), vw: innerWidth, vh: innerHeight,
     overflowX: menu.scrollWidth > menu.clientWidth + 1 && getComputedStyle(menu).overflowX !== 'visible',
     rows: rowInfo, heads, seps, sections,
+    // Every row a flyout (the board's Arrange): each flyout is a named group already.
+    allFlyouts: rows.length > 0 && rows.every((r) => r.getAttribute('aria-haspopup') === 'menu'),
     //: A menu of switches or an icon grid (the board's shapes) has no
     //: command rows to line up, and is not empty for it.
     controls: [...menu.querySelectorAll('button, input, a[href], [tabindex="0"]')].filter((e) => e.getClientRects().length).length,
@@ -309,12 +313,13 @@ function judge(m) {
       f.push(`section labels on ${new Set(hs.map((h) => Math.round(h.x))).size} x`);
     }
   }
-  if (m.role === 'menu' && rows.length > 5 && !m.seps && !m.sections) f.push(`${rows.length} rows, no groups`);
+  if (m.role === 'menu' && rows.length > 5 && !m.seps && !m.sections && !m.allFlyouts) f.push(`${rows.length} rows, no groups`);
   if (!m.isSheet && m.op) {
     const { box: b, op: o } = m;
     if (b.l < -0.5 || b.t < -0.5 || b.r > m.vw + 0.5 || b.b > m.vh + 0.5) f.push(`off window: ${JSON.stringify(b)} in ${m.vw}x${m.vh}`);
     const below = b.t >= o.b - 2, above = b.b <= o.t + 2;
-    const gap = below ? b.t - o.b : above ? o.t - b.b : null;
+    let gap = below ? b.t - o.b : above ? o.t - b.b : null;
+    if (above && m.bar && m.bar.b <= o.t + 2 && m.bar.t >= b.b - 2) gap = m.bar.t - b.b;
     if (gap !== null && gap > 8) f.push(`${gap}px from its opener`);
     if (gap === null) {
       // beside, or over the opener
@@ -385,6 +390,13 @@ async function sweepSurface(page, where, scope, out, restore) {
       await page.waitForTimeout(300);
       m = await page.evaluate(measure, op.n);
     }
+    //: A date or time field opens a picker dialog, not a menu (the reminder's Due date):
+    //: opened is all this sweep checks of it; the picker's keys are dateField's own.
+    if (m.none && await page.evaluate((n) => {
+      const el = document.querySelector(`[data-mm-op="${n}"]`);
+      return el?.getAttribute('aria-haspopup') === 'dialog' && el.getAttribute('aria-expanded') === 'true'
+        && [...document.querySelectorAll('[role="dialog"]')].some((d) => d.checkVisibility() && !d.hasAttribute('data-mm-was') && d.getAttribute('aria-label') === (el.getAttribute('aria-label') || '').split(':')[0]);
+    }, op.n)) { if (VERBOSE) out.push(`${name}: a picker dialog opened`); continue; }
     if (m.none) {
       out.push(`${name}: nothing opened (aria-expanded=${m.expanded})`);
       continue;
@@ -416,11 +428,13 @@ async function sweepSurface(page, where, scope, out, restore) {
       const moved = await page.evaluate(() => document.activeElement !== window.__mmFocus && !document.activeElement.matches('body'));
       if (!moved) f.push('a second ArrowDown does not walk the menu');
     }
-    //: A list the second ArrowDown opened (a select in a dock menu) is the innermost layer: the first Escape closes
-    //: it, and the menu's own Escape is the one measured.
-    if (op.kind === 'details' && await page.evaluate(() => [...document.querySelectorAll('.select-menu')].some((e) => !e.hasAttribute('data-mm-was') && e.checkVisibility && e.checkVisibility({ visibilityProperty: true })))) {
+    //: A select's list the arrows opened inside the menu is the innermost popup: its Escape is its own,
+    //: and the one measured here is the next (focus back on the select, then the menu closes).
+    const nested = op.kind !== 'select' && await page.evaluate(() => [...document.querySelectorAll('.select-menu:not(.hidden)')].filter((e) => e.checkVisibility()).length);
+    if (nested) {
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(150);
+      if (await page.evaluate(() => [...document.querySelectorAll('.select-menu:not(.hidden)')].some((e) => e.checkVisibility()))) f.push("Escape does not close the select's list inside it");
     }
     await page.keyboard.press('Escape');
     await page.waitForTimeout(200);
@@ -491,7 +505,7 @@ async function sweepSurface(page, where, scope, out, restore) {
     for (const kind of ['board', 'map']) {
       await closeAll(page);
       const ok = await page.evaluate(async (k) => {
-        try { const r = await api('/whiteboard/boards'); const j = await r.json(); const list = Array.isArray(j) ? j : (j.boards || []); const b = list.find((x) => (x.type || 'board') === k); if (!b) return 'none of kind ' + k; switchTab('whiteboard'); await openWhiteboardBoard(b.id); return true; } catch (e) { return String(e); }
+        try { const r = await api('/whiteboard/boards'); const j = await r.json(); const list = Array.isArray(j) ? j : (j.boards || []); let b = list.find((x) => (x.type || 'board') === k); if (!b && k === 'map') b = await apiJson('/whiteboard/boards', { method: 'POST', body: JSON.stringify({ name: 'Menus sweep map', type: 'map', layout: 'tree-right' }) }); if (!b) return 'none of kind ' + k; switchTab('whiteboard'); await openWhiteboardBoard(b.id); return true; } catch (e) { return String(e); }
       }, kind);
       await page.waitForTimeout(1500);
       if (ok === true) await sweepSurface(page, `board/${kind}`, '#whiteboard-container|#whiteboard-sidebar|.wb-topbar|#tab-library', out); else out.push(`board/${kind}: ${ok}`);

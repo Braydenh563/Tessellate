@@ -14,6 +14,7 @@ regenerated for a block that has one.
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import shutil
@@ -31,7 +32,7 @@ SYNCED_JS = ROOT / "frontend" / "js" / "documents-synced.js"
 
 
 def blockref_source() -> str:
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = frontend_text("documents.js")
     start = text.find(BEGIN)
     stop = text.find(END)
     assert start != -1, f"{BEGIN} marker is missing from documents.js"
@@ -274,3 +275,61 @@ def test_the_guide_has_a_topic_and_a_lead_for_a_synced_block() -> None:
     assert "document-synced" in topics and len(topics["document-synced"]["body"]) < 1900
     assert "document-synced" in help_leads.TOPIC_LEADS
     assert "pencil" in topics["document-synced"]["body"]
+
+
+# --- decision 82 a, b, c (L-documents-69 to 71): a copy that reads as one, the pencil at home, live refresh ----------------
+
+
+def _doc(client, title: str, content: str) -> dict:
+    return client.post("/documents", json={"title": title, "content": content}).json()
+
+
+def test_block_uses_counts_the_places_a_block_is_embedded_or_linked(client) -> None:
+    source = _doc(client, "Source doc", "A line to share ^abc123\n\nAnother ^zzz999\n")
+    _doc(client, "Reader one", "Here: ![[Source doc#^abc123]]\n\nand [[Source doc#^abc123|again]]")
+    client.post("/entries", json={"content": "A note: ![[source doc#^zzz999]] and [[Other#^abc123]]"})
+    uses = client.get(f"/documents/{source['id']}/block-uses").json()["uses"]
+    assert uses == {"abc123": 2, "zzz999": 1}
+    assert client.get("/documents/999999/block-uses").status_code == 404
+
+
+def test_block_uses_ignores_its_own_text_and_an_untitled_document(client) -> None:
+    own = _doc(client, "Alone", "Mentions itself ![[Alone#^abc123]] ^abc123")
+    assert client.get(f"/documents/{own['id']}/block-uses").json() == {"uses": {}}
+    blank = _doc(client, "Soon blank", "text ^abc123")
+    client.put(f"/documents/{blank['id']}", json={"title": "   "})
+    assert client.get(f"/documents/{blank['id']}/block-uses").json() == {"uses": {}}
+
+
+def test_a_block_is_copied_as_an_embed_and_pasted_by_the_slash_menu() -> None:
+    js = frontend_text("documents.js")
+    piece = (ROOT / "frontend" / "js" / "documents-blockref.js").read_text(encoding="utf-8")
+    editor = (ROOT / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
+    # One id, written once into the block; the embed is the same reference with a bang, kept for the paste in another document.
+    assert 'const reference = `${synced ? "!" : ""}[[${title}#^${made.id}]]`' in piece
+    assert 'prefs.set("doc-synced-clip", reference)' in piece and 'prefs.get("doc-synced-clip", "")' in piece
+    assert 'id: "syncedcopy"' in editor and 'id: "syncedpaste"' in editor
+    assert 'action.custom === "syncedpaste"' in js and '"paste"' in js and 'if (mode === "paste") return docPasteSyncedBlock()' in piece
+    # The embed reads as a copy: pressing its text opens the same box as the pencil.
+    embeds = (ROOT / "frontend" / "js" / "documents-embeds.js").read_text(encoding="utf-8")
+    assert 'body.addEventListener("click"' in embeds and "edit.click()" in embeds
+
+
+def test_the_block_in_its_own_document_carries_a_pencil_with_the_count() -> None:
+    cm = (ROOT / "frontend" / "js" / "documents-cm.js").read_text(encoding="utf-8")
+    synced = SYNCED_JS.read_text(encoding="utf-8")
+    assert "/block-uses" in cm and "class DocBlockUseWidget" in cm and "new DocBlockUseWidget(match[1])" in cm
+    assert 'ensureModule("docSynced")' in cm and '"synced-own"' in cm
+    # The box there writes into the open editor (never a PUT over the text being typed) and is refused on a changed or split block.
+    assert 'document.addEventListener("synced-own"' in synced and "docTableDispatch({ surface, text }" in synced and "markDocDirty()" in synced
+    assert "own.save(text, area.value)" in synced
+
+
+def test_a_synced_save_redraws_the_other_places_that_show_the_document() -> None:
+    synced = SYNCED_JS.read_text(encoding="utf-8")
+    embeds = (ROOT / "frontend" / "js" / "documents-embeds.js").read_text(encoding="utf-8")
+    assert 'new BroadcastChannel("memorymap-doc-synced")' in synced and "channel?.postMessage({ id })" in synced
+    assert '"synced-saved"' in synced and 'document.addEventListener("synced-saved"' in embeds
+    assert 'new BroadcastChannel("memorymap-doc-synced")' in embeds
+    # A box with its edit box open is not redrawn under the person typing; the document being typed in is not reopened.
+    assert 'box.querySelector("textarea")) continue' in embeds and "if (docDirty) toast(" in embeds

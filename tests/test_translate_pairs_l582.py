@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import translate
-from tessellate.core import extras
+from tessellate.core import extra_downloads, extras
 from tests._app_js import frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,9 +21,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture()
 def folder(tmp_path, monkeypatch):
-    # One folder answers for the engine package and every language package
-    # (L-world-class-628 split them; this file's tests are about the files).
-    monkeypatch.setattr(extras, "download_ready", lambda _id: tmp_path)
+    monkeypatch.setattr(translate, "_folder", lambda: tmp_path)
+    #: The language packages are looked up too (L-world-class-41); with no
+    #: app config that lookup built one on the repo's data/ folder.
+    monkeypatch.setattr(extra_downloads, "root_dir", lambda: tmp_path / "extras")
     return tmp_path
 
 

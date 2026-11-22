@@ -127,6 +127,10 @@ async function composeDraft() {
           ? "Folded your thoughts into the draft, your notes above are untouched."
           : "Draft updated: edit it, or add more thoughts."
     );
+    //: L-documents-77: a small model invents times and numbers despite the
+    //: prompt; the server names those no thought, note or old draft holds.
+    const unsourced = done?.unsourced || [];
+    if (unsourced.length) setDraftStatus(`Check before sending, not in your thoughts or notes: ${unsourced.slice(0, 6).join(", ")}.`, true);
     //: Only when it moved: a pass that left the draft alone says why in
     //: the status line (a live region), and "updated" would contradict it.
     if ($("draft-text").value !== draft) announce("The draft has been updated.");

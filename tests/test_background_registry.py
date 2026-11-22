@@ -42,7 +42,7 @@ __main__.py::_serve_with_lan.serve_both::task::1
 __main__.py::_serve_with_lan.serve_both::task::2
 ai/tools/tool_web.py::prefetch_web::executor::1
 api/routes_backups.py::export_bundle::request-task::1
-api/routes_chat.py::_stop_when_gone::task::1
+api/chat_agent.py::stop_when_gone::task::1
 api/routes_import.py::folder_zip::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
@@ -68,7 +68,7 @@ core/lanserve.py::serve::task::2
 ) | frozenset(
     #: Registered 2026-10-29 (audit 1029 H3, H4): one route deadline's timer
     #: and its closed-browser watcher, both owned by the request and cancelled
-    #: in the guard's `finally`, like `routes_chat._stop_when_gone`.
+    #: in the guard's `finally`, like `chat_agent.stop_when_gone`.
     """
 core/deadline.py::guard::timer::1
 core/deadline.py::guard::task::1

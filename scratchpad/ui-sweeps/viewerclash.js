@@ -66,5 +66,7 @@ const SEEDS = (process.env.SEEDS || 'Atlas:masculine,Atlas:feminine,You,Brayden,
   }
   console.log(JSON.stringify({ vw: VW, vh: VH, rows }, null, 0));
   await browser.close();
+  // One line the lane runners count (they read FAIL, not the exit code alone).
+  console.log((rows.some((r) => r.gap < 4 || r.clippedTop > 0)) ? 'FAIL viewerclash: a measure above is out of bounds' : 'PASS viewerclash');
   process.exit(rows.some((r) => r.gap < 4 || r.clippedTop > 0) ? 1 : 0);
 })();

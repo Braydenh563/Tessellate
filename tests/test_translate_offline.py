@@ -61,6 +61,10 @@ PAYLOADS = {
     "model.gz": gzip.compress(b"MODEL" * 100),
     "lex.gz": gzip.compress(b"LEX"),
     "vocab.gz": gzip.compress(b"VOCAB"),
+    # Spanish to English, the package's second direction (L-world-class-41).
+    "model-esen.gz": gzip.compress(b"MODEL"),
+    "lex-esen.gz": gzip.compress(b"LEX"),
+    "vocab-esen.gz": gzip.compress(b"VOCAB"),
 }
 # The other seven directions (L-world-class-41), each three small gzipped files.
 for _n in range(7):

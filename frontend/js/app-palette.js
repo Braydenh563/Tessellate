@@ -9,12 +9,12 @@
 // Loaded on first use by `LAZY_MODULES.appPalette` (app.js), whose stand-in
 // for `openPalette` fetches this file and then calls the real one.
 //
-// **What stayed at boot, and why.** `paletteCommands` (the registry of rows),
-// `catalogueRun`, `paletteKeys`, `paletteAbouts` and `paletteRowParts` are
-// read synchronously by other surfaces that are not the palette: Quick access
+// **What stayed at boot, and why.** `paletteCommands` (the registry of rows)
+// and `catalogueRun` are read synchronously by other surfaces that are not the palette: Quick access
 // on the dashboard, Find anything's action rows, and the Tools and features
 // dialog. A stand-in returns a promise, so those could not be lazy without
-// making their callers asynchronous. `closePalette` and `renderPalette` are
+// making their callers asynchronous; `paletteKeys` and `paletteAbouts`
+// are in app-features.js, which every one of them loads first. `closePalette` and `renderPalette` are
 // called from boot code only behind a "the palette is open" check, and only
 // `openPalette` opens it, so the file is always in by then.
 //

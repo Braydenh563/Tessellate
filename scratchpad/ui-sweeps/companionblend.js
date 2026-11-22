@@ -16,7 +16,7 @@ const { boot } = require('./lib.js');
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   await page.evaluate((look) => {
     localStorage.setItem('atlas-look', look);
-    const b = document.getElementById('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
+    const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
   }, process.env.LOOK || 'feminine');
   await page.waitForTimeout(3000);
   await page.evaluate(() => {

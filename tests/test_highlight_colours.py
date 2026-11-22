@@ -15,11 +15,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, documents_text
 
 ROOT = Path(__file__).resolve().parents[1] / "frontend"
 APP_JS = app_js_text()
-DOCUMENTS_JS = (ROOT / "js" / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS_JS = documents_text()
 CSS = (ROOT / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
 
 

@@ -14,7 +14,7 @@
 // the selection near the top of the board and near the bottom.
 //
 // Run it at 1440x900 too: the desktop placement must not change.
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 
 const [VW, VH] = (process.env.VIEWPORT || "390x844").split("x").map(Number);
 
@@ -26,15 +26,7 @@ function ok(name, good, detail) {
 }
 
 async function newBoard(page, name) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  await page.click("#wb-template-create");
-  await page.waitForTimeout(2500);
+  await libNewBoard(page, name, 'board');
   await page.keyboard.press("Escape");
 }
 

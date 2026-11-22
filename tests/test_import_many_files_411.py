@@ -33,3 +33,10 @@ def test_more_than_the_route_cap_is_refused_in_plain_words(client, monkeypatch):
     response = client.post("/import/app?source=obsidian&dry_run=1", files=_parts(1060))
     assert response.status_code == 422
     assert "than one import takes" in response.json()["detail"]
+
+
+def test_more_files_than_the_import_cap_still_get_the_imports_own_words(client, monkeypatch):
+    monkeypatch.setattr(routes_import, "MAX_FILES", 5)
+    response = client.post("/import/app?source=obsidian&dry_run=1", files=_parts(6))
+    assert response.status_code == 422
+    assert "more than one import takes (5)" in response.text
