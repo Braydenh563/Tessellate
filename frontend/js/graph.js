@@ -1191,7 +1191,7 @@ function renderTraceReadout(result) {
     arrow.className = "ph ph-arrow-right graph-trace-arrow-icon";
     arrow.setAttribute("aria-hidden", "true");
     const how = document.createElement("span");
-    how.className = "graph-trace-connector-label";
+    how.className = "graph-trace-connector-label visually-hidden";
     how.textContent = also.length ? `${step.how} +${also.length}` : step.how;
     connector.append(arrow, how);
     path.append(connector, noteButton(byId.get(step.target)));
