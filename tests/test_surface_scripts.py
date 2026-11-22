@@ -26,10 +26,12 @@ import pytest
 
 from tessellate.api.asset_strip import strip_html
 from tessellate.core import security
+from tests._surface_assets import inline_surfaces
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
-RAW = (FRONTEND / "index.html").read_bytes().decode("utf-8")
+#: Settings' body is a fetched file (L-world-class-760); put back in its script as it once sat.
+RAW = inline_surfaces((FRONTEND / "index.html").read_bytes().decode("utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 SCRIPTS = list(re.finditer(r'<script type="text/x-surface"([^>]*)>(.*?)</script>', RAW, re.S))

@@ -334,12 +334,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: that no longer held it. The control is the truth, so the section is read
   //: from where it sits now, and the one the caller named is only the answer
   //: when the control is not in the markup at all.
+  overlayReturnFocus = document.activeElement;
+  window.uiSettlingUntil = performance.now() + 400;
+  //: The body is a file fetched on the first open (L-world-class-760), begun at the gear under the pointer; only
+  //: an open that comes first, from the palette, a link or a key, waits for it. Later opens stay synchronous.
+  if (SURFACES.pending("settings")) await SURFACES.load("settings");
   if (scrollToId) {
     const holder = $(scrollToId)?.closest(".settings-section");
     if (holder?.id.startsWith("settings-")) section = holder.id.slice("settings-".length);
   }
-  overlayReturnFocus = document.activeElement;
-  window.uiSettlingUntil = performance.now() + 400;
   surfaceBuild("settings");
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
@@ -3394,6 +3397,10 @@ document.addEventListener("motionchange", () => {
 
 // Settings modal (Wave A).
 $("settings-btn").addEventListener("click", () => openSettingsModal());
+//: The first sign Settings is about to open (the gear under the pointer, in focus or touched) starts the fetch of its
+//: body (L-world-class-760), which then parses ahead in idle slots while the click lands. Settings opened any
+//: other way (the palette, a link, a key) fetches in `openSettingsModal` before it builds.
+for (const type of ["pointerover", "focusin", "touchstart"]) $("settings-btn").addEventListener(type, () => SURFACES.load("settings"), { passive: true });
 $("settings-close").addEventListener("click", () => closeSettingsModal());
 $("settings-peek").addEventListener("click", () => setSettingsPeek(!$("settings-modal").classList.contains("peeking")));
 

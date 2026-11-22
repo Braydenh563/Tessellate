@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 
 from tessellate.ai import model_manager, spelling
 from tessellate.core import deps, extras, jobs, taskhistory, vault
+from tests._surface_assets import inline_surfaces
 
 #: Loaded for what they register (the typed reader, the help topics), which a
 #: test that classifies a question without the chat route would otherwise miss.
@@ -161,6 +162,9 @@ def _read_text_once(self, encoding=None, errors=None):
             if text is None:
                 text = _real_read_text(self, encoding, errors)
                 if self.resolve() == _INDEX_HTML:
+                    # A surface fetched on demand (Settings' body, `data-src`) is
+                    # put back inside its script first (tests/_surface_assets.py).
+                    text = inline_surfaces(text)
                     # The page keeps each surface's markup as raw text in a
                     # `<script type="text/x-surface">` so the parser makes no
                     # nodes for it at boot (settings-body.js). The lints that
