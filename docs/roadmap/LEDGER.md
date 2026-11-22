@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
-| ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
+| ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
 | general | 0 | 4 | 0 | 0 | 5 | 4 |
-| all | 502 | 539 | 126 | 2 | 184 | 1167 |
+| all | 502 | 541 | 126 | 2 | 184 | 1169 |
 
 ## graph
 
@@ -458,6 +458,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
 - [ ] **L-ui-modernisation-24** `ui-modernisation` open, S: Move stale UI plan pointers and empty headings to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:778. Evidence: Open line in the plan's prose a session could miss. Stale 'Open' pointers will mislead the session into rebuilding: - 5b is built (HISTORY, TIMELINE Brief 55). - The selection ticks (line 684) were built 2026-09-23. - 1695 (line 1285) is fully built. - Decision 6's countjs 'future pass' (line 213) is done. - Empty headings sit at lines 781, 1251, 1253 and 1270.
 - [ ] **L-ui-modernisation-25** `ui-modernisation` open, S: Tab strip is 48px tall in the 44px header at 820 to 1199 wide, so its top 2.5px overhangs the window; make the header fit the strip, then drop the tab-bar allowance in tour.js judge(). From tour.js sweep, L-general-14. Evidence: 1184x760: #tab-bar box [340,-2.5,504,48] in a 44px top-bar; tab buttons 44px from the 820-1199.98 band (frontend/css/10-responsive.css:101) and the strip's 2px padding make 48; 2.5px sits above the window
+- [ ] **L-ui-modernisation-26** `ui-modernisation` open, M: Run the usability and IA trust read the owner asked for (INBOX 266 ask 1): the small broken, unreliable or missing things, listed per surface. From docs/roadmap/HISTORY.md arch.md row, INBOX 266 (1). Evidence: INBOX 266 ask 1 (usability and information-architecture gaps that cost trust) is the only part of 266 left; 13.2 is per surface, no list of the small broken, unreliable or missing things; owner Phase 13c with deep-audit
+- [ ] **L-ui-modernisation-27** `ui-modernisation` open, M: Close 13a's remaining ratcheted counts (decisions 9, 10, 12, 13, 16, 17). From UI_MODERNISATION_PLAN.md 13.3 recount 2026-11-22, L533. Evidence: gate13.js: tokens 417 (target under 200), literal z-index above 2 115, colour literals outside the two files 153, !important 86, hand-written outer drops 6, 50% circles 6 selectors in CIRCLES_LEFT; each at its ratchet
 
 ## timeline
 

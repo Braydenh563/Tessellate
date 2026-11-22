@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: UI_MODERNISATION 13.3 carries the 2026-11-22 recount of decisions 9 to 17 from the running app (`gate13.js`): every count at or under its ratchet, the 13a remainder is a LEDGER row, and INBOX 266 ask 1 (the usability and IA read) has its own row.
 - Tests: the answer pictures, citation order and copy-app-link checks read chat-list.js, where the saved-chat code moved from sheets-selects.js.
 - Sweeps: companioninteract passes above the face for its follow-off check (the old path crossed the face, and a pointer on the face is a touch that looks with the setting off too).
 - Sweeps: every sweep that runs a python seed takes it from one helper (`venvPython` in lib.js: VENV, else the repo .venv, else python3), so asktab and twelve others no longer spawn a .venv/bin/python CI does not have.
