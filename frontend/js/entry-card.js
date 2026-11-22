@@ -888,43 +888,7 @@ function entryItem(entry, options = {}) {
   //: calendar chips beside "3 days ago" read as three dates of the same kind;
   //: they are different facts: when the note was written is at the card's
   //: corner, and the days its words point at are one labelled item here.
-  const mentioned = [];
-  for (const when of entry.dates || []) {
-    const day = new Date(`${when.at}T00:00:00`);
-    const dayLabel = day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
-    //: UX-02: a clock said with the day, shown as written.
-    const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
-      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })
-      : "";
-    //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
-    //: "month of Nov 30" read as a date).
-    const label = clock
-      ? `${dayLabel}, ${clock}`
-      : when.precision === "month"
-        ? day.toLocaleDateString(undefined, { month: "short" })
-        : when.precision === "year"
-          ? String(day.getFullYear())
-          : when.precision === "week"
-            ? `week of ${dayLabel}`
-            : dayLabel;
-    //: The date alone, the phrase on hover (owner, with a screenshot of
-    //: "Tonight → 21 Sept on Friday → 25 Sept" in one meta line: "clean up
-    //: the notes metadata and badges a bit more"). What a reader scans for is
-    //: the day; the words the note used for it are the explanation.
-    mentioned.push({
-      label,
-      title: `“${when.phrase}” meant ${day.toLocaleDateString(undefined, {
-        weekday: "long", day: "numeric", month: "long", year: "numeric",
-      })}`,
-    });
-  }
-  if (mentioned.length) {
-    const shown = mentioned.slice(0, 3).map((m) => m.label).join(", ");
-    const more = mentioned.length > 3 ? ` +${mentioned.length - 3}` : "";
-    const mark = chip(`ph:calendar-blank Mentions ${shown}${more}`, "when");
-    mark.title = `Dates this note mentions, not a reminder. ${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
-    meta.appendChild(mark);
-  }
+  entryItem.mentions(entry, meta);
 
   //: **Which space this note is filed in (INBOX 1a/38)**, wherever the
   //: picker does not already say it. An empty `spacesCache` means "not
@@ -1293,6 +1257,46 @@ function entryItem(entry, options = {}) {
   }
   return li;
 }
+//: The "Mentions" chip: the dates a note's words point at; split from `entryItem`.
+entryItem.mentions = (entry, meta) => {
+  const mentioned = [];
+  for (const when of entry.dates || []) {
+    const day = new Date(`${when.at}T00:00:00`);
+    const dayLabel = day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    //: UX-02: a clock said with the day, shown as written.
+    const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
+      ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", ...clockOptions() })
+      : "";
+    //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
+    //: "month of Nov 30" read as a date).
+    const label = clock
+      ? `${dayLabel}, ${clock}`
+      : when.precision === "month"
+        ? day.toLocaleDateString(undefined, { month: "short" })
+        : when.precision === "year"
+          ? String(day.getFullYear())
+          : when.precision === "week"
+            ? `week of ${dayLabel}`
+            : dayLabel;
+    //: The date alone, the phrase on hover (owner, with a screenshot of
+    //: "Tonight → 21 Sept on Friday → 25 Sept" in one meta line: "clean up
+    //: the notes metadata and badges a bit more"). What a reader scans for is
+    //: the day; the words the note used for it are the explanation.
+    mentioned.push({
+      label,
+      title: `“${when.phrase}” meant ${day.toLocaleDateString(undefined, {
+        weekday: "long", day: "numeric", month: "long", year: "numeric",
+      })}`,
+    });
+  }
+  if (mentioned.length) {
+    const shown = mentioned.slice(0, 3).map((m) => m.label).join(", ");
+    const more = mentioned.length > 3 ? ` +${mentioned.length - 3}` : "";
+    const mark = chip(`ph:calendar-blank Mentions ${shown}${more}`, "when");
+    mark.title = `Dates this note mentions, not a reminder. ${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
+    meta.appendChild(mark);
+  }
+};
 
 //: Take a note to the graph and put it in the middle, lit. The graph is its
 //: own lazy bundle and lays itself out after the tab opens, so this waits for

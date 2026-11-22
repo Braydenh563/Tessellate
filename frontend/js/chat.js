@@ -364,9 +364,7 @@ function clearChatEmptyState() {
   empty.remove();
 }
 
-// --- web panel: state and the two synchronous readers -------------------------
-// The panel's code is the lazy web-panel.js (`LAZY_MODULES.webClip`; stand-ins in
-// lazy-entries.js), so only what boot code reads on the spot stays here.
+// --- web panel: boot-read state only; the rest is lazy web-panel.js (LAZY_MODULES.webClip)
 
 let webReaderPage = null; // the page currently open in the reader
 //: The request in flight, a search or a page, so Stop can cancel it and a
@@ -400,7 +398,6 @@ function webPageMarkdown(page) {
     .join("\n")
     .trim();
 }
-
 
 let attachedWebPage = null;
 //: The page the last answer cited, for a follow-up about it (`webFollowUp`).

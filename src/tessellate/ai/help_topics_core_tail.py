@@ -68,8 +68,7 @@ TAIL_TOPICS.extend(
             ),
             "body": (
                 "Whiteboard keys (Library, Boards & maps; Ctrl+Shift+B opens it). "
-                "Tools: V or S select, H hand, K lasso, P pen, M highlighter, E "
-                "eraser, B fill, L line, A arrow, R rectangle, O circle, G "
+                "Tools: V or S select, H hand, K lasso, P pen, M highlighter, E eraser, B fill, L line, A arrow, R rectangle, O circle, G "
                 "triangle, D diamond, T text, N sticky note (Ctrl+Enter in one starts the next beside it), F frame, C connector (Shift+C "
                 "curved), I image, X delete. An arrow (A) or a line (L) that starts or ends on a shape, card or topic is a "
                 "connector bound to it and follows it when it moves. A drawn shape is selected and Select returns (not the pen). Shapes draw corner to corner (Shift: square, circle, 45 degree line, straight pen; Alt: centred). The Shapes flyout has more (star, cloud, cylinder and others). Moving around: the wheel "
@@ -145,8 +144,7 @@ TAIL_TOPICS.extend(
                 " label it. A frame's title drags it and what is inside it, its top handle turns both; a click on a panel's body or a frame's edge selects it; its "
                 "menu exports it or fits it to its contents, and a double-click on a resize "
                 "handle fits that edge to what it holds; a note, text box or picture fits its content. Ctrl+Shift+L "
-                "locks the selection. Right-click an item, "
-                "Comment…, starts a thread. View, Present frames: one frame at a "
+                "locks the selection. Right-click an item, Comment…, starts a thread. View, Present frames: one frame at a "
                 "time, the bar lists pages; ? shows every key; Ctrl+K finds a board action. Menus: Insert, Edit, "
                 "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
                 "snap, zoom) and Board (new, export). Rename a board: Board, Rename or Suggest a name."
@@ -255,8 +253,7 @@ TAIL_TOPICS.extend(
                 "Goal breakdown, Weekly review, Study topic, Book notes and Meeting, each drawn in its own "
                 "shape; the new map's central topic is its name, laid out the way the picture shows (a "
                 "brainstorm round its centre, pros and cons both ways, a fishbone to the left). A new map "
-                "that is still just its root offers the same templates as pictures, Start from a template; "
-                "the X hides it for that map."
+                "that is still just its root offers the same templates as pictures, Start from a template; the X hides it for that map."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -319,8 +316,7 @@ TAIL_TOPICS.extend(
                 "(the head counts them; Clear drops them), and a frame lists what it holds under its row. A locked item shows a lock when the pointer "
                 "is on it; right-click it to unlock it. The Library holds "
                 "built-in sets (General shapes, Callouts and notes, Flowchart, UML, Entity relationship, Wireframe, BPMN, C4, Arrows, Frames (a frame, a timeline lane, swimlanes, A4, A3, Letter, 16:9), Cloud and network and Devices and people icons "
-                "and 1,530 icons), five draw.io sets (196 shapes "
-                "with their own connection points), then Favourites, Recent and your own "
+                "and 1,530 icons), five draw.io sets (196 shapes with their own connection points), then Favourites, Recent and your own "
                 "libraries; the search field finds any of them by name or tag. Click a tile or press Enter "
                 "to place it in the middle of the view, drag it and it lands held where you grabbed it, or Shift+Enter to place "
                 "it joined to what is selected; F stars it, and Shift+F10 or a right-click opens its menu "
@@ -527,8 +523,7 @@ TAIL_TOPICS.extend(
                 "Every connector takes bends: drag the small ring in the middle "
                 "of a run (or double-click the line) to add one, drag a bend to move it, double-click it to "
                 "take it out. A straight line runs through its bends, a curved one curves through "
-                "them, an elbow turns at right angles; Entity relation and "
-                "Isometric take no bends; changing the line shape keeps them. "
+                "them, an elbow turns at right angles; Entity relation and Isometric take no bends; changing the line shape keeps them. "
                 "With Select, pointing at a shape, card or text box shows its connection points; drag from one to draw an "
                 "elbow connector to whatever you let go on, or to a free end. "
                 "Arrange, Edit connection points gives a shape points of its own (press the outline to add, a point to remove); Reset connection points undoes it. "
@@ -886,30 +881,24 @@ TAIL_TOPICS.extend(
             "body": (
                 "Mind map keys (Library, Boards and maps). With a topic selected: Tab adds a child, Enter adds a "
                 "topic right after it and Shift+Enter right before it (what you "
-                "type next is the new topic's words), Ctrl+D copies it as the "
-                "next sibling, Ctrl+Shift and the arrows move it among its "
+                "type next is the new topic's words), Ctrl+D copies it as the next sibling, Ctrl+Shift and the arrows move it among its "
                 "siblings, Shift+Tab outdents it, Ctrl+Enter gives it a new parent, M (Move under…) re-parents it, "
-                "the arrow keys walk the tree, "
-                "F2 or double-click renames (while typing, Enter breaks the line, Esc "
+                "the arrow keys walk the tree, F2 or double-click renames (while typing, Enter breaks the line, Esc "
                 "keeps the name, Tab or Ctrl+Enter adds the next topic, / and [[ add "
-                "links), Delete removes the topic and "
-                "everything under it, C folds or unfolds its branch (or click the "
+                "links), Delete removes the topic and everything under it, C folds or unfolds its branch (or click the "
                 "chevron), Alt+1 to Alt+9 show that many levels "
                 "(Alt+1: the trunks alone), Alt+= and Alt+- show one more or one less level, Shift+C draws a cross-link to another topic, F shows "
                 "only this branch and its neighbours (F again: all), Shift+F10 "
-                "opens every action. Ctrl+Z undoes (100 steps, kept across a "
-                "reload), Ctrl+Shift+Z redoes. "
+                "opens every action. Ctrl+Z undoes (100 steps, kept across a reload), Ctrl+Shift+Z redoes. "
                 "Right-click a topic for the ring: Add child, Add beside, Fold, "
                 "Delete, Move under, Cross-link and More; hold Alt on the ring to remove "
                 "instead of add. Dragging a topic onto another moves its whole "
                 "branch; double-click a line to label it. A selected topic has "
                 "its bar above it: the colour, the text size (minus and plus "
-                "round the size it reads, S to XL), and Text, Shape and Branch "
-                "line, each a panel of rows: a preview of each look, and a "
+                "round the size it reads, S to XL), and Text, Shape and Branch line, each a panel of rows: a preview of each look, and a "
                 "reset arrow back to following the map. Drag the square on its bottom right corner to resize it; "
                 "hold Shift as you drag to scale its text with it. Pick several "
-                "topics (drag round them, or Shift-click) and the bar and "
-                "the right-click menu act on all of them: colour, bold, tasks, "
+                "topics (drag round them, or Shift-click) and the bar and the right-click menu act on all of them: colour, bold, tasks, "
                 "fold, and a summary when they share a parent. A topic's menu "
                 "has Summarise this branch: a few sentences about everything "
                 "under it go into the topic's note, yours to change or keep. Ctrl+K finds Sort branches."
@@ -976,15 +965,13 @@ TAIL_TOPICS.extend(
                 "Content, Markers sets a priority (1 to 5), progress, a "
                 "flag, a start day, a due day (and time) and up to six icons; View, Gantt chart draws "
                 "a bar from start to due for each topic with both; "
-                "a topic's menu, Audio note attaches a recording, its mic mark plays it; "
-                "View, Filter by marker dims every topic "
+                "a topic's menu, Audio note attaches a recording, its mic mark plays it; View, Filter by marker dims every topic "
                 "without the markers or labels you press, and View, Dim all but the selected branch "
                 "dims everything outside the selected branch and its path to "
                 "the centre, following the selection. The sidebar's Outline tab (View, "
                 "Outline) lists the map as an indented outline with each topic's markers: F2 renames, "
                 "Shift+Enter adds a topic, Tab and Shift+Tab move it in and out a level. "
-                "A topic's menu makes "
-                "it a task: press its box to tick it, and every topic above "
+                "A topic's menu makes it a task: press its box to tick it, and every topic above "
                 "counts the done ones (1/2); Markdown exports write tasks as - [ "
                 "] and - [x]. View, Number the branches numbers every topic by "
                 "its place (1, 1.1, 1.2), and the Markdown and OPML exports keep "
@@ -1023,11 +1010,9 @@ TAIL_TOPICS.extend(
             "body": (
                 "A topic's menu also has Put a picture from a link, Copy this topic's shape with Paste the copied shape here, "
                 "Add a template branch, Add a second central topic (joined by a link with words) and Save this branch as Markdown; "
-                "the palette starts a five minute brainstorm timer. "
-                "Start from a "
+                "the palette starts a five minute brainstorm timer. Start from a "
                 "template, import an OPML, FreeMind, XMind, Markdown or text outline "
-                "(it opens as a tree), paste an indented "
-                "list onto a topic to add it as that topic's branch, use "
+                "(it opens as a tree), paste an indented list onto a topic to add it as that topic's branch, use "
                 "Topics from a recording for one topic per transcript line, let the "
                 "local AI propose a map from notes you pick, or on a topic choose "
                 "Add, Branches from my notes… for up to five children found in your "
@@ -1037,15 +1022,12 @@ TAIL_TOPICS.extend(
                 "the suggestions appear faded under the topic: Tab takes one, Enter adds "
                 "the taken ones, Escape drops them, and Ctrl+Z takes them back; export it as "
                 "OPML, FreeMind, XMind, Markdown or text as well as a picture, or write it as "
-                "a document (the board menu's Write as a document: branches "
-                "become headings, deeper topics lists, notes paragraphs); a "
+                "a document (the board menu's Write as a document: branches become headings, deeper topics lists, notes paragraphs); a "
                 "document's menu, Map the headings, goes the other way. One "
                 "branch alone: a topic's Branch menu, Copy this branch as an "
-                "outline (Markdown, ready to paste) or Export this branch… (a "
-                "picture or PDF of it). With a "
+                "outline (Markdown, ready to paste) or Export this branch… (a picture or PDF of it). With a "
                 "map open, the command palette (Ctrl+K) lists the map's commands: "
-                "add, rename, fold, focus, tidy, layout, look, numbering, present "
-                "and export."
+                "add, rename, fold, focus, tidy, layout, look, numbering, present and export."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1082,8 +1064,7 @@ TAIL_TOPICS.extend(
                 "through, Ctrl+1, Ctrl+2, Ctrl+3 or Ctrl+Alt+1 to 6 headings, Ctrl+Shift+8, "
                 "Ctrl+Shift+7 and Ctrl+Shift+9 a bulleted, numbered and task list, "
                 "Ctrl+; Ctrl+Shift+; Ctrl+' Alt+= and Ctrl+Shift+' open the emoji, "
-                "icon, symbol, equation and calculator, "
-                "Tab and Shift+Tab "
+                "icon, symbol, equation and calculator, Tab and Shift+Tab "
                 "indent and outdent, Ctrl+/ comments the selection (Enter ends the remark), Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
                 "the blocks menu (Citation picks a note or an address). Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (F3 next, "
@@ -1092,20 +1073,16 @@ TAIL_TOPICS.extend(
                 "is the markdown and Split puts a preview beside it, or Read. The "
                 "sidebar's Outline lists the headings, and they fold. Focus mode (the corners button on "
                 "the dock, the ⋯ menu on a phone, or F11) hides all but the page, with a "
-                "bar for the title, save state, a Sidebar button and Exit. "
-                "The formatting toolbar hides: the Formatting "
+                "bar for the title, save state, a Sidebar button and Exit. The formatting toolbar hides: the Formatting "
                 "button in the document's bar, Ctrl+Shift+X or the bar's More "
                 "menu, Show formatting toolbar, brings it back. In a Live table "
                 "the arrows keep the column, Enter goes down, Ctrl+Enter leaves "
-                "the table, and "
-                "pasted sheet rows fill cells. Right-click a "
+                "the table, and pasted sheet rows fill cells. Right-click a "
                 "cell for the table's menu (move, sort, filter, sum, select); the grips on its "
                 "edges select, drag and add rows and columns. "
-                "Pasting from the "
-                "web or Word keeps headings, bold, italics, "
+                "Pasting from the web or Word keeps headings, bold, italics, "
                 "lists and links; Ctrl+Shift+V pastes plain text. With nothing "
-                "selected, Ctrl+C and Ctrl+X copy and cut the whole line, and "
-                "pasting that line puts it above the one you are on."
+                "selected, Ctrl+C and Ctrl+X copy and cut the whole line, and pasting that line puts it above the one you are on."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1145,14 +1122,12 @@ TAIL_TOPICS.extend(
             "body": (
                 "Replace in every document (the document's ⋯ menu or Ctrl+K). "
                 "Type what to find, and the list shows every document that has "
-                "it, with the first match in its line. Untick a document to "
-                "leave it out. When more than one document would change, the "
+                "it, with the first match in its line. Untick a document to leave it out. When more than one document would change, the "
                 "first press of Replace all asks and the second does it; the "
                 "toast's Undo takes every document back at once. A pattern that "
                 "does not read says so before anything runs. The find panel "
                 "(Ctrl+F) has All documents and Replace in all beside its match "
-                "count: they open these with what you typed, its replacement "
-                "and its options."
+                "count: they open these with what you typed, its replacement and its options."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1176,10 +1151,8 @@ TAIL_TOPICS.extend(
                 "counts). A suggestion that would change more than a third of a "
                 "short word is not offered, and the rest come with the commonest "
                 'word first. "Add to dictionary" sits beside "Ignore this one" in '
-                "a note box and in a document, and keeps the word in your "
-                "notebook. The spelling preference (Settings, General, Writing; "
-                "or the document dictionary dialog) starts as this computer's "
-                "language."
+                "a note box and in a document, and keeps the word in your notebook. The spelling preference (Settings, General, Writing; "
+                "or the document dictionary dialog) starts as this computer's language."
             ),
             "badge": {"label": "Documents", "tab": "documents"},
         },
@@ -1204,13 +1177,11 @@ TAIL_TOPICS.extend(
                 "its mark while the caret is on its line, and a code block while "
                 "the caret is in it. Source view shows all of it. A fenced block that "
                 "names a language (python, js, html, css, sql and more) is coloured "
-                "as that language while you edit it, indents and closes brackets "
-                "as it does, and suggests its words; typing a name "
+                "as that language while you edit it, indents and closes brackets as it does, and suggests its words; typing a name "
                 "after the opening fence lists the languages. The block's corner "
                 "shows its title (title=\"fit.py\" on the fence) or language; press it "
                 "to pick another language. Ctrl+click (Command on a Mac) opens a link, "
-                "and holding the key thickens its underline. Hover or tap a code block "
-                "for Copy, which copies the code without the fences."
+                "and holding the key thickens its underline. Hover or tap a code block for Copy, which copies the code without the fences."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1231,8 +1202,7 @@ TAIL_TOPICS.extend(
                 "text only",
             ),
             "body": (
-                "After a paste that changed form (a "
-                "web page or Word copy turned to Markdown, several lines, a "
+                "After a paste that changed form (a web page or Word copy turned to Markdown, several lines, a "
                 "spreadsheet's rows, a web address) a Paste options chip appears at "
                 "the caret. Press Ctrl, then a letter or the arrows and Enter: Keep "
                 "formatting, Text only, Match surrounding, or read the same text as "
@@ -1245,8 +1215,7 @@ TAIL_TOPICS.extend(
                 "browser will not let the app read the clipboard, Paste special "
                 "applies to your next Ctrl+V. Right-click in the text for the same "
                 "choices under Paste as, beside Cut, Copy, Paste, Turn into and Select all (hold "
-                "on a phone); Shift+right-click opens the browser's own menu, with "
-                "its spelling suggestions."
+                "on a phone); Shift+right-click opens the browser's own menu, with its spelling suggestions."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1266,8 +1235,7 @@ TAIL_TOPICS.extend(
                 "who wrote a comment",
             ),
             "body": (
-                "Select words and choose Style, Comment: "
-                "they are highlighted and a remark follows them, kept in the text "
+                "Select words and choose Style, Comment: they are highlighted and a remark follows them, kept in the text "
                 "as ==words== %%the remark%%, so it opens anywhere else the same. "
                 "The sidebar's Outline lists every remark with the words it is "
                 "about, who wrote it (your name from Settings, Profile) and when. "
@@ -1301,8 +1269,7 @@ TAIL_TOPICS.extend(
                 "to-do list, quote, callout or code block, taking the old marker "
                 "off first. Select text and press the swap button on the selection "
                 "bar, press Turn into on a phone's formatting bar, or choose Turn "
-                "into in the palette (Ctrl+K). One Ctrl+Z puts the block back. A "
-                "caret inside a code block is left alone."
+                "into in the palette (Ctrl+K). One Ctrl+Z puts the block back. A caret inside a code block is left alone."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1323,8 +1290,7 @@ TAIL_TOPICS.extend(
                 "existing note and append it. Both are on the selection bar (the "
                 "note button) and in the right-click menu. The text lands as a "
                 "quote, or as a code block in a code file, with a From [[Title]] "
-                "line under it that links back to the document. Undo on the "
-                "notice, or Ctrl+Z, takes it back."
+                "line under it that links back to the document. Undo on the notice, or Ctrl+Z, takes it back."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1356,8 +1322,7 @@ TAIL_TOPICS.extend(
                 "line spacing",
             ),
             "body": (
-                "Press the counts in the status bar "
-                "for Document statistics (words, sentences, reading and speaking "
+                "Press the counts in the status bar for Document statistics (words, sentences, reading and speaking "
                 "time, reading ease, the words you lean on). The command palette "
                 "(F1) changes the selection's case, sorts its lines or drops "
                 "duplicates, numbers the headings (1, 1.1) or takes the numbers "
@@ -1367,13 +1332,11 @@ TAIL_TOPICS.extend(
                 "(every version, a way back, a summary), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
-                "connected, AI edit says why when pressed and "
-                "offers Set up a model. Footnotes show "
+                "connected, AI edit says why when pressed and offers Set up a model. Footnotes show "
                 "as numbered notes at the foot in Read view, print and the "
                 "HTML download. A page break (the / menu's Page break, written "
                 "\\newpage on its own line) starts what follows on a new page when "
-                "the document is printed or saved as a PDF. Writing checks: "
-                "spelling against your own dictionary, grammar checked on this "
+                "the document is printed or saved as a PDF. Writing checks: spelling against your own dictionary, grammar checked on this "
                 "machine, an accessibility check (a skipped heading level, an "
                 'image with no description, link text like "click here"), Suggest '
                 "changes (tracked changes with who and when, accepted or rejected one at a time or "
@@ -1382,11 +1345,9 @@ TAIL_TOPICS.extend(
                 "links, nested lists, tables, code (with its language), pictures, "
                 "task boxes, footnotes (as Word footnotes), formulas (as Word "
                 "equations), diagrams (as pictures), [TOC], callouts and columns (as Word's own) and suggested changes as "
-                "Word's tracked changes with author and date; a .docx added "
-                "in the Library is read with its headings, lists, tables, code "
+                "Word's tracked changes with author and date; a .docx added in the Library is read with its headings, lists, tables, code "
                 "and pictures, its tracked changes as suggestions; other downloads "
-                "are .md, .html, a .zip "
-                "with images, and print or save as PDF."
+                "are .md, .html, a .zip with images, and print or save as PDF."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1424,8 +1385,7 @@ TAIL_TOPICS.extend(
                 "or another kind. The box is tinted by its kind and its icon names "
                 "it; click the icon to change the kind or to make the box fold. The "
                 "first line, after the icon, is the title, written like any text, "
-                "and the lines under it are the body (an empty body says what goes "
-                "there). Source view shows the markdown: > [!tip] Title."
+                "and the lines under it are the body (an empty body says what goes there). Source view shows the markdown: > [!tip] Title."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1523,8 +1483,7 @@ TAIL_TOPICS.extend(
                 "colour by type",
             ),
             "body": (
-                "Show adds Tags (a node per tag), "
-                "Attachments (a node per file or picture) and Unwritten links: each "
+                "Show adds Tags (a node per tag), Attachments (a node per file or picture) and Unwritten links: each "
                 "[[name]] no note answers to is a faint node, and clicking it writes "
                 "that note, named in its heading, linked from every note that named "
                 "it. Display holds Labels, Label backgrounds (off draws names on a "
@@ -1541,19 +1500,15 @@ TAIL_TOPICS.extend(
                 "local model for one sentence (with none, Summary (no AI)), "
                 "File as a category files its notes under one category (the card names where most sit), "
                 "and the pencil renames it (the arrow restores it). "
-                "Its dots hold Merge with and Remove topic; "
-                "the legend's Reset topic edits undoes both. "
+                "Its dots hold Merge with and Remove topic; the legend's Reset topic edits undoes both. "
                 "On the map, drag a topic's name to move all its notes together "
                 "(they stay put until Unpin all), double-click to rename, "
                 "click it for its card. A note's card and its panel show its topic; "
-                "pressing it opens the graph on that topic. "
-                "Filter holds a chip per "
+                "pressing it opens the graph on that topic. Filter holds a chip per "
                 "kind of link on the map (press one to take those links off, again "
                 "to bring them back) and per property value (press to light those "
-                "notes). Colour: Note type paints each note its type's colour "
-                "(Person, Project, Meeting, Book and Place come built in). "
-                "In Trace, a step marked +2 has two more reasons "
-                "its notes relate; point at it to read them."
+                "notes). Colour: Note type paints each note its type's colour (Person, Project, Meeting, Book and Place come built in). "
+                "In Trace, a step marked +2 has two more reasons its notes relate; point at it to read them."
             ),
             "badge": {"label": "Graph", "tab": "graph"},
         },
@@ -1583,8 +1538,7 @@ TAIL_TOPICS.extend(
                 "Groups and Minimap) has a ? beside its name that says in a line what each of its "
                 "controls does to the map. Physics shapes the Force layout; Gravity and Spread shape Tree and Radial, and Spread the Arc. Its Tidy spacing "
                 "(off by default) keeps dots off the lines but a large notebook settles slower. Show, "
-                "Display, Filter, Time, Groups and Minimap fold away; open one to change it, and "
-                "Reset to defaults puts them all back."
+                "Display, Filter, Time, Groups and Minimap fold away; open one to change it, and Reset to defaults puts them all back."
             ),
             "badge": {"label": "Graph", "tab": "graph"},
         },
@@ -1644,8 +1598,7 @@ TAIL_TOPICS.extend(
             ),
             "body": (
                 "A note can carry properties (status: open, owner: Priya), kept "
-                "at the top of its own text between two --- lines, the way "
-                "Obsidian writes them, so an imported vault keeps them and an "
+                "at the top of its own text between two --- lines, the way Obsidian writes them, so an imported vault keeps them and an "
                 "export carries them. They show as a small table under the "
                 "note's title, where pressing a value finds every note with it; "
                 "a note's panel on the graph shows them too, a value lighting "
@@ -1656,11 +1609,9 @@ TAIL_TOPICS.extend(
                 "list, yes/no or another note (the magnifier beside a note field "
                 "searches your notes for it); its New note starts with them. A "
                 "document's properties panel does the same: with type: Meeting "
-                "in its properties, the type's fields it has not written yet "
-                "show as empty rows, and a value you enter is written as one "
+                "in its properties, the type's fields it has not written yet show as empty rows, and a value you enter is written as one "
                 "line. Its Add icon and Add cover set an emoji or icon and a colour band, kept as icon: and cover: lines. "
-                "A lang property such as fr turns the spelling check off for a "
-                "document, because only the English list is installed. "
+                "A lang property such as fr turns the spelling check off for a document, because only the English list is installed. "
                 "The notes filter asks about them: type:meeting, prop:status=open "
                 '(a value with a space in quotes: prop:status="in progress") '
                 "(or prop:effort>2), links:[[Kiln plan]], rel:supports, "
@@ -1669,8 +1620,7 @@ TAIL_TOPICS.extend(
                 "their properties as columns, or lit on the graph. The table's "
                 "last row rolls each column up over every match: Count, and Sum, "
                 "Min and Max for numbers, Earliest and Latest for dates. On the "
-                "graph, View, Colour, Note type paints each note by its type; a "
-                "type's ⋮ in Note types has Colour to choose which."
+                "graph, View, Colour, Note type paints each note by its type; a type's ⋮ in Note types has Colour to choose which."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
@@ -1758,31 +1708,25 @@ TAIL_TOPICS.extend(
                 "Ctrl+Shift+G turns agent mode on or off, Ctrl+Shift+P clips a note "
                 "to your next question, and Ctrl+Shift+A opens the same agent over "
                 "any tab. Typing / in the box opens the chat menu: attach a note, a "
-                "document, a file or an image, upload one, Web search, "
-                "Plan first, Skills, Commands, "
+                "document, a file or an image, upload one, Web search, Plan first, Skills, Commands, "
                 "and Agent or Ask mode. The note button beside the box opens Attach: "
-                "a tab each for notes, documents, files, images and mind maps, with "
-                "a search; the arrows move, Space "
+                "a tab each for notes, documents, files, images and mind maps, with a search; the arrows move, Space "
                 "or Enter ticks, Enter in the search box is Done. Each message's menu can copy it, edit your "
                 "question, regenerate from here (Run again confirms), save it as a note or read it "
                 "aloud. Over 20,000 characters stays in the box (Save as a note and ask). The header can fork the conversation, compress the earlier "
-                "messages, show how full the model's context is "
-                "(press it for what fills it), "
+                "messages, show how full the model's context is (press it for what fills it), "
                 "switch the model, and export the chat as Markdown. A numbered "
                 "source mark in an answer shows a preview of its note on hover or "
                 "focus (the passage it came from, whether it supports the sentence "
-                "or only partly, and three bars for why: Words it "
-                "shares, Meaning, Links), a press "
+                "or only partly, and three bars for why: Words it shares, Meaning, Links), a press "
                 "keeps it open, and Open note goes there. A [note name] in square "
                 "brackets previews on hover. The button at the end of "
                 'Grounded in says how many sentences came from your notes ("9 of '
                 '11 from your notes"); it opens the evidence, each sentence beside '
-                "the passage it came from, and No note says this beside the ones "
-                "none backs. When an agent "
+                "the passage it came from, and No note says this beside the ones none backs. When an agent "
                 "answer takes more than one step, a checklist above it ticks off "
                 "each round, what it searched or read, then the answer. A number "
-                "or name in an answer that nothing it read contains gets a "
-                "heads-up under it, so check it first."
+                "or name in an answer that nothing it read contains gets a heads-up under it, so check it first."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -1797,8 +1741,7 @@ TAIL_TOPICS.extend(
                 "window is; press it for what fills it. When a long chat outgrows "
                 "the window, the oldest exchanges are left out of what the model "
                 "reads, and a line under the reply says how many. Compress in the "
-                "header summarises the earlier messages so the gist stays in view; "
-                "a new chat (Ctrl+Shift+O) starts empty."
+                "header summarises the earlier messages so the gist stays in view; a new chat (Ctrl+Shift+O) starts empty."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -1839,8 +1782,7 @@ TAIL_TOPICS.extend(
                 "that note's buttons. The filter box understands, with no AI: two words (both, "
                 'in any order), "a quoted phrase", tag:work, cat:recipes, '
                 "#tag, title:, in:, before: and after: (a date such as 2026-09, or a day word such as "
-                "today, tuesday, march or 2w; before: leaves "
-                "its own day out unless Settings, General, Search counts it), "
+                "today, tuesday, march or 2w; before: leaves its own day out unless Settings, General, Search counts it), "
                 "is:favourite, is:pinned, is:private, is:linked, is:untagged, "
                 "is:draft, tags:<2 (also <=, > and >=), has:link (also file, image or "
                 "reminder), space:work and kind:note (asked of the search engine), and -word to leave a word "
@@ -1851,11 +1793,9 @@ TAIL_TOPICS.extend(
                 "selection bar's Tags adds or removes tags on every selected note, "
                 "and its ... menu adds to or removes from Favourites, archives, "
                 "publishes drafts, removes a tag, sets or clears a property (status: done), "
-                "moves them to another space or "
-                "exports them as Markdown, each undoable. In Agent mode, Atlas can "
+                "moves them to another space or exports them as Markdown, each undoable. In Agent mode, Atlas can "
                 "move chosen notes to a category or a space once you confirm, "
-                "and Undo puts them back. Editing a note shows "
-                "its words and reading time beside Save."
+                "and Undo puts them back. Editing a note shows its words and reading time beside Save."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
@@ -1870,8 +1810,7 @@ TAIL_TOPICS.extend(
                 "to select it: the bar that appears has Select all, Open, Restore "
                 "(for binned items), More (tags, category or a property for the notes ticked), Delete and Done, and Documents and the gallery "
                 "have bars of their own, each with a More menu for tags, a category or a property on what is ticked (one Undo). New (a whiteboard or a mind map), Map from "
-                "notes and Import outline sit on Boards & maps; Images takes "
-                "uploads of pictures and PDFs."
+                "notes and Import outline sit on Boards & maps; Images takes uploads of pictures and PDFs."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1942,18 +1881,15 @@ TAIL_TOPICS.extend(
                 "set: in 30 min, in 1 hour, in 3 hours, tonight 7pm, tomorrow 9am, "
                 "tomorrow 2pm, this weekend or next week. A due reminder can be "
                 "snoozed one hour or to tomorrow 9am (ten minutes is on its menu; Undo in the toast puts the time back), "
-                "edited in place (its early alert too), or ticked "
-                "done; completed ones page at the foot. Add to calendar (.ics), on "
+                "edited in place (its early alert too), or ticked done; completed ones page at the foot. Add to calendar (.ics), on "
                 "a reminder's menu, saves it as a calendar file, and Add all to "
                 "calendar (.ics) in the More menu saves every upcoming one (each event "
                 "carries an alert at its due time, or its early alert); Add to Google "
                 "Calendar and Add to Outlook, beside it, open that service's add-event "
-                "page filled in, only when you press them, and never with a private "
-                "note's words; Import a "
+                "page filled in, only when you press them, and never with a private note's words; Import a "
                 "calendar (.ics) there reads a calendar file as reminders and names "
                 "any event it skipped. Calendar beside List opens the Timeline's "
-                "calendar with only reminders, where one drags to another day. Press t "
-                "then r to jump here from anywhere."
+                "calendar with only reminders, where one drags to another day. Press t then r to jump here from anywhere."
             ),
             "badge": {"label": "Reminders", "tab": "reminders"},
         },
@@ -1975,33 +1911,27 @@ TAIL_TOPICS.extend(
                 "continue where i left off",
             ),
             "body": (
-                "Under the greeting is the search box (Ctrl+P), "
-                "then Customise and a ... menu. The ... menu is for doing: "
+                "Under the greeting is the search box (Ctrl+P), then Customise and a ... menu. The ... menu is for doing: "
                 "Continue (the note you opened or edited last), your two most "
                 "recent skills and All skills, Tools & features (a searchable "
                 "list of everything the app can do) and Commands (the command "
-                "palette). Customise arranges the page: View (Full, Compact or "
-                "Focused), Widgets and Edit layout, which show, hide and "
+                "palette). Customise arranges the page: View (Full, Compact or Focused), Widgets and Edit layout, which show, hide and "
                 "rearrange widgets. The Focused view folds Quick access away and "
                 "its greeting card holds New note and four tiles for today: what "
                 "is due today, today's meetings, the notes to file and the note "
                 "you were last in; press one to go there. Customise, and the "
-                "... at the right of the Quick access title, have "
-                "Edit quick access: Add or arrange opens "
+                "... at the right of the Quick access title, have Edit quick access: Add or arrange opens "
                 "a list of every command with the ones on your dashboard "
                 "checked and first. Check or uncheck as many as you like (up to "
                 "eight), drag a row or press Alt with Up or Down to reorder, "
                 "search to narrow it, then Done saves them all at once; a tile's "
                 "menu still has Move left, Move right, Highlight and Remove. "
                 "The first tile is highlighted in the accent; Highlight gives "
-                "any tile the accent, one of twelve colours or No highlight. "
-                "Reset highlights clears the colours (the first tile is "
-                "highlighted again); Reset quick access goes back to the "
-                "defaults. Quick access "
+                "any tile the accent, one of twelve colours or No highlight. Reset highlights clears the colours (the first tile is "
+                "highlighted again); Reset quick access goes back to the defaults. Quick access "
                 "starts as New note, Ask your notes, Sketch, Remind me and New "
                 "meeting. All of it is "
-                "remembered per user. Press t then d to come back here from "
-                "anywhere."
+                "remembered per user. Press t then d to come back here from anywhere."
             ),
             "badge": {"label": "Dashboard", "tab": "dashboard"},
         },
@@ -2030,8 +1960,7 @@ TAIL_TOPICS.extend(
             #: app.js) are written out letter by label, and checked against the
             #: tables, so a letter added there has to be added here.
             "body": (
-                "Ctrl+K is the command palette "
-                "(jump anywhere, run an action), Ctrl+P is Find anything (notes, "
+                "Ctrl+K is the command palette (jump anywhere, run an action), Ctrl+P is Find anything (notes, "
                 "files and actions), and ? lists every shortcut, which Settings, "
                 "Keyboard shortcuts rebinds. Press t (or m) then a letter to jump: d (Dashboard), n "
                 "(Notes), c (Chat), g (Graph), l (Library), i (Timeline), r "

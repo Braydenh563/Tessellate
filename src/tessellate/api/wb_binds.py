@@ -70,7 +70,7 @@ def _held(found: dict[str, list[str]], prop: str) -> str:
     return ", ".join(found.get(prop) or [])
 
 
-def _readable(entry) -> str | None:  # noqa: ANN001
+def _bind_text(entry) -> str | None:  # noqa: ANN001
     """The note's text, or None while it is a locked private note: its
     readable text is then a placeholder, which must never be written back."""
     if entry is None or manager.note_is_sealed(entry.is_private):
@@ -80,7 +80,7 @@ def _readable(entry) -> str | None:  # noqa: ANN001
 
 def _value(entry, prop: str) -> str | None:  # noqa: ANN001
     """The note's value for `prop`; None when the note cannot be read."""
-    text = _readable(entry)
+    text = _bind_text(entry)
     return None if text is None else _held(note_properties.split(text)[0], prop)
 
 
@@ -93,7 +93,7 @@ def write_binding(db: Session, entry_id: int, binds: dict) -> bool:
     from tessellate.api.schemas import EntryUpdate
 
     entry = whiteboard_repo.entry(db, entry_id)
-    text = _readable(entry)
+    text = _bind_text(entry)
     if text is None:
         return False
     found, _ = note_properties.split(text)

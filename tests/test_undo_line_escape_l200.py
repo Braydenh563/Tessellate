@@ -31,4 +31,5 @@ def test_the_bar_walks_the_boards_own_stack_while_a_board_or_map_is_open():
     door = text[text.index("function surfaceHistory"):]
     door = door[: door.index("\n}\n")]
     assert "window.wbUndo()" in door and "canUndo: window.wbCanUndo" in door
-    assert re.search(r"window\.wbCanUndo = \(\) => \(wbHistoryFor\(\), wbUndoStack\.length > 0\)", _src("whiteboard.js"))
+    # The whiteboard split (L634) moved it to whiteboard-textedit.js, the stacks to `wbStacks`.
+    assert re.search(r"window\.wbCanUndo = \(\) => \(wbHistoryFor\(\), wbStacks\.undo\.length > 0\)", _src("whiteboard-textedit.js"))
