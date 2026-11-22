@@ -731,23 +731,7 @@ function atlasRigFrame(rig, now) {
     }
     if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, arm.side, +j.sh.x.toFixed(2), +j.el.x.toFixed(2), +j.wr.x.toFixed(2)]);
   }
-  //: The head steadies itself: the body's turn (its pose group's), lagged
-  //: by a spring, less the turn itself, is how far the head is left behind.
-  if (rig.pose && rig.heads.length) {
-    const m = turnMatrix;
-    const turn = m ? (Math.atan2(+m[1].split(",")[1], +m[1].split(",")[0]) * 180) / Math.PI : 0;
-    if (live) atlasRigSpring(rig.lag, turn, dt, 0.9);
-    else Object.assign(rig.lag, { x: turn, v: 0, t: turn });
-    const off = Math.max(-10, Math.min(10, rig.lag.x - turn));
-    //: The hair's layer swings a third further, its follow-through.
-    for (const el of rig.heads) {
-      const k = el.closest(".atl-layer-hair") ? 1.3 : 1;
-      const rot = Math.abs(off) > 0.05 ? `${atlasFix(off * k)}deg` : "";
-      if (el.style.rotate !== rot) el.style.rotate = rot;
-    }
-    if (Math.abs(off) > 0.05 || Math.abs(rig.lag.v) > 1) busy = true;
-    if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, "head", +off.toFixed(2), +turn.toFixed(2), 0]);
-  }
+  if (rig.pose && rig.heads.length && atlasRigFrame.head(rig, turnMatrix, live, dt, now)) busy = true;
   //: The lower body's pose for the state, once atlas-life.js has given the
   //: rig its lower body (`atlasRigLowerAttach`).
   if (rig.lower) atlasRigLower(rig, now, live, buddy);
@@ -763,6 +747,22 @@ function atlasRigFrame(rig, now) {
   else rig.at = 0;
 }
 atlasRigFrame.held = false;
+//: The head steadies itself: the body's turn (its pose group's), lagged by a spring, less the turn itself, is how far
+//: the head is left behind (a property, not a global: `tests/test_global_scope_ratchet.py`). True while it is still moving.
+atlasRigFrame.head = (rig, m, live, dt, now) => {
+  const turn = m ? (Math.atan2(+m[1].split(",")[1], +m[1].split(",")[0]) * 180) / Math.PI : 0;
+  if (live) atlasRigSpring(rig.lag, turn, dt, 0.9);
+  else Object.assign(rig.lag, { x: turn, v: 0, t: turn });
+  const off = Math.max(-10, Math.min(10, rig.lag.x - turn));
+  //: The hair's layer swings a third further, its follow-through.
+  for (const el of rig.heads) {
+    const k = el.closest(".atl-layer-hair") ? 1.3 : 1;
+    const rot = Math.abs(off) > 0.05 ? `${atlasFix(off * k)}deg` : "";
+    if (el.style.rotate !== rot) el.style.rotate = rot;
+  }
+  if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, "head", +off.toFixed(2), +turn.toFixed(2), 0]);
+  return Math.abs(off) > 0.05 || Math.abs(rig.lag.v) > 1;
+};
 //: The shortest gap between two drawn frames of the corner companion's rig (a property, not a global: `tests/test_global_scope_ratchet.py`).
 atlasRigFrame.gapMs = 24;
 //: The same loop's next frame, for a frame skipped under the gap (the frame's end asks for the next one itself).
