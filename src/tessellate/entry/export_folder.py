@@ -221,6 +221,9 @@ def note_record(entry, related: _Related, uploads_dir: Path) -> dict:  # noqa: A
               "category": related.category.get(entry.category_id, manager.UNCATEGORISED),
               "tags": manager.entry_tags(entry),
               "space": related.spaces.get(entry.workspace_id)}
+    if sealed and (record["space"] or {}).get("is_private"):
+        #: L-world-class-871: sealed text beside a plain space name would list the private spaces.
+        record["space"] = {"is_private": True}
     record.update(_row(entry, ENTRY_LEFT_OUT))
     record["attachments"] = [
         _attachment_record(a, name, uploads_dir) for a, name in zip(attachments, _attachment_names(attachments))
@@ -674,10 +677,12 @@ def _space_for(session, space: object, made: dict) -> str | None:  # noqa: ANN00
     from tessellate.core.database import Space
     from tessellate.entry.cleantext import clean_name, name_key
 
-    if not isinstance(space, dict) or not clean_name(space.get("name")):
+    if not isinstance(space, dict):
         return None
-    name = clean_name(space["name"])[:60]
     private = bool(space.get("is_private"))
+    if not clean_name(space.get("name")):
+        return _vault_space(session, made) if private else None
+    name = clean_name(space["name"])[:60]
     key = (name_key(name), private)
     if key not in made:
         found = next((sp for sp in session.query(Space) if (name_key(sp.name), bool(sp.is_private)) == key), None)
@@ -688,6 +693,21 @@ def _space_for(session, space: object, made: dict) -> str | None:  # noqa: ANN00
         else:
             made[key] = (found or _new_space(session, name, space, private)).id
     return made[key]
+
+
+def _vault_space(session, made: dict) -> str | None:  # noqa: ANN001
+    """A sealed note exported without its space's name (L-world-class-871):
+    the first private space here, made ("Private") when there is none; with
+    the vault locked, the open space."""
+    from tessellate.core import vault
+    from tessellate.core.database import Space
+
+    if vault.key() is None:
+        return None
+    if None not in made:
+        found = session.query(Space).filter(Space.is_private.is_(True)).order_by(Space.id).first()
+        made[None] = (found or _new_space(session, "Private", {}, True)).id
+    return made[None]
 
 
 def _new_space(session, name: str, space: dict, private: bool):  # noqa: ANN001, ANN202

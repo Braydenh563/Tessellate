@@ -324,3 +324,39 @@ def test_a_private_space_is_matched_by_privacy_and_skipped_while_locked(client, 
     assert export_folder._space_for(session, {"name": "Desk 255", "is_private": True}, {}) == "t255-priv"
     session.rollback()
     session.close()
+
+
+
+def test_a_sealed_note_leaves_its_private_space_nameless(client, monkeypatch, tmp_path):
+    """L-world-class-871: a sealed note's sidecar says only that its space is
+    private (no name, no icon, so the folder does not list the private spaces);
+    a readable one keeps the name."""
+    from tessellate.core.database import Entry
+
+    entry = Entry(content="kept", workspace_id="desk-871", is_private=False)
+    related = export_folder._Related(spaces={"desk-871": {"name": "Desk 871", "icon": "ph-lock", "is_private": True}})
+    monkeypatch.setattr(export_folder, "_readable", lambda e: ("sealed text", True))
+    assert export_folder.note_record(entry, related, tmp_path)["space"] == {"is_private": True}
+    monkeypatch.setattr(export_folder, "_readable", lambda e: ("kept", False))
+    assert export_folder.note_record(entry, related, tmp_path)["space"]["name"] == "Desk 871"
+
+
+def test_a_nameless_private_space_comes_back_as_the_vaults_private_space(client, monkeypatch):
+    """L-world-class-871: unlocked, a sealed note with a nameless private space
+    goes to the first private space here, made ("Private") when there is none;
+    locked, to the open space."""
+    from tessellate.core import vault
+    from tessellate.core.database import Space
+
+    session = deps.get_db().session()
+    nameless = {"is_private": True}
+    monkeypatch.setattr(vault, "key", lambda: None)
+    assert export_folder._space_for(session, nameless, {}) is None
+    monkeypatch.setattr(vault, "key", lambda: b"k" * 32)
+    made = session.get(Space, export_folder._space_for(session, nameless, {}))
+    assert made.is_private and made.name == "Private"
+    session.add(Space(id="aaa-871", name="Vault 871", is_private=True))
+    session.flush()
+    assert export_folder._space_for(session, nameless, {}) == "aaa-871"
+    session.rollback()
+    session.close()
