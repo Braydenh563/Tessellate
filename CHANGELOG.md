@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs and tests: HISTORY's Library recipe says the kind lives in the chip row, not in Filter (as built and kept); a pin store write's temporary file has a Windows-legal name too (tests/test_pinstore_windows_names.py).
 - Docs (L-general-7): SECURITY.md lists the known gaps (no operating-system code signing, CI actions pinned by tag, vendored files without recorded hashes, unsealed daily snapshots); CONTRIBUTING.md asks that a new or upgraded dependency be at least 30 days old.
 - Docker (L-general-5, L-general-3 in part): the image checks its own health (the interpreter asks /health; the slim image has no curl), ships LICENSE and THIRD_PARTY.md, and a root .dockerignore keeps the notebook folder, venvs and databases out of the build context.
 - Chat (the hub's 2026-11-22 check): a file staged on an unsent message is dropped when you start a new chat or open another one; it was carried to the next chat and imported as a document on its first send (1 chip after each, now 0, and 0 document writes).

@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9132, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11699, test files 3144, tests 24333, plan headings 700, app scripts 32, boot scripts 41, script files 415.
+Counts: frontend functions 9132, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11699, test files 3144, tests 24334, plan headings 700, app scripts 32, boot scripts 41, script files 415.
 
 ## Frontend functions (9132)
 
@@ -30486,7 +30486,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24333)
+## Tests (24334)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -32732,7 +32732,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_picture_options_in_previews.py | 3 |
 | tests/test_pin_unlock.py | 22 |
 | tests/test_pinch_zoom_viewers.py | 2 |
-| tests/test_pinstore_windows_names.py | 5 |
+| tests/test_pinstore_windows_names.py | 6 |
 | tests/test_place_round_trip_1114.py | 1 |
 | tests/test_placed_0909_row31.py | 6 |
 | tests/test_plain_errors.py | 3 |

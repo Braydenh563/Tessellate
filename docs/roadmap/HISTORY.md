@@ -1332,9 +1332,9 @@ Chromium at 1440 / 1024 / 820 / 390.
    `Export` into `⋯`; one primary (`New note`); `Concept maps` becomes a
    link in the identity zone. 28 → ≤ 9 visible.
 3. **Library** (All and every sub-tab, one recipe): title; search; `Filter
-   ▾` (semantic, include bin, kind); one sort select; one view segment;
-   `＋ Create`; refresh; help. The chip row stays *below* as the visible
-   filter. The duplicate segmented sort goes. Sub-tabs (Documents, Boards,
+   ▾` (semantic, include bin); one sort select; one view segment;
+   `＋ Create`; refresh; help. The kind lives in the chip row *below*, the
+   visible filter, not in `Filter ▾` (the hub, 2026-11-22: as built and kept). The duplicate segmented sort goes. Sub-tabs (Documents, Boards,
    Images, Files, Links, Contents, Skills) take the identical zones with
    their own words.
 4. **Notes**: the toolbar from Phase 5 already has search-first and a

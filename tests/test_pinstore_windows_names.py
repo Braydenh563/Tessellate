@@ -104,3 +104,18 @@ def test_capabilities_answers_when_the_mcp_token_cannot_be_kept(monkeypatch, cap
     assert mcp["installed"] is True
     assert mcp["config"]["env"][mcp_server.TOKEN_ENV] == ""
     assert any("MCP token" in r.getMessage() for r in caplog.records)
+
+
+@pytest.mark.parametrize("account", ["setting|mcp_token|5c40e1e6", 'a<b>c:d"e/f\\g|h?i*j'])
+def test_the_temporary_file_a_write_goes_through_is_legal_too(dpapi, account, monkeypatch):
+    """The owner's 500 named the `.tmp` path, not the final one: both come from the same safe name."""
+    seen = []
+    real = pinstore.Path.write_bytes
+
+    def spy(self, data):
+        seen.append(self.name)
+        return real(self, data)
+
+    monkeypatch.setattr(pinstore.Path, "write_bytes", spy)
+    dpapi.put(account, "s3cret")
+    assert seen and all(n.endswith(".tmp") and not WINDOWS_INVALID.search(n) for n in seen), seen
