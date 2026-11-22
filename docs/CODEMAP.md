@@ -753,24 +753,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2496 |
-| `activeNotesSection` | frontend/js/navigation.js:2323 |
+| `aboveDockFab` | frontend/js/navigation.js:2501 |
+| `activeNotesSection` | frontend/js/navigation.js:2328 |
 | `arrowNavTarget` | frontend/js/navigation.js:219 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1856 |
-| `chatMidStream` | frontend/js/navigation.js:1788 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1861 |
+| `chatMidStream` | frontend/js/navigation.js:1793 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:922 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1818 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2629 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1823 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2634 |
 | `entryLabel` | frontend/js/navigation.js:1020 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2590 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2595 |
 | `goToTabHistory` | frontend/js/navigation.js:1111 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1767 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1772 |
 | `hideClosedDockMenuLists` | frontend/js/navigation.js:1522 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2386 |
-| `initScrollTopButton` | frontend/js/navigation.js:2649 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2391 |
+| `initScrollTopButton` | frontend/js/navigation.js:2654 |
 | `insideClosedDetails` | frontend/js/navigation.js:1585 |
 | `loadSurface` | frontend/js/navigation.js:1318 |
-| `measureSpacingPx` | frontend/js/navigation.js:2620 |
+| `measureSpacingPx` | frontend/js/navigation.js:2625 |
 | `menuOfOpener` | frontend/js/navigation.js:1607 |
 | `menuRowsOf` | frontend/js/navigation.js:1592 |
 | `mermaidSoon` | frontend/js/navigation.js:384 |
@@ -780,35 +780,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:332 |
 | `paintTabHistory` | frontend/js/navigation.js:969 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1389 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2505 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2510 |
 | `recordTabVisit` | frontend/js/navigation.js:1057 |
-| `recordingLive` | frontend/js/navigation.js:1795 |
+| `recordingLive` | frontend/js/navigation.js:1800 |
 | `renderMarkdown` | frontend/js/navigation.js:393 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2284 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2303 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2289 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2308 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1158 |
 | `revealTab` | frontend/js/navigation.js:829 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:139 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2472 |
-| `scrollingPage` | frontend/js/navigation.js:2425 |
-| `showNotesSection` | frontend/js/navigation.js:2328 |
-| `spacingPx` | frontend/js/navigation.js:2613 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2477 |
+| `scrollingPage` | frontend/js/navigation.js:2430 |
+| `showNotesSection` | frontend/js/navigation.js:2333 |
+| `spacingPx` | frontend/js/navigation.js:2618 |
 | `stepTabHistory` | frontend/js/navigation.js:1101 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2230 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2235 |
 | `surfaceRecovered` | frontend/js/navigation.js:1296 |
-| `switchTab` | frontend/js/navigation.js:1905 |
-| `syncScrollLock` | frontend/js/navigation.js:2791 |
+| `switchTab` | frontend/js/navigation.js:1910 |
+| `syncScrollLock` | frontend/js/navigation.js:2796 |
 | `tabLabel` | frontend/js/navigation.js:1008 |
-| `tabPlaceholder` | frontend/js/navigation.js:2166 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2147 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2157 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2136 |
-| `usageCount` | frontend/js/navigation.js:1866 |
-| `usageFeatureName` | frontend/js/navigation.js:1862 |
-| `usageFlush` | frontend/js/navigation.js:1870 |
+| `tabPlaceholder` | frontend/js/navigation.js:2171 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2152 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2162 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2141 |
+| `usageCount` | frontend/js/navigation.js:1871 |
+| `usageFeatureName` | frontend/js/navigation.js:1867 |
+| `usageFlush` | frontend/js/navigation.js:1875 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1451 |
 | `wireLongPress` | frontend/js/navigation.js:25 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2809 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2814 |
 
 ### frontend/js/router.js (12)
 
@@ -3879,19 +3879,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmHighlight` | frontend/js/documents-cm-load.js:376 |
-| `docCmLanguageFor` | frontend/js/documents-cm-load.js:147 |
-| `docCmSearchCount` | frontend/js/documents-cm-load.js:316 |
-| `docCmViewShown` | frontend/js/documents-cm-load.js:504 |
-| `docHistoryPersist` | frontend/js/documents-cm-load.js:488 |
-| `docHistoryRestore` | frontend/js/documents-cm-load.js:472 |
-| `docListGuides` | frontend/js/documents-cm-load.js:287 |
+| `docCmHighlight` | frontend/js/documents-cm-load.js:380 |
+| `docCmLanguageFor` | frontend/js/documents-cm-load.js:151 |
+| `docCmSearchCount` | frontend/js/documents-cm-load.js:320 |
+| `docCmViewShown` | frontend/js/documents-cm-load.js:508 |
+| `docHistoryPersist` | frontend/js/documents-cm-load.js:492 |
+| `docHistoryRestore` | frontend/js/documents-cm-load.js:476 |
+| `docListGuides` | frontend/js/documents-cm-load.js:291 |
 | `docRedo` | frontend/js/documents-cm-load.js:20 |
-| `docResetDocument` | frontend/js/documents-cm-load.js:431 |
-| `docSearchCountText` | frontend/js/documents-cm-load.js:308 |
-| `docTableGridRules` | frontend/js/documents-cm-load.js:228 |
-| `docWatchLock` | frontend/js/documents-cm-load.js:508 |
-| `loadCodeMirror` | frontend/js/documents-cm-load.js:51 |
+| `docResetDocument` | frontend/js/documents-cm-load.js:435 |
+| `docSearchCountText` | frontend/js/documents-cm-load.js:312 |
+| `docTableGridRules` | frontend/js/documents-cm-load.js:232 |
+| `docWatchLock` | frontend/js/documents-cm-load.js:512 |
+| `loadCodeMirror` | frontend/js/documents-cm-load.js:55 |
 | `warmDocumentEngine` | frontend/js/documents-cm-load.js:34 |
 
 ### frontend/js/documents-cm-theme.js (1)

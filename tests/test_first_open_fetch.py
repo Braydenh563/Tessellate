@@ -39,4 +39,7 @@ def test_the_view_is_mounted_empty_in_idle_after_the_editor_has_loaded():
     # The click then pays the state swap and the render, not the 150 ms view mount.
     tail = _tail()
     assert tail.index("warmDocumentEngine()") < tail.index("loadCodeMirror()") < tail.index("ensureDocEditor()")
-    assert "docWarmed" in tail  # the phone and data-saving guard of the warm is the guard of the mount too
+    #: The phone and data-saving guard of the warm is the guard of the mount too. It is read as
+    #: warmDocumentEngine's answer: `docWarmed` is documents-cm-load.js's own (a wrapped file),
+    #: and naming it here threw "docWarmed is not defined" on every load (2026-11-22).
+    assert "window.warmDocumentEngine() && window.loadCodeMirror()" in tail
