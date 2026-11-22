@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 193 | 59 | 2 | 59 | 428 |
 | whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
-| mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
+| mindmap | 0 | 3 | 0 | 0 | 0 | 3 |
 | ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 180 | 58 | 0 | 72 | 368 |
 | general | 0 | 3 | 0 | 0 | 5 | 3 |
-| all | 402 | 491 | 122 | 2 | 153 | 1015 |
+| all | 402 | 492 | 122 | 2 | 153 | 1016 |
 
 ## graph
 
@@ -285,6 +285,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 - [ ] **L-mindmap-20** `mindmap` open, M: Map branch drop: the release of a large branch drag redraws every inside line and link from scratch; draw them as a translation of what is on screen, or spread the redraw. From L-mindmap-18 (agent). Evidence: mapperf.js fresh runs: branch drag worst frame is the drop (dragWorstAt 1), 487 to 704ms at 500 topics; profile of a 200-topic drop: wbMapDragLayer.close 96 to 108ms, of it wbMapRibbonD 65ms over every inside line and wbMapCrossLinkLook 44ms over 300 inside links. The links-ratio check (links do not double the worst frame) now sits close at 50 and 200 because the plain drop got cheaper: failed in three of seven fresh runs (50: 37 vs 97 before the size fix; 200: 91.6 vs 193.3 after it), passed in the last two.
 - [ ] **L-mindmap-21** `mindmap` open, S: Map branch pick-up for a branch about half the board: still lifts every member; measure a mid-size branch in mapperf and pick the cheaper side by element count. From L-mindmap-18 (agent). Evidence: wbMapDragLayer.open stays only when the branch has 32 topics or more and is more than half the board layer; a branch of about half a 500-topic board still lifts every member (about 50us an element of style recalc, so about 12ms per 250 topics), unmeasured by mapperf, whose branches are the whole map.
+- [ ] **L-mindmap-24** `mindmap` open, M: Map pan on a long-lived notebook: the first pan frame at 500 topics costs 466ms against 40 on a fresh data dir; find which part of the old dir (boards, size, stored view state) makes it slow. From hub 2026-11-22, mapperf on a long-lived data dir. Evidence: mapperf SIZES=500 at 73dd7ad90: worst pan 466.9ms on the long-lived 8791 data dir against 35.4 and 42.4ms on a fresh one (same code, same box); first pan frame (panWorstAt 0)
 
 ## ui-modernisation
 
