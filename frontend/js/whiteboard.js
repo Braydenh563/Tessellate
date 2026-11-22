@@ -778,7 +778,10 @@ function wbCullNow(transform, size) {
   for (const el of layer.children) {
     const d = el.__data__;
     if (!d || typeof d.x !== "number") continue;
-    const tiny = (d.width || WB_CARD_DEFAULT_SIZE.w) * k < WB_TINY_SCREEN_W || (d.height || WB_CARD_DEFAULT_SIZE.h) * k < WB_TINY_SCREEN_H;
+    //: Never on a map topic: it has no resize grips (`wbBuildObjectHandles` skips
+    //: WB_MAP_KINDS), and a zoom past the size flipped the class on all 500
+    //: topics of a map in one frame, 110 to 122ms of restyle at 4x (mapcpu).
+    const tiny = !WB_MAP_KINDS.has(d.kind) && ((d.width || WB_CARD_DEFAULT_SIZE.w) * k < WB_TINY_SCREEN_W || (d.height || WB_CARD_DEFAULT_SIZE.h) * k < WB_TINY_SCREEN_H);
     if (el.classList.contains("wb-tiny") !== tiny) el.classList.toggle("wb-tiny", tiny);
     const keep =
       el.classList.contains("wb-selected") ||
