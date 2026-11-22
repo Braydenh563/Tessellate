@@ -84,6 +84,7 @@ const { boot } = require('./lib.js');
     const select = document.getElementById('graph-layout');
     const next = [...select.options].find((o) => o.value !== select.value);
     if (!next) return false;
+    window.__layoutWas = select.value;
     select.value = next.value;
     select.dispatchEvent(new Event('change', { bubbles: true }));
     return next.value;
@@ -91,6 +92,15 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(800);
   const graph = await reacted();
   if (!changed || graph !== 'graph') fails.push(`graph (${changed}): ${graph}`);
+  //: Put the layout back: it is saved to the server's ui_state, so the next sweep in a shared data dir drew the
+  //: graph as a tree (deepflows' graph flow at 390 found its nodes in one column, under the controls).
+  await page.evaluate(() => {
+    const select = document.getElementById('graph-layout');
+    if (!select || !window.__layoutWas) return;
+    select.value = window.__layoutWas;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await page.waitForTimeout(800);
   // The streak: a longer one cheers once; the same count does not.
   await reset();
   const streak = await page.evaluate(() => {

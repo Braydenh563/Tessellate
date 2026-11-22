@@ -251,6 +251,16 @@ async function boot(opts={}) {
     const got = await page.evaluate(() => document.documentElement.dataset.theme).catch(() => '');
     if (got !== want) console.log('BOOT-WARN: data-theme is', JSON.stringify(got), 'not', want);
   }
+  //: **The font too** (2026-11-22, CI shard 3): fontmatrix saves each font it sweeps to the server, so every
+  //: later sweep in a shared data dir ran in the last one ("readable"), and companionsmooth's card perch and the
+  //: graph popup at 390 failed only after it. FONT=<name> is set the same way; without it the font is the default.
+  await page.evaluate((f) => {
+    if (typeof prefs === 'undefined' || typeof applyAppearance !== 'function') return;
+    const now = prefs.get('font', '');
+    if (f ? now === f : !now) return;
+    if (f) prefs.set('font', f); else prefs.remove('font');
+    applyAppearance();
+  }, process.env.FONT || '').catch(() => {});
   await page.evaluate(()=>{ const o=document.getElementById('onboarding-overlay'); if(o) o.classList.add('hidden'); });
   await page.waitForTimeout(800);
   //: **Search by meaning asks once too** (semantic-notice.js): the first save

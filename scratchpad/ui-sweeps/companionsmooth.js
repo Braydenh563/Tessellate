@@ -9,7 +9,7 @@
 // Three scrolls, each with the main thread kept busy 12ms a frame (a heavy
 // page): 8 to 16px wheel steps every frame, a programmatic smooth scroll
 // (`scrollTo({behavior: "smooth"})`), and a long fast wheel flick.
-// Env: TAB (notes), CARD (#tab-notes li), BUSY (12, ms a frame), OUT (json).
+// Env: TAB (notes), CARD (#entry-list > li, the note cards; the sidebar category rows are li too), BUSY (12, ms a frame), OUT (json).
 // Exits 1 when more than a tenth of a phase's frames have the gap off its
 // usual value by more than 1px. Measured: riding the scroll (a
 // ScrollTimeline), 2 to 6% off, each a single frame at a gesture's start
@@ -59,7 +59,7 @@ const BUSY = Number(process.env.BUSY || 12);
     nmb.pinned = false;
     clearTimeout(nmb.timer);
     return { x: nmb.x, y: nmb.y, cardTop: r.top, riding: !!nmb.ride, glued: !!nmb.glue };
-  }, process.env.CARD || '#tab-notes li');
+  }, process.env.CARD || '#entry-list > li');
   console.log('setup', JSON.stringify(setup));
   if (setup.error) { await browser.close(); process.exitCode = 1; return; }
   const cdp = await page.context().newCDPSession(page);

@@ -713,7 +713,11 @@ async function settingsBody(env, toggled) {
         skipped.push(`${section}: ${sw.label.slice(0, 40)} (asks first)`);
         continue;
       }
-      const now = (await switchesHere(env)).find((x) => x.i === sw.i);
+      //: Read back by its id (by its words without one): `i` moves when a press redraws a list above it
+      //: (Models' gated controls), and the switch then at that index is another (deepflows SHARD=7, 390 dark).
+      const now = sw.id
+        ? { on: await env.js((id) => document.getElementById(id)?.checked, sw.id) }
+        : findSw(await switchesHere(env), sw);
       if (!now || now.on === sw.on) throw new Error(`pressing "${sw.label}" in ${section} did not change it`);
       toggled.push({ section, i: sw.i, id: sw.id, label: sw.label, nth: sw.nth, was: sw.on });
     }
