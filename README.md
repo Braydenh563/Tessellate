@@ -449,8 +449,7 @@ later; until then search uses keywords. To avoid the download, pull
 | Tool calling without Ollama (needle) | A small built-in model that picks tools when no model server is running; a pinned download that works offline |
 | Speaker labels, engine (sherpa-onnx) | Tells voices apart in a recording so a transcript reads Speaker 1, Speaker 2; the Speakers bundle installs it with its models |
 | Speaker labels, models (pyannote and WeSpeaker) | The two small models it reads, a pinned 34 MB download kept in the data folder; works offline |
-| Translate offline (Bergamot, English to Spanish) | Translate this, in the command palette, with no model; a pinned 27 MB download that works offline |
-| Translate offline, French, German, Italian, Portuguese (Bergamot) | One package per language, 26 to 52 MB each, added to the translator's picker; the More translation languages bundle installs them all |
+| Translate offline (Bergamot, English and Spanish) | Translate this, in the command palette, with no model; a pinned 54 MB download that works offline; French, German, Italian and Portuguese are 51 to 53 MB packages beside it |
 | Live captions, engine (whisper.cpp) | Words appear as you speak into the microphone, on this computer; the Live captions bundle installs it with its model in one click |
 | Live captions, model (tiny.en) | The small English speech model the engine reads; a pinned 32 MB download kept in the data folder; works offline |
 | Natural voice, engine (Piper) | Reads notes and a spoken overview aloud in a natural voice, on this computer; the Natural voice bundle installs it with its voice in one click |

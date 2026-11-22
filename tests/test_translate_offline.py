@@ -61,12 +61,11 @@ PAYLOADS = {
     "model.gz": gzip.compress(b"MODEL" * 100),
     "lex.gz": gzip.compress(b"LEX"),
     "vocab.gz": gzip.compress(b"VOCAB"),
+    # Spanish to English, the package's second direction (L-world-class-41).
+    "model-esen.gz": gzip.compress(b"MODEL"),
+    "lex-esen.gz": gzip.compress(b"LEX"),
+    "vocab-esen.gz": gzip.compress(b"VOCAB"),
 }
-# The other seven directions (L-world-class-41), each three small gzipped files.
-for _n in range(7):
-    PAYLOADS[f"model{_n}.gz"] = gzip.compress(b"MODEL%d" % _n)
-    PAYLOADS[f"lex{_n}.gz"] = gzip.compress(b"LEX%d" % _n)
-    PAYLOADS[f"vocab{_n}.gz"] = gzip.compress(b"VOCAB%d" % _n)
 
 
 def _install(client, monkeypatch, server) -> Path:
@@ -86,14 +85,11 @@ def test_the_package_is_a_pinned_mpl_download_never_in_the_repo():
     written = {name for d in extra.downloads for _m, name in d.members}
     assert set(translate.ENGINE_FILES) <= written
     assert "LICENSE" in written, "the MPL text travels with the engine"
-    # Every registered direction is carried (L-world-class-41), each a complete
-    # row; since L-world-class-628 a language beyond Spanish rides in a package
-    # of its own beside this one, so the carrier is the pair's own package.
-    def files(extra_id):
-        return {name for d in extras.EXTRAS_BY_ID[extra_id].downloads for _m, name in d.members}
-
-    carried = [p for p in translate.PAIRS if {p["model"], p["lex"], p["vocab"]} <= files(p["extra"])]
-    assert carried == list(translate.PAIRS)
+    # The engine's package carries Spanish both ways; the other languages are
+    # packages of their own (L-world-class-41); each pair it writes is a
+    # complete, registered row.
+    carried = [p for p in translate.PAIRS if {p["model"], p["lex"], p["vocab"]} <= written]
+    assert [(p["from"], p["to"]) for p in carried] == [("en", "es"), ("es", "en")]
     assert not {n for n in written if n.startswith("model.")} - {p["model"] for p in carried}
     assert any(extra.id in bundle.extras for bundle in extras.BUNDLES)
     assert not list((ROOT / "frontend").rglob("*.wasm.translate*"))

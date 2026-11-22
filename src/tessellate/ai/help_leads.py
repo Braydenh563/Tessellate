@@ -56,7 +56,7 @@ TOPIC_LEADS: dict[str, str] = {
     "templates": "Start a note or document from a ready outline, or save outlines of your own.",
     "write-with-atlas": "Turn rough thoughts into a finished note, with your notes as sources if you like.",
     "translate": "Translate text in the Writing room and keep its facts, names and formatting.",
-    "translate-offline": "Translate a selected passage from English to Spanish on this computer, with no model.",
+    "translate-offline": "Translate a selected passage to or from English on this computer, with no model.",
     "extract-notes": "Break a long block of pasted text into several linked notes.",
     "voice": "Dictate notes, record meetings and lectures, and hear answers read aloud.",
     "live-captions": "See what the microphone hears written out live, on this computer only.",
