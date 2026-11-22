@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard More sheet: one Arrange grouping (L-whiteboard-30's), the merge's second copy removed; shared names back under the cap.
 - Lints after the base merge: one askAtlasAboutNote (entry-menu.js held two), the head-title regexes anchored, four stale lazy stand-ins taken out.
 - Packaging (L-general-3, L-general-5): every build carries LICENSE and THIRD_PARTY.md (both PyInstaller specs, so the installer, the MSI and the Linux zip, and the Docker image); CI lints the Dockerfile with the official hadolint action. Migrations: an empty merge revision joins document sub-pages and chat folders, which met at the base merge as two heads.
 - Docs and tests: HISTORY's Library recipe says the kind lives in the chip row, not in Filter (as built and kept); a pin store write's temporary file has a Windows-legal name too (tests/test_pinstore_windows_names.py).
