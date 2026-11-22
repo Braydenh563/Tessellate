@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code: the 23 functions over the size ratchet are split by job, none re-seeded: the shell's palette, entry menu, menu group and Settings opener; the board's map preview, object render, map strip and pointer setup; the Library gallery steps; the companion's act, build, tempo, figure and rig frames and three ambient scenes.
+- Map: at 500 topics a zoom no longer flips `wb-tiny` on every topic (map topics have no grips), and the grammar repaint indexes the board once and repaints only the labels answered (mapcpu 500 at 4x: open 1,088 to 744ms, worst zoom 131 to 58ms).
+- Styles: the base merge (#234) keeps the documents split and the Library moves; rules the base moved to `library-lazy.css` follow it, and the stale touch caret padding is gone (the floor in `board-lazy.css` is the rule).
 - Tests: the CPU-time budgets have a CI job of their own, "E2E budgets": the tab lag budgets move to `tests-e2e/specs/tab-budgets.spec.js` and run there with `map-budgets.spec.js` (about 8 minutes alone), since after the flows they outran the e2e job's 15; the Atlas idle strict expected failure settles 3 s and reads 3 s (from 6 and 4), still about 4x over its cap.
 - Documents: a board card edits in place (L-documents-104). Edit in place loads the boards bundle and opens the board in the text with its own tools, one instance per card; a card the live editor drops ends its instance at once (`doc-embed-gone`); the read-only window stays as the fallback.
 - Styles: the menu-row recipe from the base merge is one selector per row class again, so the list `:is()` and universal-bucket ratchets hold at 136 and 375 (L342).
