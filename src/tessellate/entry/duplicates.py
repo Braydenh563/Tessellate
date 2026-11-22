@@ -286,21 +286,20 @@ def find_duplicates(
         return node
 
     prepared = [_prepare(entry.content) for entry in entries]
-    best: dict[tuple[int, int], float] = {}
+    # The strongest pair in each group is kept as the groups merge, not read
+    # off a dict of every pair afterwards: on a notebook whose notes share most
+    # of their words every pair matches (12.5 million at 5,000 notes, 2 GB of
+    # dict, L-world-class-410).
+    top: dict[int, float] = {}
     for i, j, score in _scan(prepared, threshold):
-        best[(entries[i].id, entries[j].id)] = score
-        parent[root(entries[i].id)] = root(entries[j].id)
+        left, right = root(entries[i].id), root(entries[j].id)
+        strongest = max(score, top.pop(left, 0.0), top.get(right, 0.0))
+        parent[left] = right
+        top[right] = strongest
 
     grouped: dict[int, list[Entry]] = {}
     for entry in entries:
         grouped.setdefault(root(entry.id), []).append(entry)
-    # The strongest pair in each group, read off the pairs once, rather than
-    # every group scanning every pair.
-    top: dict[int, float] = {}
-    for (a_id, _b_id), score in best.items():
-        group = root(a_id)
-        if score > top.get(group, 0.0):
-            top[group] = score
 
     groups = []
     for group, members in grouped.items():
