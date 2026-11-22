@@ -787,10 +787,7 @@ function wbCullNow(transform, size, unlessDrawn = false) {
   //: a box would flush layout on every pan frame. Padded by half its larger
   //: side, so a rotated item's corners and a card taller than its stored
   //: height are both inside it.
-  const outside = (x, y, bw, bh) => {
-    const pad = Math.max(bw, bh) / 2;
-    return x + bw + pad < x0 || x - pad > x1 || y + bh + pad < y0 || y - pad > y1;
-  };
+  const outside = (x, y, bw, bh) => wbCullNow.outside(wbCullNow.drawn, x, y, bw, bh);
   const focused = document.activeElement;
   //: **Too small on screen for its grips, it drags** (L-whiteboard-15). The
   //: resize grips keep ten screen pixels at every zoom, so on a 500-box board
@@ -816,7 +813,13 @@ function wbCullNow(transform, size, unlessDrawn = false) {
     const bw = d.width || WB_CARD_DEFAULT_SIZE.w;
     const bh = d.height || WB_CARD_DEFAULT_SIZE.h;
     const cull = !keep && outside(d.x, d.y, bw, bh);
-    if (el.classList.contains("wb-culled") !== cull) el.classList.toggle("wb-culled", cull);
+    if (el.classList.contains("wb-culled") === cull) continue;
+    //: A topic a drop left where it was, off screen (`wbMapDragLayer.close`), is placed as it comes on.
+    if (!cull && el._wbPlaceLater) {
+      el._wbPlaceLater = false;
+      el.style.transform = wbItemTransform(d);
+    }
+    el.classList.toggle("wb-culled", cull);
   }
   //: A map's tree lines, by the box of their two ends: a line with one end on
   //: screen is on screen. `display: none` is right for these: nothing ever
@@ -842,6 +845,16 @@ function wbCullNow(transform, size, unlessDrawn = false) {
     }
   }
 }
+
+//: Whether a box lies outside the ground a cull drew (`wbCullNow.drawn`, board
+//: units), padded by half its larger side, so a rotated item's corners and a
+//: card taller than its stored height are both inside it. No ground: inside.
+//: A property rather than a name of its own (the global-scope ratchet).
+wbCullNow.outside = (drawn, x, y, bw, bh) => {
+  if (!drawn) return false;
+  const pad = Math.max(bw, bh) / 2;
+  return x + bw + pad < drawn.x0 || x - pad > drawn.x1 || y + bh + pad < drawn.y0 || y - pad > drawn.y1;
+};
 
 window.addEventListener("resize", wbScheduleCull);
 

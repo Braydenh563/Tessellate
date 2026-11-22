@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Mind map: dropping a big branch draws only the inside lines on screen; a line the cull hides is drawn as it comes on screen or into an export, so the drop of a 500-topic branch no longer draws all 499 (worst drag frame 215 and 184ms to 147 and 103ms, linked branch drop 219 and 220ms to 148 and 157ms, mapperf 500; tests/test_map_drop_offscreen.py).
+- Mind map: a drop that kept the board in place leaves topics hidden off screen both where they were and where they land for the cull to place as they come on, so the drop of a 500-topic branch no longer restyles every topic (plain branch drop frame 147ms to 69.8 and 68.5ms, mapperf 500; tests/test_map_drop_offscreen.py).
 - OCR workspace: the list of what was read keeps 40% of its column (192px at 1366x768, where it had 0px under a long caption and a second reading), and the column scrolls as one past that instead of cutting off (L806, scratchpad/ui-sweeps/ocrpanelfit.js).
 - Whiteboard: the five largest functions (`wbInitPointer` 1273 lines, `wbInitPan` 990, `wbInitMenus` 978, `renderWhiteboard` 957, `renderWbObjects` 901) are split by job into named pieces under 150 lines each, with no change to behaviour or event order; their rows left the size seed (L-whiteboard-78).
 - Docs: the copies of CHANGELOG, CONTRIBUTING and SECURITY under docs/ are gone (L787, owner decision 2026-11-12); the site links to the root files, and tests/test_docs_site.py now fails if a copy comes back.

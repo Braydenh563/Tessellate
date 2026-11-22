@@ -10,6 +10,7 @@ node `vm` against fake elements; the wiring in the cull, the render and the expo
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -61,7 +62,10 @@ def run(body: str):
         files = {name: Path(tmp) / name for name in ("h.js", "map.js", "cull.js", "body.js")}
         files["h.js"].write_text(HARNESS, encoding="utf-8")
         files["map.js"].write_text(frontend_text("whiteboard-map.js"), encoding="utf-8")
-        files["cull.js"].write_text("", encoding="utf-8")
+        board = frontend_text("whiteboard.js")
+        cull = re.search(r"^wbCullNow\.outside = .*?^\};", board, re.S | re.M)
+        assert cull, "wbCullNow.outside is the one box test the cull and the drop share"
+        files["cull.js"].write_text("var wbCullNow = {};\n" + cull.group(0) + "\nconst WB_CARD_DEFAULT_SIZE = { w: 250, h: 150 };\n", encoding="utf-8")
         files["body.js"].write_text(SCENE + body, encoding="utf-8")
         out = subprocess.run(["node", *(str(files[n]) for n in ("h.js", "map.js", "cull.js", "body.js"))], capture_output=True, text=True, timeout=60)
     assert out.returncode == 0, out.stderr[-2000:]
@@ -107,9 +111,41 @@ def test_a_held_line_drawn_any_other_way_is_let_go_and_a_gone_one_is_skipped() -
     assert got == {"afterDraw": 1, "left": 0, "gone": None}
 
 
+@needs_node
+def test_a_staying_drop_places_only_the_topics_on_screen_either_side() -> None:
+    """The board stayed and moved by `dx, dy`; a culled topic that is off the cull's ground where it
+    was and where it lands is left for the cull, any other topic is placed now."""
+    got = run(
+        """
+        wbItemTransform = (d) => `translate(${d.x}px, ${d.y}px)`;
+        wbCullNow.drawn = { x0: -500, x1: 500, y0: -500, y1: 500 };
+        const el = (culled) => ({ style: {}, classList: { contains: (c) => c === "wb-culled" && culled } });
+        const far = [el(true), { x: 3000, y: 3000, width: 100, height: 40 }];
+        const comesFrom = [el(true), { x: 3000, y: 100, width: 100, height: 40 }];
+        const onScreen = [el(false), { x: 10, y: 10, width: 100, height: 40 }];
+        const layer = {
+          stay: { html: { style: {} }, edgeGroup: { removeAttribute() {} }, fixed: [], members: [far, comesFrom, onScreen] },
+          home: [], el: { parentNode: null, remove() {} }, edges: { parentNode: null, children: [], remove() {} },
+          sizes: new Map(), innerEdges: [], links: [], grabbed: { id: 1 },
+        };
+        layer.dx = 2950;
+        layer.dy = 0;
+        wbMapDragLayer.close({ layer });
+        const row = ([m]) => ({ transform: m.style.transform || null, later: Boolean(m._wbPlaceLater) });
+        __out([far, comesFrom, onScreen].map(row));
+        """
+    )
+    assert got == [
+        {"transform": None, "later": True},
+        {"transform": "translate(3000px, 100px)", "later": False},
+        {"transform": "translate(10px, 10px)", "later": False},
+    ]
+
+
 def test_the_cull_the_render_and_the_export_draw_what_the_drop_left() -> None:
     board = frontend_text("whiteboard.js")
     cull = board[board.index("function wbCullNow("):board.index('window.addEventListener("resize", wbScheduleCull)')]
+    assert re.search(r"if \(!cull && el\._wbPlaceLater\) \{\s*el\._wbPlaceLater = false;\s*el\.style\.transform = wbItemTransform\(d\);", cull)
     assert "if (!cull && held.path._wbMoved) wbUpdateMapEdges.drawHeld([held.path]);" in cull
     #: Placed and drawn before the class comes off, so nothing is shown where it was.
     assert cull.index("wbUpdateMapEdges.drawHeld([held.path])") < cull.index('held.wrap.classList.toggle("wb-culled", cull)')

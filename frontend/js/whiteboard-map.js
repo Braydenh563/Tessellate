@@ -2120,6 +2120,8 @@ const wbMapDragLayer = {
   //: One step of the drag: a few writes, whatever the branch's size.
   move(layer, dx, dy) {
     const sign = layer.stay ? -1 : 1;
+    layer.dx = dx;
+    layer.dy = dy;
     layer.el.style.transform = `translate(${sign * dx}px, ${sign * dy}px)`;
     layer.edges.setAttribute("transform", `translate(${sign * dx} ${sign * dy})`);
     if (layer.stay) {
@@ -2132,6 +2134,13 @@ const wbMapDragLayer = {
       for (const still of layer.stay.fixed) still.style.translate = `${-dx}px ${-dy}px`;
     }
     for (const pair of layer.links) pair.el?.setAttribute("transform", `translate(${dx} ${dy})`);
+  },
+
+  //: Whether a topic is outside the cull's ground both where it is and `dx, dy` back.
+  offScreenBoth(item, dx, dy) {
+    const w = item.width || WB_CARD_DEFAULT_SIZE.w;
+    const h = item.height || WB_CARD_DEFAULT_SIZE.h;
+    return wbCullNow.outside(wbCullNow.drawn, item.x, item.y, w, h) && wbCullNow.outside(wbCullNow.drawn, item.x - dx, item.y - dy, w, h);
   },
 
   //: Let go (or a render is about to run): every topic back where it was in
@@ -2147,7 +2156,17 @@ const wbMapDragLayer = {
       layer.stay.html.style.translate = "";
       layer.stay.edgeGroup.removeAttribute("transform");
       for (const still of layer.stay.fixed) still.style.translate = "";
-      for (const [member, item] of layer.stay.members) member.style.transform = wbItemTransform(item);
+      for (const [member, item] of layer.stay.members) {
+        //: **A topic off screen where it was and where it lands stays put until the cull shows it**
+        //: (mapperf 500: writing all 499 transforms restyled every topic, 75ms of the drop's
+        //: frame). It is hidden (`wb-culled`) and nowhere on screen either way; the cull places
+        //: it as it comes on (`_wbPlaceLater`), and a render places every topic anyway.
+        if (member.classList.contains("wb-culled") && wbMapDragLayer.offScreenBoth(item, layer.dx || 0, layer.dy || 0)) {
+          member._wbPlaceLater = true;
+          continue;
+        }
+        member.style.transform = wbItemTransform(item);
+      }
     }
     for (let i = layer.home.length - 1; i >= 0; i -= 1) {
       const [member, next, item] = layer.home[i];
