@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8576, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11588, test files 2975, tests 23315, plan headings 688, app scripts 29, boot scripts 38, script files 323.
+Counts: frontend functions 8576, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11588, test files 2976, tests 23316, plan headings 688, app scripts 29, boot scripts 38, script files 323.
 
 ## Frontend functions (8576)
 
@@ -21146,12 +21146,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Focus` | src/tessellate/ai/toolwords.py:118 |
-| `_compile` | src/tessellate/ai/toolwords.py:179 |
-| `asks_web` | src/tessellate/ai/toolwords.py:277 |
-| `looks_like_a_question_about` | src/tessellate/ai/toolwords.py:235 |
-| `score_groups` | src/tessellate/ai/toolwords.py:212 |
-| `web_tools_for` | src/tessellate/ai/toolwords.py:271 |
+| `Focus` | src/tessellate/ai/toolwords.py:119 |
+| `_compile` | src/tessellate/ai/toolwords.py:181 |
+| `asks_web` | src/tessellate/ai/toolwords.py:280 |
+| `looks_like_a_question_about` | src/tessellate/ai/toolwords.py:238 |
+| `score_groups` | src/tessellate/ai/toolwords.py:215 |
+| `web_tools_for` | src/tessellate/ai/toolwords.py:274 |
 
 ### src/tessellate/ai/translate.py (6)
 
@@ -29305,7 +29305,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23315)
+## Tests (23316)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29468,6 +29468,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_autonomous_state_isolation.py | 4 |
 | tests/test_avatars_forced_layout_1716.py | 3 |
 | tests/test_ba1_1111.py | 3 |
+| tests/test_backend_streamline_185.py | 1 |
 | tests/test_backend_switch_keeps_embeddings.py | 2 |
 | tests/test_backend_url_safety.py | 23 |
 | tests/test_background_filing.py | 26 |

@@ -39,6 +39,7 @@ and separating a question about a capability from a request to use it.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 from dataclasses import dataclass, field
 
 #: A cue that is a whole phrase ("mind map", "path between") is worth more than
@@ -176,8 +177,10 @@ _INFLECTION = (
 )
 
 
-def _compile(cues: tuple[str, ...]) -> list[tuple[re.Pattern[str], str, float]]:
-    """Cue strings into anchored patterns, once, at import.
+@lru_cache(maxsize=256)
+def _compile(cues: tuple[str, ...]) -> tuple[tuple[re.Pattern[str], str, float], ...]:
+    """Cue strings into anchored patterns, once per cue table (cached: the
+    tables are constants, and rebuilding them cost 13 ms a chat turn, L-world-class-185).
 
     A cue containing a space is matched as a phrase and weighted higher; a
     single word is matched on both boundaries. `re.escape` throughout, because
@@ -206,7 +209,7 @@ def _compile(cues: tuple[str, ...]) -> list[tuple[re.Pattern[str], str, float]]:
             # character, so ask for "not followed by more word" instead.
             tail = r"(?!\w)"
         out.append((re.compile(head + re.escape(cue) + tail, re.I), cue, weight))
-    return out
+    return tuple(out)
 
 
 def score_groups(
