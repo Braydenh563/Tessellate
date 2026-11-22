@@ -13,9 +13,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
-| ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
+| ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
+| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 4 | 0 | 0 | 5 | 4 |
 | all | 502 | 539 | 126 | 2 | 184 | 1167 |
 
@@ -458,6 +458,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
 - [ ] **L-ui-modernisation-24** `ui-modernisation` open, S: Move stale UI plan pointers and empty headings to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:778. Evidence: Open line in the plan's prose a session could miss. Stale 'Open' pointers will mislead the session into rebuilding: - 5b is built (HISTORY, TIMELINE Brief 55). - The selection ticks (line 684) were built 2026-09-23. - 1695 (line 1285) is fully built. - Decision 6's countjs 'future pass' (line 213) is done. - Empty headings sit at lines 781, 1251, 1253 and 1270.
 - [ ] **L-ui-modernisation-25** `ui-modernisation` open, S: Tab strip is 48px tall in the 44px header at 820 to 1199 wide, so its top 2.5px overhangs the window; make the header fit the strip, then drop the tab-bar allowance in tour.js judge(). From tour.js sweep, L-general-14. Evidence: 1184x760: #tab-bar box [340,-2.5,504,48] in a 44px top-bar; tab buttons 44px from the 820-1199.98 band (frontend/css/10-responsive.css:101) and the strip's 2px padding make 48; 2.5px sits above the window
+- [ ] **L-ui-modernisation-26** `ui-modernisation` open, M: Run the usability and IA trust read the owner asked for (INBOX 266 ask 1): the small broken, unreliable or missing things, listed per surface. From docs/roadmap/HISTORY.md arch.md row, INBOX 266 (1). Evidence: INBOX 266 ask 1 (usability and information-architecture gaps that cost trust) is the only part of 266 left; 13.2 is per surface, no list of the small broken, unreliable or missing things; owner Phase 13c with deep-audit
+- [ ] **L-ui-modernisation-27** `ui-modernisation` open, M: Close 13a's remaining ratcheted counts (decisions 9, 10, 12, 13, 16, 17). From UI_MODERNISATION_PLAN.md 13.3 recount 2026-11-22, L533. Evidence: gate13.js: tokens 417 (target under 200), literal z-index above 2 115, colour literals outside the two files 153, !important 86, hand-written outer drops 6, 50% circles 6 selectors in CIRCLES_LEFT; each at its ratchet
 
 ## timeline
 
@@ -499,7 +501,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L530** `world-class` open, S: Fix flaky test_relations_kg2 10k timing under load. From OPEN.md:660; OPEN.md:3282. Evidence: No fix located; timing test remains in tests/test_relations_kg2.py
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
 - [ ] **L532** `world-class` open, S: Re-run Quick add 56/60 measure after F1 fixes. From OPEN.md:864. Evidence: scratchpad/ui-sweeps/quickadd.js exists; no re-run figure recorded
-- [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L534** `world-class` open, S: Undo counts per surface are static reads; drive documents/OCR/meetings and whiteboard 43/14. From OPEN.md:1116; OPEN.md:1485. Evidence: Undo ledger not closed; counts recorded, uncovered writes remain (see 587)
 - [ ] **L535** `world-class` open, S: decide is 34 ms/call at 5,000 notes vs 8-17 ms old tally. From OPEN.md:1496. Evidence: Perf measurement (scratchpad/filing-tools/perf.py); no optimisation found
 - [ ] **L536** `world-class` open, S: clip.html/capture.html unhashed ?v=<version> stamps. From OPEN.md:1504. Evidence: frontend/clip.html:13,18 still ?v=0.7.0 static stamps
@@ -508,7 +509,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L539** `world-class` open, S: Run errors.js in THEME=dark and FAULTS=1. From OPEN.md:1889. Evidence: No record of the dark/fault runs; cheap to run
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L541** `world-class` open, S: Exercise slow/failed app-features.js fetch and late Quick access paint. From OPEN.md:1921; OPEN.md:2719. Evidence: No fault test found
-- [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
 - [ ] **L543** `world-class` open, S: undo.js trust sweep does not walk the OCR workspace. From OPEN.md:1634. Evidence: scratchpad/ui-sweeps/undo.js has no OCR step; ocr79.js measures it instead (still the case)
 - [ ] **L544** `world-class` open, S: Give scripts left in counted bundles (noteFirstImage etc.) a shared home. From OPEN.md:1643. Evidence: noteFirstImage still only in library.js:13226 and used at :13238; graph.js:2913 repeats the rule in a comment, no shared home
 - [ ] **L545** `world-class` open, S: --staged gate took 6 min; measure slowest step. From OPEN.md:2066. Evidence: gate.sh header still says ~40 s base; no timing/measure step found
