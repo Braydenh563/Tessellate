@@ -16,10 +16,10 @@ COPY requirements.txt pyproject.toml ./
 # image filters it out; the embedder build keeps it.
 RUN python -m venv /venv \
  && if [ "$WITH_EMBEDDER" = "1" ]; then \
-      /venv/bin/pip install -r requirements.txt; \
+      /venv/bin/pip install --no-cache-dir -r requirements.txt; \
     else \
       grep -vE '^(fastembed|pytest|httpx)' requirements.txt > /tmp/req.txt \
-      && /venv/bin/pip install -r /tmp/req.txt; \
+      && /venv/bin/pip install --no-cache-dir -r /tmp/req.txt; \
     fi
 COPY src ./src
 COPY frontend ./frontend
@@ -29,7 +29,7 @@ COPY alembic.ini ./
 # (L-general-3): a copy of the image is a copy of the program.
 COPY LICENSE README.md ./
 COPY docs/THIRD_PARTY.md ./docs/
-RUN /venv/bin/pip install --no-deps -e .
+RUN /venv/bin/pip install --no-cache-dir --no-deps -e .
 
 FROM python:3.13-slim
 RUN useradd --create-home --uid 1000 mm \

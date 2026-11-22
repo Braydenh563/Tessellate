@@ -78,3 +78,13 @@ def test_the_licence_and_notices_ship_in_the_image():
     assert re.search(r"^COPY [^\n]*\bLICENSE\b", DOCKERFILE, re.M)
     assert re.search(r"^COPY [^\n]*docs/THIRD_PARTY\.md", DOCKERFILE, re.M)
     assert "COPY --from=build /app /app" in DOCKERFILE
+
+
+def test_ci_lints_the_dockerfile_with_hadolint():
+    """L-general-5: the official action reads docker/Dockerfile on every pull request."""
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    job = re.search(r"\n  dockerfile:\n(.*?)(?=\n  \w[\w-]*:\n)", ci, re.S)
+    assert job, "no hadolint job in ci.yml"
+    assert "uses: hadolint/hadolint-action@" in job.group(1)
+    assert "dockerfile: docker/Dockerfile" in job.group(1)
+    assert "failure-threshold" not in job.group(1), "the default threshold is the check"
