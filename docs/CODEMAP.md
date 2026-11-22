@@ -19592,7 +19592,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_run_skill` | src/tessellate/ai/parity_acts.py:278 |
 | `_source_note` | src/tessellate/ai/parity_acts.py:240 |
 | `_to_reminders` | src/tessellate/ai/parity_acts.py:258 |
-| `plan` | src/tessellate/ai/parity_acts.py:293 |
+| `plan` | src/tessellate/ai/parity_acts.py:303 |
 | `read` | src/tessellate/ai/parity_acts.py:125 |
 | `replaced` | src/tessellate/ai/parity_acts.py:184 |
 | `words` | src/tessellate/ai/parity_acts.py:54 |

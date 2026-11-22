@@ -280,13 +280,23 @@ def _run_skill(parsed: dict) -> dict:
     from tessellate.ai.tools import tool_handoff
     from tessellate.ai.tools._common import ToolError
 
+    from tessellate.ai import skills
+    from tessellate.ai.tools.tool_table import TOOLS
+    from tessellate.ai.tools.tool_turn import MAX_NAME_ECHO, MAX_SKILL_NAMES, _match_skill
+    from tessellate.core import deps
+
+    #: The line is built here, never from the error's text: a tool error is worded for the
+    #: model ("Call list_skills"), and exception text never reaches the page (CodeQL
+    #: py/stack-trace-exposure on /read/act).
+    catalog = skills.catalog(deps.get_config(), set(TOOLS))
+    wanted = str(parsed.get("name") or "").strip()
+    if not wanted or _match_skill(catalog, wanted) is None:
+        known = ", ".join(f"“{item['name']}”" for item in catalog[:MAX_SKILL_NAMES])
+        return {"line": f"There is no skill called “{wanted[:MAX_NAME_ECHO]}”. " + (f"The ones that exist are: {known}." if known else "There are none saved.")}
     try:
-        event = tool_handoff.validate_run_skill({"name": parsed["name"]})
-    except ToolError as exc:
-        said = str(exc)
-        if "needs" in said and "inputs" in said:
-            return {"line": "That skill needs some details first, so start it from the Skill menu in Chat."}
-        return {"line": said.split(" Call list_skills")[0]}
+        event = tool_handoff.validate_run_skill({"name": wanted})
+    except ToolError:
+        return {"line": "That skill needs some details first, or a larger model, so start it from the Skill menu in Chat."}
     return {"line": f"I can run the skill “{event['skill']}”. It starts when you press Run the skill.", "tool": event}
 
 
