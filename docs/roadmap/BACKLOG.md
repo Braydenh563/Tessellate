@@ -907,6 +907,12 @@ block, trimming harder below an 8k-token window; see the retired analysis doc's
 size/risk call (M, take the idea, measure it on a small model before
 trusting it).
 
+### Board library tiles: the layout left in a board's first note
+Owner lag log 2026-11-22: `#wb-add-note` still lays out 73 SVG tiles. 4x CPU, 3 runs, event/frame median (`scratchpad/lag/probe.js` SCEN=wbnote): as built 376/341 ms (forced 119 to 219); `content-visibility: auto` per tile 560/502 (forced 38 to 65, moved into the frame); thumbnails not drawn at all 480/445. Not drawing them did not shorten the frame, so lazy or raster thumbnails cannot: parked until a quiet-machine trace names the rest.
+
+### Notes sub-tab switch, the dashboard's boot frame, Settings' first open and the OCR regions paint: tried, parked
+Owner lag log 2026-11-22, 4x CPU (`scratchpad/lag/probe.js`). Sub-tabs (AB, event/frame median): the fade mark on the arriving panel, not the page, 272/222 to 416/366 (n 3); `content-visibility: auto` on a section's blocks 352/289 to 328/266 (n 4, noise, and its paint containment would clip a section's menus). Dashboard boot, longest frame median (n 4): as built 320 ms; `content-visibility: auto` on the widgets 433; the Atlas animations paused 282, the one gain, which is L-ui-modernisation-201's. Settings' first open (one attempt): a style recalc of 2,253 elements, 228 to 519 ms, now in the frame and not forced; finding the pane's scroller after the paint instead of with `getComputedStyle` went from frame 270 to 310 ms (AB, n 4 each). The `html.modal-open` toggle is not it (1.5 ms a toggle, unthrottled). Next: which selectors that recalc matches (the long generated `:where(:not(...))` rules are the suspects). OCR regions (one attempt): the owner's 198 ms forced in the regions response was not reproduced on a two-page PDF (4x CPU); the forced read now is the built dialog's first layout, 247 ms, taken by `ocrDockFits` in the fit's frame, which the frame pays anyway (two other readers before it, the selection popup and the dock width, are fixed). The dashboard tab's click: forced 1 to 4 ms of a 38 to 73 ms handler on this head (the owner's build: 39 to 106 forced); its inline timer is Atlas's `step` (up to 150 ms a tick), L-ui-modernisation-201's. The board's `#wb-add-note` fix (845b1ec4) is on this branch, not yet on the owner's build.
+
 ---
 
 ## 12. Does the AI know it is an agent?

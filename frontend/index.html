@@ -491,7 +491,7 @@
        put in `#recovery-key-value` while this is open and taken out when it
        closes: it is never stored, so this is the only place it ever is.
        Wired in account-recovery.js. -->
-  <dialog id="recovery-key-dialog" class="card space-dialog recovery-key-dialog" aria-labelledby="recovery-key-title">
+  <dialog id="recovery-key-dialog" data-keep-open class="card space-dialog recovery-key-dialog" aria-labelledby="recovery-key-title">
     <div class="dialog-head">
       <h2 class="dialog-head-title" id="recovery-key-title"><i class="ph ph-shield-check pop-glyph" aria-hidden="true"></i>Your recovery key</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle"
@@ -10273,6 +10273,9 @@ Link to another note with [[its first few words]]."></textarea>
       <button id="doc-dictionary-add" class="ghost small" type="button" hidden>Add</button>
     </div>
     <p id="doc-dictionary-field-hint" class="visually-hidden">Typing filters the list. Enter adds the word.</p>
+    <!-- The list and the checks scroll under the head, the count line and the
+         field, which stay put (the owner 2026-11-22: they scrolled away). -->
+    <div class="doc-dictionary-body">
     <ul id="doc-dictionary-list" class="doc-dictionary-list" aria-label="Words in your dictionary"></ul>
     <input id="doc-dictionary-file" type="file" accept=".txt,text/plain" hidden>
     <h3 class="doc-dictionary-section">Checks</h3>
@@ -10338,6 +10341,7 @@ Link to another note with [[its first few words]]."></textarea>
         <small class="muted">Curly quotes as you type, and two hyphens make a dash.</small>
       </span>
     </label>
+    </div>
   </dialog>
 
   <div id="extract-panel" class="modal-overlay hidden" role="dialog"
@@ -16180,7 +16184,7 @@ Link to another note with [[its first few words]]."></textarea>
   <!-- What a skill asks for before it runs (§21). One dialog for all of a
        skill's inputs: a skill with two of them used to mean two prompt()
        boxes in a row, and the second one arrived with no context. -->
-  <div id="skill-run-overlay" class="modal-overlay hidden" role="dialog"
+  <div data-keep-open id="skill-run-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Run a skill">
     <div class="card modal-card" id="skill-run-card">
       <div class="row space-between dialog-head">
@@ -16555,7 +16559,7 @@ Link to another note with [[its first few words]]."></textarea>
   </div>
 
   <!-- First-run welcome tour (learnability). Re-runnable from Settings, Help. -->
-  <div id="onboarding-overlay" class="modal-overlay hidden" role="dialog"
+  <div data-keep-open id="onboarding-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Welcome to Tessellate">
     <div class="card modal-card" id="onboarding-card">
       <div class="onboarding-slide" id="onboarding-slide">

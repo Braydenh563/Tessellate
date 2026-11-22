@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Activity panel (Agent runs) floats without taking room: opening it no longer adds 288px to the bottom of the dashboard's scroll, or of Notes, Timeline, Library and Reminders (the owner, 2026-11-22).
+- Panels: the Suggestions head and the Dictionary's head, count line and field stay put while the list scrolls (a 400 px scroll moved them 400 and 321 px; now 0); the Dictionary closes on a press outside it; a moved or docked dialog is no longer modal, so its dim and blur go and the app beside it works (Escape still closes it), and a moved overlay lets presses through. Every popup in the middle closes on a press outside it (one rule for every dialog and overlay), unless something was typed in it; the Timeline month picker shows its days again.
+- Lag: opening the OCR workspace no longer lays the page out for the selection popup (196 to 538 ms at 4x CPU, now under 1 ms). Its tool row no longer lays the dialog out to refit at the same width (169 to 334 ms, now under 1 ms).
 - Settings: each page's "On this page" list in the sidebar folds away from its head, remembered per page; the short list hides the other links again (an id-weighted `display: block` had shown all 8 of 8).
 - Code: the 23 functions over the size ratchet are split by job, none re-seeded: the shell's palette, entry menu, menu group and Settings opener; the board's map preview, object render, map strip and pointer setup; the Library gallery steps; the companion's act, build, tempo, figure and rig frames and three ambient scenes.
 - Map: at 500 topics a zoom no longer flips `wb-tiny` on every topic (map topics have no grips), the grammar repaint indexes the board once and repaints only the labels answered, and a topic's action row takes the inverse zoom only while shown (mapcpu 500 at 4x: open 1,088 to 850ms, worst zoom 131 to 45.5ms).

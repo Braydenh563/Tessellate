@@ -2492,25 +2492,17 @@ onSurface("timeline", () => {
       if (box.scrollTop + box.clientHeight > box.scrollHeight - 600) timelineLoadMore();
     });
   }, { passive: true });
-  //: The popover is wired once and its trigger is static markup. The capture
-  //: phase runs before the wiring's own press handler, so the grid is built
-  //: before the popover opens and placed at its real size; the focus follows
-  //: once it is open.
+  //: The popover is wired once and its trigger is static markup. The grid is
+  //: built by the shell's `_beforeOpen`, so it is placed at its real size; a
+  //: listener on the button never ran, because the shared capture listener in
+  //: menus.js stops the press first (the owner 2026-11-22: an empty month).
   (() => {
     const button = $("timeline-month-btn");
     const pop = $("timeline-month-pop");
     if (!button || !pop) return;
     wireHelpPopover(button, pop);
-    button.addEventListener(
-      "click",
-      () => {
-        if (button.getAttribute("aria-expanded") === "true") return;
-        const end = timelineStripEnd || timelineBucketKey(new Date(), "day");
-        renderTimelineMonthPop(timelineMonthStart(end), null);
-        setTimeout(() => pop.querySelector('.timeline-monthday[tabindex="0"]')?.focus({ preventScroll: true }), 0);
-      },
-      true
-    );
+    pop._beforeOpen = () => renderTimelineMonthPop(timelineMonthStart(timelineStripEnd || timelineBucketKey(new Date(), "day")), null);
+    pop._afterOpen = () => pop.querySelector('.timeline-monthday[tabindex="0"]')?.focus({ preventScroll: true });
     pop.addEventListener("keydown", timelineMonthKeys);
     $("timeline-month-prev").addEventListener("click", () => renderTimelineMonthPop(timelineMonthShift(timelineMonth.shown, -1), null));
     $("timeline-month-next").addEventListener("click", () => renderTimelineMonthPop(timelineMonthShift(timelineMonth.shown, 1), null));

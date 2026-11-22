@@ -45,6 +45,7 @@ BARE_STICKY = {
     "#capture .capture-commit-row",
     ".agent-monitor > .monitor-header",
     ".timeline-table thead th",
+    ".doc-prose-panel > .doc-prose-head",
 }
 
 

@@ -23,6 +23,7 @@
     await docDictionaryImport(file);
   });
   $("doc-dictionary-export")?.addEventListener("click", () => docDictionaryExport());
+  //: A press outside closes it: the shared rule for every modal dialog (app.js `dialogPressOutside`).
 
   //: **Managing the dictionary.** Asked for by name. A list you can add to and
   //: never see again is a list nobody trusts, and a wrongly added word would

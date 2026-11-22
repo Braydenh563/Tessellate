@@ -114,10 +114,17 @@
 }
 
 /* A moved panel's scrim is clear (INBOX 1450: dark only at the default
-   place); `panelScrimLift` sets the attribute. Still modal, so the layer
-   stays to take the outside press. The scrims carry no blur to lift. */
+   place); `panelScrimLift` sets the attribute as the drag starts. The scrims'
+   blur stayed on after a dock (the owner 2026-11-22); it is lifted where it
+   is set (01-forms-settings.css, 07-whiteboard-misc.css). At the gesture's
+   end a dialog is re-opened non-modal (`panelModalSync`), and an overlay lets
+   presses through to the app beside its panel. */
 [data-panel-moved]:is(.modal-overlay, [id$="-overlay"]) {
   background: transparent;
+  pointer-events: none;
+}
+[data-panel-moved]:is(.modal-overlay, [id$="-overlay"]) .panel-movable-on {
+  pointer-events: auto;
 }
 dialog[data-panel-moved]::backdrop {
   background: transparent;

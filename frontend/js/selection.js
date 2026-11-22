@@ -747,6 +747,14 @@ function selectionIsActionable(selection) {
 let selectionPointerPoint = null;
 
 function syncSelectionPopup() {
+  //: Focus inside a panel first, before any selection getter: those lay the page
+  //: out for a selection in a field, and the popup never shows inside these anyway
+  //: (`fieldSelection`, `SELECTION_POPUP_EXCLUDED`). Opening the OCR workspace paid
+  //: 350 to 419 ms of forced layout here (4x CPU; the owner's lag log 2026-11-22).
+  if (document.activeElement?.closest?.(".lock-overlay, .modal-overlay, #sketch-overlay, .command-palette")) {
+    if (!selectionPopupEl?.querySelector(".action-menu:not(.hidden)")) hideSelectionPopup();
+    return;
+  }
   // Text fields first. Asked for twice ("the ellipse button doesnt appear
   // when I highlight text in textboxes"), the editor is a <textarea>, whose
   // selection lives on the element rather than in the DOM selection, so the

@@ -420,7 +420,6 @@
   // monitor is showing and the whiteboard lifts its panel clear.
   function setAgentMonitorVisible(visible) {
     agentMonitor.classList.toggle("hidden", !visible);
-    document.body.classList.toggle("has-agent-monitor", visible);
     if (!visible) clearTimeout(agentMonitorIdleTimer);
   }
 

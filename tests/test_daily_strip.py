@@ -176,3 +176,16 @@ console.log(JSON.stringify({ walked, loaded, day, saved: asked.length }));
     assert json.loads(out.stdout) == {"walked": 1, "loaded": 2, "day": 3, "saved": 4}
     assert 'new CustomEvent("tessellate:note-saved"' in _function(frontend_text("capture-ask.js"), "async function saveEntry(")
     assert "renderTimelineDayStrip({ fresh: true })" in _function(TIMELINE, "async function renderTimeline(")
+
+
+def test_the_month_picker_is_built_by_the_popover_shell_not_a_click_listener() -> None:
+    # The owner 2026-11-22: "November 2026" opened an empty picker (no title, no days). menus.js's
+    # shared capture listener stops the press before a listener on the trigger runs, so the grid is
+    # built from `_beforeOpen` (measured: title "November 2026", 7 weekday names, 30 days; sweep
+    # scratchpad/ui-sweeps/monthpop.js).
+    wiring = TIMELINE[TIMELINE.index('const button = $("timeline-month-btn");') :][:1200]
+    assert "pop._beforeOpen = () => renderTimelineMonthPop(" in wiring
+    assert "pop._afterOpen = " in wiring
+    assert "button.addEventListener(" not in wiring
+    menus = frontend_text("menus.js")
+    assert "panel._beforeOpen?.();" in menus

@@ -1494,6 +1494,7 @@ function wireBackdropClose(overlay, close, alsoBackdrop = "") {
   const isBackdrop = (target) =>
     target === overlay || (alsoBackdrop && target instanceof Element && target.matches(alsoBackdrop));
   let downOnBackdrop = false;
+  overlay._backdropWired = true;
   overlay.addEventListener("mousedown", (e) => {
     downOnBackdrop = isBackdrop(e.target);
   });

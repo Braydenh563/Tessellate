@@ -495,6 +495,7 @@
     if (typeof IntersectionObserver === "undefined") return;
     PANEL_LIVE.watch ||= new IntersectionObserver((list) => {
       for (const en of list) {
+        if (en.isIntersecting) panelModalSync(en.target, panelSt(en.target));
         if (en.isIntersecting || panelRestoreOn() || en.target.closest("[data-panel-min]")) continue;
         const st = panelSt(en.target);
         st.x = st.y = 0;
@@ -520,6 +521,7 @@
     st.pre = null;
     panelApply(panel, st);
     if (st.id) panelStoreWrite(st.id, null);
+    panelModalSync(panel, st);
     panelSync(panel);
     panelPushSync();
   }
@@ -542,6 +544,7 @@
     st.rim = null;
     if (st.id) panelStoreWrite(st.id, st, panelLayout(panel));
     panelScrimLift(panel, st);
+    panelModalSync(panel, st);
     panelSync(panel);
     panelPushSync();
   }
@@ -959,9 +962,39 @@
       window.removeEventListener("close", quiet, true);
     };
     window.addEventListener("close", quiet, true);
+    //: Not a real close: what was typed still counts (app.js keeps a typed dialog open).
+    const typed = host._typed;
     host.close();
+    host._typed = typed;
     if (modal) host.showModal();
     else host.show();
+  }
+  //: **A moved or docked dialog lets go of the app** (the owner 2026-11-22: after docking
+  //: or dragging the Dictionary "the background stays blurred and dimmed"). A clear scrim
+  //: was not enough: a modal dialog keeps the page inert, so nothing beside a docked panel
+  //: could be used. It is re-opened non-modal at the end of the gesture (or when it shows
+  //: again at a stored place) and modal again once put back in the middle; Escape still
+  //: closes it while the focus is in it, as it did when modal.
+  function panelModalSync(panel, st) {
+    const host = panel.closest("dialog");
+    if (!host || !host.open || PANEL_MIN.has(host)) return;
+    const moved = Boolean(st.x || st.y || st.dock || st.w !== null);
+    const modal = host.matches(":modal");
+    if (moved && modal) host._panelLoose = true;
+    else if (moved || modal || !host._panelLoose) return;
+    else host._panelLoose = false;
+    const focused = host.contains(document.activeElement) ? document.activeElement : null;
+    panelReopen(host, !moved);
+    focused?.focus({ preventScroll: true });
+    if (!host._panelEsc) {
+      host._panelEsc = true;
+      host.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape" || !host._panelLoose || host.matches(":modal") || e.defaultPrevented) return;
+        e.preventDefault();
+        if (host.requestClose) host.requestClose();
+        else host.close();
+      });
+    }
   }
   function panelMinTray() {
     let tray = document.getElementById("panel-min-tray");

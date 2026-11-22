@@ -1586,3 +1586,50 @@ function historyActorLabel(actor) {
   }
   return actor;
 }
+
+//: **One outside-click rule for every modal `<dialog>`** (the owner 2026-11-22: popups "can't be
+//: closed by clicking outside"). A press on the ::backdrop targets the dialog itself, so the point
+//: is checked against its box; it has to start outside as well, or a selection let go past the edge
+//: would close it (as `wireBackdropClose`, app.js). Window capture, first: a deeper capture listener stops
+//: some presses (panel-movable.js). Not modal (moved, docked, minimised) means no backdrop and no
+//: close. Kept open: `data-keep-open` (a key shown once), and a dialog someone has typed into, so
+//: an unsaved name or note is never lost to a stray click; Escape and the Close button still work.
+(() => {
+  const DIALOG_TEXT_SKIP = new Set(["search", "checkbox", "radio", "range", "color", "file", "hidden", "button", "submit"]);
+  function dialogPressOutside(e) {
+    const d = e.target;
+    if (!(d instanceof HTMLDialogElement)) return null;
+    const r = d.getBoundingClientRect();
+    return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom ? d : null;
+  }
+  //: The same for a `.modal-overlay` (its backdrop is the overlay itself) that `wireBackdropClose`
+  //: does not already cover: the press presses the overlay's own Close (`#x-close`), so its close
+  //: handling runs as it would. A moved one lets presses through (panel-movable-lazy.css).
+  const OVERLAY_CLOSE = '[id$="-close"], [id$="-cancel"]';
+  function overlayPressOutside(e) {
+    const o = e.target;
+    return o instanceof Element && o.classList.contains("modal-overlay") && !o._backdropWired ? o : null;
+  }
+  let dialogDownOutside = null;
+  window.addEventListener("pointerdown", (e) => { dialogDownOutside = dialogPressOutside(e) || overlayPressOutside(e); }, true);
+  window.addEventListener("click", (e) => {
+    const shut = e.target instanceof Element && e.target.closest(OVERLAY_CLOSE)?.closest(".modal-overlay");
+    if (shut) shut._typed = false;
+    const o = overlayPressOutside(e);
+    if (o && o === dialogDownOutside && !o.hasAttribute("data-keep-open") && !o._typed) {
+      o.querySelector(OVERLAY_CLOSE)?.click();
+      return;
+    }
+    const d = dialogPressOutside(e);
+    if (!d || d !== dialogDownOutside || !d.open || !d.matches(":modal") || d.hasAttribute("data-keep-open") || d._typed) return;
+    if (d.requestClose) d.requestClose();
+    else d.close();
+  }, true);
+  window.addEventListener("input", (e) => {
+    const el = e.target;
+    const d = el instanceof Element ? el.closest("dialog, .modal-overlay") : null;
+    if (!d) return;
+    if (el.isContentEditable || el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && !DIALOG_TEXT_SKIP.has(el.type))) d._typed = true;
+  }, true);
+  window.addEventListener("close", (e) => { if (e.target instanceof HTMLDialogElement) e.target._typed = false; }, true);
+})();
