@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: a board restored with the page no longer opens stuck on one tool; initWhiteboard waits for the whole boards bundle, and a test holds every boards file off later files while it loads.
 - Board: initWhiteboard split further (L634 closed): the phone tools sheet into whiteboard-toolsheet.js and the pen stroke handlers into whiteboard-strokes.js behind one `wbPen` holder; initWhiteboard 558 lines.
 - Board: the tool row along the bottom is a pill again while it fits on one line; it drew card corners at every width.
 - Board: the drawing, select, pan, zoom, board settings, menu and shortcut handlers moved into three files of their own (whiteboard-pointer.js, whiteboard-pan.js, whiteboard-menus.js); nothing changes on screen.

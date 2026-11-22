@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8849, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11011, test files 2854, tests 22880, plan headings 696, app scripts 29, boot scripts 38, script files 365.
+Counts: frontend functions 8849, frontend ids 2827, CSS sections 525, backend routes 718, backend modules 11011, test files 2856, tests 22887, plan headings 696, app scripts 29, boot scripts 38, script files 365.
 
 ## Frontend functions (8849)
 
@@ -10579,21 +10579,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:4178 |
-| `dragging` | frontend/js/whiteboard.js:3592 |
+| `addBoardToNote` | frontend/js/whiteboard.js:4181 |
+| `dragging` | frontend/js/whiteboard.js:3596 |
 | `handleWbZoom` | frontend/js/whiteboard.js:601 |
-| `highlighterBlend` | frontend/js/whiteboard.js:4198 |
-| `initWhiteboard` | frontend/js/whiteboard.js:1931 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:3855 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:4090 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:3959 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:2592 |
-| `renderWhiteboardNow` | frontend/js/whiteboard.js:2566 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4015 |
+| `highlighterBlend` | frontend/js/whiteboard.js:4201 |
+| `initWhiteboard` | frontend/js/whiteboard.js:1935 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:3859 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:4093 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:3962 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:2596 |
+| `renderWhiteboardNow` | frontend/js/whiteboard.js:2570 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4018 |
 | `wbAlignTol` | frontend/js/whiteboard.js:987 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:447 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:528 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3834 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3838 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:510 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:478 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:364 |
@@ -10609,7 +10609,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGuideBoxes` | frontend/js/whiteboard.js:1024 |
 | `wbInvZoomRules` | frontend/js/whiteboard.js:946 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3819 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3823 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
 | `wbMultiKey` | frontend/js/whiteboard.js:1407 |
 | `wbPublishInvZoom` | frontend/js/whiteboard.js:921 |
@@ -10624,8 +10624,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbScreenToBoard` | frontend/js/whiteboard.js:501 |
 | `wbShapeAt` | frontend/js/whiteboard.js:1147 |
 | `wbShapePoly` | frontend/js/whiteboard.js:1148 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3782 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:3769 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3786 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:3773 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:658 |
 | `wbSnap` | frontend/js/whiteboard.js:970 |
 | `wbSnapOn` | frontend/js/whiteboard.js:957 |
@@ -28914,7 +28914,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22880)
+## Tests (22887)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30349,6 +30349,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_jobs_pool.py | 11 |
 | tests/test_jobstore.py | 17 |
 | tests/test_joins_870.py | 5 |
+| tests/test_js_function_size.py | 3 |
 | tests/test_js_link_strip_redos.py | 2 |
 | tests/test_jump_echo_keeps_heading_p32.py | 5 |
 | tests/test_jump_gap_1590.py | 3 |
@@ -31603,6 +31604,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_hand_drawn.py | 3 |
 | tests/test_wb_help_sheet.py | 5 |
 | tests/test_wb_hover_after_frame_1111.py | 2 |
+| tests/test_wb_init_order.py | 4 |
 | tests/test_wb_ink_more.py | 17 |
 | tests/test_wb_ink_recognise.py | 8 |
 | tests/test_wb_ink_replay.py | 4 |
@@ -32444,22 +32446,22 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | chat | docs/roadmap/LEDGER.md:24 |
 | chat | docs/roadmap/LEDGER.md:886 |
 | closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:970 |
-| documents | docs/roadmap/LEDGER.md:281 |
+| documents | docs/roadmap/LEDGER.md:282 |
 | documents | docs/roadmap/LEDGER.md:910 |
-| general | docs/roadmap/LEDGER.md:656 |
+| general | docs/roadmap/LEDGER.md:657 |
 | graph | docs/roadmap/LEDGER.md:22 |
 | graph | docs/roadmap/LEDGER.md:874 |
 | hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:982 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:297 |
+| mindmap | docs/roadmap/LEDGER.md:298 |
 | mindmap | docs/roadmap/LEDGER.md:922 |
-| timeline | docs/roadmap/LEDGER.md:416 |
+| timeline | docs/roadmap/LEDGER.md:417 |
 | timeline | docs/roadmap/LEDGER.md:946 |
-| ui-modernisation | docs/roadmap/LEDGER.md:299 |
+| ui-modernisation | docs/roadmap/LEDGER.md:300 |
 | ui-modernisation | docs/roadmap/LEDGER.md:934 |
 | whiteboard | docs/roadmap/LEDGER.md:279 |
 | whiteboard | docs/roadmap/LEDGER.md:898 |
-| world-class | docs/roadmap/LEDGER.md:418 |
+| world-class | docs/roadmap/LEDGER.md:419 |
 | world-class | docs/roadmap/LEDGER.md:958 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
