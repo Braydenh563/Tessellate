@@ -2680,16 +2680,7 @@ function renderSidebar() {
     ul.appendChild(li);
     return li;
   };
-  const toggleFilter = (drafts) => () => {
-    if (drafts) draftsOnly = !draftsOnly;
-    else favouritesOnly = !favouritesOnly;
-    if (drafts) favouritesOnly = false;
-    else draftsOnly = false;
-    activeCategory = null;
-    showNotesSection("browse");
-    renderSidebar();
-    renderEntries();
-  };
+  const toggleFilter = renderSidebar.toggleFilter;
 
   // Drafts: a filter row beside the categories, always shown (even at 0) so it stays findable.
   filterRow("ph:pencil-simple-line Drafts", allEntries.filter((e) => e.is_draft).length, draftsOnly, "", toggleFilter(true));
@@ -2740,6 +2731,17 @@ function renderSidebar() {
   sidebarRovingRows(ul);
   foldSide();
 }
+//: The Drafts and Favourites rows' click, split from `renderSidebar`.
+renderSidebar.toggleFilter = (drafts) => () => {
+  if (drafts) draftsOnly = !draftsOnly;
+  else favouritesOnly = !favouritesOnly;
+  if (drafts) favouritesOnly = false;
+  else draftsOnly = false;
+  activeCategory = null;
+  showNotesSection("browse");
+  renderSidebar();
+  renderEntries();
+};
 
 //: **One tab stop for the whole category list** (UX1: 62 stops for 31
 //: categories, every name and then its ⋯, before the first note). The row that

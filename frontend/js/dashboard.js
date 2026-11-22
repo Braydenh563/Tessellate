@@ -1895,80 +1895,7 @@ async function renderDashboard({ refresh = false } = {}) {
       "card dash-widget" + (hidden ? " dash-hidden" : "") + (isWide ? " wide" : "");
     card.dataset.widget = name;
 
-    const header = document.createElement("div");
-    header.className = "row space-between";
-    const title = document.createElement("h2");
-    setLabel(title, widget.title);
-    header.appendChild(title);
-    if (dashEditMode) {
-      const controls = document.createElement("span");
-      //: **One line, whatever the zoom** (owner, 2026-11-11: "make sure the
-      //: wrapping and ui issues arent an issue anywhere else from zoom or
-      //: resolution"). Remove, Wide, Move earlier, Move later and Drag sat
-      //: side by side at 293px, so 34 of 35 heads wrapped at 1366 (32px head
-      //: became 66) and the row ran 5px past the card. The row-actions
-      //: recipe (DESIGN.md): the first action stays, the rest fold into the
-      //: head's ⋯, and Remove and the grip are their glyphs (with the words
-      //: "Remove", 10 of 35 titles were cut at 1366), so the title gives way
-      //: with an ellipsis only when long (`.dash-edit-actions`,
-      //: 01-forms-settings.css).
-      controls.className = "entry-actions dash-edit-actions";
-      title.title = title.textContent.trim();
-      // There used to be two width buttons here, side by side: one writing
-      // to `wide` and one to the legacy `sizes` map. dashLayout() only falls
-      // back to `sizes` when `wide` is empty, so the legacy button appeared to
-      // work exactly once and then silently stopped. One control, one place
-      // it's stored.
-      controls.appendChild(
-        smallButton(hidden ? "ph:plus" : "ph:x", hidden ? "Add this widget to the dashboard" : "Remove this widget from the dashboard", async () => {
-          await toggleDashWidgetHidden(name);
-          renderDashboard();
-        })
-      );
-      //: **Reordering without a mouse.** HTML5 drag-and-drop is unreachable
-      //: by keyboard, unusable with a screen reader and awkward on a
-      //: trackpad, so Move earlier and Move later do the same job from the
-      //: head's ⋯, and are the faster way to move one widget three places up.
-      if (!hidden) {
-        const at = layout.order.indexOf(name);
-        const move = (delta) => async () => {
-          const order = [...layout.order];
-          const to = at + delta;
-          if (to < 0 || to >= order.length) return;
-          order.splice(to, 0, ...order.splice(at, 1));
-          await saveDashLayout({ ...dashLayout(), order });
-          renderDashboard();
-          //: Focus follows the widget, so a second press moves the same card
-          //: again rather than whatever landed under the pointer.
-          setTimeout(() => {
-            document.querySelector(`[data-widget="${name}"] .dash-edit-actions .kebab-opener`)?.focus();
-          }, 60);
-        };
-        const items = [
-          {
-            label: isWide ? "ph:rows Narrow" : "ph:arrows-out-line-horizontal Wide",
-            title: isWide ? "Show in one column" : "Span two columns",
-            run: async () => {
-              await toggleDashWidgetWide(name);
-              renderDashboard();
-            },
-          },
-        ];
-        if (at > 0) items.push({ label: "ph:arrow-up Move earlier", title: "Move this widget earlier", run: move(-1) });
-        if (at < layout.order.length - 1) items.push({ label: "ph:arrow-down Move later", title: "Move this widget later", run: move(1) });
-        controls.appendChild(kebabMenu(items, "Widget layout options"));
-      }
-      const handle = document.createElement("span");
-      handle.className = "drag-handle";
-      handle.title = "Drag to move";
-      const grip = document.createElement("i");
-      grip.className = "ph ph-dots-six-vertical";
-      grip.setAttribute("aria-hidden", "true");
-      handle.append(grip);
-      controls.appendChild(handle);
-      header.appendChild(controls);
-    }
-    card.appendChild(header);
+    renderDashboard.head(card, widget, { name, hidden, layout, isWide });
 
     const body = document.createElement("div");
     body.className = "dash-body";
@@ -2032,6 +1959,83 @@ async function renderDashboard({ refresh = false } = {}) {
     dashFillingSkeletonDone(outline);
   }));
 }
+//: One widget card's head: the title and, while editing, the layout controls (kebab, remove, drag handle); split from `renderDashboard`.
+renderDashboard.head = (card, widget, { name, hidden, layout, isWide }) => {
+  const header = document.createElement("div");
+  header.className = "row space-between";
+  const title = document.createElement("h2");
+  setLabel(title, widget.title);
+  header.appendChild(title);
+  if (dashEditMode) {
+    const controls = document.createElement("span");
+    //: **One line, whatever the zoom** (owner, 2026-11-11: "make sure the
+    //: wrapping and ui issues arent an issue anywhere else from zoom or
+    //: resolution"). Remove, Wide, Move earlier, Move later and Drag sat
+    //: side by side at 293px, so 34 of 35 heads wrapped at 1366 (32px head
+    //: became 66) and the row ran 5px past the card. The row-actions
+    //: recipe (DESIGN.md): the first action stays, the rest fold into the
+    //: head's ⋯, and Remove and the grip are their glyphs (with the words
+    //: "Remove", 10 of 35 titles were cut at 1366), so the title gives way
+    //: with an ellipsis only when long (`.dash-edit-actions`,
+    //: 01-forms-settings.css).
+    controls.className = "entry-actions dash-edit-actions";
+    title.title = title.textContent.trim();
+    // There used to be two width buttons here, side by side: one writing
+    // to `wide` and one to the legacy `sizes` map. dashLayout() only falls
+    // back to `sizes` when `wide` is empty, so the legacy button appeared to
+    // work exactly once and then silently stopped. One control, one place
+    // it's stored.
+    controls.appendChild(
+      smallButton(hidden ? "ph:plus" : "ph:x", hidden ? "Add this widget to the dashboard" : "Remove this widget from the dashboard", async () => {
+        await toggleDashWidgetHidden(name);
+        renderDashboard();
+      })
+    );
+    //: **Reordering without a mouse.** HTML5 drag-and-drop is unreachable
+    //: by keyboard, unusable with a screen reader and awkward on a
+    //: trackpad, so Move earlier and Move later do the same job from the
+    //: head's ⋯, and are the faster way to move one widget three places up.
+    if (!hidden) {
+      const at = layout.order.indexOf(name);
+      const move = (delta) => async () => {
+        const order = [...layout.order];
+        const to = at + delta;
+        if (to < 0 || to >= order.length) return;
+        order.splice(to, 0, ...order.splice(at, 1));
+        await saveDashLayout({ ...dashLayout(), order });
+        renderDashboard();
+        //: Focus follows the widget, so a second press moves the same card
+        //: again rather than whatever landed under the pointer.
+        setTimeout(() => {
+          document.querySelector(`[data-widget="${name}"] .dash-edit-actions .kebab-opener`)?.focus();
+        }, 60);
+      };
+      const items = [
+        {
+          label: isWide ? "ph:rows Narrow" : "ph:arrows-out-line-horizontal Wide",
+          title: isWide ? "Show in one column" : "Span two columns",
+          run: async () => {
+            await toggleDashWidgetWide(name);
+            renderDashboard();
+          },
+        },
+      ];
+      if (at > 0) items.push({ label: "ph:arrow-up Move earlier", title: "Move this widget earlier", run: move(-1) });
+      if (at < layout.order.length - 1) items.push({ label: "ph:arrow-down Move later", title: "Move this widget later", run: move(1) });
+      controls.appendChild(kebabMenu(items, "Widget layout options"));
+    }
+    const handle = document.createElement("span");
+    handle.className = "drag-handle";
+    handle.title = "Drag to move";
+    const grip = document.createElement("i");
+    grip.className = "ph ph-dots-six-vertical";
+    grip.setAttribute("aria-hidden", "true");
+    handle.append(grip);
+    controls.appendChild(handle);
+    header.appendChild(controls);
+  }
+  card.appendChild(header);
+};
 
 //: `fn` once `count` animation frames have passed: the first has painted what
 //: was just changed. The one frame loop for "after it has drawn" in this file
