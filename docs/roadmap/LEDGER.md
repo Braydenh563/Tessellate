@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 25 | 1 | 0 | 0 | 26 |
-| general | 0 | 8 | 5 | 0 | 5 | 13 |
-| all | 372 | 399 | 79 | 2 | 111 | 850 |
+| general | 0 | 7 | 5 | 0 | 5 | 12 |
+| all | 372 | 398 | 79 | 2 | 111 | 849 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -512,7 +512,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
-- [ ] **L-general-28** `general` open, S: Move the placed INBOX items to HISTORY and correct the stale 904 statuses. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:36. Evidence: Five items are still listed under Open items although each has a Placed id. INBOX is intake only, so they should be in HISTORY. The 904 text also still says 'not built' for B03, B11, B15, B18, B20, B2
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
