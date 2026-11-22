@@ -6030,6 +6030,22 @@
     }
     return true;
   };
+  //: **Nor the hands it holds on by, while they are not shown** (Brief 34
+  //: decision 7). The hold's reach (`.nmb-hold`, shown only hanging,
+  //: carried or in a stretch, a yawn or a cheer) was stepped twenty times
+  //: a second on a figure sitting or standing: each step restyled the
+  //: drawing, and reading the next beat's play states paid for it (a 15s
+  //: profile of the corner Atlas at rest: 494ms in this function). Hidden
+  //: hands are paused where they are, and taken up again within a second
+  //: of showing.
+  function nameMarkBuddyTempoHands() {
+    //: Read every state, then pause (lag log: `nameMarkBuddyTempo` 26ms, forced layout 25ms): a `pause()` ahead of
+    //: the next animation's `playState` made that read settle the figure's style again.
+    const hidden = nmbTempo.anims.filter((a) => a.effect.target.closest(".nmb-hold"));
+    const running = hidden.filter((a) => a.playState === "running");
+    nmbTempo.anims = nmbTempo.anims.filter((a) => !hidden.includes(a));
+    for (const a of running) a.pause();
+  }
   function nameMarkBuddyTempo() {
     nmbTempo.timer = 0;
     const buddy = document.getElementById("nm-buddy");
@@ -6078,22 +6094,7 @@
       //: Nor Atlas's blink (atlas.js, `atlasBlink`, 320ms): stepped at
       //: 10Hz its lid jumped in three steps.
       nmbTempo.anims = buddy.getAnimations({ subtree: true }).filter((a) => a.effect?.target instanceof SVGElement && !(a.effect.target instanceof SVGSVGElement) && !(typeof CSSTransition === "function" && a instanceof CSSTransition) && a.id !== "nmb-blend" && a.id !== "atl-blink" && a.id !== "atl-breath" && a.playState !== "finished");
-      //: **Nor the hands it holds on by, while they are not shown** (Brief 34
-      //: decision 7). The hold's reach (`.nmb-hold`, shown only hanging,
-      //: carried or in a stretch, a yawn or a cheer) was stepped twenty times
-      //: a second on a figure sitting or standing: each step restyled the
-      //: drawing, and reading the next beat's play states paid for it (a 15s
-      //: profile of the corner Atlas at rest: 494ms in this function). Hidden
-      //: hands are paused where they are, and taken up again within a second
-      //: of showing.
-      if (!buddy.matches(NMB_HOLD_SHOWN)) {
-        //: Read every state, then pause (lag log: `nameMarkBuddyTempo` 26ms, forced layout 25ms): a `pause()` ahead of
-        //: the next animation's `playState` made that read settle the figure's style again.
-        const hidden = nmbTempo.anims.filter((a) => a.effect.target.closest(".nmb-hold"));
-        const running = hidden.filter((a) => a.playState === "running");
-        nmbTempo.anims = nmbTempo.anims.filter((a) => !hidden.includes(a));
-        for (const a of running) a.pause();
-      }
+      if (!buddy.matches(NMB_HOLD_SHOWN)) nameMarkBuddyTempoHands();
       //: **What animates inside one of Atlas's layers goes at half that**
       //: (libtl-0926, from the Atlas agent's report): a mood's small effects
       //: (sparkles, the thinking dots, a drop), each step of which is a
@@ -8551,6 +8552,21 @@
   // --- its behaviours -----------------------------------------------------------
 
   const NMB_RECENT_ACTS = 5;
+  //: **Never the same twice running** (the owner: "also state variations,
+  //: not the exact same animation or mood animation each time"). An act
+  //: with variants plays one it did not play last time (`data-variant`, the
+  //: CSS's), and every act's own animations run a little faster or slower
+  //: this time (`nameMarkBuddyVary`, below). Returns the variant as a string, "" for none.
+  function nameMarkBuddyNextVariant(act) {
+    const variants = NMB_VARIANTS[act] || 0;
+    let variant = "";
+    if (variants) {
+      const v = nameMarkBuddyPickVariant(variants, nmb.variant?.[act] ?? -1);
+      nmb.variant = { ...(nmb.variant || {}), [act]: v };
+      variant = String(v);
+    }
+    return variant;
+  }
   function nameMarkBuddyAct(act, ms) {
     const buddy = document.getElementById("nm-buddy");
     if (!buddy) return;
@@ -8641,18 +8657,7 @@
     }
     if (NMB_SCENE_ACTS.includes(act)) nameMarkBuddyScene(buddy);
     if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);
-    //: **Never the same twice running** (the owner: "also state variations,
-    //: not the exact same animation or mood animation each time"). An act
-    //: with variants plays one it did not play last time (`data-variant`, the
-    //: CSS's), and every act's own animations run a little faster or slower
-    //: this time (`nameMarkBuddyVary`, below).
-    const variants = NMB_VARIANTS[act] || 0;
-    let variant = "";
-    if (variants) {
-      const v = nameMarkBuddyPickVariant(variants, nmb.variant?.[act] ?? -1);
-      nmb.variant = { ...(nmb.variant || {}), [act]: v };
-      variant = String(v);
-    }
+    const variant = nameMarkBuddyNextVariant(act);
     if (act === "tilt") nameMarkBuddyTilt(Math.random() < 0.5 ? -0.7 : 0.7, (ms || spec.ms) - 400);
     //: **Into an act eased** (INBOX 619): parts mid-swing are handed over from
     //: where they were. Down from a throw nothing swings (its loops restart
@@ -10937,6 +10942,35 @@
 
   //: Whether it is out (chosen in Appearance, or still on the page): `nameMarkBuddyShowing`, lazy-entries.js.
 
+  //: **Its little emotes** (the owner: "should there be more emotes like
+  //: zzzz coming off it for sleeping"): a question mark, a sparkle, a sweat
+  //: drop by its head, each played once by `nameMarkBuddyEmote`.
+  function nameMarkBuddyEmoteBox() {
+    const emote = document.createElement("span");
+    emote.className = "nmb-emote";
+    emote.setAttribute("aria-hidden", "true");
+    const q = document.createElement("b");
+    q.className = "nmb-emote-q";
+    q.textContent = "?";
+    const svg = (cls, d, fill) => {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      el.setAttribute("class", cls);
+      el.setAttribute("viewBox", "0 0 12 12");
+      el.setAttribute("width", "12");
+      el.setAttribute("height", "12");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", d);
+      path.setAttribute("fill", fill);
+      el.appendChild(path);
+      return el;
+    };
+    emote.append(
+      q,
+      svg("nmb-emote-spark", "M6 0 L7.3 4.7 L12 6 L7.3 7.3 L6 12 L4.7 7.3 L0 6 L4.7 4.7 Z", "#ffd84a"),
+      svg("nmb-emote-sweat", "M6 0 C8 4 10 6 10 8 A4 4 0 0 1 2 8 C2 6 4 4 6 0 Z", "#7cc4ff"),
+    );
+    return emote;
+  }
   function nameMarkBuddyBuild() {
     const buddy = document.createElement("div");
     buddy.id = "nm-buddy";
@@ -10967,33 +11001,7 @@
     //: `syncNameMarkBuddy` knows whose it is.
     char.append(think, sleep);
     face.appendChild(char);
-    //: **Its little emotes** (the owner: "should there be more emotes like
-    //: zzzz coming off it for sleeping"): a question mark, a sparkle, a sweat
-    //: drop by its head, each played once by `nameMarkBuddyEmote`.
-    const emote = document.createElement("span");
-    emote.className = "nmb-emote";
-    emote.setAttribute("aria-hidden", "true");
-    const q = document.createElement("b");
-    q.className = "nmb-emote-q";
-    q.textContent = "?";
-    const svg = (cls, d, fill) => {
-      const el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      el.setAttribute("class", cls);
-      el.setAttribute("viewBox", "0 0 12 12");
-      el.setAttribute("width", "12");
-      el.setAttribute("height", "12");
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", d);
-      path.setAttribute("fill", fill);
-      el.appendChild(path);
-      return el;
-    };
-    emote.append(
-      q,
-      svg("nmb-emote-spark", "M6 0 L7.3 4.7 L12 6 L7.3 7.3 L6 12 L4.7 7.3 L0 6 L4.7 4.7 Z", "#ffd84a"),
-      svg("nmb-emote-sweat", "M6 0 C8 4 10 6 10 8 A4 4 0 0 1 2 8 C2 6 4 4 6 0 Z", "#7cc4ff"),
-    );
-    face.appendChild(emote);
+    face.appendChild(nameMarkBuddyEmoteBox());
     //: No x on it (the owner: "the x button being on the companion the whole
     //: time is kinda annoying. keep it in the right click or hold popup
     //: menu"): Hide is in its menu, which the keyboard reaches too.

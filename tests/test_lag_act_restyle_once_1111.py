@@ -55,6 +55,8 @@ def test_the_variant_is_written_by_the_hand_over_not_ahead_of_it() -> None:
     assert len(re.findall(r"dataset\.variant\b", into)) == 2
     assert "if (variant) buddy.dataset.variant = variant;" in into and "delete buddy.dataset.variant;" in into
     # The pick (and its memory, so the next pick differs) stays where it was; only the write moved.
+    # The pick moved into `nameMarkBuddyNextVariant` (the size cap), so read it too.
+    act += _code(_block(AV, "function nameMarkBuddyNextVariant("))
     assert "variant = String(v);" in act and "nmb.variant = { ...(nmb.variant || {}), [act]: v };" in act
 
 

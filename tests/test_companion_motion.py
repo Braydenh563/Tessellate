@@ -792,7 +792,7 @@ def test_emotes_night_cap_and_faces_that_crossfade_and_come_down_gradually() -> 
     # the cap on asleep (1) and off awake (0), two figures for a moment in a
     # change of face then one, the "?" and the sparkle shown, and a laugh
     # coming down through a smile.
-    build = _fn("nameMarkBuddyBuild")
+    build = _fn("nameMarkBuddyBuild") + _fn("nameMarkBuddyEmoteBox")  # the emote box moved out of the build (the size cap)
     assert 'emote.className = "nmb-emote";' in build and "for (let i = 0; i < 3; i += 1) {" in build
     assert ".nm-buddy-z i:nth-child(3) { animation-delay: 1.73s; }" in CSS08
     # Only lying or curled (sitting), never upright.
@@ -958,7 +958,7 @@ def test_a_variant_is_never_the_one_it_played_last() -> None:
 
 
 def test_acts_have_variants_and_their_own_tempo_each_time() -> None:
-    act = _fn("nameMarkBuddyAct")
+    act = _fn("nameMarkBuddyAct") + _fn("nameMarkBuddyNextVariant")  # the pick moved out of the act (the size cap)
     assert "const v = nameMarkBuddyPickVariant(variants, nmb.variant?.[act] ?? -1);" in act
     assert "if (!NMB_RESTING_ACTS.has(act)) nameMarkBuddyVary(buddy, act, ms || spec?.ms || 1200);" in act
     assert "anim.playbackRate = rate;" in _fn("nameMarkBuddyVary")
