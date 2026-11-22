@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8851, frontend ids 2837, CSS sections 543, backend routes 719, backend modules 11039, test files 2953, tests 23194, plan headings 693, app scripts 29, boot scripts 38, script files 365.
+Counts: frontend functions 8852, frontend ids 2837, CSS sections 543, backend routes 719, backend modules 11039, test files 2953, tests 23194, plan headings 693, app scripts 29, boot scripts 38, script files 365.
 
-## Frontend functions (8851)
+## Frontend functions (8852)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -9784,14 +9784,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapToggleCollapse` | frontend/js/whiteboard-map-record.js:717 |
 | `wbMapUseLookForLevel` | frontend/js/whiteboard-map-record.js:1033 |
 
-### frontend/js/whiteboard-map-strip.js (39)
+### frontend/js/whiteboard-map-strip.js (40)
 
 | Name | File:line |
 |---|---|
-| `wbCloseMapRadial` | frontend/js/whiteboard-map-strip.js:1383 |
-| `wbFitMapRadialBand` | frontend/js/whiteboard-map-strip.js:1187 |
-| `wbMapEditLink` | frontend/js/whiteboard-map-strip.js:904 |
-| `wbMapEditPicture` | frontend/js/whiteboard-map-strip.js:949 |
+| `wbCloseMapRadial` | frontend/js/whiteboard-map-strip.js:1388 |
+| `wbFitMapRadialBand` | frontend/js/whiteboard-map-strip.js:1192 |
+| `wbMapEditLink` | frontend/js/whiteboard-map-strip.js:909 |
+| `wbMapEditPicture` | frontend/js/whiteboard-map-strip.js:954 |
 | `wbMapIconOption` | frontend/js/whiteboard-map-strip.js:409 |
 | `wbMapIsFollow` | frontend/js/whiteboard-map-strip.js:190 |
 | `wbMapMultiState` | frontend/js/whiteboard-map-strip.js:503 |
@@ -9800,28 +9800,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapPickGlyph` | frontend/js/whiteboard-map-strip.js:170 |
 | `wbMapPickPreview` | frontend/js/whiteboard-map-strip.js:149 |
 | `wbMapPickRow` | frontend/js/whiteboard-map-strip.js:194 |
-| `wbMapRadialBandFor` | frontend/js/whiteboard-map-strip.js:1272 |
-| `wbMapRadialClearance` | frontend/js/whiteboard-map-strip.js:1251 |
-| `wbMapRadialLabelSizes` | frontend/js/whiteboard-map-strip.js:1233 |
-| `wbMapRadialPx` | frontend/js/whiteboard-map-strip.js:1135 |
-| `wbMapRadialSectorPath` | frontend/js/whiteboard-map-strip.js:1168 |
-| `wbMapRadialSectorRect` | frontend/js/whiteboard-map-strip.js:1318 |
-| `wbMapRadialStep` | frontend/js/whiteboard-map-strip.js:1341 |
-| `wbMapRadialToward` | frontend/js/whiteboard-map-strip.js:1359 |
-| `wbMapRemovePicture` | frontend/js/whiteboard-map-strip.js:992 |
-| `wbMapSetNodeStyle` | frontend/js/whiteboard-map-strip.js:877 |
+| `wbMapRadialBandFor` | frontend/js/whiteboard-map-strip.js:1277 |
+| `wbMapRadialClearance` | frontend/js/whiteboard-map-strip.js:1256 |
+| `wbMapRadialLabelSizes` | frontend/js/whiteboard-map-strip.js:1238 |
+| `wbMapRadialPx` | frontend/js/whiteboard-map-strip.js:1140 |
+| `wbMapRadialSectorPath` | frontend/js/whiteboard-map-strip.js:1173 |
+| `wbMapRadialSectorRect` | frontend/js/whiteboard-map-strip.js:1323 |
+| `wbMapRadialStep` | frontend/js/whiteboard-map-strip.js:1346 |
+| `wbMapRadialToward` | frontend/js/whiteboard-map-strip.js:1364 |
+| `wbMapRemovePicture` | frontend/js/whiteboard-map-strip.js:997 |
+| `wbMapSetNodeStyle` | frontend/js/whiteboard-map-strip.js:882 |
 | `wbMapSetTopicIcon` | frontend/js/whiteboard-map-strip.js:387 |
 | `wbMapSizeStepper` | frontend/js/whiteboard-map-strip.js:310 |
 | `wbMapStyleMany` | frontend/js/whiteboard-map-strip.js:482 |
-| `wbMapTakePicture` | frontend/js/whiteboard-map-strip.js:960 |
-| `wbMarkMapRadialNode` | frontend/js/whiteboard-map-strip.js:1375 |
-| `wbMarkMapRadialSector` | frontend/js/whiteboard-map-strip.js:1293 |
-| `wbPlaceMapRadial` | frontend/js/whiteboard-map-strip.js:1044 |
-| `wbSizeMapRadial` | frontend/js/whiteboard-map-strip.js:1143 |
-| `wbSyncMapFill` | frontend/js/whiteboard-map-strip.js:805 |
+| `wbMapTakePicture` | frontend/js/whiteboard-map-strip.js:965 |
+| `wbMarkMapRadialNode` | frontend/js/whiteboard-map-strip.js:1380 |
+| `wbMarkMapRadialSector` | frontend/js/whiteboard-map-strip.js:1298 |
+| `wbPlaceMapRadial` | frontend/js/whiteboard-map-strip.js:1049 |
+| `wbSizeMapRadial` | frontend/js/whiteboard-map-strip.js:1148 |
+| `wbSyncMapFill` | frontend/js/whiteboard-map-strip.js:810 |
 | `wbSyncMapMulti` | frontend/js/whiteboard-map-strip.js:553 |
-| `wbSyncMapRadialAlt` | frontend/js/whiteboard-map-strip.js:1401 |
+| `wbSyncMapRadialAlt` | frontend/js/whiteboard-map-strip.js:1406 |
 | `wbSyncMapStrip` | frontend/js/whiteboard-map-strip.js:585 |
+| `wbSyncMapStripColour` | frontend/js/whiteboard-map-strip.js:780 |
 | `wbSyncMapToolState` | frontend/js/whiteboard-map-strip.js:40 |
 | `wbSyncToolSurfaces` | frontend/js/whiteboard-map-strip.js:4 |
 | `wbWireMapChoices` | frontend/js/whiteboard-map-strip.js:437 |

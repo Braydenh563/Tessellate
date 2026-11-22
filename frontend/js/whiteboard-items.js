@@ -626,14 +626,10 @@
       // line above finds none of them: collected here for the same reason and
       // at the same moment.
       d._mapEdges = wbMapEdgesFor(d.id);
-      // `.raise()` deliberately does NOT happen here, moved to objDragMove.
-      // See the matching comment on the card drag's own `dragging` for the
-      // real bug this caused (raising mid-`start` breaks the browser's click
-      // synthesis, so a plain click-to-select on an object never fired).
-      // See the matching comment on the card drag's own `dragStart`: a raw,
-      // never-snapped running position, so small per-frame deltas actually
-      // accumulate instead of being rounded away against the previous
-      // frame's already-snapped value.
+      // `.raise()` deliberately does NOT happen here, moved to objDragMove: raising
+      // mid-`start` breaks click synthesis (see the card drag's own `dragging`).
+      // A raw, never-snapped running position, so small per-frame deltas
+      // accumulate (see the card drag's own `dragStart`).
       d._rawX = d.x;
       d._rawY = d.y;
       d._dragOriginX = d.x;
