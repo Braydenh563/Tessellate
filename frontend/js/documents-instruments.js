@@ -683,16 +683,14 @@
         method: "PUT",
         body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
       }).catch(() => prefsCache);
-      //: The variant decides which half of the pair table is a finding, so the
-      //: lookup has to be rebuilt before the next pass reads it.
+      //: The variant decides which half of the pair table is a finding, so the lookup has to be rebuilt before the next pass reads it.
       docVariantFor = null;
       //: And the grammar checker's dialect with it (British or American rules).
       docGrammarCache = { text: null, findings: [] };
       renderDocProse();
     });
 
-    //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
-    //: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
+    //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
     $("doc-prose-groups")?.addEventListener("change", async (event) => {
       const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
       prefsCache = await apiJson("/preferences", {
@@ -713,8 +711,7 @@
       renderDocProse();
     });
 
-    //: Link text (K11): the same preference as Settings, Writing. The grammar
-    //: answer is thrown away because what it keeps depends on the switch.
+    //: Link text (K11): the same preference as Settings, Writing. The grammar answer is thrown away because what it keeps depends on the switch.
     $("doc-check-link-text")?.addEventListener("change", async (event) => {
       prefsCache = await apiJson("/preferences", {
         method: "PUT",

@@ -339,21 +339,9 @@ function notificationsUnreadSaid() {
 }
 
 function paletteCommands() {
-  //: **The documents editor's own commands, at the top, while one is open**
-  //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
-  //: palette of its own, which is the chord this one already has: two
-  //: palettes on one key is the collision the agent palette's comment records
-  //: being caught twice. So the editor contributes a group here instead, and
-  //: `docPaletteCommands` (documents.js) returns nothing at all unless the
-  //: Documents tab is showing with a document in it. Guarded by `typeof`
-  //: because that file is in the Library's lazy bundle and the palette opens
-  //: from every tab, including before it has ever been fetched.
-  const editor = typeof docPaletteCommands === "function" ? docPaletteCommands() : [];
+  const [editor, board] = paletteCommands.groups();
   //: And an open map's (whiteboard-map.js, lazy for the same reason).
   if (typeof mapPaletteCommands === "function") editor.push(...mapPaletteCommands());
-  //: The open board's commands, the same way (FEAT-11, whiteboard-commands.js):
-  //: nothing unless a board is on screen, which needs the bundle in.
-  const board = typeof wbPaletteCommands === "function" ? wbPaletteCommands() : [];
   //: Every row below declares where it goes (tests/test_catalogue_reveal.py)
   //: and `catalogueRun` makes its `run`; the editor's rows are commands on
   //: the document already open, so they keep their own.
@@ -620,6 +608,23 @@ function paletteCommands() {
     { label: "ph:power Quit Tessellate", act: () => quitApp() },
   ].map(catalogueRun);
 }
+//: The open document's, map's and board's own commands, split from `paletteCommands`.
+paletteCommands.groups = () => {
+  //: **The documents editor's own commands, at the top, while one is open**
+  //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
+  //: palette of its own, which is the chord this one already has: two
+  //: palettes on one key is the collision the agent palette's comment records
+  //: being caught twice. So the editor contributes a group here instead, and
+  //: `docPaletteCommands` (documents.js) returns nothing at all unless the
+  //: Documents tab is showing with a document in it. Guarded by `typeof`
+  //: because that file is in the Library's lazy bundle and the palette opens
+  //: from every tab, including before it has ever been fetched.
+  const editor = typeof docPaletteCommands === "function" ? docPaletteCommands() : [];
+  //: The open board's commands, the same way (FEAT-11, whiteboard-commands.js):
+  //: nothing unless a board is on screen, which needs the bundle in.
+  const board = typeof wbPaletteCommands === "function" ? wbPaletteCommands() : [];
+  return [editor, board];
+};
 
 //: **Quick access** (INBOX 461; the owner of the Start something row: "make
 //: this a quick access section ... what is there can be default"). Up to

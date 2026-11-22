@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import csv
 import io
-import hashlib
 import json
 import logging
 import os
@@ -33,8 +32,10 @@ from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types, relations
 from tessellate.repo.content import walk as content_walk
 from tessellate.entry.cleantext import import_path
+from tessellate.entry.dir_import_parts import (  # noqa: F401  # the folder import's parts, by their old names
+    _import_roots, _under_root, _import_root_for, _inside, _PRIVATE, _text_hash, _already_imported, _directory_import_detail, _until_stopped,
+)
 from tessellate.api.this_computer import this_computer_only
-from tessellate.repo import notes as notes_repo
 
 router = APIRouter(tags=["settings"])
 
@@ -468,92 +469,12 @@ def _validated_import_directory(path_value: str) -> Path:
     return p
 
 
-def _import_roots() -> list[str]:
-    """The folders a directory import may read from, as real paths."""
-    roots = []
-    for candidate in (Path.home(), deps.get_config().data_dir):
-        try:
-            roots.append(os.path.realpath(candidate))
-        except OSError:
-            continue
-    return roots
-
-
-def _under_root(real: str, root: str) -> bool:
-    """Is the real path `real` the folder `root` or somewhere inside it?"""
-    return real == root or real.startswith(root.rstrip(os.sep) + os.sep)
-
-
-def _import_root_for(real: str) -> str:
-    """The import root `real` lies in (separator-aware), or "" for none."""
-    for root in _import_roots():
-        if _under_root(real, root):
-            return root
-    return ""
-
-
-def _inside(root: Path, f: Path) -> bool:
-    """Does `f`, symlinks followed, still lie inside `root`?
-
-    The walk below reads every `.md` under the chosen folder, and a symlink
-    inside it can point anywhere: `innocent.md -> ~/.ssh/config.md`, or a
-    linked folder. The folder was checked; what it links to was not, so
-    each file is checked by where it resolves.
-    """
-    real = os.path.realpath(f)
-    return _under_root(real, os.path.realpath(root)) and os.path.isfile(real)
-
-
 def _run_directory_import(directory_path: str):
     """The background task: the import, recorded as the last "import" run
     (INBOX 438), because a 202 Accepted answers nobody about how it went."""
     with jobruns.job_run("import", origin="you") as run:
         _import_directory_files(directory_path, run)
     jobs.check_stop()  # the row ends cancelled when Stop cut the walk short
-
-
-#: Stands for "this path is a private note": matched without its text.
-_PRIVATE = object()
-
-
-def _text_hash(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def _already_imported(session) -> dict:  # noqa: ANN001
-    """Every live note that came from a vault file: its path in the vault ->
-    the hashes of its text, or `_PRIVATE` when its text is encrypted."""
-
-
-    known: dict = {}
-    for path, content, private in notes_repo.source_texts(session):
-        if private:
-            known[path] = _PRIVATE
-        elif known.get(path) is not _PRIVATE:
-            known.setdefault(path, set()).add(_text_hash((content or "").strip()))
-    return known
-
-
-def _directory_import_detail(imported: int, already: int, skipped: int, skipped_oversize: int) -> str:
-    """The activity line a folder import leaves: what came in, what was
-    already in, and what was skipped and why."""
-    detail = f"markdown dir x{imported}"
-    if already:
-        detail += f", {already} already in"
-    if skipped:
-        detail += f", skipped {skipped}"
-        if skipped_oversize:
-            detail += f" ({skipped_oversize} over {MAX_IMPORT_BYTES // (1024 * 1024)} MB)"
-    return detail
-
-
-def _until_stopped(files):  # noqa: ANN001, ANN202
-    """The walk, ended between files once Stop is pressed (L-world-class-66):
-    what came in stays, and running the import again finishes the rest."""
-    for f in files:
-        if jobs.stop_requested():
-            return
-        yield f
 
 
 def _import_directory_files(directory_path: str, run: "jobruns.Run"):
@@ -657,7 +578,7 @@ def _import_directory_files(directory_path: str, run: "jobruns.Run"):
         #: at all, imported stayed 0 and the whole run vanished silently.
         _link_imported(session, made)
         if imported > 0 or skipped > 0 or already > 0:
-            detail = _directory_import_detail(imported, already, skipped, skipped_oversize)
+            detail = _directory_import_detail(imported, already, skipped, skipped_oversize, MAX_IMPORT_BYTES)
             manager.log_action(session, "imported", "data", detail=detail)
             session.commit()
             run.result = (

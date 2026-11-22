@@ -1341,7 +1341,7 @@ wbLibExport.drawio = async (lib) => {
     await saveFile(`${String(lib.name).replace(/[^\w .-]+/g, "").trim() || "library"}.xml`, new Blob([out.xml], { type: "text/xml" }));
     toast(`Saved ${nounCount(out.count, "shape")} for draw.io${out.left ? `; ${out.left} left out` : ""}.`);
   } catch (err) {
-    toast(err.message || "Couldn't export that library.", true);
+    toast(err.message || voiceLine("failed", { what: "export that library" }), true);
   }
 };
 

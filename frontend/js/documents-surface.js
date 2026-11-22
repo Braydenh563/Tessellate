@@ -1,8 +1,7 @@
 // documents-surface.js: the editing surface behind one adapter (textarea or CodeMirror), opening a document, the list, and remembering where you were.
 // Moved out of documents.js whole (L-documents-117) and wrapped: only what other files call goes on `window`.
 (() => {
-  //: element -> view. Weak, because the edit form's textarea is thrown away and
-  //: rebuilt on every edit and a strong map would hold every one of them.
+  //: element -> view. Weak, because the edit form's textarea is thrown away and rebuilt on every edit and a strong map would hold every one of them.
   const noteSurfaceViews = new WeakMap();
   //: `.live`: the views still alive, which a WeakMap cannot list. CodeMirror hangs
   //: `resize`, `scroll` and `selectionchange` listeners on `window` and `document`
@@ -27,8 +26,7 @@
     return null;
   }
 
-  //: Built once per host and kept on the element, so `cmSurface`'s own cache
-  //: (keyed by the view) never sees two different identities for one view.
+  //: Built once per host and kept on the element, so `cmSurface`'s own cache (keyed by the view) never sees two different identities for one view.
   function noteSurfaceMeta(host) {
     if (!host.noteSurfaceMeta) {
       host.noteSurfaceMeta = { id: host.id, changeHandlers: [] };
@@ -100,8 +98,7 @@
     docMirror.style.overflowWrap = "break-word";
     docMirror.textContent = el.value.slice(0, pos);
     const marker = document.createElement("span");
-    //: A zero-width space rather than nothing: an empty span has no box, so it
-    //: reports the wrong position at the end of a line.
+    //: A zero-width space rather than nothing: an empty span has no box, so it reports the wrong position at the end of a line.
     marker.textContent = "​";
     docMirror.appendChild(marker);
     const boxRect = el.getBoundingClientRect();
@@ -124,8 +121,7 @@
   //: Which `openDocument` call is the newest (see there).
   let docOpenSeq = 0;
   let docView = "source";
-  //: The editing mode the Edit button returns to after Read (DOCUMENTS_PLAN
-  //: Phase 1 item 2): Live, Source or Split, whichever was last in use.
+  //: The editing mode the Edit button returns to after Read (DOCUMENTS_PLAN Phase 1 item 2): Live, Source or Split, whichever was last in use.
   let lastEditView = "live";
   //: The empty-document prompt, kept here because the two engines spell it
   //: differently: a textarea has a `placeholder` attribute, CodeMirror has a
@@ -190,24 +186,21 @@
     docPlaceholderText = text;
     const el = docBoxEl();
     if (el) el.placeholder = text;
-    //: CodeMirror builds its placeholder once; the compartment is how a later
-    //: text (a code file's, a New caret's type) reaches the view.
+    //: CodeMirror builds its placeholder once; the compartment is how a later text (a code file's, a New caret's type) reaches the view.
     const CM = window.CM6;
     if (docCmView && CM && docCmParts.placeholder) {
       docCmView.dispatch({ effects: docCmParts.placeholder.reconfigure(CM.view.placeholder(text)) });
     }
   }
 
-  //: What an empty page says, by the file type it holds (typepick-1031: an empty
-  //: .py file said "Markdown works here"). A blank page asks `docBlankPlaceholder`.
+  //: What an empty page says, by the file type it holds (typepick-1031: an empty .py file said "Markdown works here"). A blank page asks `docBlankPlaceholder`.
   function docPlaceholderFor(type) {
     if (!currentDoc) return docBlankPlaceholder();
     if (type.previewable) return "# Start writing\n\nMarkdown works here, headings, **bold**, lists, tables, links.";
     return `An empty .${type.ext} file. Start typing, or paste ${type.label} here.`;
   }
 
-  //: Surfaces are cached per element so `onChange` cannot stack a second
-  //: listener and so identity comparisons keep working across calls.
+  //: Surfaces are cached per element so `onChange` cannot stack a second listener and so identity comparisons keep working across calls.
   const docSurfaceCache = new WeakMap();
 
   //: A textarea, wearing the surface interface.
@@ -240,8 +233,7 @@
       setSelection(from, to = from) { el.setSelectionRange(from, to); },
       setSelectionRange(from, to) { el.setSelectionRange(from, to); },
       setRangeText(text, from, to, mode) { el.setRangeText(text, from, to, mode); },
-      //: Through the browser's own edit pipeline where it can be, so the native
-      //: history survives: see `docReplaceRange`'s own comment.
+      //: Through the browser's own edit pipeline where it can be, so the native history survives: see `docReplaceRange`'s own comment.
       replaceRange(from, to, text) { docReplaceRange(surface, from, to, text); },
       onChange(fn) { el.addEventListener("input", fn); },
       coordsAt(pos) { return docMirrorPoint(el, pos); },

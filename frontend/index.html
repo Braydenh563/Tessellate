@@ -1276,6 +1276,9 @@
          deliberately: two lists that answer "what happened to this document"
          should not be two different-looking things. -->
     <sheet-host id="doc-history-dialog" class="space-dialog doc-ai-history-dialog doc-history-dialog" data-sheet-kind="panel" hidden>
+      <!-- Built when documents-history.js arrives on the first History press (`surfaceBuild("docHistory")`): the
+           Summarise changes row took the boot document past its cap (tests/test_boot_diet3.py). -->
+      <script type="text/x-surface" data-surface="docHistory">
       <div class="dialog-head">
       <h2 class="dialog-head-title"><i class="ph ph-clock-counter-clockwise pop-glyph" aria-hidden="true"></i>Document history</h2>
       <span class="dialog-head-actions">
@@ -1310,6 +1313,7 @@
       <div class="row right space-dialog-actions">
         <button type="button" class="ghost small" data-close-dialog="doc-history-dialog">Close</button>
       </div>
+      </script>
     </sheet-host>
     <sheet-host id="doc-ai-history-dialog" class="space-dialog doc-ai-history-dialog" data-sheet-kind="panel" hidden>
       <div class="dialog-head">

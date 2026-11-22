@@ -138,7 +138,12 @@ async function replay(page, path) {
     // The palette's registry against the destinations.
     await home(page);
     const cmds = await page.evaluate(() => paletteCommands().map((c) => [c.label, c.keywords || '', c.about || '', c.tab || '', c.reveal || ''].join(' ').toLowerCase().replace(/ph:[a-z-]+/g, '')));
+    //: The Guide's topics (title, path, lead, find words) are reached from the palette's Guide, so a popover
+    //: whose topic has one is not unnamed (L-world-class-781: 50 of 57 unnamed were 'About ...' popovers).
+    const guide = await page.evaluate(async () => (await apiJson('/help/topics')).groups.flatMap((g) => g.topics.map((t) => 'guide ' + [t.title, t.path || '', t.lead || '', [].concat(t.find || []).join(' ')].join(' ').toLowerCase())));
+    console.log(`\nGUIDE: ${guide.length} topics`);
     console.log(`\nPALETTE: ${cmds.length} commands (each one chord or one click away)`);
+    cmds.push(...guide);
     const words = (s) => s.toLowerCase().replace(/&/g, ' and ').split(/[^a-z]+/).filter((w) => w.length > 2 && !['and', 'the', 'new', 'tab'].includes(w));
     const missing = [];
     for (const r of rows.filter((r) => r.depth > 0)) {
@@ -148,8 +153,9 @@ async function replay(page, path) {
       if (/^(menu)\|/.test(r.path[r.path.length - 1])) continue;
       // A help popover (the '?' recipe) is reached by the Guide's topic of the same name, so it is matched
       // on its topic words alone, against every command and the Guide's own topic rows.
-      if (/help/i.test(last)) {
-        const topic = words(last.replace(/help/gi, ''));
+      //: 'About ...' is the same '?' recipe (its label names the topic, not the word help): L-world-class-781.
+      if (/help|^\s*about\b/i.test(last)) {
+        const topic = words(last.replace(/help|^\s*about\b/gi, ''));
         if (!topic.length || cmds.some((c) => /guide|manual/.test(c) && topic.some((x) => c.includes(x)))) continue;
         if (cmds.some((c) => topic.filter((x) => c.includes(x)).length >= Math.ceil(topic.length * 0.7))) continue;
       }
