@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
 | ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
+| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
 | general | 0 | 4 | 0 | 0 | 5 | 4 |
-| all | 502 | 539 | 126 | 2 | 184 | 1167 |
+| all | 502 | 541 | 126 | 2 | 184 | 1169 |
 
 ## graph
 
@@ -700,6 +700,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-392** `world-class` open, M: The Library, Documents and Media selection bars still have only Open, Restore and Delete: no tag, category or property for what they hold (decision 65's 'every list'). From L-world-class-128, 2026-11-14. Evidence: index.html #library-selectbar, #library-docs-selectbar, #library-media-selectbar; the Notes and Timeline bars share fillBatchMore (skills.js), which has Set a property since L-world-class-128
 - [ ] **L-world-class-393** `world-class` open, M: Documents and Media selection bars: a document and a file carry no tags, category or properties (no column on `Document` or the file table), so decision 65's 'every list' needs those fields before their bars can set them; the Library bar sets all three for the notes ticked since L-world-class-392. From L-world-class-392, 2026-11-14. Evidence: database.py:1744 (Document: title, content, file_type, no tags); index.html #library-docs-selectbar, #library-media-selectbar
 - [ ] **L-world-class-394** `world-class` open, S: On a 360x740 phone, opening Settings with no meaning-search model shows the 'Search by meaning needs a one-time download of about 130 MB' toast at 341x173px (top 503, bottom 676), still up after 10 s, over the lower quarter of every section until dismissed. From L-world-class-177, 2026-11-14. Evidence: scratchpad/ui-sweeps/settings-phone-177.js before its toast removal line; 0 bad with the toast gone
+- [ ] **L-world-class-395** `world-class` open, M: Settings/models 'Tight fit' chip is 4.29:1 in light (Settings pass). From WORLD_CLASS_PLAN 22.4. Evidence: frontend/js/settings-models.js:127 (.chip.item-label.is-warn 'Tight fit'), contrast.js 1093x614 light: 4.29 vs 4.5, rgb(138,80,3) on rgb(216,209,199)
+- [ ] **L-world-class-396** `world-class` open, M: Devibecode programme: surfaces after the shell and Notes still to run. From WORLD_CLASS_PLAN 22.4. Evidence: serve.sh 8825 fresh dir: shell and Notes measured clean; Notes steps 1,2,4 (skill audits) not run, Dashboard, Chat, Settings, Library, Documents, Graph, Whiteboard, Timeline, Reminders, Help, companion not started
 
 ## general
 
