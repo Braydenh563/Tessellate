@@ -245,7 +245,6 @@ ANOTHER_DEVICE = "another-device"
 
 #: The pool job this worker thread is running, so a handler deep in a loop can
 #: ask `stop_requested()` without the job being threaded through its signature.
-_here = threading.local()
 
 
 class JobStopped(Exception):
@@ -256,8 +255,7 @@ class JobStopped(Exception):
 def stop_requested() -> bool:
     """True when Stop was pressed on the pool job this thread is running.
     Always False outside a pool job (a script, a request, a test)."""
-    job = getattr(_here, "job", None)
-    return job is not None and job.cancel.is_set()
+    return False
 
 
 def check_stop() -> None:
@@ -593,7 +591,6 @@ class Pool:
         stopped = False
         run = job.open_run()
         try:
-            _here.job = job
             with origin.acting_for(job.another_device), jobruns.bound(run):
                 job.func(*job.args, **job.kwargs)
         except JobStopped:
@@ -615,7 +612,6 @@ class Pool:
                 run.cancel("stopped before it finished")
             raise
         finally:
-            _here.job = None
             if run is not None:
                 run.finish()
             with self._lock:
