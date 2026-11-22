@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Graph at 500 notes names its hubs at the fit (2 of 12 placed before, 10 to 11 after: names are cut to 14 characters on a big map's overview and 120 candidates queue behind the 12 hubs, stopping at 12 placed); the map's slim payload drops `age_days`, a default `space_id` and `two_way: false` (2,000 notes: 781 to 652 KB, 75.4 to 72.3 KB gzipped; full 1,387 KB); a return to the Graph tab no longer glides the old picture toward a frame the first tick replaces, and the time slider no longer asks for a frame it does not need.
 - Folder import of thousands of files no longer freezes the page while the upload is built: the files go to a worker once, in chunks, and both posts are sent from there (5,000 files: 2.9 s and 1.4 s long tasks to 0.87 s, the browser's own file list, and none).
 - Graph routes hold no raw queries: the 32 in the graph routes (and the projection's one) moved into the graph layers repository, and the route-queries ratchet fell from 35 to 0 and the ORM-call ratchet from 330 to 284.
 - Graph help panel back under its 1000-character budget: the hover card's switches and the layouts' descriptions moved behind Options' own help.

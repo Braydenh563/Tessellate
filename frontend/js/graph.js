@@ -1874,12 +1874,14 @@ function graphFill(data) {
     n.tags ??= [];
     n.access_count ??= 0;
     n.edited_at ??= null;
+    n.space_id ??= "default";
   }
   for (const e of data?.edges || []) {
     if (e.kind !== "link") continue;
     e.reason ??= null;
     e.reason_confidence ??= null;
     e.link_type ??= null;
+    e.two_way ??= false;
   }
   return data;
 }

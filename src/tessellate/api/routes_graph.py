@@ -1208,11 +1208,16 @@ _NOTE_DEFAULTS = {
     "tags": [],
     "access_count": 0,
     "edited_at": None,
+    "space_id": "default",
 }
+#: Read by no graph code: the notes lists get their ages from their own endpoints (L-graph-20 G28).
+_NOTE_UNREAD = ("age_days",)
 _LINK_DEFAULTS = ("reason", "reason_confidence", "link_type")
 
 
 def _slim_note(node: dict) -> None:
+    for key in _NOTE_UNREAD:
+        node.pop(key, None)
     for key, default in _NOTE_DEFAULTS.items():
         if key in node and node[key] == default and type(node[key]) is type(default):
             del node[key]
@@ -1233,6 +1238,8 @@ def _slim(nodes: list[dict], edges: list[dict]) -> None:
             for key in _LINK_DEFAULTS:
                 if key in edge and edge[key] is None:
                     del edge[key]
+            if edge.get("two_way") is False:
+                del edge["two_way"]  # `!edge.two_way` reads it the same; `graphFill` puts it back
 
 def _load_entries(session: Session, ids) -> dict[int, Entry]:  # noqa: ANN001
     """The live notes with these ids, read in chunks (SQLite's variable cap)."""
