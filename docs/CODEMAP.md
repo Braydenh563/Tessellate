@@ -1,10 +1,10 @@
 # Code map
 
-Generated 2026-11-21 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8999, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11054, test files 2881, tests 23100, plan headings 693, app scripts 29, boot scripts 38, script files 382.
+Counts: frontend functions 9000, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11054, test files 2883, tests 23111, plan headings 693, app scripts 29, boot scripts 38, script files 382.
 
-## Frontend functions (8999)
+## Frontend functions (9000)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4792,26 +4792,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docPropsTypeRows` | frontend/js/documents-props.js:571 |
 | `renderDocProperties` | frontend/js/documents-props.js:756 |
 
-### frontend/js/documents-prose-check.js (50)
+### frontend/js/documents-prose-check.js (51)
 
 | Name | File:line |
 |---|---|
-| `applyDocComplete` | frontend/js/documents-prose-check.js:1608 |
+| `applyDocComplete` | frontend/js/documents-prose-check.js:1633 |
 | `closeDocProsePanel` | frontend/js/documents-prose-check.js:910 |
-| `docAutocorrectAt` | frontend/js/documents-prose-check.js:1682 |
-| `docAutocorrectEnabled` | frontend/js/documents-prose-check.js:1674 |
+| `docAutocorrectAt` | frontend/js/documents-prose-check.js:1707 |
+| `docAutocorrectEnabled` | frontend/js/documents-prose-check.js:1699 |
 | `docBuildVocabulary` | frontend/js/documents-prose-check.js:1340 |
 | `docCodeProseMask` | frontend/js/documents-prose-check.js:375 |
 | `docCodeSpellFindings` | frontend/js/documents-prose-check.js:411 |
 | `docCodeWindow` | frontend/js/documents-prose-check.js:592 |
+| `docCompleteAria` | frontend/js/documents-prose-check.js:1389 |
 | `docCompleteEnabled` | frontend/js/documents-prose-check.js:1334 |
-| `docCompleteGhostAt` | frontend/js/documents-prose-check.js:1476 |
-| `docCompleteIndexOf` | frontend/js/documents-prose-check.js:1437 |
-| `docCompleteKeydown` | frontend/js/documents-prose-check.js:1639 |
-| `docCompleteMatchWords` | frontend/js/documents-prose-check.js:1447 |
-| `docCompletePlace` | frontend/js/documents-prose-check.js:1590 |
-| `docCompleteRowsAt` | frontend/js/documents-prose-check.js:1462 |
-| `docFillAt` | frontend/js/documents-prose-check.js:1412 |
+| `docCompleteGhostAt` | frontend/js/documents-prose-check.js:1499 |
+| `docCompleteIndexOf` | frontend/js/documents-prose-check.js:1460 |
+| `docCompleteKeydown` | frontend/js/documents-prose-check.js:1664 |
+| `docCompleteMatchWords` | frontend/js/documents-prose-check.js:1470 |
+| `docCompletePlace` | frontend/js/documents-prose-check.js:1615 |
+| `docCompleteRowsAt` | frontend/js/documents-prose-check.js:1485 |
+| `docFillAt` | frontend/js/documents-prose-check.js:1435 |
 | `docFindingKind` | frontend/js/documents-prose-check.js:730 |
 | `docFocusSyncProse` | frontend/js/documents-prose-check.js:921 |
 | `docIgnoreLabel` | frontend/js/documents-prose-check.js:1138 |
@@ -4833,17 +4834,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docProseSideView` | frontend/js/documents-prose-check.js:858 |
 | `docProseSkipMask` | frontend/js/documents-prose-check.js:154 |
 | `docProseWindow` | frontend/js/documents-prose-check.js:606 |
-| `docSaveToolPref` | frontend/js/documents-prose-check.js:1772 |
+| `docSaveToolPref` | frontend/js/documents-prose-check.js:1797 |
 | `docSpellConfident` | frontend/js/documents-prose-check.js:41 |
 | `docSpellContraction` | frontend/js/documents-prose-check.js:22 |
 | `docSpellLookup` | frontend/js/documents-prose-check.js:73 |
 | `docSpellTransposed` | frontend/js/documents-prose-check.js:63 |
-| `docToolPref` | frontend/js/documents-prose-check.js:1764 |
-| `docToolsBoxFor` | frontend/js/documents-prose-check.js:1853 |
-| `docToolsOnInput` | frontend/js/documents-prose-check.js:1782 |
+| `docToolPref` | frontend/js/documents-prose-check.js:1789 |
+| `docToolsBoxFor` | frontend/js/documents-prose-check.js:1878 |
+| `docToolsOnInput` | frontend/js/documents-prose-check.js:1807 |
 | `docWordFragment` | frontend/js/documents-prose-check.js:1373 |
-| `hideDocComplete` | frontend/js/documents-prose-check.js:1392 |
-| `renderDocComplete` | frontend/js/documents-prose-check.js:1485 |
+| `hideDocComplete` | frontend/js/documents-prose-check.js:1414 |
+| `renderDocComplete` | frontend/js/documents-prose-check.js:1508 |
 | `renderDocProse` | frontend/js/documents-prose-check.js:648 |
 | `renderDocProsePanel` | frontend/js/documents-prose-check.js:934 |
 
@@ -15018,7 +15019,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/restore` | POST | `restore_document` | src/tessellate/api/routes_documents.py:856 |
 | `/{document_id}/revisions` | GET | `document_revisions` | src/tessellate/api/routes_documents.py:1343 |
 | `/{document_id}/revisions` | POST | `name_current_version` | src/tessellate/api/routes_documents.py:1405 |
-| `/{document_id}/revisions/summary` | POST | `revisions_summary` | src/tessellate/api/routes_document_story.py:142 |
+| `/{document_id}/revisions/summary` | POST | `revisions_summary` | src/tessellate/api/routes_document_story.py:147 |
 | `/{document_id}/revisions/{revision_id}` | GET | `document_revision` | src/tessellate/api/routes_documents.py:1383 |
 | `/{document_id}/revisions/{revision_id}` | PUT | `rename_version` | src/tessellate/api/routes_documents.py:1421 |
 | `/{document_id}/revisions/{revision_id}/restore` | POST | `restore_document_revision` | src/tessellate/api/routes_documents.py:1436 |
@@ -23027,16 +23028,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_ask_model` | src/tessellate/api/routes_document_story.py:128 |
-| `_clip` | src/tessellate/api/routes_document_story.py:82 |
-| `_names` | src/tessellate/api/routes_document_story.py:54 |
-| `_plain` | src/tessellate/api/routes_document_story.py:98 |
-| `_plural` | src/tessellate/api/routes_document_story.py:87 |
-| `_prompt` | src/tessellate/api/routes_document_story.py:112 |
-| `_section_of` | src/tessellate/api/routes_document_story.py:45 |
-| `_step` | src/tessellate/api/routes_document_story.py:63 |
-| `_step_line` | src/tessellate/api/routes_document_story.py:91 |
-| `revisions_summary` | src/tessellate/api/routes_document_story.py:143 |
+| `_ask_model` | src/tessellate/api/routes_document_story.py:133 |
+| `_clip` | src/tessellate/api/routes_document_story.py:87 |
+| `_names` | src/tessellate/api/routes_document_story.py:58 |
+| `_plain` | src/tessellate/api/routes_document_story.py:103 |
+| `_plural` | src/tessellate/api/routes_document_story.py:92 |
+| `_prompt` | src/tessellate/api/routes_document_story.py:117 |
+| `_section_of` | src/tessellate/api/routes_document_story.py:49 |
+| `_step` | src/tessellate/api/routes_document_story.py:67 |
+| `_step_line` | src/tessellate/api/routes_document_story.py:96 |
+| `revisions_summary` | src/tessellate/api/routes_document_story.py:148 |
 
 ### src/tessellate/api/routes_documents.py (68)
 
@@ -25831,30 +25832,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Download` | src/tessellate/core/extra_downloads.py:81 |
-| `DownloadFailed` | src/tessellate/core/extra_downloads.py:260 |
-| `_check_engine` | src/tessellate/core/extra_downloads.py:414 |
-| `_fetch` | src/tessellate/core/extra_downloads.py:386 |
-| `_is_musl` | src/tessellate/core/extra_downloads.py:146 |
-| `_mb` | src/tessellate/core/extra_downloads.py:311 |
-| `_open_retrying` | src/tessellate/core/extra_downloads.py:362 |
-| `_open_url` | src/tessellate/core/extra_downloads.py:253 |
-| `_retry_after` | src/tessellate/core/extra_downloads.py:329 |
-| `_unpack` | src/tessellate/core/extra_downloads.py:459 |
-| `_unpack_tree` | src/tessellate/core/extra_downloads.py:432 |
-| `_wait` | src/tessellate/core/extra_downloads.py:350 |
-| `downloads_for` | src/tessellate/core/extra_downloads.py:163 |
-| `effective_url` | src/tessellate/core/extra_downloads.py:245 |
-| `folder` | src/tessellate/core/extra_downloads.py:212 |
-| `install` | src/tessellate/core/extra_downloads.py:502 |
-| `is_installed` | src/tessellate/core/extra_downloads.py:216 |
-| `platform_key` | src/tessellate/core/extra_downloads.py:127 |
-| `platform_reason` | src/tessellate/core/extra_downloads.py:169 |
-| `reason` | src/tessellate/core/extra_downloads.py:305 |
-| `root_dir` | src/tessellate/core/extra_downloads.py:204 |
-| `source` | src/tessellate/core/extra_downloads.py:229 |
-| `uninstall` | src/tessellate/core/extra_downloads.py:544 |
-| `url_allowed` | src/tessellate/core/extra_downloads.py:185 |
+| `Download` | src/tessellate/core/extra_downloads.py:85 |
+| `DownloadFailed` | src/tessellate/core/extra_downloads.py:264 |
+| `_check_engine` | src/tessellate/core/extra_downloads.py:419 |
+| `_fetch` | src/tessellate/core/extra_downloads.py:391 |
+| `_is_musl` | src/tessellate/core/extra_downloads.py:150 |
+| `_mb` | src/tessellate/core/extra_downloads.py:316 |
+| `_open_retrying` | src/tessellate/core/extra_downloads.py:367 |
+| `_open_url` | src/tessellate/core/extra_downloads.py:257 |
+| `_retry_after` | src/tessellate/core/extra_downloads.py:334 |
+| `_unpack` | src/tessellate/core/extra_downloads.py:474 |
+| `_unpack_tree` | src/tessellate/core/extra_downloads.py:437 |
+| `_wait` | src/tessellate/core/extra_downloads.py:355 |
+| `downloads_for` | src/tessellate/core/extra_downloads.py:167 |
+| `effective_url` | src/tessellate/core/extra_downloads.py:249 |
+| `folder` | src/tessellate/core/extra_downloads.py:216 |
+| `install` | src/tessellate/core/extra_downloads.py:517 |
+| `is_installed` | src/tessellate/core/extra_downloads.py:220 |
+| `platform_key` | src/tessellate/core/extra_downloads.py:131 |
+| `platform_reason` | src/tessellate/core/extra_downloads.py:173 |
+| `reason` | src/tessellate/core/extra_downloads.py:310 |
+| `root_dir` | src/tessellate/core/extra_downloads.py:208 |
+| `source` | src/tessellate/core/extra_downloads.py:233 |
+| `uninstall` | src/tessellate/core/extra_downloads.py:559 |
+| `url_allowed` | src/tessellate/core/extra_downloads.py:189 |
 
 ### src/tessellate/core/extras.py (67)
 
@@ -29215,7 +29216,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23100)
+## Tests (23111)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30083,7 +30084,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_links_1771.py | 5 |
 | tests/test_diagram_markdown_l_documents_59.py | 6 |
-| tests/test_diagram_minimap_1110.py | 9 |
+| tests/test_diagram_minimap_1110.py | 10 |
 | tests/test_diagram_model.py | 15 |
 | tests/test_diagram_multi_r5.py | 19 |
 | tests/test_diagram_object_kind.py | 2 |
@@ -30142,6 +30143,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_commands.py | 9 |
 | tests/test_doc_comments.py | 4 |
 | tests/test_doc_compare_other.py | 2 |
+| tests/test_doc_complete_aria.py | 2 |
 | tests/test_doc_conflict_banner.py | 8 |
 | tests/test_doc_context_menu.py | 6 |
 | tests/test_doc_cover.py | 4 |
@@ -30158,6 +30160,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_frames79.py | 1 |
 | tests/test_doc_from_notes_1112.py | 6 |
 | tests/test_doc_frontmatter.py | 2 |
+| tests/test_doc_grammar_bare_kinds.py | 3 |
 | tests/test_doc_graph.py | 9 |
 | tests/test_doc_head_one_row_1111.py | 6 |
 | tests/test_doc_icons_1545.py | 6 |
@@ -30248,7 +30251,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_links.py | 12 |
 | tests/test_document_rephrase.py | 9 |
 | tests/test_document_revisions.py | 14 |
-| tests/test_document_story.py | 10 |
+| tests/test_document_story.py | 13 |
 | tests/test_document_subpages.py | 10 |
 | tests/test_document_suggest_name_904.py | 5 |
 | tests/test_document_thread_model.py | 4 |
@@ -30723,7 +30726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_timer_named_1741.py | 4 |
 | tests/test_lag_wblib_1726.py | 2 |
 | tests/test_lan.py | 130 |
-| tests/test_languagetool_1731.py | 15 |
+| tests/test_languagetool_1731.py | 16 |
 | tests/test_launch_splash.py | 25 |
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_port_stuck_1637.py | 8 |
@@ -31455,7 +31458,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_run_sandbox.py | 18 |
 | tests/test_run_skill.py | 41 |
 | tests/test_run_stop_mid_call.py | 4 |
-| tests/test_run_top_level_await.py | 2 |
+| tests/test_run_top_level_await.py | 3 |
 | tests/test_running_copies_1641.py | 26 |
 | tests/test_sample_notebook.py | 3 |
 | tests/test_sampling.py | 17 |
