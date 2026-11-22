@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9130, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11701, test files 3144, tests 24339, plan headings 700, app scripts 32, boot scripts 41, script files 415.
+Counts: frontend functions 9155, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11701, test files 3144, tests 24339, plan headings 700, app scripts 32, boot scripts 41, script files 415.
 
-## Frontend functions (9130)
+## Frontend functions (9155)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -576,25 +576,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setNotePickerSource` | frontend/js/chat-attach.js:832 |
 | `syncChatPrivate` | frontend/js/chat-attach.js:1093 |
 
-### frontend/js/sheets-selects.js (51)
+### frontend/js/sheets-selects.js (54)
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2309 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2322 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1075 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:530 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2408 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2358 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2421 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2371 |
+| `chatListEmptyState` | frontend/js/sheets-selects.js:1805 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1525 |
+| `conversationMenuItems` | frontend/js/sheets-selects.js:1827 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1105 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editedMarker` | frontend/js/sheets-selects.js:2011 |
+| `editedMarker` | frontend/js/sheets-selects.js:2019 |
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1086 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1115 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:737 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2434 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2447 |
 | `focusSelect` | frontend/js/sheets-selects.js:1178 |
 | `formatTokens` | frontend/js/sheets-selects.js:1753 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:475 |
@@ -604,17 +606,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1724 |
 | `listFilter` | frontend/js/sheets-selects.js:1267 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2236 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1803 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2249 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1906 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:624 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:336 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:567 |
 | `menuRowFits` | frontend/js/sheets-selects.js:1334 |
-| `openConversation` | frontend/js/sheets-selects.js:2019 |
+| `openConversation` | frontend/js/sheets-selects.js:2150 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1762 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2315 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2328 |
 | `relativeTime` | frontend/js/sheets-selects.js:1772 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1633 |
+| `replaySavedAssistantMessage` | frontend/js/sheets-selects.js:2028 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:548 |
 | `rowActions` | frontend/js/sheets-selects.js:1242 |
 | `selectFaceText` | frontend/js/sheets-selects.js:728 |
@@ -624,9 +627,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:82 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2374 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2387 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2395 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2408 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1190 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:514 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:524 |
@@ -778,66 +781,67 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `splitTableRow` | frontend/js/markdown.js:24 |
 | `wrapToggle` | frontend/js/markdown.js:895 |
 
-### frontend/js/navigation.js (56)
+### frontend/js/navigation.js (57)
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2480 |
-| `activeNotesSection` | frontend/js/navigation.js:2303 |
+| `aboveDockFab` | frontend/js/navigation.js:2486 |
+| `activeNotesSection` | frontend/js/navigation.js:2309 |
 | `arrowNavTarget` | frontend/js/navigation.js:207 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1836 |
-| `chatMidStream` | frontend/js/navigation.js:1768 |
-| `closeNavHistoryMenu` | frontend/js/navigation.js:909 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1798 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2613 |
-| `entryLabel` | frontend/js/navigation.js:1007 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2574 |
-| `goToTabHistory` | frontend/js/navigation.js:1098 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1747 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1507 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2370 |
-| `initScrollTopButton` | frontend/js/navigation.js:2633 |
-| `insideClosedDetails` | frontend/js/navigation.js:1565 |
-| `loadSurface` | frontend/js/navigation.js:1305 |
-| `measureSpacingPx` | frontend/js/navigation.js:2604 |
-| `menuOfOpener` | frontend/js/navigation.js:1587 |
-| `menuRowsOf` | frontend/js/navigation.js:1572 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1842 |
+| `chatMidStream` | frontend/js/navigation.js:1774 |
+| `closeNavHistoryMenu` | frontend/js/navigation.js:915 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1804 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2619 |
+| `entryLabel` | frontend/js/navigation.js:1013 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2580 |
+| `goToTabHistory` | frontend/js/navigation.js:1104 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1753 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1513 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2376 |
+| `initScrollTopButton` | frontend/js/navigation.js:2639 |
+| `insideClosedDetails` | frontend/js/navigation.js:1571 |
+| `loadSurface` | frontend/js/navigation.js:1311 |
+| `mdAppLinkRow` | frontend/js/navigation.js:383 |
+| `measureSpacingPx` | frontend/js/navigation.js:2610 |
+| `menuOfOpener` | frontend/js/navigation.js:1593 |
+| `menuRowsOf` | frontend/js/navigation.js:1578 |
 | `mermaidSoon` | frontend/js/navigation.js:373 |
-| `openHistoryEntry` | frontend/js/navigation.js:1158 |
-| `openNavHistoryMenu` | frontend/js/navigation.js:929 |
+| `openHistoryEntry` | frontend/js/navigation.js:1164 |
+| `openNavHistoryMenu` | frontend/js/navigation.js:935 |
 | `openRowMenu` | frontend/js/navigation.js:150 |
 | `openSelectionScope` | frontend/js/navigation.js:320 |
-| `paintTabHistory` | frontend/js/navigation.js:956 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1376 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2489 |
-| `recordTabVisit` | frontend/js/navigation.js:1044 |
-| `recordingLive` | frontend/js/navigation.js:1775 |
-| `renderMarkdown` | frontend/js/navigation.js:382 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2264 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2283 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1145 |
-| `revealTab` | frontend/js/navigation.js:819 |
+| `paintTabHistory` | frontend/js/navigation.js:962 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1382 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2495 |
+| `recordTabVisit` | frontend/js/navigation.js:1050 |
+| `recordingLive` | frontend/js/navigation.js:1781 |
+| `renderMarkdown` | frontend/js/navigation.js:400 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2270 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2289 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1151 |
+| `revealTab` | frontend/js/navigation.js:825 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:127 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2456 |
-| `scrollingPage` | frontend/js/navigation.js:2409 |
-| `showNotesSection` | frontend/js/navigation.js:2308 |
-| `spacingPx` | frontend/js/navigation.js:2597 |
-| `stepTabHistory` | frontend/js/navigation.js:1088 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2210 |
-| `surfaceRecovered` | frontend/js/navigation.js:1283 |
-| `switchTab` | frontend/js/navigation.js:1885 |
-| `syncScrollLock` | frontend/js/navigation.js:2775 |
-| `tabLabel` | frontend/js/navigation.js:995 |
-| `tabPlaceholder` | frontend/js/navigation.js:2146 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2127 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2137 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2116 |
-| `usageCount` | frontend/js/navigation.js:1846 |
-| `usageFeatureName` | frontend/js/navigation.js:1842 |
-| `usageFlush` | frontend/js/navigation.js:1850 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1438 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2462 |
+| `scrollingPage` | frontend/js/navigation.js:2415 |
+| `showNotesSection` | frontend/js/navigation.js:2314 |
+| `spacingPx` | frontend/js/navigation.js:2603 |
+| `stepTabHistory` | frontend/js/navigation.js:1094 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2216 |
+| `surfaceRecovered` | frontend/js/navigation.js:1289 |
+| `switchTab` | frontend/js/navigation.js:1891 |
+| `syncScrollLock` | frontend/js/navigation.js:2781 |
+| `tabLabel` | frontend/js/navigation.js:1001 |
+| `tabPlaceholder` | frontend/js/navigation.js:2152 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2133 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2143 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2122 |
+| `usageCount` | frontend/js/navigation.js:1852 |
+| `usageFeatureName` | frontend/js/navigation.js:1848 |
+| `usageFlush` | frontend/js/navigation.js:1856 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1444 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2793 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2799 |
 
 ### frontend/js/router.js (12)
 
@@ -1292,7 +1296,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `richPickerSplitLabel` | frontend/js/rich-picker.js:33 |
 | `richPickerTile` | frontend/js/rich-picker.js:86 |
 
-### frontend/js/editor.js (81)
+### frontend/js/editor.js (82)
 
 | Name | File:line |
 |---|---|
@@ -1308,7 +1312,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `editorBackOverTrail` | frontend/js/editor.js:1069 |
 | `editorBareSlashRows` | frontend/js/editor.js:1822 |
 | `editorBlock` | frontend/js/editor.js:866 |
-| `editorBlockRows` | frontend/js/editor.js:907 |
+| `editorBlockRows` | frontend/js/editor.js:941 |
 | `editorCaretPoint` | frontend/js/editor.js:1214 |
 | `editorChoiceDialog` | frontend/js/editor.js:2411 |
 | `editorCloseMenu` | frontend/js/editor.js:1276 |
@@ -1334,6 +1338,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `editorMenuIcon` | frontend/js/editor.js:1538 |
 | `editorMenuList` | frontend/js/editor.js:1543 |
 | `editorNextGroupStart` | frontend/js/editor.js:1721 |
+| `editorNoModelEdit` | frontend/js/editor.js:911 |
 | `editorNotifyHost` | frontend/js/editor.js:414 |
 | `editorOpenMenu` | frontend/js/editor.js:1781 |
 | `editorOpenMenuByShortcut` | frontend/js/editor.js:186 |
@@ -1815,30 +1820,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stopActivityModel` | frontend/js/activity-panel.js:142 |
 | `stopAllActivity` | frontend/js/activity-panel.js:153 |
 
-### frontend/js/answer-kit.js (87)
+### frontend/js/answer-kit.js (88)
 
 | Name | File:line |
 |---|---|
 | `actNavigate` | frontend/js/answer-kit.js:2233 |
 | `addAssistantBubble` | frontend/js/answer-kit.js:1832 |
 | `addInlineCitations` | frontend/js/answer-kit.js:195 |
-| `agentRunStep` | frontend/js/answer-kit.js:2855 |
-| `agentRunTitle` | frontend/js/answer-kit.js:2833 |
-| `agentRunTool` | frontend/js/answer-kit.js:2887 |
+| `agentRunStep` | frontend/js/answer-kit.js:2856 |
+| `agentRunTitle` | frontend/js/answer-kit.js:2834 |
+| `agentRunTool` | frontend/js/answer-kit.js:2888 |
 | `answerFigure` | frontend/js/answer-kit.js:764 |
 | `answerObject` | frontend/js/answer-kit.js:857 |
-| `applyPendingChatTitle` | frontend/js/answer-kit.js:2807 |
-| `applyPlanMode` | frontend/js/answer-kit.js:2825 |
+| `applyPendingChatTitle` | frontend/js/answer-kit.js:2808 |
+| `applyPlanMode` | frontend/js/answer-kit.js:2826 |
 | `askNotesOnTheRight` | frontend/js/answer-kit.js:951 |
 | `askOpenContext` | frontend/js/answer-kit.js:21 |
 | `assistantLabel` | frontend/js/answer-kit.js:1378 |
-| `buildFollowupStrip` | frontend/js/answer-kit.js:2716 |
+| `buildFollowupStrip` | frontend/js/answer-kit.js:2717 |
 | `chatHistoryToSend` | frontend/js/answer-kit.js:1337 |
+| `chatKeptPagesRow` | frontend/js/answer-kit.js:2431 |
 | `chatMessageActions` | frontend/js/answer-kit.js:1383 |
 | `chatScrollToEnd` | frontend/js/answer-kit.js:1771 |
 | `chatSourcesFrom` | frontend/js/answer-kit.js:2282 |
-| `chatSourcesPanel` | frontend/js/answer-kit.js:2445 |
-| `chatTurnObjects` | frontend/js/answer-kit.js:2673 |
+| `chatSourcesPanel` | frontend/js/answer-kit.js:2477 |
+| `chatTurnObjects` | frontend/js/answer-kit.js:2674 |
 | `citationInsertionPoint` | frontend/js/answer-kit.js:165 |
 | `citationKey` | frontend/js/answer-kit.js:123 |
 | `citationMarker` | frontend/js/answer-kit.js:287 |
@@ -1856,17 +1862,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `evidenceRows` | frontend/js/answer-kit.js:697 |
 | `evidenceToggle` | frontend/js/answer-kit.js:665 |
 | `finishReply` | frontend/js/answer-kit.js:966 |
-| `followupChain` | frontend/js/answer-kit.js:2742 |
-| `followupParent` | frontend/js/answer-kit.js:2736 |
+| `followupChain` | frontend/js/answer-kit.js:2743 |
+| `followupParent` | frontend/js/answer-kit.js:2737 |
 | `groundingThumbs` | frontend/js/answer-kit.js:514 |
-| `isStreamingConversation` | frontend/js/answer-kit.js:2759 |
+| `isStreamingConversation` | frontend/js/answer-kit.js:2760 |
 | `livingInterval` | frontend/js/answer-kit.js:1650 |
 | `markToolStep` | frontend/js/answer-kit.js:2095 |
 | `matchReasonBadge` | frontend/js/answer-kit.js:992 |
 | `messageMetaLine` | frontend/js/answer-kit.js:1473 |
 | `metaItem` | frontend/js/answer-kit.js:1439 |
 | `notePictures` | frontend/js/answer-kit.js:502 |
-| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2789 |
+| `noticeUnwatchedAnswer` | frontend/js/answer-kit.js:2790 |
 | `numberMatchingRecords` | frontend/js/answer-kit.js:441 |
 | `paintNamedHead` | frontend/js/answer-kit.js:1812 |
 | `paintPersonaAvatar` | frontend/js/answer-kit.js:1800 |
@@ -1876,14 +1882,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `planStepWrites` | frontend/js/answer-kit.js:1880 |
 | `progressLine` | frontend/js/answer-kit.js:1671 |
 | `pushAgentChangeUndo` | frontend/js/answer-kit.js:1888 |
-| `reattachStreamingTurn` | frontend/js/answer-kit.js:2770 |
+| `reattachStreamingTurn` | frontend/js/answer-kit.js:2771 |
 | `refreshAfterToolChanges` | frontend/js/answer-kit.js:2243 |
-| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2696 |
+| `refreshFollowupVisibility` | frontend/js/answer-kit.js:2697 |
 | `renderAnswerGrounding` | frontend/js/answer-kit.js:549 |
 | `renderAnswerSupport` | frontend/js/answer-kit.js:476 |
 | `renderAskAnswerFoot` | frontend/js/answer-kit.js:897 |
 | `renderEvidenceView` | frontend/js/answer-kit.js:719 |
-| `renderFollowups` | frontend/js/answer-kit.js:2682 |
+| `renderFollowups` | frontend/js/answer-kit.js:2683 |
 | `renderToolConfirm` | frontend/js/answer-kit.js:2212 |
 | `restoreChatPosition` | frontend/js/answer-kit.js:1760 |
 | `rewriteAnswerWith` | frontend/js/answer-kit.js:1631 |
@@ -1893,7 +1899,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showCitedPassage` | frontend/js/answer-kit.js:393 |
 | `sourceLines` | frontend/js/answer-kit.js:2269 |
 | `sourcesByFirstMention` | frontend/js/answer-kit.js:2404 |
-| `startPlannedRun` | frontend/js/answer-kit.js:2784 |
+| `startPlannedRun` | frontend/js/answer-kit.js:2785 |
 | `streamChat` | frontend/js/answer-kit.js:1034 |
 | `streamChatEvents` | frontend/js/answer-kit.js:1078 |
 | `toolCardChips` | frontend/js/answer-kit.js:2010 |
@@ -1904,23 +1910,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toolPreviewPanel` | frontend/js/answer-kit.js:1988 |
 | `toolTouchedRow` | frontend/js/answer-kit.js:2083 |
 | `userMarkEl` | frontend/js/answer-kit.js:1783 |
-| `verificationRow` | frontend/js/answer-kit.js:2845 |
+| `verificationRow` | frontend/js/answer-kit.js:2846 |
 | `webPageContextBlock` | frontend/js/answer-kit.js:1639 |
 
-### frontend/js/app-features.js (11)
+### frontend/js/app-features.js (12)
 
 | Name | File:line |
 |---|---|
 | `featureCatalog` | frontend/js/app-features.js:45 |
 | `featureCommandRows` | frontend/js/app-features.js:260 |
 | `paletteAbouts` | frontend/js/app-features.js:30 |
-| `paletteCommands` | frontend/js/app-features.js:333 |
+| `paletteCommands` | frontend/js/app-features.js:348 |
+| `paletteFilterRows` | frontend/js/app-features.js:327 |
 | `paletteKeys` | frontend/js/app-features.js:16 |
 | `popupToolMaths` | frontend/js/app-features.js:291 |
-| `quickAccessCurrent` | frontend/js/app-features.js:649 |
-| `quickAccessItems` | frontend/js/app-features.js:640 |
-| `quickCatalogue` | frontend/js/app-features.js:618 |
-| `renderQuickLinks` | frontend/js/app-features.js:654 |
+| `quickAccessCurrent` | frontend/js/app-features.js:654 |
+| `quickAccessItems` | frontend/js/app-features.js:645 |
+| `quickCatalogue` | frontend/js/app-features.js:623 |
+| `renderQuickLinks` | frontend/js/app-features.js:659 |
 | `renderToolShortcutList` | frontend/js/app-features.js:307 |
 
 ### frontend/js/app-import.js (6)
@@ -2049,23 +2056,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawAskChart` | frontend/js/ask-chart.js:380 |
 | `renderAskChart` | frontend/js/ask-chart.js:364 |
 
-### frontend/js/ask-compose.js (33)
+### frontend/js/ask-compose.js (37)
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1582 |
+| `actItemList` | frontend/js/ask-compose.js:141 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1592 |
+| `applyThemeSteps` | frontend/js/ask-compose.js:165 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
 | `askAnswerMenu` | frontend/js/ask-compose.js:684 |
-| `askAsOf` | frontend/js/ask-compose.js:1595 |
+| `askAsOf` | frontend/js/ask-compose.js:1605 |
+| `askBeginChart` | frontend/js/ask-compose.js:1030 |
 | `askFromNotesFold` | frontend/js/ask-compose.js:985 |
 | `askKeepAsDocument` | frontend/js/ask-compose.js:793 |
 | `askKeepAsMap` | frontend/js/ask-compose.js:815 |
 | `askKeptTitle` | frontend/js/ask-compose.js:788 |
 | `askPreAnswerCard` | frontend/js/ask-compose.js:975 |
-| `askQuestion` | frontend/js/ask-compose.js:1029 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1520 |
-| `askStatusText` | frontend/js/ask-compose.js:1607 |
+| `askQuestion` | frontend/js/ask-compose.js:1056 |
+| `askShowSearching` | frontend/js/ask-compose.js:1043 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1530 |
+| `askStatusText` | frontend/js/ask-compose.js:1617 |
 | `citationVerdictRow` | frontend/js/ask-compose.js:655 |
 | `digestMore` | frontend/js/ask-compose.js:491 |
 | `digestOffer` | frontend/js/ask-compose.js:531 |
@@ -2074,17 +2085,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `fetchComposedPeek` | frontend/js/ask-compose.js:1004 |
 | `markSaidSentences` | frontend/js/ask-compose.js:115 |
 | `readWebPage` | frontend/js/ask-compose.js:385 |
-| `renderActCard` | frontend/js/ask-compose.js:145 |
+| `renderActCard` | frontend/js/ask-compose.js:178 |
 | `renderAskBoth` | frontend/js/ask-compose.js:964 |
 | `renderAskFollowups` | frontend/js/ask-compose.js:914 |
-| `renderAskHint` | frontend/js/ask-compose.js:1557 |
+| `renderAskHint` | frontend/js/ask-compose.js:1567 |
 | `renderAskInsights` | frontend/js/ask-compose.js:842 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1626 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1636 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
 | `renderAskWhy` | frontend/js/ask-compose.js:866 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1415 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1425 |
 | `renderWebSources` | frontend/js/ask-compose.js:309 |
-| `setAsking` | frontend/js/ask-compose.js:1616 |
+| `setAsking` | frontend/js/ask-compose.js:1626 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -2144,61 +2155,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMicroStart` | frontend/js/atlas-micro.js:300 |
 | `atlasMicroTick` | frontend/js/atlas-micro.js:281 |
 
-### frontend/js/atlas-motion.js (18)
+### frontend/js/atlas-motion.js (19)
 
 | Name | File:line |
 |---|---|
-| `atlasBlink` | frontend/js/atlas-motion.js:11 |
-| `atlasBlinkMay` | frontend/js/atlas-motion.js:30 |
-| `atlasBlinkStart` | frontend/js/atlas-motion.js:111 |
-| `atlasBlinkTick` | frontend/js/atlas-motion.js:48 |
-| `atlasLowerState` | frontend/js/atlas-motion.js:147 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:174 |
-| `atlasProbeWatch` | frontend/js/atlas-motion.js:224 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:182 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:571 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:275 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:240 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:300 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:320 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:485 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:377 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:391 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:454 |
-| `atlasTossState` | frontend/js/atlas-motion.js:399 |
+| `atlasBlink` | frontend/js/atlas-motion.js:12 |
+| `atlasBlinkMay` | frontend/js/atlas-motion.js:31 |
+| `atlasBlinkStart` | frontend/js/atlas-motion.js:112 |
+| `atlasBlinkTick` | frontend/js/atlas-motion.js:49 |
+| `atlasLowerState` | frontend/js/atlas-motion.js:148 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:175 |
+| `atlasProbeWatch` | frontend/js/atlas-motion.js:225 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:183 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:594 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:276 |
+| `atlasRigHead` | frontend/js/atlas-motion.js:574 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:241 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:301 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:321 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:486 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:378 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:392 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:455 |
+| `atlasTossState` | frontend/js/atlas-motion.js:400 |
 
-### frontend/js/atlas.js (97)
+### frontend/js/atlas.js (102)
 
 | Name | File:line |
 |---|---|
 | `atlasAlmond` | frontend/js/atlas.js:1593 |
-| `atlasApply` | frontend/js/atlas.js:3698 |
+| `atlasApply` | frontend/js/atlas.js:3717 |
 | `atlasArmHand` | frontend/js/atlas.js:1034 |
 | `atlasArmPath` | frontend/js/atlas.js:1029 |
 | `atlasArmSegs` | frontend/js/atlas.js:1020 |
-| `atlasAuraAt` | frontend/js/atlas.js:3137 |
-| `atlasAvatar` | frontend/js/atlas.js:3579 |
+| `atlasAuraAt` | frontend/js/atlas.js:3146 |
+| `atlasAvatar` | frontend/js/atlas.js:3598 |
 | `atlasBand` | frontend/js/atlas.js:1940 |
 | `atlasBandPaths` | frontend/js/atlas.js:1517 |
 | `atlasBandSplit` | frontend/js/atlas.js:1539 |
-| `atlasBody` | frontend/js/atlas.js:2518 |
+| `atlasBody` | frontend/js/atlas.js:2560 |
 | `atlasBookProp` | frontend/js/atlas.js:1998 |
 | `atlasBuild` | frontend/js/atlas.js:1117 |
-| `atlasBuildDefs` | frontend/js/atlas.js:2867 |
-| `atlasClassicFigure` | frontend/js/atlas.js:3855 |
-| `atlasClassicMark` | frontend/js/atlas.js:3734 |
+| `atlasBuildDefs` | frontend/js/atlas.js:2912 |
+| `atlasClassicFigure` | frontend/js/atlas.js:3874 |
+| `atlasClassicMark` | frontend/js/atlas.js:3753 |
 | `atlasCoilProp` | frontend/js/atlas.js:2031 |
 | `atlasCue` | frontend/js/atlas.js:2381 |
-| `atlasDefs` | frontend/js/atlas.js:2850 |
-| `atlasDraw` | frontend/js/atlas.js:3520 |
-| `atlasDrawFigure` | frontend/js/atlas.js:3160 |
-| `atlasDressMarks` | frontend/js/atlas.js:3583 |
-| `atlasDrift` | frontend/js/atlas.js:4109 |
+| `atlasDefs` | frontend/js/atlas.js:2853 |
+| `atlasDraw` | frontend/js/atlas.js:3539 |
+| `atlasDrawFigure` | frontend/js/atlas.js:3195 |
+| `atlasDrawWisps` | frontend/js/atlas.js:2497 |
+| `atlasDressMarks` | frontend/js/atlas.js:3602 |
+| `atlasDrift` | frontend/js/atlas.js:4128 |
 | `atlasDrop` | frontend/js/atlas.js:1583 |
 | `atlasEars` | frontend/js/atlas.js:1854 |
 | `atlasExtras` | frontend/js/atlas.js:1695 |
 | `atlasEye` | frontend/js/atlas.js:1609 |
-| `atlasFigure` | frontend/js/atlas.js:3629 |
+| `atlasFigure` | frontend/js/atlas.js:3648 |
 | `atlasFix` | frontend/js/atlas.js:214 |
 | `atlasFoot` | frontend/js/atlas.js:394 |
 | `atlasGroup` | frontend/js/atlas.js:172 |
@@ -2213,14 +2226,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasHelixSpan` | frontend/js/atlas.js:1506 |
 | `atlasHelixWidth` | frontend/js/atlas.js:1496 |
 | `atlasHemTip` | frontend/js/atlas.js:1045 |
-| `atlasHiddenSync` | frontend/js/atlas.js:3677 |
-| `atlasLevelFor` | frontend/js/atlas.js:3113 |
-| `atlasLids` | frontend/js/atlas.js:3488 |
+| `atlasHiddenSync` | frontend/js/atlas.js:3696 |
+| `atlasLevelFor` | frontend/js/atlas.js:3122 |
+| `atlasLids` | frontend/js/atlas.js:3507 |
 | `atlasLimbShaped` | frontend/js/atlas.js:402 |
 | `atlasLimbTo` | frontend/js/atlas.js:397 |
 | `atlasLimbWidth` | frontend/js/atlas.js:940 |
 | `atlasLook` | frontend/js/atlas.js:892 |
 | `atlasLookReason` | frontend/js/atlas.js:896 |
+| `atlasLowerIntoBreath` | frontend/js/atlas.js:3186 |
 | `atlasMake` | frontend/js/atlas.js:154 |
 | `atlasMane` | frontend/js/atlas.js:1740 |
 | `atlasMapProp` | frontend/js/atlas.js:2080 |
@@ -2228,17 +2242,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMiniShoulders` | frontend/js/atlas.js:1841 |
 | `atlasMirror` | frontend/js/atlas.js:916 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:392 |
+| `atlasMoveFx` | frontend/js/atlas.js:3170 |
 | `atlasNightcap` | frontend/js/atlas.js:1684 |
-| `atlasOn` | frontend/js/atlas.js:4053 |
-| `atlasOrbits` | frontend/js/atlas.js:3354 |
+| `atlasOn` | frontend/js/atlas.js:4072 |
+| `atlasOrbits` | frontend/js/atlas.js:3373 |
 | `atlasPaw` | frontend/js/atlas.js:929 |
 | `atlasPivot` | frontend/js/atlas.js:166 |
-| `atlasPlay` | frontend/js/atlas.js:4036 |
-| `atlasRepaint` | frontend/js/atlas.js:3880 |
-| `atlasRestingMood` | frontend/js/atlas.js:3932 |
+| `atlasPlay` | frontend/js/atlas.js:4055 |
+| `atlasRepaint` | frontend/js/atlas.js:3899 |
+| `atlasRestingMood` | frontend/js/atlas.js:3951 |
 | `atlasRetune` | frontend/js/atlas.js:1413 |
 | `atlasRing` | frontend/js/atlas.js:2467 |
-| `atlasRings` | frontend/js/atlas.js:3426 |
+| `atlasRings` | frontend/js/atlas.js:3445 |
 | `atlasScalePath` | frontend/js/atlas.js:491 |
 | `atlasScalePathX` | frontend/js/atlas.js:1406 |
 | `atlasSegsAt` | frontend/js/atlas.js:219 |
@@ -2251,23 +2266,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:4132 |
-| `atlasStyle` | frontend/js/atlas.js:3730 |
+| `atlasStreak` | frontend/js/atlas.js:4151 |
+| `atlasStyle` | frontend/js/atlas.js:3749 |
 | `atlasTail` | frontend/js/atlas.js:1902 |
-| `atlasTailMasks` | frontend/js/atlas.js:2816 |
-| `atlasTailWake` | frontend/js/atlas.js:3593 |
+| `atlasTailJoinMasks` | frontend/js/atlas.js:2897 |
+| `atlasTailMasks` | frontend/js/atlas.js:2819 |
+| `atlasTailWake` | frontend/js/atlas.js:3612 |
 | `atlasTaper` | frontend/js/atlas.js:424 |
 | `atlasTipShape` | frontend/js/atlas.js:327 |
 | `atlasTorsoEdge` | frontend/js/atlas.js:992 |
 | `atlasTune` | frontend/js/atlas.js:1085 |
 | `atlasTuneSegs` | frontend/js/atlas.js:1100 |
-| `atlasTuneStyle` | frontend/js/atlas.js:3121 |
+| `atlasTuneStyle` | frontend/js/atlas.js:3130 |
 | `atlasTurnAbout` | frontend/js/atlas.js:1015 |
-| `atlasWake` | frontend/js/atlas.js:4165 |
-| `atlasWatchFigure` | frontend/js/atlas.js:3664 |
-| `atlasWhenShown` | frontend/js/atlas.js:3609 |
-| `charactersArrived` | frontend/js/atlas.js:4261 |
-| `setAtlasMood` | frontend/js/atlas.js:3954 |
+| `atlasWake` | frontend/js/atlas.js:4184 |
+| `atlasWatchFigure` | frontend/js/atlas.js:3683 |
+| `atlasWhenShown` | frontend/js/atlas.js:3628 |
+| `atlasWispMasks` | frontend/js/atlas.js:2871 |
+| `charactersArrived` | frontend/js/atlas.js:4280 |
+| `setAtlasMood` | frontend/js/atlas.js:3973 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -2883,37 +2900,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `placeChatTime` | frontend/js/chat-time.js:59 |
 | `stampChatTimes` | frontend/js/chat-time.js:83 |
 
-### frontend/js/chat-turn.js (27)
+### frontend/js/chat-turn.js (33)
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2546 |
-| `agentTimeline` | frontend/js/chat-turn.js:1355 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2440 |
-| `askSkillInputs` | frontend/js/chat-turn.js:3087 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2693 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2315 |
-| `chatSendTurn` | frontend/js/chat-turn.js:16 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2218 |
-| `continueRunControls` | frontend/js/chat-turn.js:2951 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2893 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2996 |
-| `manualPauseControls` | frontend/js/chat-turn.js:3025 |
-| `markFollowup` | frontend/js/chat-turn.js:3051 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2267 |
-| `offerFollowups` | frontend/js/chat-turn.js:2153 |
-| `offerReminder` | frontend/js/chat-turn.js:2092 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2254 |
-| `removeChatBubble` | frontend/js/chat-turn.js:3075 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1880 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1964 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2849 |
-| `revalidateSelection` | frontend/js/chat-turn.js:2036 |
-| `saveFollowups` | frontend/js/chat-turn.js:2239 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2191 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2299 |
-| `startChatTimer` | frontend/js/chat-turn.js:2280 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2289 |
+| `addBubble` | frontend/js/chat-turn.js:2561 |
+| `agentTimeline` | frontend/js/chat-turn.js:1425 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2455 |
+| `askSkillInputs` | frontend/js/chat-turn.js:3101 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2772 |
+| `budgetRow` | frontend/js/chat-turn.js:1350 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2330 |
+| `chatSendTurn` | frontend/js/chat-turn.js:17 |
+| `chatTurnPayload` | frontend/js/chat-turn.js:49 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2233 |
+| `continueRunControls` | frontend/js/chat-turn.js:2965 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2907 |
+| `forkFromBubble` | frontend/js/chat-turn.js:3010 |
+| `manualPauseControls` | frontend/js/chat-turn.js:3039 |
+| `markAnswerNotRight` | frontend/js/chat-turn.js:2712 |
+| `markFollowup` | frontend/js/chat-turn.js:3065 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2282 |
+| `offerFollowups` | frontend/js/chat-turn.js:2168 |
+| `offerReminder` | frontend/js/chat-turn.js:2107 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2269 |
+| `regenerateAsItems` | frontend/js/chat-turn.js:2742 |
+| `regenerateWithItems` | frontend/js/chat-turn.js:2757 |
+| `removeChatBubble` | frontend/js/chat-turn.js:3089 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1895 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1979 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2863 |
+| `revalidateSelection` | frontend/js/chat-turn.js:2051 |
+| `saveFollowups` | frontend/js/chat-turn.js:2254 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2206 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2314 |
+| `skillResultBox` | frontend/js/chat-turn.js:1362 |
+| `startChatTimer` | frontend/js/chat-turn.js:2295 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2304 |
 
 ### frontend/js/chat-undo.js (11)
 
@@ -4894,61 +4917,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docPropsTypeRows` | frontend/js/documents-props.js:571 |
 | `renderDocProperties` | frontend/js/documents-props.js:756 |
 
-### frontend/js/documents-prose-check.js (51)
+### frontend/js/documents-prose-check.js (52)
 
 | Name | File:line |
 |---|---|
-| `applyDocComplete` | frontend/js/documents-prose-check.js:1708 |
-| `closeDocProsePanel` | frontend/js/documents-prose-check.js:985 |
-| `docAutocorrectAt` | frontend/js/documents-prose-check.js:1782 |
-| `docAutocorrectEnabled` | frontend/js/documents-prose-check.js:1774 |
-| `docBuildVocabulary` | frontend/js/documents-prose-check.js:1415 |
-| `docCodeProseMask` | frontend/js/documents-prose-check.js:385 |
-| `docCodeSpellFindings` | frontend/js/documents-prose-check.js:421 |
-| `docCodeWindow` | frontend/js/documents-prose-check.js:667 |
-| `docCompleteAria` | frontend/js/documents-prose-check.js:1464 |
-| `docCompleteEnabled` | frontend/js/documents-prose-check.js:1409 |
-| `docCompleteGhostAt` | frontend/js/documents-prose-check.js:1574 |
-| `docCompleteIndexOf` | frontend/js/documents-prose-check.js:1535 |
-| `docCompleteKeydown` | frontend/js/documents-prose-check.js:1739 |
-| `docCompleteMatchWords` | frontend/js/documents-prose-check.js:1545 |
-| `docCompletePlace` | frontend/js/documents-prose-check.js:1690 |
-| `docCompleteRowsAt` | frontend/js/documents-prose-check.js:1560 |
-| `docFillAt` | frontend/js/documents-prose-check.js:1510 |
-| `docFindingKind` | frontend/js/documents-prose-check.js:805 |
-| `docFocusSyncProse` | frontend/js/documents-prose-check.js:996 |
-| `docIgnoreLabel` | frontend/js/documents-prose-check.js:1213 |
-| `docProseApply` | frontend/js/documents-prose-check.js:1359 |
-| `docProseDismissed` | frontend/js/documents-prose-check.js:919 |
-| `docProseFindings` | frontend/js/documents-prose-check.js:183 |
-| `docProseFix` | frontend/js/documents-prose-check.js:1362 |
-| `docProseFixAll` | frontend/js/documents-prose-check.js:1381 |
-| `docProseGroupList` | frontend/js/documents-prose-check.js:1242 |
-| `docProseHeader` | frontend/js/documents-prose-check.js:828 |
-| `docProseIgnore` | frontend/js/documents-prose-check.js:1217 |
-| `docProseJump` | frontend/js/documents-prose-check.js:1328 |
-| `docProsePanelSoon` | frontend/js/documents-prose-check.js:780 |
-| `docProseRowAnswers` | frontend/js/documents-prose-check.js:1135 |
-| `docProseRowCollapse` | frontend/js/documents-prose-check.js:1127 |
-| `docProseRowKeys` | frontend/js/documents-prose-check.js:1233 |
-| `docProseScrolled` | frontend/js/documents-prose-check.js:713 |
-| `docProseSetHidden` | frontend/js/documents-prose-check.js:911 |
-| `docProseSideView` | frontend/js/documents-prose-check.js:933 |
+| `applyDocComplete` | frontend/js/documents-prose-check.js:1713 |
+| `closeDocProsePanel` | frontend/js/documents-prose-check.js:990 |
+| `docAutocorrectAt` | frontend/js/documents-prose-check.js:1787 |
+| `docAutocorrectEnabled` | frontend/js/documents-prose-check.js:1779 |
+| `docBuildVocabulary` | frontend/js/documents-prose-check.js:1420 |
+| `docCodeProseMask` | frontend/js/documents-prose-check.js:390 |
+| `docCodeSpellFindings` | frontend/js/documents-prose-check.js:426 |
+| `docCodeWindow` | frontend/js/documents-prose-check.js:672 |
+| `docCompleteAria` | frontend/js/documents-prose-check.js:1469 |
+| `docCompleteEnabled` | frontend/js/documents-prose-check.js:1414 |
+| `docCompleteGhostAt` | frontend/js/documents-prose-check.js:1579 |
+| `docCompleteIndexOf` | frontend/js/documents-prose-check.js:1540 |
+| `docCompleteKeydown` | frontend/js/documents-prose-check.js:1744 |
+| `docCompleteMatchWords` | frontend/js/documents-prose-check.js:1550 |
+| `docCompletePlace` | frontend/js/documents-prose-check.js:1695 |
+| `docCompleteRowsAt` | frontend/js/documents-prose-check.js:1565 |
+| `docFillAt` | frontend/js/documents-prose-check.js:1515 |
+| `docFindingKind` | frontend/js/documents-prose-check.js:810 |
+| `docFocusSyncProse` | frontend/js/documents-prose-check.js:1001 |
+| `docIgnoreLabel` | frontend/js/documents-prose-check.js:1218 |
+| `docLongSentences` | frontend/js/documents-prose-check.js:183 |
+| `docProseApply` | frontend/js/documents-prose-check.js:1364 |
+| `docProseDismissed` | frontend/js/documents-prose-check.js:924 |
+| `docProseFindings` | frontend/js/documents-prose-check.js:231 |
+| `docProseFix` | frontend/js/documents-prose-check.js:1367 |
+| `docProseFixAll` | frontend/js/documents-prose-check.js:1386 |
+| `docProseGroupList` | frontend/js/documents-prose-check.js:1247 |
+| `docProseHeader` | frontend/js/documents-prose-check.js:833 |
+| `docProseIgnore` | frontend/js/documents-prose-check.js:1222 |
+| `docProseJump` | frontend/js/documents-prose-check.js:1333 |
+| `docProsePanelSoon` | frontend/js/documents-prose-check.js:785 |
+| `docProseRowAnswers` | frontend/js/documents-prose-check.js:1140 |
+| `docProseRowCollapse` | frontend/js/documents-prose-check.js:1132 |
+| `docProseRowKeys` | frontend/js/documents-prose-check.js:1238 |
+| `docProseScrolled` | frontend/js/documents-prose-check.js:718 |
+| `docProseSetHidden` | frontend/js/documents-prose-check.js:916 |
+| `docProseSideView` | frontend/js/documents-prose-check.js:938 |
 | `docProseSkipMask` | frontend/js/documents-prose-check.js:154 |
-| `docProseWindow` | frontend/js/documents-prose-check.js:681 |
-| `docSaveToolPref` | frontend/js/documents-prose-check.js:1872 |
+| `docProseWindow` | frontend/js/documents-prose-check.js:686 |
+| `docSaveToolPref` | frontend/js/documents-prose-check.js:1877 |
 | `docSpellConfident` | frontend/js/documents-prose-check.js:41 |
 | `docSpellContraction` | frontend/js/documents-prose-check.js:22 |
 | `docSpellLookup` | frontend/js/documents-prose-check.js:73 |
 | `docSpellTransposed` | frontend/js/documents-prose-check.js:63 |
-| `docToolPref` | frontend/js/documents-prose-check.js:1864 |
-| `docToolsBoxFor` | frontend/js/documents-prose-check.js:1953 |
-| `docToolsOnInput` | frontend/js/documents-prose-check.js:1882 |
-| `docWordFragment` | frontend/js/documents-prose-check.js:1448 |
-| `hideDocComplete` | frontend/js/documents-prose-check.js:1489 |
-| `renderDocComplete` | frontend/js/documents-prose-check.js:1583 |
-| `renderDocProse` | frontend/js/documents-prose-check.js:723 |
-| `renderDocProsePanel` | frontend/js/documents-prose-check.js:1009 |
+| `docToolPref` | frontend/js/documents-prose-check.js:1869 |
+| `docToolsBoxFor` | frontend/js/documents-prose-check.js:1958 |
+| `docToolsOnInput` | frontend/js/documents-prose-check.js:1887 |
+| `docWordFragment` | frontend/js/documents-prose-check.js:1453 |
+| `hideDocComplete` | frontend/js/documents-prose-check.js:1494 |
+| `renderDocComplete` | frontend/js/documents-prose-check.js:1588 |
+| `renderDocProse` | frontend/js/documents-prose-check.js:728 |
+| `renderDocProsePanel` | frontend/js/documents-prose-check.js:1014 |
 
 ### frontend/js/documents-prose.js (133)
 
@@ -5569,21 +5593,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openEntityPage` | frontend/js/entity-page.js:62 |
 | `toastEntityMerge` | frontend/js/entity-page.js:34 |
 
-### frontend/js/entry-card.js (12)
+### frontend/js/entry-card.js (13)
 
 | Name | File:line |
 |---|---|
-| `entryItem` | frontend/js/entry-card.js:198 |
-| `entryOverflowMenu` | frontend/js/entry-card.js:1389 |
-| `favouriteButton` | frontend/js/entry-card.js:1293 |
+| `entryItem` | frontend/js/entry-card.js:242 |
+| `entryMentionedDatesChip` | frontend/js/entry-card.js:203 |
+| `entryOverflowMenu` | frontend/js/entry-card.js:1394 |
+| `favouriteButton` | frontend/js/entry-card.js:1298 |
 | `meetingGlance` | frontend/js/entry-card.js:34 |
-| `noteMetaMore` | frontend/js/entry-card.js:1355 |
-| `noteReviewActions` | frontend/js/entry-card.js:1259 |
-| `notesSpanSpaces` | frontend/js/entry-card.js:1373 |
-| `publishDraft` | frontend/js/entry-card.js:1443 |
-| `renderAttachmentCards` | frontend/js/entry-card.js:1329 |
+| `noteMetaMore` | frontend/js/entry-card.js:1360 |
+| `noteReviewActions` | frontend/js/entry-card.js:1264 |
+| `notesSpanSpaces` | frontend/js/entry-card.js:1378 |
+| `publishDraft` | frontend/js/entry-card.js:1448 |
+| `renderAttachmentCards` | frontend/js/entry-card.js:1334 |
 | `renderInlineAction` | frontend/js/entry-card.js:82 |
-| `searchHighlightTerms` | frontend/js/entry-card.js:1382 |
+| `searchHighlightTerms` | frontend/js/entry-card.js:1387 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
 ### frontend/js/entry-menu.js (7)

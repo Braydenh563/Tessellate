@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- JS size: seventeen over-long functions split by job into named helpers (chat turn, atlas motion, answer kit, ask compose, prose check, editor, entry card, navigation, sheets, palette); chat-turn.js and atlas-motion.js wrapped to pay for the new names; the size seed only shrank.
 - Models: a finished download reads as running until the model list shows it, so "Downloaded" never sits beside the list from before it (CI on #230, 3.13).
 - Reminder fact split is a one-pass scan, not a regex (CodeQL 2354 still saw the lookbehind form as polynomial).
 - Reminder fact split reads a long run of "!" in linear time (CodeQL 2354); a test assert no longer holds the write it checks (CodeQL 2355).
