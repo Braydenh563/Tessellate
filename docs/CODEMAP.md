@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11644, test files 3051, tests 23990, plan headings 691, app scripts 29, boot scripts 38, script files 420.
+Counts: frontend functions 9110, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11644, test files 3052, tests 23991, plan headings 691, app scripts 29, boot scripts 38, script files 420.
 
 ## Frontend functions (9110)
 
@@ -30437,7 +30437,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23990)
+## Tests (23991)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31465,6 +31465,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_typing_dx1.py | 15 |
 | tests/test_doc_typing_l342.py | 14 |
 | tests/test_doc_video.py | 7 |
+| tests/test_doc_view_exported.py | 1 |
 | tests/test_doc_view_held.py | 6 |
 | tests/test_doc_writing_streak.py | 6 |
 | tests/test_docexport_bundle.py | 7 |
