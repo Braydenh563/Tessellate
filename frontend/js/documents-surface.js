@@ -905,12 +905,10 @@
     //: with it, a frame after the text is painted rather than before: each
     //: lays the editor out again (the outline asks which line the caret shows),
     //: measured at 390 as 607ms of a 1,286ms open for the outline alone.
-    //: The outline first: it reads where the caret is before anything here
-    //: writes (INBOX 1530 c), and the status bar and prose check need no layout.
+    //: The outline first: it reads the caret before anything writes (INBOX 1530 c); the rest needs no layout.
     docAfterFirstPaint(seq, () => {
       renderDocOutline();
-      //: The prose pass waits for idle: it is the one whole-document walk here (19 ms of the open, 7 after),
-      //: and its chip can arrive a moment late (L-world-class-40: two frames 251 to 240 ms median, 8 A/B pairs).
+      //: The prose pass, a whole-document walk, waits for idle (L-world-class-40: two frames 251 to 240 ms).
       renderDocTools(() => seq === docOpenSeq);
       renderDocNotes();
       renderDocBacklinks();

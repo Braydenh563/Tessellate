@@ -1836,8 +1836,7 @@ def _requirements_path() -> Path:
 #: the next major, or the next minor for a 0.x project, as requirements.txt
 #: caps its own; fastembed's bound is requirements.txt's. A constraint, not
 #: a requirement, so it bounds the package wherever it is pulled in and the
-#: extra's `packages` stay names. scripts/extras_lock.py resolves the hashed
-#: locks within them, and pip gets them again beside each lock.
+#: extra's `packages` stay names; scripts/extras_lock.py resolves the hashed locks within them.
 EXTRA_BOUNDS = (
     "pypdfium2>=5.15,<6",
     "Pillow>=13.0,<14",
@@ -1995,9 +1994,7 @@ def _installed_version(name: str) -> str | None:
 
 
 def _left_alone(entry: extras_lock.Entry) -> bool:
-    """A lock entry this environment already has at another version: pip
-    would move it (fastembed's onnxruntime under the voice extra), so it
-    stays as it is and the log says so."""
+    """A lock entry installed here at another version (fastembed's onnxruntime): kept, and logged."""
     if not extras_lock.marker_applies(entry.marker):
         return False
     installed = _installed_version(entry.name)
@@ -2008,11 +2005,9 @@ def _left_alone(entry: extras_lock.Entry) -> bool:
 
 
 def _lock_selection(extra: Extra, folder: Path) -> tuple[Path | None, str]:
-    """The hashed requirements pip installs `extra` from, or why it will not
-    (L-world-class-691, SECURITY.md T23). A packaged build's `--target` is
-    the extras folder alone, so it takes the whole lock; a source install
-    must already have every base package the lock was resolved against
-    (`--no-deps` installs none) and keeps what it has."""
+    """The hashed requirements pip installs `extra` from, or why not (L-world-class-691, SECURITY.md T23).
+    A packaged build's `--target` takes the whole lock; a source install must already have every base
+    package the lock was resolved against (`--no-deps` installs none) and keeps what it has."""
     lock = extras_lock.read(extra.id)
     if lock is None:
         return None, f"No checked package list for {extra.label} ships with this version, so it stays uninstalled."
