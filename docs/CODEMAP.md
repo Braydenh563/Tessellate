@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9109, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11643, test files 3051, tests 23989, plan headings 691, app scripts 29, boot scripts 38, script files 420.
+Counts: frontend functions 9109, frontend ids 2858, CSS sections 531, backend routes 751, backend modules 11644, test files 3051, tests 23989, plan headings 691, app scripts 29, boot scripts 38, script files 420.
 
 ## Frontend functions (9109)
 
@@ -15443,7 +15443,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11643)
+## Backend modules (11644)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25352,9 +25352,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
+| `_bind_text` | src/tessellate/api/wb_binds.py:73 |
 | `_held` | src/tessellate/api/wb_binds.py:68 |
 | `_inside` | src/tessellate/api/wb_binds.py:57 |
-| `_readable` | src/tessellate/api/wb_binds.py:73 |
 | `_target` | src/tessellate/api/wb_binds.py:128 |
 | `_value` | src/tessellate/api/wb_binds.py:81 |
 | `apply_card_binding` | src/tessellate/api/wb_binds.py:114 |
@@ -26883,69 +26883,70 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `trust_page_open` | src/tessellate/core/lanserve.py:100 |
 | `trust_response` | src/tessellate/core/lanserve.py:147 |
 
-### src/tessellate/core/lantrust.py (60)
+### src/tessellate/core/lantrust.py (61)
 
 | Name | File:line |
 |---|---|
+| `_address_gone` | src/tessellate/core/lantrust.py:318 |
 | `_bump` | src/tessellate/core/lantrust.py:97 |
 | `_entry` | src/tessellate/core/lantrust.py:247 |
-| `_expire` | src/tessellate/core/lantrust.py:756 |
-| `_group_of` | src/tessellate/core/lantrust.py:435 |
+| `_expire` | src/tessellate/core/lantrust.py:769 |
+| `_group_of` | src/tessellate/core/lantrust.py:448 |
 | `_held_reading` | src/tessellate/core/lantrust.py:302 |
-| `_listed_row` | src/tessellate/core/lantrust.py:459 |
-| `_move_to_trusted` | src/tessellate/core/lantrust.py:499 |
-| `_named` | src/tessellate/core/lantrust.py:443 |
-| `_network_groups` | src/tessellate/core/lantrust.py:447 |
+| `_listed_row` | src/tessellate/core/lantrust.py:472 |
+| `_move_to_trusted` | src/tessellate/core/lantrust.py:512 |
+| `_named` | src/tessellate/core/lantrust.py:456 |
+| `_network_groups` | src/tessellate/core/lantrust.py:460 |
 | `_note_untrusted` | src/tessellate/core/lantrust.py:271 |
 | `_now` | src/tessellate/core/lantrust.py:82 |
 | `_now_text` | src/tessellate/core/lantrust.py:200 |
-| `_one_network` | src/tessellate/core/lantrust.py:422 |
+| `_one_network` | src/tessellate/core/lantrust.py:435 |
 | `_online` | src/tessellate/core/lantrust.py:287 |
 | `_path` | src/tessellate/core/lantrust.py:131 |
-| `_read_network` | src/tessellate/core/lantrust.py:321 |
+| `_read_network` | src/tessellate/core/lantrust.py:334 |
 | `_remember` | src/tessellate/core/lantrust.py:259 |
 | `_same` | src/tessellate/core/lantrust.py:239 |
 | `_stopped_trusting` | src/tessellate/core/lantrust.py:207 |
-| `_write_pending` | src/tessellate/core/lantrust.py:707 |
-| `adopt` | src/tessellate/core/lantrust.py:727 |
-| `allow_current` | src/tessellate/core/lantrust.py:408 |
-| `clear_switched_off` | src/tessellate/core/lantrust.py:607 |
-| `current_network` | src/tessellate/core/lantrust.py:369 |
-| `decide` | src/tessellate/core/lantrust.py:797 |
-| `device_hash` | src/tessellate/core/lantrust.py:636 |
-| `device_known` | src/tessellate/core/lantrust.py:642 |
-| `device_name` | src/tessellate/core/lantrust.py:684 |
-| `devices` | src/tessellate/core/lantrust.py:845 |
+| `_write_pending` | src/tessellate/core/lantrust.py:720 |
+| `adopt` | src/tessellate/core/lantrust.py:740 |
+| `allow_current` | src/tessellate/core/lantrust.py:421 |
+| `clear_switched_off` | src/tessellate/core/lantrust.py:620 |
+| `current_network` | src/tessellate/core/lantrust.py:382 |
+| `decide` | src/tessellate/core/lantrust.py:810 |
+| `device_hash` | src/tessellate/core/lantrust.py:649 |
+| `device_known` | src/tessellate/core/lantrust.py:655 |
+| `device_name` | src/tessellate/core/lantrust.py:697 |
+| `devices` | src/tessellate/core/lantrust.py:858 |
 | `evaluate` | src/tessellate/core/lantrust.py:214 |
-| `forget_device` | src/tessellate/core/lantrust.py:852 |
-| `forget_network` | src/tessellate/core/lantrust.py:483 |
-| `hold` | src/tessellate/core/lantrust.py:764 |
-| `is_open` | src/tessellate/core/lantrust.py:365 |
-| `listed` | src/tessellate/core/lantrust.py:475 |
+| `forget_device` | src/tessellate/core/lantrust.py:865 |
+| `forget_network` | src/tessellate/core/lantrust.py:496 |
+| `hold` | src/tessellate/core/lantrust.py:777 |
+| `is_open` | src/tessellate/core/lantrust.py:378 |
+| `listed` | src/tessellate/core/lantrust.py:488 |
 | `load` | src/tessellate/core/lantrust.py:135 |
-| `mark_switched_off` | src/tessellate/core/lantrust.py:599 |
-| `mark_turned_on` | src/tessellate/core/lantrust.py:584 |
-| `network_for_display` | src/tessellate/core/lantrust.py:376 |
-| `note_used` | src/tessellate/core/lantrust.py:567 |
-| `pending` | src/tessellate/core/lantrust.py:787 |
-| `persist_use` | src/tessellate/core/lantrust.py:573 |
-| `plain_address` | src/tessellate/core/lantrust.py:647 |
+| `mark_switched_off` | src/tessellate/core/lantrust.py:612 |
+| `mark_turned_on` | src/tessellate/core/lantrust.py:597 |
+| `network_for_display` | src/tessellate/core/lantrust.py:389 |
+| `note_used` | src/tessellate/core/lantrust.py:580 |
+| `pending` | src/tessellate/core/lantrust.py:800 |
+| `persist_use` | src/tessellate/core/lantrust.py:586 |
+| `plain_address` | src/tessellate/core/lantrust.py:660 |
 | `plain_http_on` | src/tessellate/core/lantrust.py:180 |
-| `refresh` | src/tessellate/core/lantrust.py:337 |
-| `remember_current` | src/tessellate/core/lantrust.py:393 |
-| `remember_device` | src/tessellate/core/lantrust.py:666 |
-| `reset_for_tests` | src/tessellate/core/lantrust.py:866 |
+| `refresh` | src/tessellate/core/lantrust.py:350 |
+| `remember_current` | src/tessellate/core/lantrust.py:406 |
+| `remember_device` | src/tessellate/core/lantrust.py:679 |
+| `reset_for_tests` | src/tessellate/core/lantrust.py:879 |
 | `save` | src/tessellate/core/lantrust.py:187 |
-| `set_flag` | src/tessellate/core/lantrust.py:623 |
-| `settle` | src/tessellate/core/lantrust.py:837 |
-| `status` | src/tessellate/core/lantrust.py:384 |
-| `touch_device` | src/tessellate/core/lantrust.py:653 |
-| `touch_version` | src/tessellate/core/lantrust.py:616 |
-| `trust_network` | src/tessellate/core/lantrust.py:516 |
-| `untrust_network` | src/tessellate/core/lantrust.py:534 |
-| `unused_since` | src/tessellate/core/lantrust.py:595 |
+| `set_flag` | src/tessellate/core/lantrust.py:636 |
+| `settle` | src/tessellate/core/lantrust.py:850 |
+| `status` | src/tessellate/core/lantrust.py:397 |
+| `touch_device` | src/tessellate/core/lantrust.py:666 |
+| `touch_version` | src/tessellate/core/lantrust.py:629 |
+| `trust_network` | src/tessellate/core/lantrust.py:529 |
+| `untrust_network` | src/tessellate/core/lantrust.py:547 |
+| `unused_since` | src/tessellate/core/lantrust.py:608 |
 | `version` | src/tessellate/core/lantrust.py:124 |
-| `wait_decision` | src/tessellate/core/lantrust.py:819 |
+| `wait_decision` | src/tessellate/core/lantrust.py:832 |
 | `wait_version_change` | src/tessellate/core/lantrust.py:106 |
 
 ### src/tessellate/core/launch_status.py (7)

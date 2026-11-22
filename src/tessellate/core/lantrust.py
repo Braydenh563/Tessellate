@@ -315,6 +315,19 @@ def _held_reading() -> netid.Network | None:
         return None
 
 
+def _address_gone() -> bool:
+    """This computer no longer has the address it had on the last network: a
+    different network or none, so the stale-router grace does not hold it either
+    (L-world-class-240 with L-whiteboard-33's 75 s grace)."""
+    last = _gate["network"]
+    if last is None or not last.address or addresses_probe is None:
+        return False
+    try:
+        return last.address not in addresses_probe()
+    except OSError:
+        return False
+
+
 _UNREAD = object()
 
 
@@ -325,7 +338,7 @@ def _read_network(online: bool | None, *, fresh: bool = False) -> tuple[netid.Ne
     if online is None:
         online = network is not None or _online()
     with _lock:  # the accept loop and a listener start both refresh
-        if network is None and online and not fresh and _gate["network"] is not None:
+        if network is None and online and not fresh and _gate["network"] is not None and not _address_gone():
             since = _missed["since"] if _missed["since"] is not None else _now()
             _missed["since"] = since
             if _now() - since < MISSED_KEEP_SECONDS:
