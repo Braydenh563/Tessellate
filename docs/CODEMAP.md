@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9154, frontend ids 2864, CSS sections 532, backend routes 766, backend modules 11791, test files 3100, tests 24216, plan headings 693, app scripts 30, boot scripts 39, script files 425.
+Counts: frontend functions 9154, frontend ids 2864, CSS sections 532, backend routes 766, backend modules 11791, test files 3100, tests 24215, plan headings 693, app scripts 30, boot scripts 39, script files 425.
 
 ## Frontend functions (9154)
 
@@ -247,12 +247,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_loadEntries` | frontend/js/notes-list.js:2722 |
+| `_loadEntries` | frontend/js/notes-list.js:2721 |
 | `appendInline` | frontend/js/notes-list.js:1208 |
 | `appendInlineRun` | frontend/js/notes-list.js:971 |
 | `appendPictureBox` | frontend/js/notes-list.js:901 |
 | `appendPlainText` | frontend/js/notes-list.js:1685 |
-| `applyEntryListTabOrder` | frontend/js/notes-list.js:2394 |
+| `applyEntryListTabOrder` | frontend/js/notes-list.js:2393 |
 | `applyNotesViewMode` | frontend/js/notes-list.js:2007 |
 | `attachmentCard` | frontend/js/notes-list.js:639 |
 | `attachmentFacts` | frontend/js/notes-list.js:608 |
@@ -261,20 +261,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `boardEmbedTarget` | frontend/js/notes-list.js:1308 |
 | `bodyWithoutTitleLine` | frontend/js/notes-list.js:1225 |
 | `captureBar` | frontend/js/notes-list.js:2111 |
-| `categoryAutoDot` | frontend/js/notes-list.js:2428 |
-| `categoryColour` | frontend/js/notes-list.js:2423 |
-| `categoryColoursChanged` | frontend/js/notes-list.js:2440 |
-| `categoryDotColour` | frontend/js/notes-list.js:2433 |
-| `categoryMenuItems` | frontend/js/notes-list.js:2539 |
-| `clearSkeletons` | frontend/js/notes-list.js:2640 |
-| `compareCategoryNames` | frontend/js/notes-list.js:2482 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3265 |
+| `categoryAutoDot` | frontend/js/notes-list.js:2427 |
+| `categoryColour` | frontend/js/notes-list.js:2422 |
+| `categoryColoursChanged` | frontend/js/notes-list.js:2439 |
+| `categoryDotColour` | frontend/js/notes-list.js:2432 |
+| `categoryMenuItems` | frontend/js/notes-list.js:2538 |
+| `clearSkeletons` | frontend/js/notes-list.js:2639 |
+| `compareCategoryNames` | frontend/js/notes-list.js:2481 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3264 |
 | `engineQueryIds` | frontend/js/notes-list.js:250 |
-| `ensureCardCounts` | frontend/js/notes-list.js:3077 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3123 |
-| `ensureOneCardCount` | frontend/js/notes-list.js:3081 |
-| `entryListItems` | frontend/js/notes-list.js:2392 |
-| `entryListOrder` | frontend/js/notes-list.js:2825 |
+| `ensureCardCounts` | frontend/js/notes-list.js:3076 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3122 |
+| `ensureOneCardCount` | frontend/js/notes-list.js:3080 |
+| `entryListItems` | frontend/js/notes-list.js:2391 |
+| `entryListOrder` | frontend/js/notes-list.js:2824 |
 | `entryNeedsReview` | frontend/js/notes-list.js:273 |
 | `expandAngleAutolinks` | frontend/js/notes-list.js:847 |
 | `fileCard` | frontend/js/notes-list.js:713 |
@@ -292,9 +292,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `linkAppAddresses` | frontend/js/notes-list.js:861 |
 | `listedNoteIds` | frontend/js/notes-list.js:2027 |
 | `liveQueryIds` | frontend/js/notes-list.js:201 |
-| `loadCategories` | frontend/js/notes-list.js:2449 |
+| `loadCategories` | frontend/js/notes-list.js:2448 |
 | `loadEmbedDocuments` | frontend/js/notes-list.js:1421 |
-| `loadEntries` | frontend/js/notes-list.js:2711 |
+| `loadEntries` | frontend/js/notes-list.js:2710 |
 | `matchesSearch` | frontend/js/notes-list.js:440 |
 | `matchesTagCount` | frontend/js/notes-list.js:419 |
 | `meaningEngineMissing` | frontend/js/notes-list.js:297 |
@@ -307,60 +307,60 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteRowFor` | frontend/js/notes-list.js:1854 |
 | `noteSemanticLoaded` | frontend/js/notes-list.js:436 |
 | `noteSortName` | frontend/js/notes-list.js:1792 |
-| `noteTopicChip` | frontend/js/notes-list.js:3004 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3258 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3175 |
-| `notesRailSync` | frontend/js/notes-list.js:3186 |
-| `notesRailWanted` | frontend/js/notes-list.js:3203 |
+| `noteTopicChip` | frontend/js/notes-list.js:3003 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3257 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3174 |
+| `notesRailSync` | frontend/js/notes-list.js:3185 |
+| `notesRailWanted` | frontend/js/notes-list.js:3202 |
 | `notesScroller` | frontend/js/notes-list.js:1835 |
 | `openNoteEditor` | frontend/js/notes-list.js:113 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:1949 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:1915 |
-| `paintCategoryDot` | frontend/js/notes-list.js:2436 |
-| `paintEntriesProgress` | frontend/js/notes-list.js:2676 |
+| `paintCategoryDot` | frontend/js/notes-list.js:2435 |
+| `paintEntriesProgress` | frontend/js/notes-list.js:2675 |
 | `parseNoteQuery` | frontend/js/notes-list.js:307 |
 | `propQuery` | frontend/js/notes-list.js:2154 |
 | `readableUrl` | frontend/js/notes-list.js:877 |
-| `referenceCountChip` | frontend/js/notes-list.js:2933 |
-| `referenceCountText` | frontend/js/notes-list.js:2921 |
-| `refreshEntries` | frontend/js/notes-list.js:2833 |
-| `rememberNoteFilter` | frontend/js/notes-list.js:2243 |
-| `reminderCountChip` | frontend/js/notes-list.js:2976 |
+| `referenceCountChip` | frontend/js/notes-list.js:2932 |
+| `referenceCountText` | frontend/js/notes-list.js:2920 |
+| `refreshEntries` | frontend/js/notes-list.js:2832 |
+| `rememberNoteFilter` | frontend/js/notes-list.js:2242 |
+| `reminderCountChip` | frontend/js/notes-list.js:2975 |
 | `remoteImageNote` | frontend/js/notes-list.js:911 |
-| `renderEntries` | frontend/js/notes-list.js:2255 |
-| `renderEntriesWhenShown` | frontend/js/notes-list.js:2689 |
+| `renderEntries` | frontend/js/notes-list.js:2254 |
+| `renderEntriesWhenShown` | frontend/js/notes-list.js:2688 |
 | `renderInlineMarkdown` | frontend/js/notes-list.js:927 |
 | `renderNoteInline` | frontend/js/notes-list.js:1597 |
 | `renderNoteText` | frontend/js/notes-list.js:1436 |
-| `renderNotesRail` | frontend/js/notes-list.js:3222 |
-| `renderSidebar` | frontend/js/notes-list.js:2464 |
+| `renderNotesRail` | frontend/js/notes-list.js:3221 |
+| `renderSidebar` | frontend/js/notes-list.js:2463 |
 | `renderWindowed` | frontend/js/notes-list.js:1862 |
-| `resetNoteList` | frontend/js/notes-list.js:2217 |
+| `resetNoteList` | frontend/js/notes-list.js:2216 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:165 |
 | `resolveNotePage` | frontend/js/notes-list.js:1980 |
 | `resolveWikiTarget` | frontend/js/notes-list.js:1316 |
 | `restoreFocusTo` | frontend/js/notes-list.js:79 |
 | `restoreNoteControl` | frontend/js/notes-list.js:101 |
 | `safeHref` | frontend/js/notes-list.js:822 |
-| `scheduleEntriesProgress` | frontend/js/notes-list.js:2704 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3198 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3271 |
+| `scheduleEntriesProgress` | frontend/js/notes-list.js:2703 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3197 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3270 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2064 |
-| `showEntrySkeletons` | frontend/js/notes-list.js:2576 |
+| `showEntrySkeletons` | frontend/js/notes-list.js:2575 |
 | `showNotesFilter` | frontend/js/notes-list.js:284 |
-| `showSkeletons` | frontend/js/notes-list.js:2597 |
-| `skeletonRemember` | frontend/js/notes-list.js:2619 |
+| `showSkeletons` | frontend/js/notes-list.js:2596 |
+| `skeletonRemember` | frontend/js/notes-list.js:2618 |
 | `sortEntries` | frontend/js/notes-list.js:1796 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3211 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3210 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2053 |
-| `topicRepeatsTag` | frontend/js/notes-list.js:2998 |
+| `topicRepeatsTag` | frontend/js/notes-list.js:2997 |
 | `unlatex` | frontend/js/notes-list.js:757 |
 | `updateExpandAllButton` | frontend/js/notes-list.js:2033 |
 | `whyThisResultChip` | frontend/js/notes-list.js:1773 |
 | `wikiForms` | frontend/js/notes-list.js:1254 |
 | `wikiStem` | frontend/js/notes-list.js:1272 |
-| `wireCategoryDropTarget` | frontend/js/notes-list.js:2558 |
-| `wireSidebarRowKeys` | frontend/js/notes-list.js:2490 |
+| `wireCategoryDropTarget` | frontend/js/notes-list.js:2557 |
+| `wireSidebarRowKeys` | frontend/js/notes-list.js:2489 |
 
 ### frontend/js/capture-ask.js (43)
 
@@ -1476,85 +1476,85 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appendTimelineRows` | frontend/js/timeline.js:862 |
-| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1534 |
-| `closeTimelineRow` | frontend/js/timeline.js:1729 |
-| `dailyNotePair` | frontend/js/timeline.js:1219 |
+| `appendTimelineRows` | frontend/js/timeline.js:861 |
+| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1533 |
+| `closeTimelineRow` | frontend/js/timeline.js:1728 |
+| `dailyNotePair` | frontend/js/timeline.js:1218 |
 | `dailyNoteTitle` | frontend/js/timeline.js:198 |
-| `drawTimelineScrubber` | frontend/js/timeline.js:2004 |
-| `drawTimelineWindow` | frontend/js/timeline.js:2034 |
-| `fillTimelineBandOptions` | frontend/js/timeline.js:920 |
-| `focusTimelineRow` | frontend/js/timeline.js:1679 |
+| `drawTimelineScrubber` | frontend/js/timeline.js:2003 |
+| `drawTimelineWindow` | frontend/js/timeline.js:2033 |
+| `fillTimelineBandOptions` | frontend/js/timeline.js:919 |
+| `focusTimelineRow` | frontend/js/timeline.js:1678 |
 | `newTimelineWindow` | frontend/js/timeline.js:821 |
-| `openDayPage` | frontend/js/timeline.js:1187 |
-| `openTimelineRowDetail` | frontend/js/timeline.js:1742 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2396 |
-| `openTodaysPage` | frontend/js/timeline.js:1175 |
-| `paintTimeline` | frontend/js/timeline.js:983 |
-| `paintTimelineFeed` | frontend/js/timeline.js:1026 |
-| `paintTimelineTable` | frontend/js/timeline.js:2178 |
+| `openDayPage` | frontend/js/timeline.js:1186 |
+| `openTimelineRowDetail` | frontend/js/timeline.js:1741 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2395 |
+| `openTodaysPage` | frontend/js/timeline.js:1174 |
+| `paintTimeline` | frontend/js/timeline.js:982 |
+| `paintTimelineFeed` | frontend/js/timeline.js:1025 |
+| `paintTimelineTable` | frontend/js/timeline.js:2177 |
 | `renderTimeline` | frontend/js/timeline.js:583 |
-| `renderTimelineDayStrip` | frontend/js/timeline.js:1304 |
+| `renderTimelineDayStrip` | frontend/js/timeline.js:1303 |
 | `renderTimelineKinds` | frontend/js/timeline.js:356 |
-| `renderTimelineMonthPop` | frontend/js/timeline.js:1445 |
+| `renderTimelineMonthPop` | frontend/js/timeline.js:1444 |
 | `renderTimelineRecall` | frontend/js/timeline.js:667 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2384 |
-| `shortDate` | frontend/js/timeline.js:1793 |
-| `startDayNote` | frontend/js/timeline.js:1250 |
-| `startTodaysNote` | frontend/js/timeline.js:1246 |
-| `syncTimelineDetailSpans` | frontend/js/timeline.js:2231 |
-| `syncTimelineFilterChip` | frontend/js/timeline.js:950 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2383 |
+| `shortDate` | frontend/js/timeline.js:1792 |
+| `startDayNote` | frontend/js/timeline.js:1249 |
+| `startTodaysNote` | frontend/js/timeline.js:1245 |
+| `syncTimelineDetailSpans` | frontend/js/timeline.js:2230 |
+| `syncTimelineFilterChip` | frontend/js/timeline.js:949 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:412 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2413 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2431 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2412 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2430 |
 | `syncTimelineYears` | frontend/js/timeline.js:720 |
-| `timelineAheadBuckets` | frontend/js/timeline.js:1080 |
+| `timelineAheadBuckets` | frontend/js/timeline.js:1079 |
 | `timelineAutoScale` | frontend/js/timeline.js:466 |
 | `timelineBucketKey` | frontend/js/timeline.js:231 |
 | `timelineBucketLabel` | frontend/js/timeline.js:248 |
-| `timelineBucketSection` | frontend/js/timeline.js:1092 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2426 |
+| `timelineBucketSection` | frontend/js/timeline.js:1091 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2425 |
 | `timelineCountLine` | frontend/js/timeline.js:797 |
 | `timelineDailyNote` | frontend/js/timeline.js:215 |
-| `timelineDayKeys` | frontend/js/timeline.js:1389 |
-| `timelineDayLabel` | frontend/js/timeline.js:1299 |
-| `timelineDayPages` | frontend/js/timeline.js:1283 |
-| `timelineDayShift` | frontend/js/timeline.js:1240 |
-| `timelineDensitySpan` | frontend/js/timeline.js:1843 |
-| `timelineDensitySpanOf` | frontend/js/timeline.js:1985 |
-| `timelineFocusFirstIn` | frontend/js/timeline.js:853 |
-| `timelineForgetRows` | frontend/js/timeline.js:2029 |
+| `timelineDayKeys` | frontend/js/timeline.js:1388 |
+| `timelineDayLabel` | frontend/js/timeline.js:1298 |
+| `timelineDayPages` | frontend/js/timeline.js:1282 |
+| `timelineDayShift` | frontend/js/timeline.js:1239 |
+| `timelineDensitySpan` | frontend/js/timeline.js:1842 |
+| `timelineDensitySpanOf` | frontend/js/timeline.js:1984 |
+| `timelineFocusFirstIn` | frontend/js/timeline.js:852 |
+| `timelineForgetRows` | frontend/js/timeline.js:2028 |
 | `timelineIsDailyNote` | frontend/js/timeline.js:322 |
-| `timelineJumpToDay` | frontend/js/timeline.js:1432 |
+| `timelineJumpToDay` | frontend/js/timeline.js:1431 |
 | `timelineKindChoice` | frontend/js/timeline.js:306 |
-| `timelineKindName` | frontend/js/timeline.js:2269 |
+| `timelineKindName` | frontend/js/timeline.js:2268 |
 | `timelineKindsText` | frontend/js/timeline.js:786 |
 | `timelineLoadMore` | frontend/js/timeline.js:745 |
-| `timelineMonthKeys` | frontend/js/timeline.js:1499 |
-| `timelineMonthShift` | frontend/js/timeline.js:1426 |
-| `timelineMonthStart` | frontend/js/timeline.js:1422 |
+| `timelineMonthKeys` | frontend/js/timeline.js:1498 |
+| `timelineMonthShift` | frontend/js/timeline.js:1425 |
+| `timelineMonthStart` | frontend/js/timeline.js:1421 |
 | `timelineQuery` | frontend/js/timeline.js:553 |
 | `timelineResolvedScale` | frontend/js/timeline.js:493 |
 | `timelineRow` | frontend/js/timeline.js:127 |
-| `timelineRowByKey` | frontend/js/timeline.js:846 |
-| `timelineRowElement` | frontend/js/timeline.js:1562 |
+| `timelineRowByKey` | frontend/js/timeline.js:845 |
+| `timelineRowElement` | frontend/js/timeline.js:1561 |
 | `timelineRowEls` | frontend/js/timeline.js:840 |
-| `timelineRowGroups` | frontend/js/timeline.js:906 |
+| `timelineRowGroups` | frontend/js/timeline.js:905 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:450 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2461 |
-| `timelineScrubTo` | frontend/js/timeline.js:2082 |
-| `timelineSortValue` | frontend/js/timeline.js:2149 |
-| `timelineSortedRows` | frontend/js/timeline.js:2160 |
-| `timelineStepScale` | frontend/js/timeline.js:1762 |
-| `timelineTableColumnCount` | frontend/js/timeline.js:2211 |
-| `timelineTableRow` | frontend/js/timeline.js:2273 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2460 |
+| `timelineScrubTo` | frontend/js/timeline.js:2081 |
+| `timelineSortValue` | frontend/js/timeline.js:2148 |
+| `timelineSortedRows` | frontend/js/timeline.js:2159 |
+| `timelineStepScale` | frontend/js/timeline.js:1761 |
+| `timelineTableColumnCount` | frontend/js/timeline.js:2210 |
+| `timelineTableRow` | frontend/js/timeline.js:2272 |
 | `timelineUnitText` | frontend/js/timeline.js:780 |
-| `timelineViewMode` | frontend/js/timeline.js:2122 |
-| `timelineVisibleRows` | frontend/js/timeline.js:963 |
-| `timelineWatchRow` | frontend/js/timeline.js:2019 |
+| `timelineViewMode` | frontend/js/timeline.js:2121 |
+| `timelineVisibleRows` | frontend/js/timeline.js:962 |
+| `timelineWatchRow` | frontend/js/timeline.js:2018 |
 | `toggleTimelineKind` | frontend/js/timeline.js:431 |
-| `toggleTimelineRow` | frontend/js/timeline.js:1703 |
+| `toggleTimelineRow` | frontend/js/timeline.js:1702 |
 
 ### frontend/js/palette.js (36)
 
@@ -7153,7 +7153,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `initEntryListKeyboardNav` | frontend/js/notes-wire.js:23 |
-| `offerWikiRename` | frontend/js/notes-wire.js:162 |
+| `offerWikiRename` | frontend/js/notes-wire.js:161 |
 | `selectNoteRange` | frontend/js/notes-wire.js:7 |
 
 ### frontend/js/notifications.js (9)
@@ -30725,7 +30725,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24216)
+## Tests (24215)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -33794,7 +33794,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wiki_links_headings.py | 4 |
 | tests/test_wiki_picker_ranking.py | 4 |
 | tests/test_window_report.py | 10 |
-| tests/test_window_rows.py | 7 |
+| tests/test_window_rows.py | 6 |
 | tests/test_window_state_reopen.py | 6 |
 | tests/test_window_teardown_117.py | 6 |
 | tests/test_windowed_streams.py | 4 |

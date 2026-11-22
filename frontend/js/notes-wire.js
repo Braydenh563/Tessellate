@@ -40,7 +40,6 @@ function initEntryListKeyboardNav() {
     //: deepflows sweep: click into the editor, press End, type). Checkboxes
     //: and buttons are not fields, so the row's arrows still work from them.
     if (event.target.closest('textarea, select, [contenteditable], .cm-editor, input:not([type="checkbox"]):not([type="radio"]):not([type="button"])')) return;
-    noteWindow.win?.flush();
     const items = entryListItems(list);
     const current = event.target.closest("li");
     const index = current ? items.indexOf(current) : -1;

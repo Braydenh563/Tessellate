@@ -2206,7 +2206,6 @@ let rowEnterTimer = 0;
 function noteListGrownBy(list, ordered) {
   const was = noteWindow.items;
   if (!was?.length || !noteWindow.win || noteWindow.list !== list || noteWindow.mode !== notesViewMode) return null;
-  noteWindow.win.flush();
   if (ordered.length <= was.length || list.childElementCount !== was.length) return null;
   if (list.lastElementChild.dataset.id !== String(was[was.length - 1][0].id)) return null;
   for (let i = 0; i < was.length; i++) if (was[i][0] !== ordered[i][0] || was[i][1] !== ordered[i][1]) return null;
