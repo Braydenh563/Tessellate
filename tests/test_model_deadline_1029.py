@@ -7,7 +7,6 @@ request has no response object to close and only the socket can end it.
 
 from __future__ import annotations
 
-import gc
 import json
 import socket
 import threading
@@ -211,18 +210,39 @@ def silent():
 
 
 def _timed(api, path):
-    """One request's wall time with the cyclic collector held off: a full
-    collection of a worker that has run thousands of tests is seconds on a CI
-    runner and belongs to no route (CI 44977602492: 2.79 s for a route that
-    returns in 14 ms here)."""
-    gc.collect()
-    gc.disable()
-    try:
-        started = time.monotonic()
-        response = api.get(path)
-        return response, time.monotonic() - started
-    finally:
-        gc.enable()
+    started = time.monotonic()
+    response = api.get(path)
+    return response, time.monotonic() - started
+
+
+#: The provider calls that reach the runner. A decorating route may only ask
+#: them from a probe or list thread of its own (`backend_hint`, `models-list`,
+#: the model manager's jobs), never on the thread serving the request.
+_NETWORK = {
+    "show", "capabilities", "is_running", "loaded_models", "unload", "list_models", "pull",
+    "delete", "chat", "chat_stream", "chat_tools_stream", "chat_tools", "embed",
+}
+_OFF_REQUEST = ("backend probe", "models-list", "mm-job-")
+
+
+class _Recorded(ollama_client.OllamaClient):
+    """The real client against the silent runner, noting which thread made each call."""
+
+    def __init__(self, base_url: str) -> None:
+        super().__init__(base_url=base_url)
+        self.calls: list[tuple[str, str]] = []
+
+    def __getattribute__(self, name):  # noqa: ANN001, ANN204
+        attr = super().__getattribute__(name)
+        if name not in _NETWORK:
+            return attr
+        calls = super().__getattribute__("calls")
+
+        def call(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+            calls.append((name, threading.current_thread().name))
+            return attr(*args, **kwargs)
+
+        return call
 
 
 class _HeldProbe(ollama_client.OllamaClient):
@@ -260,20 +280,24 @@ def test_the_tensions_route_answers_while_the_backend_probe_is_still_held(app_st
 
 
 def test_decorating_routes_do_not_wait_on_a_silent_backend(app_state, silent):
+    """Intent, not a wall clock: no call to the silent runner is made on the
+    request's own thread (CI 137088970825: `/embedding-models/choices` probed
+    there and waited the 1 s probe read once the quiet mark lapsed)."""
     from tessellate.api.app import create_app
 
-    deps.override_ai(ollama=ollama_client.OllamaClient(base_url=silent.url))
+    client = _Recorded(silent.url)
+    deps.override_ai(ollama=client)
     api = TestClient(create_app())
     paths = [
         "/models/hardware", "/activity", "/embedding-models/choices", "/entries/tensions",
         "/insights/greeting", "/support-bundle",
     ]
-    for path in paths:  # the first pass may pay one short budget; the second is the steady state
-        _timed(api, path)
-    for path in paths:
-        response, took = _timed(api, path)
-        assert response.status_code == 200, path
-        assert took < 0.75, (path, took)  # they waited 1 to 5 s; room for a loaded runner
+    for _ in range(2):  # the second pass is the steady state, with every cache warm
+        for path in paths:
+            client.calls.clear()
+            assert api.get(path).status_code == 200, path
+            on_request = [call for call in client.calls if not call[1].startswith(_OFF_REQUEST)]
+            assert on_request == [], (path, on_request)
 
 
 def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monkeypatch):
