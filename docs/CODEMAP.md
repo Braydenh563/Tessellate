@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9058, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2925, tests 23318, plan headings 694, app scripts 29, boot scripts 38, script files 403.
+Counts: frontend functions 9058, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11092, test files 2925, tests 23319, plan headings 694, app scripts 29, boot scripts 38, script files 403.
 
 ## Frontend functions (9058)
 
@@ -10977,59 +10977,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:4215 |
-| `dragging` | frontend/js/whiteboard.js:3630 |
+| `addBoardToNote` | frontend/js/whiteboard.js:4217 |
+| `dragging` | frontend/js/whiteboard.js:3632 |
 | `handleWbZoom` | frontend/js/whiteboard.js:601 |
-| `highlighterBlend` | frontend/js/whiteboard.js:4235 |
-| `initWhiteboard` | frontend/js/whiteboard.js:1967 |
-| `openWhiteboardBoard` | frontend/js/whiteboard.js:3893 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:4127 |
-| `renderWbGestureHints` | frontend/js/whiteboard.js:3996 |
-| `renderWhiteboard` | frontend/js/whiteboard.js:2630 |
-| `renderWhiteboardNow` | frontend/js/whiteboard.js:2602 |
-| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4052 |
-| `wbAlignTol` | frontend/js/whiteboard.js:1019 |
+| `highlighterBlend` | frontend/js/whiteboard.js:4237 |
+| `initWhiteboard` | frontend/js/whiteboard.js:1969 |
+| `openWhiteboardBoard` | frontend/js/whiteboard.js:3895 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:4129 |
+| `renderWbGestureHints` | frontend/js/whiteboard.js:3998 |
+| `renderWhiteboard` | frontend/js/whiteboard.js:2632 |
+| `renderWhiteboardNow` | frontend/js/whiteboard.js:2604 |
+| `toggleWhiteboardFullscreen` | frontend/js/whiteboard.js:4054 |
+| `wbAlignTol` | frontend/js/whiteboard.js:1021 |
 | `wbApplyZoomTransform` | frontend/js/whiteboard.js:447 |
 | `wbBoardToScreen` | frontend/js/whiteboard.js:528 |
-| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3872 |
+| `wbCancelBoardTimers` | frontend/js/whiteboard.js:3874 |
 | `wbCanvasOrigin` | frontend/js/whiteboard.js:510 |
 | `wbCanvasOriginRect` | frontend/js/whiteboard.js:478 |
 | `wbCardMoreNeeded` | frontend/js/whiteboard.js:364 |
 | `wbClearCanvasRectCache` | frontend/js/whiteboard.js:473 |
-| `wbClearGuideBoxCache` | frontend/js/whiteboard.js:1154 |
+| `wbClearGuideBoxCache` | frontend/js/whiteboard.js:1156 |
 | `wbClearSelectionOverlays` | frontend/js/whiteboard.js:255 |
 | `wbClientToBoard` | frontend/js/whiteboard.js:533 |
 | `wbCompanionHeld` | frontend/js/whiteboard.js:113 |
 | `wbCullNow` | frontend/js/whiteboard.js:763 |
 | `wbEndPanShield` | frontend/js/whiteboard.js:569 |
 | `wbFlushZoomFrame` | frontend/js/whiteboard.js:696 |
-| `wbGridType` | frontend/js/whiteboard.js:985 |
-| `wbGuideBoxes` | frontend/js/whiteboard.js:1056 |
-| `wbInvZoomRules` | frontend/js/whiteboard.js:978 |
+| `wbGridType` | frontend/js/whiteboard.js:987 |
+| `wbGuideBoxes` | frontend/js/whiteboard.js:1058 |
+| `wbInvZoomRules` | frontend/js/whiteboard.js:980 |
 | `wbIsBareCanvas` | frontend/js/whiteboard.js:189 |
-| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3857 |
+| `wbLeaveFullscreen` | frontend/js/whiteboard.js:3859 |
 | `wbMarkMoving` | frontend/js/whiteboard.js:592 |
-| `wbMultiKey` | frontend/js/whiteboard.js:1439 |
-| `wbPublishInvZoom` | frontend/js/whiteboard.js:953 |
-| `wbRefreshHighlighterBlend` | frontend/js/whiteboard.js:1264 |
-| `wbRefreshRaster` | frontend/js/whiteboard.js:944 |
-| `wbRememberBoardView` | frontend/js/whiteboard.js:1541 |
-| `wbRotatedBounds` | frontend/js/whiteboard.js:1027 |
-| `wbRoundedPathD` | frontend/js/whiteboard.js:1317 |
+| `wbMultiKey` | frontend/js/whiteboard.js:1441 |
+| `wbPublishInvZoom` | frontend/js/whiteboard.js:955 |
+| `wbRefreshHighlighterBlend` | frontend/js/whiteboard.js:1266 |
+| `wbRefreshRaster` | frontend/js/whiteboard.js:946 |
+| `wbRememberBoardView` | frontend/js/whiteboard.js:1543 |
+| `wbRotatedBounds` | frontend/js/whiteboard.js:1029 |
+| `wbRoundedPathD` | frontend/js/whiteboard.js:1319 |
 | `wbSaveExpandedNodes` | frontend/js/whiteboard.js:311 |
 | `wbScheduleCardClampSync` | frontend/js/whiteboard.js:374 |
 | `wbScheduleCull` | frontend/js/whiteboard.js:735 |
 | `wbScreenToBoard` | frontend/js/whiteboard.js:501 |
-| `wbShapeAt` | frontend/js/whiteboard.js:1179 |
-| `wbShapePoly` | frontend/js/whiteboard.js:1180 |
-| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3820 |
-| `wbShowCanvasView` | frontend/js/whiteboard.js:3807 |
+| `wbShapeAt` | frontend/js/whiteboard.js:1181 |
+| `wbShapePoly` | frontend/js/whiteboard.js:1182 |
+| `wbShowBoardsLanding` | frontend/js/whiteboard.js:3822 |
+| `wbShowCanvasView` | frontend/js/whiteboard.js:3809 |
 | `wbShowZoomLevel` | frontend/js/whiteboard.js:669 |
-| `wbSnap` | frontend/js/whiteboard.js:1002 |
-| `wbSnapOn` | frontend/js/whiteboard.js:989 |
+| `wbSnap` | frontend/js/whiteboard.js:1004 |
+| `wbSnapOn` | frontend/js/whiteboard.js:991 |
 | `wbStartPanShield` | frontend/js/whiteboard.js:562 |
 | `wbSyncCardClamps` | frontend/js/whiteboard.js:341 |
-| `wbSyncGridToTransform` | frontend/js/whiteboard.js:857 |
+| `wbSyncGridToTransform` | frontend/js/whiteboard.js:859 |
 | `wbTrackpadPan` | frontend/js/whiteboard.js:89 |
 | `wbZoomFilter` | frontend/js/whiteboard.js:126 |
 | `wbZoomFrameWork` | frontend/js/whiteboard.js:614 |
@@ -29435,7 +29435,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23318)
+## Tests (23319)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -32282,7 +32282,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_text_dir.py | 4 |
 | tests/test_wb_text_more.py | 11 |
 | tests/test_wb_text_tab.py | 6 |
-| tests/test_wb_tiny_grips.py | 2 |
+| tests/test_wb_tiny_grips.py | 3 |
 | tests/test_wb_tool_hints.py | 4 |
 | tests/test_wb_toolbar_roving.py | 3 |
 | tests/test_wb_valign.py | 3 |

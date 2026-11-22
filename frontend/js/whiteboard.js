@@ -806,7 +806,9 @@ function wbCullNow(transform, size, unlessDrawn = false) {
     const d = el.__data__;
     if (!d || typeof d.x !== "number") continue;
     const tiny = (d.width || WB_CARD_DEFAULT_SIZE.w) * k < WB_TINY_SCREEN_W || (d.height || WB_CARD_DEFAULT_SIZE.h) * k < WB_TINY_SCREEN_H;
-    if (el.classList.contains("wb-tiny") !== tiny) el.classList.toggle("wb-tiny", tiny);
+    //: Mid-zoom the marks wait for the settle's full cull: crossing the size flips hundreds of
+    //: topics' grips on one step (mapperf 500, worst zoom 29 to 96ms).
+    if (!unlessDrawn && el.classList.contains("wb-tiny") !== tiny) el.classList.toggle("wb-tiny", tiny);
     const keep =
       el.classList.contains("wb-selected") ||
       el.classList.contains("dragging") ||

@@ -33,3 +33,14 @@ def test_a_tiny_item_has_no_resize_grips():
     assert "display: none" in rule.group(2)
     # Two ids, so it outranks every reveal rule (one id each).
     assert rule.group(1).count("#") >= 2
+
+
+def test_a_zoom_step_leaves_the_tiny_marks_to_the_settle():
+    """mapperf at 500 topics: the worst zoom step went 29 to 96ms once the mark joined the cull.
+
+    A zoom step that leaves the drawn ground culls in full, and every topic crossing the size
+    flips `wb-tiny` (its grips appear or go) on that one step. Mid-zoom (`unlessDrawn`) the
+    marks wait; the settle's full cull, 250ms after the last step, sets them.
+    """
+    body = _cull_body()
+    assert re.search(r'if \(!unlessDrawn && el\.classList\.contains\("wb-tiny"\) !== tiny\) el\.classList\.toggle\("wb-tiny", tiny\)', body)
