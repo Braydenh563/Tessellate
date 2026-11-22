@@ -197,6 +197,11 @@
     $("space-edit-private").disabled = id === "default";
     $("space-edit-dialog").dataset.was = JSON.stringify({ name, icon, isPrivate: Boolean(isPrivate) });
     $("space-edit-error").textContent = "";
+    //: Built on first open, not shipped in index.html (the boot element cap).
+    if (!$("space-edit-export")) {
+      $("space-edit-dialog").querySelector(".space-dialog-actions").insertAdjacentHTML("afterbegin",
+        `<button type="button" class="ghost small" id="space-edit-export" title="Download this space's notes, documents and boards as a zip"><i class="ph ph-export ph-lead" aria-hidden="true"></i>Export this space</button>`);
+    }
     $("space-edit-export").onclick = () => exportSpace(id);
     spaceIconPicker($("space-edit-icon-picker"), $("space-edit-icon"));
     $("space-edit-dialog").showModal();
