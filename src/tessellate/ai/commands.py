@@ -372,6 +372,25 @@ def _before_without_a_time(rest: str, about: bool) -> dict | None:
     return {"intent": "reminder", "text": _cap(what)[:500], "said": what[:500], "due_at": None, "time_given": False, **({"thing": True} if about else {})}
 
 
+#: "at 930", "at 1045": a clock typed without its colon (the owner's log, 2026-11-22). Four digits read as a
+#: clock only up to 12:59, so "at 2027" stays a year.
+_BARE_CLOCK = re.compile(r"\b(at|by|from|until|till) (0?[1-9]|1[0-2])([0-5]\d)\b(?![:\d])", re.I)
+#: A new sentence after the reminder ("... at 930?? they come out at 10pm") is a fact about it, not its time.
+#: Only a lowercase opening counts, so "Dr. Smith" stays in the words.
+_FACT_SPLIT = re.compile(r"\s*[?!.]+\s+(?=[a-z])")
+
+
+def _with_colons(rest: str) -> str:
+    return _BARE_CLOCK.sub(lambda m: f"{m[1]} {int(m[2])}:{m[3]}", rest)
+
+
+def _split_fact(rest: str) -> tuple[str, str]:
+    parts = _FACT_SPLIT.split(rest, maxsplit=1)
+    if len(parts) < 2 or not parts[0].strip() or not parts[1].strip(" ?!."):
+        return rest, ""
+    return parts[0], parts[1].strip(" ?!.")
+
+
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     text, head = _reminder_head(text)
     if head is None:
@@ -383,10 +402,15 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     rest = _without_lead(rest, ("to ", "2 ", "about ", "that ", "for "))
     if not rest:
         return _bare_reminder(head)
-    rest = reminder_parser.unhedged(rest)
+    rest = reminder_parser.unhedged(_with_colons(rest))
+    rest, fact = _split_fact(rest)
     if (unanchored := _before_without_a_time(rest, about)) is not None:
         return unanchored
     rest, parsed = _read_when(rest, now, locale)
+    if parsed is None and fact:
+        #: "call mum? at 6pm": the time is in the second sentence, so the two are one request.
+        rest, parsed = _read_when(f"{rest.rstrip(' ?!.')} {fact}", now, locale)
+        fact = ""
     gap = _reminder_gap(rest, parsed, now)
     if gap is not None:
         return gap
@@ -401,7 +425,9 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     else:
         due, said, words = parsed["due_at"], True, parsed["text"]
     words = _without_lead(words, ("to ", "about ", "that ", "for "), once=False)
-    words = _without_dangling(words)
+    words = _without_dangling(words.rstrip(" ?!."))
+    if fact:
+        words = f"{words.strip(' ,.;:-')} ({fact})"
     said_words = _as_typed_case(words.strip(" ,.;:-"), rest)
     words = _cap(words)
     if not words:

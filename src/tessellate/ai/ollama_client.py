@@ -179,6 +179,15 @@ def _is_down(base_url: str) -> bool:
     return True
 
 
+def hold_off(key: str, seconds: float) -> None:
+    """A caller's own back-off after finding the model down (`held_off`), kept in this map so one reset clears all."""
+    _down_until[f"hold:{key}"] = _clock() + seconds
+
+
+def held_off(key: str) -> bool:
+    return _is_down(f"hold:{key}")
+
+
 #: How long a server that accepted the connection and then never answered
 #: the probe is taken as off. Unlike a refusal this is not proof, so it only
 #: short-circuits `is_running` (the many liveness checks of one turn), never a
