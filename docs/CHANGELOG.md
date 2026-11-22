@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Documents: a board card edits in place (L-documents-104). Edit in place loads the boards bundle and opens the board in the text with its own tools, one instance per card; a card the live editor drops ends its instance at once (`doc-embed-gone`); the read-only window stays as the fallback.
+- CI: Python 3.14 runs as a fourth parallel leg of both test matrices (classifier added; every dependency installs from a 3.14 wheel on Linux); FastAPI's floor is 0.162.6; Dependabot holds the Docker image below Python 3.14 until that leg is green; the greeting test reads a fixed clock.
 - Styles: the menu-row recipe from the base merge is one selector per row class again, so the list `:is()` and universal-bucket ratchets hold at 136 and 375 (L342).
 - Tests: the overlay fake keeps only the newest frame's pixels; a copy of every frame took an xdist worker past 6 GB and lost the 3.11 CI runners.
 - JS function sizes: run-debug.js `enter` and `runDebugLower`, docBlockMoveEdit, applyMarkdown and the diagram-kinds-more scan artifact under 150; docCmTheme, renderDocOutline, renderLibraryDocuments, appendInlineRun, switchTab and diagram-view `wire` back under the base seed, by helpers inside wrapped files and no new globals (seed 146 rows and 49,051 lines to 144 and 46,981).
