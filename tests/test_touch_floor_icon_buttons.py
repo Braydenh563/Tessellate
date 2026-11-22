@@ -36,7 +36,8 @@ def test_the_local_chip_takes_the_touch_floor_wide_and_tall():
 def test_the_capture_bar_row_takes_the_touch_floor_under_a_finger():
     text = (CSS / "08-consistency.css").read_text(encoding="utf-8")
     block = re.search(
-        r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\s*\.capture-bar-row :is\(\.capture-bar-input, \.capture-bar-icon\) \{([^}]*)\}",
+        # Two plain selectors, not a list :is(), so each rule lands in its class bucket.
+        r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\s*\.capture-bar-row \.capture-bar-input,\s*\.capture-bar-row \.capture-bar-icon \{([^}]*)\}",
         text,
     )
     assert block and "min-height: max(var(--control-h-body), var(--target-min));" in block.group(1)

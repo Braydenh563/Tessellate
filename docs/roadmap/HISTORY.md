@@ -11307,7 +11307,7 @@ sub-items (35A–35L) and worked through. All resolved:
   enforcing it against drift.
 
 Full detail, including what verification could and could not cover: git log
-for this range, and [CHANGELOG.md](../CHANGELOG.md).
+for this range, and [CHANGELOG.md](../../CHANGELOG.md).
 
 ## 36. UI layout and surfaces, the reported list, done
 
@@ -11319,7 +11319,7 @@ the Library, the graph and Timeline, the chat dock, each converted to the
 token scale rather than to whatever looked right that day, per §35L's own
 warned-against failure mode.
 
-Full detail: git log for this range, and [CHANGELOG.md](../CHANGELOG.md).
+Full detail: git log for this range, and [CHANGELOG.md](../../CHANGELOG.md).
 
 ## 37. Reported in one session, the second big batch, done
 
@@ -11329,7 +11329,7 @@ erasing reveals the photo rather than punching a white hole), a document
 importer via `markitdown`, compress-as-a-tool, and an emoji audit. 37H
 (llama.cpp) was deferred deliberately and is Tier 3 in ROADMAP.md.
 
-Full detail: git log for this range, and [CHANGELOG.md](../CHANGELOG.md).
+Full detail: git log for this range, and [CHANGELOG.md](../../CHANGELOG.md).
 
 ## 38. The backlog audit: done
 
@@ -56576,7 +56576,7 @@ pass), and a memory-stream screen (Settings, What it remembers).
 - The help area in settings has an ask-AI feature that knows the program's
   documentation: the Guide, and Ask Atlas about the app (`Ctrl`+`Shift`+`H`).
 - A full security sweep: the audit of 2026-10-05 and its fixes are in the
-  changelog under Security, and [`SECURITY.md`](../SECURITY.md) states the model.
+  changelog under Security, and [`SECURITY.md`](../../SECURITY.md) states the model.
 - Update the readme: rewritten on 2026-10-05, with every document in `docs/`.
 
 ### The AI
