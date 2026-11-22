@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 57 | 9 | 0 | 0 | 66 |
+| world-class | 0 | 58 | 8 | 0 | 0 | 66 |
 | general | 0 | 28 | 2 | 0 | 6 | 30 |
-| all | 372 | 438 | 80 | 2 | 113 | 890 |
+| all | 372 | 439 | 79 | 2 | 113 | 890 |
 
 ## graph
 
@@ -517,6 +517,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-420** `world-class` open, M: Give the 51 Help topics the Guide cannot find by title a keyword each, then lower GUIDE_MISSES_BY_TITLE to 0. From L-world-class-114. Evidence: tests/test_ui_recipes.py GUIDE_MISSES_BY_TITLE = 51
 - [ ] **L-world-class-421** `world-class` open, S: Rule the Replace and Statistics dialogs into 27.2's table (sheet or dialog) and empty UNRULED_DIALOGS. From L-world-class-131. Evidence: doc-replace-dialog and doc-stats-dialog are native dialogs the 27.2 table does not rule (UNRULED_DIALOGS in tests/test_ui_recipes.py)
 - [ ] **L-world-class-625** `world-class` open, M: Run Pillow and the OCR readers (core/ocr.py, core/ocr_prep.py) in the parse sandbox child. From L-world-class-321. Evidence: core/ocr.py:479,504,741,812,888 Image.open and _rapidocr_lines run in the server; the runner core/parse_sandbox.py is built (reused child, 0.3-0.5 ms a call warm, 117 ms a cold child with pypdfium2); RapidOCR loads onnxruntime, so it needs the reused child and a memory limit measured with its model loaded
+- [ ] **L-world-class-631** `world-class` open, L: D23 routes as a data layer: move SQL out of api/routes_* into core, route by route. From L700 D23 (w34-L1-1111). Evidence: Recommendation 2026-11-22: routes keep calling core modules directly; move a route's SQL into core only when that route is next edited, with its tests, rather than one sweep. No measured defect behind a big-bang move.
 
 ## general
 
