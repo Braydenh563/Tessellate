@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Recordings: a wav recording is trimmed on the server (`POST /recordings/{id}/trim`, same container, original kept, kept peaks and shifted marks), so the tab decodes nothing for it; webm, ogg and mp4 still trim in the tab (L685 D18).
 ## [Unreleased]
 - Tour: a step waits until its control can be seen through every parent, so the graph section no longer rings the zoom buttons while the graph card is still faded in (about 800 ms); the tour sweeps run again (82 steps, 0 faults). A phone's search notice hides under Settings by a class instead of a page-wide `body:has` rule.
 - Menus: switch rows in dock menus stand on the button height (44px under touch), the board View menu's switch rows take the arrow keys, Escape closes an open list before its menu, the zoom list is as wide as its numbers, and long rows in a phone sheet wrap; a menu too tall for either side of its opener (Logs, Sort and view at 390) opens beside it, capped and scrolling, instead of over it; the menu sweep went from 31 findings to 0.
