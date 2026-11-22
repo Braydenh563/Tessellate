@@ -5044,7 +5044,7 @@ graphLate.wireSelectionMore();
 //: canvas renderer (the default) never ran the SVG render that used to do it,
 //: so Curved links, Cluster glow and Label backgrounds came back on after a
 //: reload while drawn from the box.
-const GRAPH_STORED_SWITCHES = ["graph-curved", "graph-label-plates", "graph-nebula", "graph-length-score", "graph-group",
+const GRAPH_STORED_SWITCHES = ["graph-curved", "graph-label-plates", "graph-nebula", "graph-length-score", "graph-group", "graph-card-on",
   "graph-focus-in", "graph-focus-out", "graph-focus-neighbours", "graph-pane-in", "graph-pane-out", "graph-pane-neighbours", "graph-autofit"];
 //: Off by default, so stored "1" means on; and the sliders' stored values.
 const GRAPH_STORED_OFF = ["graph-arrows", "graph-tidy"];
@@ -5101,6 +5101,10 @@ for (const prefix of ["focus", "pane"]) {
   }
 }
 
+$("graph-card-on")?.addEventListener("change", (event) => {
+  prefs.set("graph-card-on", event.target.checked ? "1" : "0");
+  gcRequestDraw();
+});
 $("graph-label-plates")?.addEventListener("change", (event) => {
   prefs.set("graph-label-plates", event.target.checked ? "1" : "0");
   gcRequestDraw();
@@ -5389,6 +5393,7 @@ const GRAPH_DEFAULTS = {
   "graph-labels": true,
   "graph-curved": true,
   "graph-label-plates": true,
+  "graph-card-on": true,
   "graph-nebula": true,
   "graph-length-score": true,
   "graph-group": true,

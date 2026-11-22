@@ -6160,6 +6160,11 @@ def test_a_dot_on_the_graph_answers_with_its_hover_card():
     assert "gcHoverCardFrame(s);" in canvas
     rule = css[css.index(".graph-hovercard {") :].split("}")[0]
     assert "backdrop-filter" not in rule and "var(--modal-bg-opaque)" in rule
+    # The card may be closed and switched off (DESIGN.md): the X is its one live part.
+    assert "gcHoverCardDismiss" in canvas and '"Hide this card"' in canvas
+    assert "pointer-events: auto;" in css[css.index(".graph-hovercard-close {") :].split("}")[0]
+    assert "pointer-events: none;" in rule
+    assert "gcHoverCardOn(s)" in canvas and 'id="graph-card-on"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
 def test_ghost_topics_are_one_lazy_layer_with_four_keys():

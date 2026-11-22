@@ -418,8 +418,8 @@
 /* **A note's hover card** (INBOX 1300 C11, "hover over ... graph nodes and
    see their values and dates"): `gcHoverCardFrame` places it beside the dot
    the pointer or the keyboard is on. Opaque, not glass: words laid over the
-   map must not read through it. It takes no pointer, so the hover stays on
-   the canvas underneath. DESIGN.md, "A card about one dot on a canvas". */
+   map must not read through it. It takes no pointer but its close X, so the
+   hover stays on the canvas underneath. DESIGN.md, "A card about one dot on a canvas". */
 .graph-hovercard {
   position: absolute;
   /* Placed by a transform on its own layer, and laid out apart from the page
@@ -457,6 +457,13 @@
 }
 .graph-hovercard-head .legend-dot {
   flex: none;
+}
+/* The card's one live part: it takes the pointer while the card around it does not. */
+.graph-hovercard-close {
+  pointer-events: auto;
+  flex: none;
+  align-self: center;
+  margin-left: auto;
 }
 .graph-hovercard-sub,
 .graph-hovercard-hint {

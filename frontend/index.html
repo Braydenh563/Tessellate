@@ -4159,7 +4159,7 @@ Link to another note with [[its first few words]]."></textarea>
           </p>
           <ul class="muted">
             <li><strong>Hover a note</strong> to see its dates, links and tags;
-              click it to edit.</li>
+              click it to edit. Its X or Esc hides the card; Options, Display, Show details on hover turns it off or on.</li>
             <li><strong>Hold Alt and drop one note onto another</strong> to link them.
               Double-click empty space to add a note there; its Private button seals it.</li>
             <li><strong>Trace</strong> shows how any two notes connect.</li>
@@ -4520,6 +4520,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p>These change how the map is drawn, never what is on it.</p>
               <ul>
                 <li>Labels: a short name under every note; off, a name shows only when you point at it.</li>
+                <li>Show details on hover: a card of dates, links and properties beside the note you point at; its X or Esc hides it, and off turns it away.</li>
                 <li>Curved links: links bend gently instead of running straight.</li>
                 <li>Cluster glow: a faint wash of colour behind each cluster.</li>
                 <li>Label backgrounds: a plate behind each name, so a line under it stops at its edge.</li>
@@ -4533,6 +4534,10 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="graph-option-row tools-toggle" title="Show a short label under every note (off = labels only when you hover)">
                 <span>Labels</span>
                 <input type="checkbox" id="graph-labels" checked>
+              </label>
+              <label class="graph-option-row tools-toggle" title="A small card of dates, links and properties beside the note you point at (off = no card; click a note for its details)">
+                <span>Show details on hover</span>
+                <input type="checkbox" id="graph-card-on" checked>
               </label>
               <label class="graph-option-row tools-toggle" title="Draw links as gentle curves rather than straight lines">
                 <span>Curved links</span>

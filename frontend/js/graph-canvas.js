@@ -5567,6 +5567,31 @@
     return card;
   }
 
+  //: **Show details on hover** (the owner: "toggle on and off and/or close the
+  //: mini details panels"): the Display switch `graph-hovercard`, on by default;
+  //: off, neither the pointer's card nor the keyboard's shows.
+  function gcHoverCardOn(s) {
+    const box = s.size === "full" ? gcEl("graph-card-on") : null;
+    return box ? box.checked : prefs.get("graph-card-on", null) !== "0";
+  }
+
+  //: How long a card outlives the pointer leaving its note, so the pointer can
+  //: cross the gap to the card's close button; the card takes no pointer
+  //: elsewhere, so the map under it still answers.
+  const GC_CARD_LINGER_MS = 600;
+
+  //: Hide the shown card for its note (the X, or Escape on the map) until the
+  //: pointer leaves that note and a note is pointed at again. True when a card
+  //: was showing, so Escape does nothing else then.
+  function gcHoverCardDismiss(s = gcTab) {
+    const card = s && s._hoverCard;
+    if (!card || card.hidden) return false;
+    s._cardOff = card._for;
+    card._over = false;
+    gcRequestDraw(s, true);
+    return true;
+  }
+
   //: The card's element, built once into the map's box: `role="tooltip"`, the
   //: canvas `aria-describedby` it while it shows, never focusable (the arrow
   //: keys move the note it describes, Enter opens the note).
@@ -5581,6 +5606,13 @@
     card.hidden = true;
     box.appendChild(card);
     s._hoverCard = card;
+    //: Escape on the map hides a shown card and does nothing else then: this
+    //: listens first (capture) on the map's box, ahead of graph.js's own keys.
+    box.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !gcHoverCardDismiss(s)) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
     //: Called after layout and before paint whenever the card's size changes,
     //: so it is placed by its new size in the same frame.
     card._sizer = new ResizeObserver(() => {
@@ -5633,7 +5665,18 @@
     dot.setAttribute("aria-hidden", "true");
     const title = document.createElement("strong");
     title.textContent = facts.title;
-    head.append(dot, title);
+    //: The card's one live part: `pointer-events` is on this button only, and
+    //: the pointer over it keeps the card (`gcHoverCardFrame`). Never focusable:
+    //: Escape on the map is the keyboard's way.
+    const close = smallButton("ph:x", "Hide this card", () => gcHoverCardDismiss(s));
+    close.classList.add("icon-only", "graph-hovercard-close");
+    close.tabIndex = -1;
+    close.addEventListener("pointerenter", () => { card._over = true; });
+    close.addEventListener("pointerleave", () => {
+      card._over = false;
+      gcRequestDraw(s, true);
+    });
+    head.append(dot, title, close);
     const parts = [head];
     const line = (text, cls) => {
       const p = document.createElement("p");
@@ -5671,10 +5714,24 @@
   //: is open, and on a pane (which keeps the native tooltip).
   function gcHoverCardFrame(s) {
     if (s.size !== "full") return;
-    const id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
+    let id = s.hoveredId != null ? s.hoveredId : gcKeyboardId(s);
+    const shown = s._hoverCard && !s._hoverCard.hidden && s._hoverCard._for != null ? s._hoverCard : null;
+    //: Nothing under the pointer: the shown card stays while the pointer is on
+    //: its close button, and a moment after, to be reached.
+    if (id == null && shown) {
+      if (shown._over) id = shown._for;
+      else if (shown._lingerAt == null) shown._lingerAt = performance.now();
+      if (id == null && performance.now() - shown._lingerAt < GC_CARD_LINGER_MS) {
+        id = shown._for;
+        if (!s._lingerTimer) s._lingerTimer = setTimeout(() => { s._lingerTimer = null; gcRequestDraw(s, true); }, GC_CARD_LINGER_MS + 1);
+      }
+    }
+    if (shown && (id !== shown._for || s.hoveredId != null || gcKeyboardId(s) != null)) shown._lingerAt = null;
+    //: A closed card stays closed while its note is still the one pointed at.
+    if (s._cardOff != null && s._cardOff !== id) s._cardOff = null;
     const node = id != null && s.byId ? s.byId.get(id) : null;
     const popup = document.getElementById("graph-popup");
-    const show = node && !node.isGroup && !s.dragNode && !s.panning && !s.intro && (!popup || popup.classList.contains("hidden"));
+    const show = node && !node.isGroup && !s.dragNode && !s.panning && !s.intro && (!popup || popup.classList.contains("hidden")) && gcHoverCardOn(s) && s._cardOff == null;
     const card = show ? gcHoverCardEl(s) : s._hoverCard;
     if (!card) return;
     if (!show) {

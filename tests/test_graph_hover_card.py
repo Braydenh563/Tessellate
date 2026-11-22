@@ -112,3 +112,29 @@ def test_the_card_is_on_the_recipe_and_styled_with_tokens() -> None:
 def test_the_help_says_hover_shows_the_card() -> None:
     help_panel = HTML[HTML.index('id="graph-help-panel"') :][:3400]
     assert "dates" in help_panel and "Hover a note" in help_panel
+
+
+def test_the_card_closes_with_its_x_or_escape_and_stays_while_the_x_is_reached() -> None:
+    """The owner: "toggle on and off and/or close the mini details panels"."""
+    fill = _function(CANVAS, "gcHoverCardFill")
+    assert 'smallButton("ph:x", "Hide this card"' in fill and "close.tabIndex = -1" in fill
+    dismiss = _function(CANVAS, "gcHoverCardDismiss")
+    assert "s._cardOff = card._for" in dismiss and "return true" in dismiss
+    frame = _function(CANVAS, "gcHoverCardFrame")
+    # Closed stays closed on the same note; the pointer over the X, or just off the note, keeps the card.
+    assert "s._cardOff == null" in frame and "shown._over" in frame and "GC_CARD_LINGER_MS" in frame
+    # Escape on the map hides a shown card first and does nothing else then.
+    assert 'event.key !== "Escape" || !gcHoverCardDismiss(s)' in _function(CANVAS, "gcHoverCardEl")
+    assert "pointer-events: auto;" in CSS[CSS.index(".graph-hovercard-close {") :].split("}")[0]
+
+
+def test_show_details_on_hover_is_a_stored_display_switch_default_on() -> None:
+    assert 'id="graph-card-on" checked' in HTML and "Show details on hover" in HTML
+    stored = GRAPH[GRAPH.index("const GRAPH_STORED_SWITCHES") :].split("\n", 1)[0]
+    assert '"graph-card-on"' in stored
+    assert 'prefs.set("graph-card-on"' in GRAPH and '"graph-card-on": true,' in GRAPH
+    on = _function(CANVAS, "gcHoverCardOn")
+    assert 'prefs.get("graph-card-on", null) !== "0"' in on
+    # Off hides the card and takes the canvas's aria-describedby with it.
+    frame = _function(CANVAS, "gcHoverCardFrame")
+    assert "gcHoverCardOn(s)" in frame and 'removeAttribute("aria-describedby")' in frame

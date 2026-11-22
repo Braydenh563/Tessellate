@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Graph hover card: it has a close X (Hide this card; Escape on the map also hides it, then does nothing else) that keeps it hidden until the pointer leaves the note, and Display has a Show details on hover switch (default on, remembered) that turns the pointer's and the keyboard's card off.
 - Decorating routes: a backend probe still out from an earlier call is not waited on again, so against a hung backend /insights/greeting and /entries/tensions answer in about 30 ms instead of paying the 150 ms budget each time (`ai/backend_hint.py`).
 - Boot JS: three more lazy pieces off the boot files (L-world-class-810): status-ai-pill.js (the AI dot's reading and paint), notes-sidebar.js (the category list's draw) and phone-gestures.js (row swipe and the note page, fetched in the phone band only); status.js 2,968 to 2,793, notes-list.js 3,632 to 3,446, phone-shell.js 2,339 to 2,146, behaviour unchanged, no new script tag.
 - Boot CSS: the companion's 15 `@property` registrations and the Atlas one-off plays (1,835 B served, 390 gzipped) moved from 08-consistency.css to the top of characters-lazy.css, computed styles unchanged over 2,352 state combinations; boot CSS 154,487 to 154,101 gzipped and the sweep total 142,612 to 142,222 (L685).
