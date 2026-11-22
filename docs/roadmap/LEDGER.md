@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
 | ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 180 | 58 | 0 | 72 | 368 |
+| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
 | general | 0 | 3 | 0 | 0 | 5 | 3 |
-| all | 402 | 491 | 122 | 2 | 153 | 1015 |
+| all | 402 | 490 | 122 | 2 | 153 | 1014 |
 
 ## graph
 
@@ -613,7 +613,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L795** `world-class` open, M: Decide whether to remove routes only tests use. From OPEN.md:4213. Evidence: Ledger owner call: removing public routes changes the interface. Owner decided 2026-11-12: Remove, one by one (Each route with no app, MCP or doc caller is deleted with its tests after a grep; fewer paths to secure). Build: Script listing routes with no frontend/js, mcp_server or docs reference; delete each with its tests, CODEMAP regenerated, CHANGELOG line.
 - [ ] **L805** `world-class` open, M: Decide redo design so undoActorFrom/undoSkillRun stop refusing the person's changes. From OPEN.md:3794. Evidence: Redo design needs owner decision; app.js:1819 still lists undoSkillRun Owner decided 2026-11-12: Add a server redo (The server re-applies the reversed AI events, so these undos join the normal undo stack with Redo). Build: routes_settings.py events undo: add redo that re-applies reversed events; fold undoActorFrom and undoSkillRun into pushUndo.
 - [ ] **L785** `world-class` open, M: Decide manual pictures only where needed, as WebP (1612c). From OPEN.md:4328. Evidence: W34 owner-call, w34-fix2-1111.md. Owner decided 2026-11-12: Add a few pictures. Build: Image field in help topic rendering (ai/help_topics_core.py, help_chat.py), sweep step writing WebP under frontend assets, a manual-parity lint for the image list.
-- [ ] **L787** `world-class` open, S: Decide docs/CHANGELOG, CONTRIBUTING, SECURITY mirrors nothing reads. From OPEN.md:739. Evidence: Mirrors identical to root (diff clean); tests/test_brand_name.py:78 and scripts/gate.sh:153 still use them; keep or retire is a decision Owner decided 2026-11-12: Retire the copies. Build: Delete docs/CHANGELOG.md, docs/CONTRIBUTING.md, docs/SECURITY.md; update tests/test_brand_name.py:78-82, test_docs_site.py mirror check, scripts/gate.sh:153, scripts/rebrand.py:49, scratchpad/changelog_union.py, database.py:193 comment.
 - [ ] **L794** `world-class` open, L: Decide whether to consolidate ad hoc columns and migrations into one schema system. From OPEN.md:4212. Evidence: Ledger owner call; consolidation is a migration-policy decision. Owner decided 2026-11-12: Keep both, write rule. Build: A short rule paragraph in docs/ARCHITECTURE.md (database section) naming when _add_missing_columns vs migrations/versions is used; no code change.
 - [ ] **L797** `world-class` open, M: Decide whether decision 57 covers the 68 silent broad excepts and ratchet them. From OPEN.md:670; OPEN.md:3782. Evidence: Row asks to decide whether decision 57 covers them; flaw-class lint F4 exists Owner decided 2026-11-12: Yes, ratchet all 89. Build: tests/test_no_silent_except.py: widen _ends_quiet to include return-a-fallback, seed the 68 into SEED; fix as touched.
 - [ ] **L803** `world-class` open, S: Find what wrote the broken-bar character for '&' in categories (needs owner's data). From OPEN.md:4331. Evidence: No writer of ¦ in src/frontend (grep); source is model output or import, needs owner's data. Owner decided 2026-11-12: Replace ¦ with & in names. Build: category names convert the broken bar (¦) to & when saved or renamed, and existing names are fixed on load, with a test; the source is not traced.

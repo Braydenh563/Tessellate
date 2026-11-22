@@ -108,10 +108,7 @@ Nothing else needs it. The script downloads only when you ask, no mode of
   Errors say what happened and what to do.
 - If you touch the architecture (a new module, table or data flow), update
   `docs/ARCHITECTURE.md` in the same PR.
-- Add a bullet to `CHANGELOG.md` under "Unreleased", and copy the file to
-  `docs/CHANGELOG.md`: the two must be identical, and
-  `tests/test_docs_site.py` checks it. The same goes for `CONTRIBUTING.md` and
-  `SECURITY.md`, which are mirrored into `docs/` for the documentation site.
+- Add a bullet to `CHANGELOG.md` under "Unreleased".
 - A tool, a skill or a version bump changes numbers the README states (the tool
   and skill counts, the version, the optional packages), and
   `tests/test_readme_freshness.py` fails until the README says the same.

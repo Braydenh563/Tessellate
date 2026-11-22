@@ -155,11 +155,9 @@ LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_brac
   # 30 seconds, most of it the complexity walk.
   tests/test_complexity.py tests/test_error_toasts.py tests/test_icon_conventions.py
   tests/test_prefs_module.py tests/test_module_line_caps.py
-  # Mirror drift (docs/CHANGELOG.md and friends) belongs here rather than in
-  # --changed: the file that goes stale is a `.md` at the repo root, and the
-  # changed-test heuristic matches on a test naming a changed *source* file, so
-  # it never selects this one. A full local run caught six edits' worth of
-  # drift on 2026-09-12 that every `--changed` gate that day had passed. One
+  # The site's links to root files (SECURITY.md, CONTRIBUTING.md, CHANGELOG.md)
+  # belong here rather than in --changed: a rename of a root `.md` names no
+  # source file, so the changed-test heuristic never selects this test. One
   # second.
   tests/test_docs_site.py)
 # **The code map regenerates itself here**, never by hand: `docs/CODEMAP.md`

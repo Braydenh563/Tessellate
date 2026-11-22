@@ -27,10 +27,10 @@ DOCS = ROOT / "docs"
 SITE = DOCS / "index.html"
 REPO = "https://github.com/Braydenh563/Tessellate"
 
-#: Files that live at the repo root and are mirrored into /docs. The site no
-#: longer reads them, but the copies are still public under the Pages origin,
-#: and a stale copy of SECURITY.md there is worse than none.
-MIRRORED = ("CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md")
+#: Root files once copied into /docs. The site links to the root ones on GitHub,
+#: so the copies were retired (owner decision 2026-11-12, L787): a stale public
+#: copy of SECURITY.md is worse than none.
+RETIRED_COPIES = ("CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md")
 
 
 class _Collect(HTMLParser):
@@ -171,14 +171,11 @@ def test_light_and_dark_follow_the_system():
 
 def test_jekyll_is_switched_off():
     """Kept: without it Pages runs Jekyll over /docs, which would read any
-    `{{ }}` in these files as Liquid and convert the mirrored Markdown."""
+    `{{ }}` in these files as Liquid and convert their Markdown."""
     assert (DOCS / ".nojekyll").exists()
 
 
-@pytest.mark.parametrize("name", MIRRORED)
-def test_the_mirrored_docs_match_the_originals(name):
-    original = (ROOT / name).read_text(encoding="utf-8")
-    mirrored = (DOCS / name).read_text(encoding="utf-8")
-    assert mirrored == original, (
-        f"docs/{name} has drifted from {name} at the repo root; re-copy it: cp {name} docs/{name}"
-    )
+@pytest.mark.parametrize("name", RETIRED_COPIES)
+def test_the_root_docs_have_no_copy_under_docs(name):
+    assert (ROOT / name).is_file(), name
+    assert not (DOCS / name).exists(), f"docs/{name} is back; the site links to the root {name}"
