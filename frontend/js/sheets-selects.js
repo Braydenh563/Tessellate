@@ -964,6 +964,9 @@ function enhanceSelect(select) {
   opener.addEventListener("keydown", (event) => {
     if ((event.key !== "ArrowDown" && event.key !== "ArrowUp") || event.altKey || event.ctrlKey || event.metaKey) return;
     if (!menu.classList.contains("hidden")) return;
+    //: A select standing as a row of an open menu (Notes, Sort and view) is a row the menu's arrows walk past
+    //: (navigation.js); opening here too left its list up, orphaned, once Escape closed the menu (L-world-class-875).
+    if (opener.closest(".doc-dock-menu-list, [role='menu']")) return;
     event.preventDefault();
     opener.click();
   });

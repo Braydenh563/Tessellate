@@ -59,7 +59,10 @@ function findOpeners(scopeSel) {
     'details:has(> .doc-dock-menu-list) > summary',
     'details.dock-menu > summary',
     'details.doc-toolbar-menu > summary',
-    '.select-opener',
+    //: A date or time field's opener is a `.select-opener` too, but what it opens is a picker dialog
+    //: (`aria-haspopup="dialog"`, enhanceDateField), not a menu: read as one it was "nothing opened"
+    //: while its calendar was up (L-world-class-875).
+    '.select-opener:not([aria-haspopup="dialog"])',
     '[data-wb-menu-toggle]',
   ].join(',');
   for (const root of roots) {

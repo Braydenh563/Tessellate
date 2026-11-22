@@ -1629,7 +1629,11 @@ document.addEventListener("keydown", (event) => {
       return;
     }
   }
-  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'])");
+  //: A submenu's row (`role="menuitem"` with `aria-haspopup`, `buildMenuGroupButton`) is a row of the open
+  //: menu, not a closed menu button: ↓ walks past it and → opens it (APG). Taken as an opener it clicked its
+  //: flyout open and put the focus back on itself, after the menu's own walker had moved it on (menus.js
+  //: sweep, L-world-class-875: ↓ stayed on "View" in Dashboard, Customise).
+  const opener = target.closest("summary, [aria-haspopup]:not([aria-haspopup='false'], [role='menuitem'])");
   if (opener === target && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
     const menu = menuOfOpener(opener);
     const rows = menu ? menuRowsOf(menu) : [];
