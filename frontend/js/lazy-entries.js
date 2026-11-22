@@ -9,6 +9,8 @@ Object.assign(LAZY_MODULES, {
   statusSettings: ["/js/status-settings.js"],
   //: The Notes view's Ask again chips and most-used list (status-quick.js, out of status.js; L698).
   statusQuick: ["/js/status-quick.js"],
+  //: The AI status dot's reading and paint (status-ai-pill.js, out of status.js; L-world-class-810).
+  statusAiPill: ["/js/status-ai-pill.js"],
   //: The once-per-problem notice for a broken search engine (status-embedding.js, out of status.js; L698).
   statusEmbedding: ["/js/status-embedding.js"],
   //: The web panel (web-panel.js): toggling, Stop, the engine menu, Ask about and Cite. The `webClip` bundle lists it too (a file loads once).
@@ -169,6 +171,7 @@ installStandIns({
   statusSettings: ["renderSettings"],
   statusQuick: ["loadRecentQuestions", "loadMostUsed"],
   statusEmbedding: ["nudgeEmbeddingProblem"],
+  statusAiPill: ["renderAiPill"],
   appReset: ["quitApp", "clearAppCache", "forceReloadApp", "toggleAutonomousPanel"],
   notesWire: ["wireNotesRail", "initEntryListKeyboardNav", "selectNoteRange", "offerWikiRename"],
   webPanel: ["toggleWebPanel", "closeWebReader", "stopWebRequest", "askAboutPage", "citeWebPage", "openWebReader", "renderWebPanelMenu", "renderWebPageAttachment", "refreshWebSearxngStrip", "clearWebSearchHistory"],
