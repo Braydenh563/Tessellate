@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a ribbon line prints its numbers from integer tenths and reuses its two control points, the same outline character for character at about 60% of the cost, so a big branch's drop draws its lines faster (plain branch drop's redraw 28.7 and 26.7ms to 20.4 and 20.4ms, mapperf 500; tests/test_map_ribbon_tenth.py).
 - Mind map: a grammar answer repaints only the topic labels that wear a mark or have a finding to wear, instead of reading every label's text and edit state (first pan frame at 500 topics 44.6 and 42.3ms to 29.9 and 33.1ms, mapperf 500; tests/test_map_grammar_paint_skip.py).
 - Mind map: dragging a topic the first time pins it with one class on that topic and places only the moved topics' mid-line + buttons, instead of a full render that redrew every moved line and landed in the next gesture (branch pick-up after a first drag 162.6ms to 79.8 and 65ms, mapperf 500; tests/test_map_pin_render.py).
 - Mind map: dropping a big branch draws only the inside lines on screen; a line the cull hides is drawn as it comes on screen or into an export, so the drop of a 500-topic branch no longer draws all 499 (worst drag frame 215 and 184ms to 147 and 103ms, linked branch drop 219 and 220ms to 148 and 157ms, mapperf 500; tests/test_map_drop_offscreen.py).

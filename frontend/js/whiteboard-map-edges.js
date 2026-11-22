@@ -491,7 +491,7 @@
       const end = wbMapCubicAt(1, p0, c0, c1, p1);
       tip = [end.x, end.y];
     }
-    const at = ([x, y]) => `${Math.round(x * 10) / 10} ${Math.round(y * 10) / 10}`;
+    const at = (pt) => `${wbMapTenth(pt[0])} ${wbMapTenth(pt[1])}`;
     const forward = `M${at(left[0])}${wbMapSmoothThrough(left, at)}`;
     const point = tip ? `L${at(tip)}` : "";
     right.reverse();
@@ -514,16 +514,33 @@
   //: have: the parent end, the barb and the tip). The ends reflect their
   //: neighbour rather than repeat themselves, so the first and last spans keep
   //: their slope instead of flattening into the node.
+  //: **A number to a tenth, as `${Math.round(v * 10) / 10}` writes it, from
+  //: integers** (L-mindmap-25). A long ribbon is about 600 numbers, and
+  //: printing the rounded double was half of `wbMapRibbonD`: the drop of a
+  //: linked branch draws 300 cross-links and 150 lines through it. The two
+  //: agree on every value, NaN and -0 included (`tests/test_map_ribbon_tenth.py`).
+  function wbMapTenth(v) {
+    const r = Math.round(v * 10);
+    if (!(r % 10)) return String(r / 10);
+    const a = r < 0 ? -r : r;
+    return `${r < 0 ? "-" : ""}${(a - (a % 10)) / 10}.${a % 10}`;
+  }
+
+  //: The two controls are written into one pair each, not a new pair per span.
   function wbMapSmoothThrough(points, at) {
     const n = points.length;
+    const c1 = [0, 0];
+    const c2 = [0, 0];
     let d = "";
     for (let i = 0; i + 1 < n; i += 1) {
       const p1 = points[i];
       const p2 = points[i + 1];
       const p0 = i > 0 ? points[i - 1] : [2 * p1[0] - p2[0], 2 * p1[1] - p2[1]];
       const p3 = i + 2 < n ? points[i + 2] : [2 * p2[0] - p1[0], 2 * p2[1] - p1[1]];
-      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      c1[0] = p1[0] + (p2[0] - p0[0]) / 6;
+      c1[1] = p1[1] + (p2[1] - p0[1]) / 6;
+      c2[0] = p2[0] - (p3[0] - p1[0]) / 6;
+      c2[1] = p2[1] - (p3[1] - p1[1]) / 6;
       d += `C${at(c1)} ${at(c2)} ${at(p2)}`;
     }
     return d;
