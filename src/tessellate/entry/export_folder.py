@@ -736,7 +736,10 @@ def _make_entry(session, record: dict, said: list[str], spaces: dict | None = No
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
                                  dates=not record.get("created_at"))
     _restore(entry, record, _ENTRY_SKIP)
-    where = _space_for(session, record.get("space"), spaces if spaces is not None else {})
+    #: Imported with a space open, everything goes there (`test_export_spaces_private`); from the
+    #: default space or All spaces, each note goes back to the space it was exported from (L979).
+    opened = session.info.get("workspace_id")
+    where = _space_for(session, record.get("space"), spaces if spaces is not None else {}) if opened in (None, "default", "all") else None
     if where is not None:
         entry.workspace_id = where
     _fresh_bin_period(entry)

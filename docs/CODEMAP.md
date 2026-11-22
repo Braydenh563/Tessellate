@@ -26950,34 +26950,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ExportResult` | src/tessellate/entry/export_folder.py:403 |
-| `Progress` | src/tessellate/entry/export_folder.py:971 |
+| `Progress` | src/tessellate/entry/export_folder.py:974 |
 | `_Parts` | src/tessellate/entry/export_folder.py:510 |
 | `_Related` | src/tessellate/entry/export_folder.py:175 |
 | `_attachment_names` | src/tessellate/entry/export_folder.py:146 |
 | `_attachment_record` | src/tessellate/entry/export_folder.py:159 |
 | `_categories` | src/tessellate/entry/export_folder.py:409 |
-| `_categories_in` | src/tessellate/entry/export_folder.py:959 |
+| `_categories_in` | src/tessellate/entry/export_folder.py:962 |
 | `_decoded` | src/tessellate/entry/export_folder.py:475 |
 | `_documents_in` | src/tessellate/entry/export_folder.py:609 |
-| `_existing_documents` | src/tessellate/entry/export_folder.py:921 |
+| `_existing_documents` | src/tessellate/entry/export_folder.py:924 |
 | `_existing_notes` | src/tessellate/entry/export_folder.py:651 |
 | `_fingerprint` | src/tessellate/entry/export_folder.py:646 |
-| `_fix_object_links` | src/tessellate/entry/export_folder.py:848 |
-| `_fresh_bin_period` | src/tessellate/entry/export_folder.py:753 |
+| `_fix_object_links` | src/tessellate/entry/export_folder.py:851 |
+| `_fresh_bin_period` | src/tessellate/entry/export_folder.py:756 |
 | `_from_markdown` | src/tessellate/entry/export_folder.py:555 |
 | `_front_matter` | src/tessellate/entry/export_folder.py:331 |
 | `_group` | src/tessellate/entry/export_folder.py:535 |
 | `_grouped` | src/tessellate/entry/export_folder.py:188 |
-| `_hang_canvas` | src/tessellate/entry/export_folder.py:806 |
-| `_hang_cards` | src/tessellate/entry/export_folder.py:822 |
-| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:868 |
-| `_hang_links` | src/tessellate/entry/export_folder.py:789 |
-| `_hang_rows` | src/tessellate/entry/export_folder.py:837 |
+| `_hang_canvas` | src/tessellate/entry/export_folder.py:809 |
+| `_hang_cards` | src/tessellate/entry/export_folder.py:825 |
+| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:871 |
+| `_hang_links` | src/tessellate/entry/export_folder.py:792 |
+| `_hang_rows` | src/tessellate/entry/export_folder.py:840 |
 | `_imported` | src/tessellate/entry/export_folder.py:589 |
 | `_iso` | src/tessellate/entry/export_folder.py:72 |
 | `_json` | src/tessellate/entry/export_folder.py:482 |
-| `_json_dict` | src/tessellate/entry/export_folder.py:888 |
-| `_keep_updated` | src/tessellate/entry/export_folder.py:896 |
+| `_json_dict` | src/tessellate/entry/export_folder.py:891 |
+| `_keep_updated` | src/tessellate/entry/export_folder.py:899 |
 | `_link_ends` | src/tessellate/entry/export_folder.py:285 |
 | `_link_record` | src/tessellate/entry/export_folder.py:166 |
 | `_make_entry` | src/tessellate/entry/export_folder.py:730 |
@@ -26993,15 +26993,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_restore` | src/tessellate/entry/export_folder.py:95 |
 | `_row` | src/tessellate/entry/export_folder.py:76 |
 | `_safe_name` | src/tessellate/entry/export_folder.py:108 |
-| `_second_pass` | src/tessellate/entry/export_folder.py:909 |
+| `_second_pass` | src/tessellate/entry/export_folder.py:912 |
 | `_sha1_file` | src/tessellate/entry/export_folder.py:114 |
 | `_space_for` | src/tessellate/entry/export_folder.py:671 |
 | `_stored_names` | src/tessellate/entry/export_folder.py:393 |
 | `_strip_attachments` | src/tessellate/entry/export_folder.py:504 |
 | `_vault_space` | src/tessellate/entry/export_folder.py:698 |
-| `_write_attachments` | src/tessellate/entry/export_folder.py:772 |
+| `_write_attachments` | src/tessellate/entry/export_folder.py:775 |
 | `_write_documents` | src/tessellate/entry/export_folder.py:418 |
-| `_write_documents_in` | src/tessellate/entry/export_folder.py:932 |
+| `_write_documents_in` | src/tessellate/entry/export_folder.py:935 |
 | `_write_note` | src/tessellate/entry/export_folder.py:366 |
 | `board_canvas` | src/tessellate/entry/export_folder.py:243 |
 | `document_record` | src/tessellate/entry/export_folder.py:236 |
@@ -27010,7 +27010,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `note_record` | src/tessellate/entry/export_folder.py:213 |
 | `read` | src/tessellate/entry/export_folder.py:621 |
 | `snapshot` | src/tessellate/entry/export_folder.py:307 |
-| `write` | src/tessellate/entry/export_folder.py:979 |
+| `write` | src/tessellate/entry/export_folder.py:982 |
 
 ### src/tessellate/entry/folder_sync.py (29)
 
