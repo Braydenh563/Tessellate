@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board: initWhiteboard split further (L634 closed): the phone tools sheet into whiteboard-toolsheet.js and the pen stroke handlers into whiteboard-strokes.js behind one `wbPen` holder; initWhiteboard 558 lines.
 - Board: the tool row along the bottom is a pill again while it fits on one line; it drew card corners at every width.
 - Board: the drawing, select, pan, zoom, board settings, menu and shortcut handlers moved into three files of their own (whiteboard-pointer.js, whiteboard-pan.js, whiteboard-menus.js); nothing changes on screen.
 - Board: exporting a board as a folder builds the zip on disk and streams it, so a large board no longer holds hundreds of megabytes in memory.

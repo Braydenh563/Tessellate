@@ -292,7 +292,7 @@ const WB_EXPANDED_KEY = "wb-expanded-nodes";
 //: boards and their cards are deleted. Deleting a board does not come back
 //: here to tidy up, and it should not have to: the oldest entries fall off
 //: instead, and the only cost of dropping one is a card that opens clamped.
-const WB_EXPANDED_MAX = 500;
+//: The ceiling, WB_EXPANDED_MAX, is a local of wbSaveExpandedNodes (the shared-scope ratchet, L634).
 
 const wbExpandedNodes = new Set(
   (() => {
@@ -309,6 +309,7 @@ const wbExpandedNodes = new Set(
 );
 
 function wbSaveExpandedNodes() {
+  const WB_EXPANDED_MAX = 500;
   try {
     //: Newest last, so the slice keeps the cards most recently opened. A
     //: `Set` iterates in insertion order, which is what makes that true
@@ -588,8 +589,9 @@ function wbEndPanShield() {
 //: 117 with Glass off (tests/test_wb_pan_blur.py). The blur is dropped while
 //: the board moves (`#wb-canvas-view.wb-moving`, library-lazy.css) and comes
 //: back this long after the last pan or zoom step.
-const WB_MOVING_MS = 180;
 function wbMarkMoving() {
+  //: Local, not a top-level name (the shared-scope ratchet, L634).
+  const WB_MOVING_MS = 180;
   const view = document.getElementById("wb-canvas-view");
   if (view && !view.classList.contains("wb-moving")) view.classList.add("wb-moving");
   clearTimeout(wbMarkMoving.timer);
@@ -1935,13 +1937,15 @@ async function initWhiteboard() {
   //: the phone tools opener's label. Locals since L-whiteboard-53 (nothing
   //: outside this closure read them; freed two shared names).
   let wbRefreshArrowStyleControlRef = null;
-  let wbToolsOpenerSyncRef = null;
+  //: A holder, not a `let`, so the tools sheet (whiteboard-toolsheet.js) can set it.
+  const wbToolsOpenerSync = { fn: null };
   
   //: Pan, zoom and gesture listeners (whiteboard-pan.js): it shares only the names passed and returned here.
   wbInitPan({ selectWbTool });
-  let isDrawing = false;
-  let currentDrawPath = null;
-  let currentDrawData = []; // array of [x, y]
+  //: The pen's state in one holder, not four `let`s, so the stroke handlers
+  //: (whiteboard-strokes.js) can read and set it from their own file. `abandon` and
+  //: `dropLost` are set there too; a tool switch before that has nothing to drop.
+  const wbPen = { drawing: false, path: null, data: [] /* array of [x, y] */, width: 3 };
   // Reported directly: a white stroke, hardcoded regardless of theme, on a
   // light-theme board whose background (`--wb-board-bg: var(--modal-bg)`,
   // theme-aware) is itself light, drawing anything was invisible from the
@@ -1959,14 +1963,14 @@ async function initWhiteboard() {
   // driven by `#wb-stroke-width` below, so every closure over this variable
   // (the highlighter's own 4x multiplier, arrowhead length, the saved
   // sketch's own width) picks up a change without needing to be rewired.
-  let WB_STROKE_WIDTH = Number(prefs.get("wb-stroke-width", null)) || 3;
+  wbPen.width = Number(prefs.get("wb-stroke-width", null)) || 3;
   const strokeWidthInput = document.getElementById("wb-stroke-width");
   const strokeWidthBadge = document.getElementById("wb-stroke-width-badge");
   let strokeWidthBadgeTimer = null;
   function showStrokeWidthBadge() {
     if (!strokeWidthBadge || !strokeWidthInput) return;
     const r = strokeWidthInput.getBoundingClientRect();
-    strokeWidthBadge.textContent = `${WB_STROKE_WIDTH}px`;
+    strokeWidthBadge.textContent = `${wbPen.width}px`;
     strokeWidthBadge.style.left = `${r.left + r.width / 2}px`;
     strokeWidthBadge.style.top = `${r.top - 8}px`;
     strokeWidthBadge.classList.remove("hidden");
@@ -1974,10 +1978,10 @@ async function initWhiteboard() {
     strokeWidthBadgeTimer = setTimeout(() => strokeWidthBadge.classList.add("hidden"), 900);
   }
   if (strokeWidthInput) {
-    strokeWidthInput.value = String(WB_STROKE_WIDTH);
+    strokeWidthInput.value = String(wbPen.width);
     strokeWidthInput.addEventListener("input", (e) => {
-      WB_STROKE_WIDTH = Number(e.target.value) || 3;
-      prefs.set("wb-stroke-width", String(WB_STROKE_WIDTH));
+      wbPen.width = Number(e.target.value) || 3;
+      prefs.set("wb-stroke-width", String(wbPen.width));
       updateWbCursor();
       showStrokeWidthBadge();
     });
@@ -2225,7 +2229,7 @@ async function initWhiteboard() {
     if (!wbSketchTakesCaps(parsed)) return;
     const current = wbSketchCaps(parsed);
     current[which] = value;
-    const headLen = (parsed.width || WB_STROKE_WIDTH) * 4 + 6;
+    const headLen = (parsed.width || wbPen.width) * 4 + 6;
     const newD = wbRegenerateShapeCaps(parsed.d, current.startCap, current.endCap, headLen, current);
     await wbSaveSketchProps(sketch, { d: newD, startCap: current.startCap, endCap: current.endCap, ...wbCapSizeFields(current) });
     wbScheduleRender();
@@ -2348,7 +2352,7 @@ async function initWhiteboard() {
 
   function updateWbCursor() {
     boardEl().setAttribute("data-current-tool", window.currentTool);
-    boardEl().style.cursor = wbCursorForTool(window.currentTool, window.currentStrokeColor, WB_STROKE_WIDTH);
+    boardEl().style.cursor = wbCursorForTool(window.currentTool, window.currentStrokeColor, wbPen.width);
   }
 
   // The six shape tools folded into the toolbar's own dropdown: asked for
@@ -2367,8 +2371,8 @@ async function initWhiteboard() {
   // The one place a tool switch happens, so the toolbar click and the
   // keyboard shortcuts below can never drift out of sync with each other.
   function selectWbTool(tool) {
-    wbAbandonStroke();
-    wbDropLostGesture();
+    wbPen.abandon?.();
+    wbPen.dropLost?.();
     window.currentTool = tool;
     //: A link tool's anchor dots belong to that tool (INBOX 573).
     if (!String(tool).startsWith("link-") && !wbLinkDragActive) wbClearAnchorHints();
@@ -2408,7 +2412,7 @@ async function initWhiteboard() {
     }
     if (shapeMenu && shapeToggle) wbCloseDockedMenu(shapeMenu, shapeToggle);
     wbRefreshArrowStyleControlRef?.();
-    wbToolsOpenerSyncRef?.();
+    wbToolsOpenerSync.fn?.();
     updateWbCursor();
     wbFmtState.effects?.refreshStatus();
     // The properties panel now also carries the style a drawing tool will
@@ -2430,313 +2434,8 @@ async function initWhiteboard() {
     });
   }
 
-  // --- the tools as a sheet on a phone ---------------------------------------
-  // UI_MODERNISATION_PLAN Phase 11 item 7, "creation tools in a sheet".
-  // Measured at 390x844 first: the rail is a 364x56 band under a 364x604
-  // canvas, and the band holds 835px of tools scrolled through a 358px
-  // window, so 16 of its 31 buttons were on screen at once and the Shapes
-  // section showed one of its seven. A row you scroll sideways to find a tool
-  // in is not a palette, and it is 56px of a 844px screen either way.
-  //
-  // What opens is `openSheet`, and what is in it is `#wb-tool-group` itself,
-  // moved in and put back on close. That is the whole design: the delegated
-  // `[data-tool]` listener above, every section label, every key and the
-  // shape menu are the ones that were already there, so a tool added to the
-  // rail is in the sheet without anybody remembering to add it twice.
-  let wbToolsSheetClose = null;
-  let wbToolsWords = [];
-  const toolsOpener = document.getElementById("wb-tools-opener");
-
-  function wbSyncToolsOpener() {
-    const label = document.getElementById("wb-tools-opener-label");
-    if (!label || !toolGroup) return;
-    //: The opener says which tool is in hand, because on a phone it is the
-    //: only place the rail's own "active" mark can be read.
-    const active = toolGroup.querySelector("button[data-tool].active");
-    //: The key in brackets is for a keyboard; on a phone it read "Select (V)".
-    const name = (active?.getAttribute("aria-label") || active?.title || "").split(" (")[0];
-    label.textContent = name ? name.replace(/ tool$/i, "") : "Tools";
-  }
-
-  function wbOpenToolsSheet() {
-    if (wbToolsSheetClose || !toolGroup || typeof openSheet !== "function") return;
-    const home = { parent: toolGroup.parentNode, next: toolGroup.nextSibling };
-    toolsOpener?.setAttribute("aria-expanded", "true");
-    wbToolsSheetClose = openSheet({
-      label: "Tools",
-      name: "wb-tools",
-      returnFocus: toolsOpener,
-      build: (card, close) => {
-        const body = document.createElement("div");
-        body.className = "wb-tools-palette";
-        body.appendChild(toolGroup);
-        card.appendChild(body);
-        //: **A word under every icon** (audit 1028 U21: 31 icon-only tiles, and
-        //: a touch screen has no tooltip to ask). The word is the button's own
-        //: name without its key, so the accessible name still contains it (WCAG
-        //: 2.5.3), and it is taken out again on close: the rail above 600px is
-        //: icons by design.
-        for (const button of toolGroup.querySelectorAll("button[aria-label], button[title]")) {
-          if (button.textContent.trim()) continue;
-          const full = (button.getAttribute("aria-label") || button.title || "").replace(/\s*\(.*$/, "").replace(/ tool$/i, "").trim();
-          // A name too long for one line of a tile gets its short word; the short word is still inside the full name.
-          const short = {
-            "Upload an image onto the board": "Image",
-            "Emoji and icons": "Emoji",
-            "Lasso select": "Lasso",
-            "Sticky note": "Sticky",
-            "Straight link": "Straight",
-            "Curved link": "Curved",
-          };
-          const name = short[full] || full;
-          if (!name) continue;
-          const word = document.createElement("span");
-          word.className = "wb-tool-word";
-          word.textContent = name;
-          button.appendChild(word);
-          button.classList.add("wb-tool-worded");
-          wbToolsWords.push(word);
-        }
-        //: Picking a tool is the end of the errand, so the sheet gets out of
-        //: the way and the board is there to draw on. The `close` the recipe
-        //: hands `build`, not the variable the call assigns afterwards, and
-        //: bound on the card so it cannot outlive the sheet.
-        //:
-        //: **Captured**, because the shape menu's rows stop their own click
-        //: from bubbling (they have to: a docked menu is reparented to
-        //: `<body>` while it is open, so it cannot rely on reaching
-        //: `#wb-tool-group`'s delegated listener). Measured: picking
-        //: Rectangle set the tool and left the sheet open over the board it
-        //: had just been chosen for.
-        card.addEventListener(
-          "click",
-          (event) => {
-            if (event.target.closest("button[data-tool]")) close();
-          },
-          true
-        );
-      },
-      onClose: () => {
-        for (const word of wbToolsWords) {
-          word.parentElement?.classList.remove("wb-tool-worded");
-          word.remove();
-        }
-        wbToolsWords = [];
-        home.parent.insertBefore(toolGroup, home.next);
-        wbToolsSheetClose = null;
-        toolsOpener?.setAttribute("aria-expanded", "false");
-        wbSyncToolsOpener();
-      },
-    });
-  }
-
-  if (toolsOpener) {
-    toolsOpener.addEventListener("click", () => {
-      if (wbToolsSheetClose) wbToolsSheetClose();
-      else wbOpenToolsSheet();
-    });
-    //: A window dragged past the band with the sheet open would leave the
-    //: rail's own tools inside a dialog the desktop layout has no opener for.
-    WB_PHONE.addEventListener("change", () => wbToolsSheetClose?.());
-    wbSyncToolsOpener();
-    wbToolsOpenerSyncRef = wbSyncToolsOpener;
-  }
-
-  // Docked as a sidebar, the toolbar panel scrolls (`overflow-y: auto`, so a
-  // tall tool column fits above the canvas), three attempts at this,
-  // reported directly each time: (1) CSS-only positioning was clipped by
-  // that same overflow (setting only `overflow-y` coerces `overflow-x` to
-  // `auto` too, clipping both axes, a real CSS rule, not a bug in that one
-  // declaration). (2) `position: fixed` should escape an ancestor's overflow
-  // entirely, but this panel's `.glass` class sets `backdrop-filter`, which: 
-  // like `transform`/`filter`, creates a new containing block for fixed
-  // descendants and traps them right back inside it. (3) toggling the whole
-  // panel's `overflow` to `visible` while a menu was open avoided the clip,
-  // but also uncapped the tool column's own `max-height` for as long as the
-  // menu stayed open, spilling tools out past the panel's bottom edge with
-  // no scrollbar to reach them.
-  //
-  // The only thing that both escapes the clip *and* leaves the scrolling
-  // tool column alone is not being inside it: the open menu is reparented to
-  // <body> (remembering where it came from, to put it back on close) and
-  // positioned from the toggle's own `getBoundingClientRect()`, same as any
-  // popover library would. Its own click listener below (rather than relying
-  // on bubbling to #wb-tool-group's delegated one) is what makes that safe, 
-  // a tool button click needs to work identically whether the menu is
-  // sitting in its normal spot (bottom-docked) or reparented to <body>
-  // (side-docked, open).
-  function wbOpenDockedMenu(menu, toggle) {
-    menu.classList.remove("hidden");
-    toggle.setAttribute("aria-expanded", "true");
-    const panel = toggle.closest(".whiteboard-floating-panel");
-    if (panel?.dataset.dock === "side" && !menu._wbHome) {
-      menu._wbHome = { parent: menu.parentNode, next: menu.nextSibling };
-      document.body.appendChild(menu);
-      const toggleRect = toggle.getBoundingClientRect();
-      menu.style.position = "fixed";
-      menu.style.left = `${toggleRect.right + 8}px`;
-      menu.style.top = `${toggleRect.top}px`;
-      menu.style.bottom = "auto";
-      menu.style.transform = "none";
-      menu.style.zIndex = "200";
-      // The menu can be bigger than the toggle it opened from, the shape
-      // menu's fill/stroke/guide-colour rows run well past the toolbar's
-      // own height, and a toggle near the bottom of a tall docked column
-      // put `top: toggleRect.top` most of the way down the screen already.
-      // Reported directly ("go out of the window"). Clamped against the
-      // real viewport rather than just the toggle's position: measured
-      // after being placed, since its actual rendered size isn't known
-      // until it's in the DOM and visible.
-      const margin = 8;
-      const menuRect = menu.getBoundingClientRect();
-      if (menuRect.right > window.innerWidth - margin) {
-        menu.style.left = `${Math.max(margin, window.innerWidth - menuRect.width - margin)}px`;
-      }
-      if (menuRect.bottom > window.innerHeight - margin) {
-        menu.style.top = `${Math.max(margin, window.innerHeight - menuRect.height - margin)}px`;
-      }
-    }
-    wbLiftMenuOffOptionsBar(menu);
-  }
-
-  //: **A tool's kind popover and its options bar are one surface, not two
-  //: that cross** (INBOX 823, the owner's screenshot: the Line and Arrow
-  //: choice drawn under the bar holding Size, Plain and Solid). Measured at
-  //: 1440 (`scratchpad/ui-sweeps/toolpop.js`): the popover (z 20) sat 6,232px2
-  //: under the bar (z 22) it opens next to. Lifted clear of the bar, an 8px
-  //: gap above it, with the individual `translate` property so it composes
-  //: with whichever placement the dock gave it.
-  function wbLiftMenuOffOptionsBar(menu) {
-    menu.style.translate = "";
-    const bar = document.getElementById("wb-context");
-    if (!bar || bar.classList.contains("hidden")) return;
-    const b = bar.getBoundingClientRect();
-    const m = menu.getBoundingClientRect();
-    if (!b.width || !m.width) return;
-    const across = m.left < b.right && m.right > b.left && m.top < b.bottom && m.bottom > b.top;
-    if (across) menu.style.translate = `0 ${Math.round(b.top - 8 - m.bottom)}px`;
-  }
-
-  function wbCloseDockedMenu(menu, toggle) {
-    menu.classList.add("hidden");
-    toggle.setAttribute("aria-expanded", "false");
-    if (menu._wbHome) {
-      menu._wbHome.parent.insertBefore(menu, menu._wbHome.next);
-      menu._wbHome = null;
-      menu.style.position = "";
-      menu.style.left = "";
-      menu.style.top = "";
-      menu.style.bottom = "";
-      menu.style.transform = "";
-      menu.style.zIndex = "";
-    }
-    menu.style.translate = "";
-  }
-
-  // Asked for directly: a plain click/tap on the toggle's icon selects the
-  // tool it's already showing (matching every other toolbar button, and
-  // matching what the toggle looks like it should do). The picker only
-  // opens from the caret, a right-click, a double-click, or, touch has
-  // neither of those: holding the tool down.
-  //: **The caret is a target** (OPEN row 847): it had `pointer-events: none`,
-  //: so its own test never matched and a click on it picked the tool. It is
-  //: 10px across, so the toggle's right 14px count as the caret too; a
-  //: keyboard press (no pointer, `detail` 0) still picks the tool.
-  function wbToggleCaretHit(toggle, e) {
-    const caret = toggle.querySelector(".wb-shape-caret");
-    if (!caret) return false;
-    if (e.target.closest(".wb-shape-caret")) return true;
-    return e.detail > 0 && e.clientX >= toggle.getBoundingClientRect().right - 14;
-  }
-  function wbWireToggleGestures(toggle, menu, getLastTool) {
-    if (!toggle || !menu) return;
-    const picker = toggle.parentElement; // #wb-shape-picker / #wb-select-picker
-    toggle.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (wbToggleCaretHit(toggle, e)) {
-        if (menu.classList.contains("hidden")) wbOpenDockedMenu(menu, toggle);
-        else wbCloseDockedMenu(menu, toggle);
-      } else {
-        //: A press on the control that opened the list shuts it (INBOX 681), and
-        //: still picks the tool the button shows.
-        if (!menu.classList.contains("hidden")) wbCloseDockedMenu(menu, toggle);
-        selectWbTool(getLastTool());
-      }
-    });
-    toggle.addEventListener("dblclick", (e) => {
-      e.stopPropagation();
-      wbOpenDockedMenu(menu, toggle);
-    });
-    //: The right-click and the hold open the list and, pressed again, shut it.
-    const toggleDocked = () => {
-      if (menu.classList.contains("hidden")) wbOpenDockedMenu(menu, toggle);
-      else wbCloseDockedMenu(menu, toggle);
-    };
-    toggle.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleDocked();
-    });
-    //: The hold, through the app's own `wireLongPress` (navigation.js) rather than
-    //: a fourth copy of a 500ms timer with its own cancel set. It also
-    //: removes the `suppressClick` latch this carried: the recipe swallows
-    //: the click the lift synthesises, which is the thing that latch was
-    //: written to survive, and a latch that is only cleared by the *next*
-    //: click is a click lost whenever no click follows.
-    wireLongPress(toggle, toggleDocked);
-    //: **And from the keyboard.** Enter on the toggle picks the tool it shows
-    //: (the click above), and the caret, the right-click, the double-click
-    //: and the hold are all pointer gestures, so a keyboard had no way into
-    //: the shapes at all (menus.js: "nothing opened"). ArrowDown and ArrowUp
-    //: are the menu button's own keys (WAI-ARIA): open, and land on the
-    //: first or last shape; the menu's own arrows and Escape take it from
-    //: there.
-    toggle.setAttribute("aria-controls", menu.id);
-    //: The roles at boot, never in the markup (the rule `wbStampMenuRoles`
-    //: keeps for the top-bar menus): a `role="menu"` with no menuitems in it
-    //: is announced as an empty menu, and `wireMenuKeyboard` walks menuitems.
-    for (const group of menu.querySelectorAll(".wb-shape-menu-group")) group.setAttribute("role", "group");
-    for (const item of menu.querySelectorAll("button[data-tool]")) item.setAttribute("role", "menuitem");
-    wireMenuKeyboard(menu, toggle);
-    //: `wireMenuKeyboard`'s Escape closes `.action-menu`s, which this is not,
-    //: and it stops the key there, so the board's own Escape never saw it
-    //: either: measured, Escape left the shapes open (menus.js at 1024).
-    menu.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape" || menu.classList.contains("hidden")) return;
-      wbCloseDockedMenu(menu, toggle);
-      toggle.focus({ preventScroll: true });
-    });
-    toggle.addEventListener("keydown", (e) => {
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      if (!menu.classList.contains("hidden")) return;
-      e.preventDefault();
-      wbOpenDockedMenu(menu, toggle);
-      const items = [...menu.querySelectorAll('[role="menuitem"], button')].filter(
-        (b) => !b.disabled && b.getClientRects().length > 0
-      );
-      (e.key === "ArrowDown" ? items[0] : items[items.length - 1])?.focus();
-    });
-
-    // Handled directly rather than relying on the click bubbling up to
-    // #wb-tool-group's own delegated listener: once open+side-docked, the
-    // menu is reparented to <body> (see wbOpenDockedMenu) and is no longer
-    // a descendant of #wb-tool-group at all, so that bubbling path stops
-    // reaching it. stopPropagation here is what it is safe now, unlike the
-    // old bottom-docked-only version of this handler, this is the only
-    // listener that will ever see the click, in either dock mode.
-    menu.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-tool]");
-      if (btn) {
-        e.stopPropagation();
-        selectWbTool(btn.dataset.tool);
-      }
-    });
-    document.addEventListener("click", (e) => {
-      if (!menu.classList.contains("hidden") && !picker.contains(e.target) && !menu.contains(e.target)) {
-        wbCloseDockedMenu(menu, toggle);
-      }
-    });
-  }
+  //: Tools sheet and docked menus (whiteboard-toolsheet.js): it shares only the names passed and returned here.
+  const { wbCloseDockedMenu, wbWireToggleGestures } = wbInitToolsSheet({ toolGroup, wbToolsOpenerSync, selectWbTool });
 
   wbWireToggleGestures(shapeToggle, shapeMenu, () => lastShapeTool);
 
@@ -2746,264 +2445,8 @@ async function initWhiteboard() {
   //: Drawing, erasing and marquee select (whiteboard-pointer.js): it shares only the names passed and returned here.
   const { getLogicalMouse, zoomK } = wbInitPointer({ selectWbTool, boardEl });
 
-  // On the container, not `svgCanvas`, the same reasoning the eraser
-  // listener above already follows. `svgCanvas` only ever sees a
-  // pointerdown that lands directly on it or on something inside it; a
-  // click that starts on a card (`#wb-html-layer`, a sibling painted on
-  // top) never reaches it at all, which is the exact mechanism behind
-  // "drawing over a note just moves the note". the container is an
-  // ancestor of both layers, so it sees every pointerdown either way, 
-  // and, with the card/object drags above now filtered out while a brush
-  // tool is active, nothing else claims the gesture first.
-  wbInstances.on("pointerdown", (e) => {
-    if (!WB_BRUSH_TOOLS.has(window.currentTool)) return;
-    e.stopPropagation();
-    isDrawing = true;
-    const [x, y] = getLogicalMouse(e);
-    
-    currentDrawData = [[x, y, e.pressure]];
-    currentDrawPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    // Fill only applies to the four closed shapes, and only when "no fill"
-    // isn't checked: asked for directly ("fill colour/transparency...
-    // options for no border/stroke or background").
-    if ((WB_FILLABLE_SHAPES.has(window.currentTool) || WB_MORE_SHAPES[window.currentTool]) && !window.currentFillNone) {
-      currentDrawPath.setAttribute("fill", window.currentFillColor);
-      currentDrawPath.setAttribute("fill-opacity", String(window.currentFillOpacity / 100));
-    } else {
-      currentDrawPath.setAttribute("fill", "none");
-    }
-    currentDrawPath.setAttribute("stroke", window.currentStrokeNone ? "none" : window.currentStrokeColor);
-    // A highlighter needs to be visibly wider and translucent, or it isn't a
-    // highlighter: the sketch pad's own version of this exact control had
-    // its opacity so low it was reported as invisible (HISTORY.md §46).
-    currentDrawPath.setAttribute(
-      "stroke-width",
-      String(window.currentTool === "highlighter" ? wbHighlighterWidth(WB_STROKE_WIDTH) : WB_STROKE_WIDTH)
-    );
-    if (window.currentTool === "highlighter") {
-      currentDrawPath.setAttribute("stroke-opacity", String(WB_HIGHLIGHTER_ALPHA));
-      currentDrawPath.setAttribute("stroke-linecap", HIGHLIGHTER_STYLE.lineCap);
-      // An inline style, not a class: the export clones these elements into a
-      // standalone SVG where a stylesheet does not follow them, and
-      // `el.style.x = ...` is the form this app's CSP allows (an inline
-      // `style=` attribute in the markup is refused). The class beside it is
-      // only a handle for `wbRefreshHighlighterBlend`.
-      currentDrawPath.classList.add("wb-live-highlighter");
-      currentDrawPath.style.mixBlendMode = wbHighlighterBlend();
-    } else {
-      currentDrawPath.setAttribute("stroke-linecap", "round");
-    }
-    currentDrawPath.setAttribute("stroke-linejoin", HIGHLIGHTER_STYLE.lineJoin);
-    const dashArray = wbDashArray(window.currentDashStyle, WB_STROKE_WIDTH);
-    if (dashArray) currentDrawPath.setAttribute("stroke-dasharray", dashArray);
-    currentDrawPath.setAttribute("d", `M ${x} ${y}`);
-    //: A solid pen or marker stroke is smoothed ink (whiteboard-ink-more.js): filled, its width following pressure.
-    if ((window.currentTool === "draw" || window.currentTool === "highlighter") && wbFmtState.inkMore?.takesInk(window.currentDashStyle)) {
-      currentDrawPath.__ink = { pointer: e.pointerType };
-      wbFmtState.inkMore.liveStyle(currentDrawPath, window.currentStrokeNone ? "none" : window.currentStrokeColor, window.currentTool === "highlighter" ? WB_HIGHLIGHTER_ALPHA : null);
-    }
-    //: Over the cards while it is drawn: it lands on top (decision 43).
-    wbInstances.layer("wb-overlay-zoom-group").appendChild(currentDrawPath);
-  });
-  
-  //: The live stroke's outline when it is smoothed ink, "" when it is a plain stroke.
-  function wbInkLiveD(last) {
-    const ink = currentDrawPath?.__ink;
-    if (!ink) return "";
-    const tool = window.currentTool;
-    const width = tool === "highlighter" ? wbHighlighterWidth(WB_STROKE_WIDTH) : WB_STROKE_WIDTH;
-    return wbFmtState.inkMore.outline(currentDrawData, tool, width, ink.pointer, last);
-  }
-  wbInstances.on("pointermove", (e) => {
-    if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
-    e.stopPropagation();
-    let [x, y] = getLogicalMouse(e);
-    const tool = window.currentTool;
-    if (tool !== "draw" && tool !== "highlighter" && tool !== "line" && tool !== "arrow") {
-      [x, y] = wbDrawOutSnap(currentDrawData[0][0], currentDrawData[0][1], x, y, e);
-    }
-    
-    if (window.currentTool === "draw" || window.currentTool === "highlighter") {
-      // **Shift draws a straight run** (decision 7). Held mid-stroke it
-      // replaces whatever has been drawn since the start point with one
-      // segment, and letting go carries on freehand from there, which is how
-      // a straightedge behaves and how every app that offers this does it.
-      // The pen as well as the highlighter (INBOX 1352 gap 4).
-      if (e.shiftKey) {
-        const [sx0, sy0] = currentDrawData[0];
-        currentDrawData.length = 1;
-        currentDrawData.push([x, y, e.pressure]);
-        currentDrawPath.setAttribute("d", wbInkLiveD(false) || `M ${sx0} ${sy0} L ${x} ${y}`);
-        return;
-      }
-      currentDrawData.push([x, y, e.pressure]);
-      const d = wbInkLiveD(false) || currentDrawData.map((pt, i) => (i === 0 ? `M ${pt[0]} ${pt[1]}` : `L ${pt[0]} ${pt[1]}`)).join(" ");
-      currentDrawPath.setAttribute("d", d);
-    } else {
-      // Shape tools: only start and current point matter
-      const [sx, sy] = currentDrawData[0];
-      if (window.currentTool === "line" || window.currentTool === "arrow") {
-        // One path, one or more subpaths, a plain SVG `d` string can hold
-        // more than one `M`, and every subpath in it shares the same
-        // stroke, so this is the shaft plus whichever head strokes the
-        // *active tool's own* end-style calls for in a single element,
-        // rather than several sketches that would each need their own undo
-        // entry and could drift apart. Asked for directly: "regular lines
-        // should also get line end options... arrow heads", the Line and
-        // Arrow tools share the same "Line ends" control, so a plain line
-        // *can* carry an arrowhead, but each tool keeps its own remembered
-        // default (Line: none, Arrow: end): see the live-reported bug fix
-        // on `currentLineEndStyle`/`currentArrowEndStyle` in `initWhiteboard`.
-        const caps = wbToolCaps();
-        const [ex, ey] = e.shiftKey ? wbSnap45(sx, sy, x, y) : [x, y];
-        const liveHead = WB_STROKE_WIDTH * 4 + 6;
-        const liveD = wbRegenerateShapeCaps(`M ${sx} ${sy} L ${ex} ${ey}`, caps.startCap, caps.endCap, liveHead);
-        currentDrawPath.setAttribute("d", wbFmtState.inkMore?.trimShaft(liveD, caps.startCap, caps.endCap, liveHead, null, wbShaftEnd) || liveD);
-      } else if (window.currentTool === "circle") {
-        currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e));
-      } else {
-        const d = wbClosedShapeD(window.currentTool, wbDragBox(sx, sy, x, y, e));
-        if (d) currentDrawPath.setAttribute("d", d);
-      }
-    }
-  });
-  
-  //: A stroke whose gesture is taken away (a tool switch, the browser's pointercancel, a release
-  //: outside the board, which the container's own pointerup never hears) is dropped, not left
-  //: as a live path with `isDrawing` still true (sm-1111 row 27).
-  function wbAbandonStroke() {
-    if (!isDrawing) return;
-    isDrawing = false;
-    currentDrawPath?.remove();
-    currentDrawPath = null;
-    currentDrawData = [];
-    wbClearAlignmentGuides();
-  }
-  //: **A drag whose pointer is taken away is put back and let go** (sm-1111 row 27; this is the
-  //: card, object, shape and link drags' half of `wbAbandonStroke`). A pointercancel, a window
-  //: blur, a tool switch or a mouse move with no button held (the `mouseup` went to a native drag,
-  //: another window or the OS) all mean the hand is gone. Measured before in Chromium, a card and a
-  //: text box with a lost `mouseup`: the gesture stayed live, the item followed a buttonless hover
-  //: and the delete target stayed up. d3-drag lets go of its window listeners only on `mouseup`,
-  //: so one is sent after the cancel; the cancelled gesture's own handlers then save nothing.
-  function wbDropLostGesture() {
-    if (!wbCancelGesture()) return;
-    window.dispatchEvent(new MouseEvent("mouseup", { view: window }));
-  }
-  window.addEventListener("pointercancel", wbDropLostGesture, true);
-  window.addEventListener("blur", wbDropLostGesture);
-  window.addEventListener("pointermove", (e) => {
-    if (wbGesture && e.pointerType === "mouse" && e.buttons === 0) wbDropLostGesture();
-  }, true);
-  window.addEventListener("pointercancel", wbAbandonStroke);
-  window.addEventListener("pointerup", wbAbandonStroke);
-  wbInstances.on("pointerup", async (e) => {
-    if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
-    e.stopPropagation();
-    isDrawing = false;
-    wbClearAlignmentGuides();
-    
-    const [x, y] = getLogicalMouse(e);
-    const [sx, sy] = currentDrawData[0];
-    
-    // A plain click with no drag, reported directly: the pen tool "doesn't
-    // respond to a single click, only a drag", which the sketch pad's own
-    // pen never had wrong (see `sketchEnd`'s own `!sketchMoved` branch, the
-    // same fix mirrored here). A `moveto` with no `lineto` after it draws
-    // nothing at all, so a stationary click has to add a near-zero-length
-    // segment, round linecaps turn that into a visible dot, rather than
-    // being discarded as "no shape to save".
-    const isFreehand = window.currentTool === "draw" || window.currentTool === "highlighter";
-    if (isFreehand && currentDrawData.length < 2) {
-      currentDrawPath.setAttribute("d", wbInkLiveD(true) || `M ${sx} ${sy} L ${sx} ${sy + 0.1}`);
-    } else if (isFreehand) {
-      const settled = wbInkLiveD(true);
-      if (settled) currentDrawPath.setAttribute("d", settled);
-    } else if (!isFreehand && Math.abs(x - sx) < 2 && Math.abs(y - sy) < 2) {
-      // Shape tools (line/arrow/rect/circle) need an actual drag to have a
-      // size: a zero-size shape isn't a reasonable click-to-draw default
-      // the way a pen dot is, so these are still discarded.
-      if (currentDrawPath) currentDrawPath.remove();
-      currentDrawPath = null;
-      return;
-    }
-    
-    // Save sketch to API. The backend schema has no width/opacity/fill/dash
-    // columns, so all of it has to travel inside `data`, otherwise a saved
-    // stroke reloads at the hardcoded 3px default regardless of what
-    // #wb-stroke-width was actually set to when it was drawn (a real bug,
-    // caught while wiring that control up: only the highlighter branch here
-    // ever saved its own width; a plain pen/line/shape stroke silently lost
-    // whatever size it was actually drawn at the moment the page reloaded).
-    const d = currentDrawPath.getAttribute("d");
-    const isHighlighter = window.currentTool === "highlighter";
-    const more = WB_MORE_SHAPES[window.currentTool];
-    const isFillable = WB_FILLABLE_SHAPES.has(window.currentTool) || Boolean(more);
-    const blob = {
-      d,
-      color: currentStrokeColor,
-      width: isHighlighter ? wbHighlighterWidth(WB_STROKE_WIDTH) : WB_STROKE_WIDTH,
-      shape: more ? "custom" : window.currentTool,
-    };
-    if (more?.area) blob.label_area = more.area;
-    if (currentDrawPath.__ink) Object.assign(blob, { ink: 1 }, wbFmtState.inkMore.keepPoints(currentDrawData, wbPathBBox(d)));
-    //: The ends are stored by kind, so the bar and the Format panel read
-    //: what was drawn rather than sniffing it out of the path.
-    if (window.currentTool === "line" || window.currentTool === "arrow") Object.assign(blob, wbToolCaps());
-    if (isHighlighter) {
-      blob.opacity = WB_HIGHLIGHTER_ALPHA;
-    } else {
-      if (window.currentDashStyle !== "solid") blob.dash = window.currentDashStyle;
-      if (window.currentStrokeNone) blob.noStroke = true;
-      if (isFillable && !window.currentFillNone) {
-        blob.fill = window.currentFillColor;
-        blob.fillOpacity = window.currentFillOpacity / 100;
-      }
-    }
-    //: An arrow or a line that starts or ends on a shape is a connector bound
-    //: to it (the wb ledger, 10-25: the Line tool stayed a loose path). Its
-    //: ends are the tool's own, so a line binds with none.
-    const bound = window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
-    //: The board's default style starts every drawn shape, line, pen stroke and highlighter stroke, each under its own kind.
-    const group = isFreehand ? (isHighlighter ? "highlighter" : "pen") : "shape";
-    const drawn = wbFmtState.board?.withDefaults(group, blob, { fillable: isFillable }) ?? blob;
-    const sketchData = {
-      data: JSON.stringify(bound || drawn),
-      x: 0,
-      y: 0,
-      z: wbStackNewZ("sketch"),
-      board_id: window.currentBoardId
-    };
-
-    try {
-      const res = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify(sketchData) });
-      wbState.sketches.push(res);
-      wbPushUndo({ action: "create", kind: "sketch", id: res.id });
-      // Hand off to renderWhiteboard's own data-bound element for this
-      // sketch: a real bug found while adding the eraser: this raw `<path>`
-      // is not part of the `g.sketch-group` selection renderWhiteboard binds
-      // wbState.sketches to, so a stroke just drawn had no way to be deleted
-      // or erased until a full reload re-fetched it from the server and
-      // rendered it "properly" the first time.
-      currentDrawPath.remove();
-      //: A drawn shape is selected and the tool returns to Select (decision
-      //: 44); the pen and highlighter keep their tool so strokes continue.
-      if (!isFreehand) {
-        renderWhiteboardNow();
-        wbSelectToolRef?.("select");
-        selectWbItem("sketch", res.id);
-      } else {
-        wbScheduleRender();
-      }
-    } catch (err) {
-      //: Said on screen, not only in a console nobody has open (audit 1028 B22).
-      toast(voiceLine("failed", { what: "save that drawing", why: err.message }), true);
-      if (currentDrawPath) currentDrawPath.remove();
-    }
-
-    currentDrawPath = null;
-    currentDrawData = [];
-  });
+  //: Pen strokes (whiteboard-strokes.js): it shares only the names passed and returned here.
+  wbInitStrokes({ wbPen, getLogicalMouse, zoomK });
 
   // Drop handler for Library
   wbInstances.on("dragover", (e) => {
