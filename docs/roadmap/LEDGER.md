@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 23 | 0 | 0 | 1 | 23 |
+| world-class | 0 | 22 | 0 | 0 | 1 | 22 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 272 | 363 | 71 | 2 | 85 | 706 |
+| all | 272 | 362 | 71 | 2 | 85 | 705 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -405,7 +405,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## world-class
 
-- [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
 - [ ] **L559** `chat` open, M: Finish left items C44, C39, C40, C36 and Open Packages help. From OPEN.md:3875. Evidence: Named items listed as left; help owed by order 13
