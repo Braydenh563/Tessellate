@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 0 | 1 | 0 | 0 | 0 | 1 |
+| graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 206 | 60 | 2 | 59 | 442 |
 | whiteboard | 0 | 2 | 1 | 0 | 0 | 3 |
 | documents | 0 | 1 | 0 | 0 | 3 | 1 |
@@ -17,10 +17,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 10 | 1 | 0 | 1 | 11 |
 | general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 272 | 359 | 68 | 2 | 85 | 699 |
+| all | 272 | 358 | 68 | 2 | 85 | 698 |
 
 ## graph
-- [ ] **L-graph-21** `graph` open, S: Watch /insights/greeting on CI for a slow second pass that the probe fix does not explain. From CI 137113015699 (2a67df011). Evidence: Python 3.13 leg 2: /insights/greeting 2.70 s on the second pass against a silent backend. Not reproduced: three rounds locally were 41, 33 and 38 ms after the probe fix (189, 128 and 31 before); cProfile shows no runner call and no slow frame on the request thread. The probe fix took 120 ms per call off; the rest looks like runner load. The timed assert is gone (the thread-recording test replaced it).
 
 ## chat
 
