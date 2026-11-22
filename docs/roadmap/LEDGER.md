@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 43 | 1 | 0 | 0 | 44 |
+| world-class | 0 | 44 | 1 | 0 | 0 | 45 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 434 | 76 | 2 | 112 | 882 |
+| all | 372 | 435 | 76 | 2 | 112 | 883 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -515,6 +515,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-780** `world-class` open, S: Rule 2 (three clicks): four panel sub-views sit at depth 4, give the Chat activity panel and the Images Running view a palette command or a door at depth 3. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js light run: 4 destinations at depth 4 (Chat > More actions > Activity and past runs > Running, History, More activity actions; Library > Documents > Images > Running); dark adds Notes > Writing room > More ways to save > Keep it in Drafts, Notes > Manage categories > Show the notes > Running, Chat > Guide > More actions > Every help topic, Settings > What it learned > More for this fact > Correct what this says)
 - [ ] **L-world-class-781** `world-class` open, S: Reach crawl: the palette match counts 'About ...' help popovers as unnamed; match them to the Guide topic of the same name or add the commands. From reach.js depth-4 crawl, light (L-world-class-710). Evidence: scratchpad/ui-sweeps/reach.js: 57 of 169 destinations name no palette command, 50 of them 'About ...' help popovers the matcher only skips when the label says 'help' (reach.js:130)
 - [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
+- [ ] **L-world-class-841** `world-class` open, S: Verify the frozen Windows build's hashed extras install (--require-hashes --no-deps --target) on the package-check run, and that the bundle holds every base package a lock relies on. From L-world-class-691 (SECURITY.md T23). Evidence: .github/workflows/package-check.yml:147 --install-extras pdfpages,pyodide; core/extras.py _lock_selection; Linux --target run of the ocr lock installed 3 pinned (not Windows); pip evaluates the lock's python_full_version markers against the system Python, not the bundled one
 
 ## general
 

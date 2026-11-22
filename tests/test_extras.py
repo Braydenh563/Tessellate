@@ -151,7 +151,8 @@ def test_a_reinstall_does_not_trust_the_cache(client, monkeypatch):
     extras._run_install(extras.EXTRAS_BY_ID["voice"], reinstall=True)
     assert "--force-reinstall" in seen["command"]
     assert "--no-cache-dir" in seen["command"]
-    assert "faster-whisper" in seen["command"]
+    # The voice extra's hashed lock (L-world-class-691), which pins faster-whisper.
+    assert seen["command"][seen["command"].index("-r") + 1].endswith("voice-lock.txt")
 
 
 def test_the_pip_constraint_file_has_no_extras(client, monkeypatch):

@@ -49,7 +49,7 @@ class _FakePip:
 
     def __init__(self, command, **kwargs):
         type(self).commands.append(list(command))
-        self._code = 1 if any(name in command for name in type(self).failing) else 0
+        self._code = 1 if any(name in _pip_packages(command) for name in type(self).failing) else 0
         self.stdout = ["ERROR: No matching distribution found"] if self._code else ["Successfully installed"]
 
     def wait(self):
@@ -76,7 +76,12 @@ def _installed(monkeypatch, ids):
 
 
 def _pip_packages(command):
-    """The package names a recorded pip command was given."""
+    """The package names a recorded pip command was given: an install names
+    the extra's hashed lock (`<id>-lock.txt`, L-world-class-691), which pins
+    that extra's packages."""
+    if "-r" in command:
+        lock = Path(command[command.index("-r") + 1]).name
+        return list(extras.EXTRAS_BY_ID[lock.removesuffix("-lock.txt")].packages)
     start = command.index("install") + 1 if "install" in command else command.index("uninstall") + 1
     return [part for part in command[start:] if not part.startswith("-") and not part.endswith(".txt")]
 
