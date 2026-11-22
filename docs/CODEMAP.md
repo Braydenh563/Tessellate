@@ -3902,11 +3902,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docLiveFrontmatterPass` | frontend/js/documents-cm.js:1687 |
-| `docLivePlugin` | frontend/js/documents-cm.js:1736 |
-| `docLiveRhythmPass` | frontend/js/documents-cm.js:1593 |
-| `docLiveScanPass` | frontend/js/documents-cm.js:1193 |
-| `docLiveTablesPass` | frontend/js/documents-cm.js:1442 |
+| `docLiveFrontmatterPass` | frontend/js/documents-cm.js:1682 |
+| `docLivePlugin` | frontend/js/documents-cm.js:1731 |
+| `docLiveRhythmPass` | frontend/js/documents-cm.js:1588 |
+| `docLiveScanPass` | frontend/js/documents-cm.js:1188 |
+| `docLiveTablesPass` | frontend/js/documents-cm.js:1437 |
 | `docLiveTreePass` | frontend/js/documents-cm.js:754 |
 | `docLiveWidgets` | frontend/js/documents-cm.js:47 |
 | `sameOrigin` | frontend/js/documents-cm.js:22 |
