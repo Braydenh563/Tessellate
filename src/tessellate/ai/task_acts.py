@@ -116,7 +116,7 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     found = reminder(f"remind me to {words} {tail}".strip())
     if not found:
         return None
-    #: "to my todo" names a list, so a task without a time is a line on it (R3-33).
+    #: "to my to-do list" names a list, so a task without a time is a line on it (R3-33).
     return {**found, "task": True, "asked": asked, **({"on_list": words} if _ON_LIST.search(text) and not tail else {})}
 
 
