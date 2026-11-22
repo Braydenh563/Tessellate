@@ -48,16 +48,19 @@ async function fields(page, media) {
   }, media);
 }
 
+// A delete that bins with Undo asks nothing, so only a real confirm dialog
+// is answered: matching any open overlay's buttons pressed the workspace's
+// own "Delete this reading" (the vision reading) after the Tesseract one.
 async function confirmYes(page) {
   await page.waitForTimeout(300);
-  const ok = await page.evaluate(() => {
-    const b = [...document.querySelectorAll(".confirm-overlay:not(.hidden) button, .modal-overlay:not(.hidden) button")]
+  const asked = await page.evaluate(() => {
+    const b = [...document.querySelectorAll(".confirm-overlay:not(.hidden) button")]
       .find((x) => /delete|ok|yes|confirm/i.test(x.textContent || ""));
     b?.click();
     return Boolean(b);
   });
   await page.waitForTimeout(700);
-  return ok;
+  return asked;
 }
 
 (async () => {
@@ -135,11 +138,11 @@ async function confirmYes(page) {
     });
     if (del) {
       await page.mouse.click(del.x, del.y);
-      const confirmed = await confirmYes(page);
+      await confirmYes(page);
       const f = await fields(page, media);
       const left = await page.evaluate(() => document.querySelectorAll("#ocr-other-readings:not(.hidden) .ocr-other-reading").length);
-      check("workspace: its delete clears the Tesseract field only", confirmed && !f.tess && Boolean(f.vision) && left === 0,
-        `confirmed ${confirmed}, vision ${Boolean(f.vision)}, tesseract ${Boolean(f.tess)}, listed ${left}`);
+      check("workspace: its delete clears the Tesseract field only", !f.tess && Boolean(f.vision) && left === 0,
+        `vision ${Boolean(f.vision)}, tesseract ${Boolean(f.tess)}, listed ${left}`);
     }
     await page.screenshot({ path: `${process.env.SCRATCH || "."}/shots/ocrreadings-${process.env.THEME || "light"}.png` });
   } finally {
