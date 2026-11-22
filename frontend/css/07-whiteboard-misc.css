@@ -2333,6 +2333,11 @@ dialog::backdrop {
   background: var(--scrim);
   backdrop-filter: blur(4px);
 }
+/* A moved or docked panel's backdrop drops the blur with the dim (the owner
+   2026-11-22; panel-movable-lazy.css clears the dim). */
+dialog[data-panel-moved]::backdrop {
+  backdrop-filter: none;
+}
 .space-dialog {
   /* **The same inset from the window as a `.modal-overlay` dialog** (INBOX
      456): the overlay's own padding keeps a modal-card `--space-8` off every
@@ -19001,7 +19006,8 @@ header#top-bar[data-scrolled="1"],
   .note-edit-foot,
   #capture .capture-commit-row,
   .agent-monitor > .monitor-header,
-  .timeline-table thead th {
+  .timeline-table thead th,
+  .doc-prose-panel > .doc-prose-head {
     container-type: scroll-state;
   }
   @container scroll-state(stuck: top) or scroll-state(stuck: bottom) {
@@ -19011,7 +19017,8 @@ header#top-bar[data-scrolled="1"],
     .note-edit-foot::before,
     #capture .capture-commit-row::before,
     .agent-monitor > .monitor-header::before,
-    .timeline-table thead th::before {
+    .timeline-table thead th::before,
+    .doc-prose-panel > .doc-prose-head::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -19032,7 +19039,8 @@ header#top-bar[data-scrolled="1"],
   .note-edit-foot,
   #capture .capture-commit-row,
   .agent-monitor > .monitor-header,
-  .timeline-table thead th {
+  .timeline-table thead th,
+  .doc-prose-panel > .doc-prose-head {
     background: var(--card);
   }
 }

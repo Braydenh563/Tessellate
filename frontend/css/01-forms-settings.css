@@ -3274,6 +3274,11 @@ mark.global-find-hit.global-find-current {
   height: 100dvh;
   margin: 0;
 }
+/* A moved or docked panel's overlay drops the blur with the dim (the owner
+   2026-11-22; panel-movable-lazy.css clears the dim and the presses). */
+.modal-overlay[data-panel-moved] {
+  backdrop-filter: none;
+}
 /* **A confirm sits above whatever asked it** (INBOX 721, the owner: "i
    pressed delete for an image on the lightbox and the popup appeared behind
    it"). A confirm is opened from any surface, including the lightbox

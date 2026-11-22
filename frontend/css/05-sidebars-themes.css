@@ -4514,6 +4514,17 @@ html[data-chrome="native"] #top-bar #brand-logo {
   flex: 0 0 auto;
   overflow-y: auto;
 }
+/* The head (title, count, check, more, close) stays put while the list
+   scrolls (the owner 2026-11-22: it scrolled away). `top` takes back the
+   panel's own padding so it sits at the border; its ground while rows pass
+   under it is the stuck-ground recipe (07-whiteboard-misc.css). */
+.doc-prose-panel > .doc-prose-head {
+  position: sticky;
+  top: calc(-1 * var(--space-3));
+  z-index: 1;
+  margin-top: calc(-1 * var(--space-3));
+  padding-top: var(--space-3);
+}
 /* **Room for an open row, and only while one is open** (DOCUMENTS_PLAN 12 D3).
    An open row costs 77px against a closed row's 28px, so the ceiling above would
    put the thing a press just opened behind a scrollbar, which is the bug the
@@ -4699,6 +4710,22 @@ html[data-chrome="native"] #top-bar #brand-logo {
   width: min(32rem, 92vw);
   max-height: 85vh;
   overflow-y: auto;
+}
+/* The head, the count line and the field stay put; the list and the checks
+   under them scroll (the owner 2026-11-22: all three scrolled away). */
+.doc-dictionary-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.doc-dictionary-dialog > * {
+  flex-shrink: 0;
+}
+.doc-dictionary-dialog > .doc-dictionary-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 /* One row at every width (INBOX 552: at 390 the X fell to a line of its
    own): the name and its count give way, the icons never do. */
