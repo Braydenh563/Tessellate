@@ -782,11 +782,8 @@ function renderLibrary(options) {
     if (!$("library-show-binned")?.checked) {
       items = items.filter((i) => i.kind !== "archived");
     }
-    // Shelved notes get the same "kept, out of the way" treatment as
-    // activity: no extra checkbox, since the "Archived" chip already
-    // gives full access, and this is the one place "kept out of the way"
-    // actually matters: the mixed view is exactly where an archived note
-    // would otherwise clutter the notebook it was archived to get out of.
+    // Shelved notes are kept out of the way like activity: the "Archived" chip gives full access, and the mixed
+    // view is exactly where an archived note would clutter the notebook it was archived to get out of.
     items = items.filter((i) => i.kind !== "shelved");
   }
   if (query) {

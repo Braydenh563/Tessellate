@@ -19,14 +19,11 @@
   //: down and rebuild it on every view switch.
   let docLivePluginCache = null;
 
-  //: **Every inline mark the toolbar and the "/" menu can insert, and how Live
-  //: draws it** (`tests/test_documents_live_marks.py` reads this table and
-  //: `MD_ACTIONS`, so a new mark with no entry here fails). The key is the
-  //: `MD_ACTIONS` key (`ink` is the colour menu's `++colour|words++`, `run` the
-  //: `{{size=24|words}}` run). `tree` is the markdown tree, `scan` a regex pass
-  //: in `docLivePlugin` that hides the syntax off the caret and styles the
-  //: words, `widget` a replacement drawn by a widget. `<sup>`, `<sub>` and
-  //: `<u>` are not markdown, so they were raw tags in Live until they got a scan.
+  //: **Every inline mark the toolbar and the "/" menu can insert, and how Live draws it**
+  //: (`tests/test_documents_live_marks.py` reads this table and `MD_ACTIONS`, so a new mark with no entry fails).
+  //: The key is the `MD_ACTIONS` key (`ink` the colour menu's `++colour|words++`, `run` the `{{size=24|words}}`
+  //: run). `tree` is the markdown tree, `scan` a regex pass in `docLivePlugin` that hides the syntax off the caret
+  //: and styles the words, `widget` a replacement a widget draws. `<sup>`, `<sub>` and `<u>` are not markdown.
   docLivePlugin.marks = Object.freeze({
     bold: "tree", italic: "tree", strike: "tree", code: "tree",
     highlight: "scan", ink: "scan", sup: "scan", sub: "scan", underline: "scan",
@@ -515,25 +512,6 @@
       }
     }
 
-    //: **A run** (`{{size=24 ink=red|words}}`) drawn by the Read view's own
-    //: `mdRunNode`, so size and face (CSSOM, never an inline style) come out the
-    //: same. A widget because a decoration cannot carry a font size under the CSP.
-    class DocRunWidget extends WidgetType {
-      constructor(spec, words) {
-        super();
-        this.spec = spec;
-        this.words = words;
-      }
-      eq(other) {
-        return other.spec === this.spec && other.words === this.words;
-      }
-      toDOM() {
-        const [node, host] = mdRunNode(this.spec);
-        appendInlineRun(host, this.words, [], false, {});
-        return node;
-      }
-    }
-
     //: **A remark is a pin, not a span of purple text** (Phase 5 item 1). The
     //: `%%…%%` hides like every other marker and a small control takes its place,
     //: because a comment has to be *visible* in the document without being *read*
@@ -779,7 +757,7 @@
         return host;
       }
     }
-    return { DocTaskWidget, DocImageWidget, DocBulletWidget, DocCalloutWidget, DocCalloutHintWidget, DocFenceLabelWidget, DocFenceCopyWidget, DocTableCellWidget, DocTableResultWidget, DocTableFilterWidget, DocTableMenuWidget, DocRunWidget, DocCommentWidget, DocMathWidget, DocIconWidget, DocTocWidget, DocEmbedWidget, DocBlockUseWidget };
+    return { DocTaskWidget, DocImageWidget, DocBulletWidget, DocCalloutWidget, DocCalloutHintWidget, DocFenceLabelWidget, DocFenceCopyWidget, DocTableCellWidget, DocTableResultWidget, DocTableFilterWidget, DocTableMenuWidget, DocCommentWidget, DocMathWidget, DocIconWidget, DocTocWidget, DocEmbedWidget, DocBlockUseWidget };
   };
 
   //: The build's passes (L-documents-62): each takes the build's context `c` (the reveal rules, the ranges
@@ -950,30 +928,18 @@
           if (doc.sliceString(node.to, node.to + 1) === " ") ranges.push(hidden.range(node.to, node.to + 1));
           return false;
         }
-        //: **Lists, which the live view drew as plain text.** Measured
-        //: against the same document's own paragraph: a `- First bullet`
-        //: line had the same left edge, the same 0 indent and the same 0
-        //: padding as a paragraph, and a nested `  - Nested bullet` was
-        //: drawn at that same left edge too, so nesting was invisible and a
-        //: wrapped item ran back under its own marker. The single most
-        //: common construct in markdown was the one this view did nothing
-        //: for (INBOX 262: "the rendering on the live view of the documents
-        //: needs a lot of improvement").
+        //: **Lists, which the live view drew as plain text.** Measured against the same document's own paragraph: a
+        //: `- First bullet` line had the same left edge, 0 indent and 0 padding as a paragraph, and a nested `  - Nested bullet`
+        //: sat at that same edge, so nesting was invisible and a wrapped item ran back under its own marker (INBOX 262: "the
+        //: rendering on the live view of the documents needs a lot of improvement").
         //:
-        //: **A hanging indent rather than a hidden marker**, and that is
-        //: the decision this file's long note beside `rangeRevealed`
-        //: argues: taking characters out from under the caret moves the
-        //: text the caret is in, which is the reflow bug measured at 28.4px
-        //: backwards on a leftward keystroke. The marker stays where it is
-        //: and the line is indented around it, so nothing under the caret
-        //: moves at any time, and a wrapped line aligns under its own text
-        //: the way a list reads on paper.
+        //: **A hanging indent rather than a hidden marker**, the decision the long note beside `rangeRevealed` argues: taking
+        //: characters out from under the caret moves the text the caret is in (28.4px backwards on a leftward keystroke). The
+        //: marker stays and the line is indented around it, so nothing under the caret moves and a wrapped line aligns under
+        //: its own text.
         //:
-        //: The depth is the item's own indentation in the document, in
-        //: units of two spaces (the width a tab is drawn at here), capped:
-        //: past four levels the indent is more useful as a signal that it
-        //: is deep than as an accurate count, and an uncapped one would
-        //: push a badly nested line off the measure.
+        //: The depth is the item's own indentation, in units of two spaces (the width a tab is drawn at here), capped: past
+        //: four levels the indent signals depth better than it counts it, and an uncapped one would push a line off the measure.
         if (name === "ListItem") {
           const line = doc.lineAt(node.from);
           const lead = /^[ \t]*/.exec(line.text)[0];
@@ -1219,13 +1185,59 @@
     });
   };
 
+  //: **A run** (`{{size=24 ink=red|words}}`) drawn by the Read view's own
+  //: `mdRunNode`, so size and face (CSSOM, never an inline style) come out the
+  //: same. A widget because a decoration cannot carry a font size under the CSP.
+  const docRunWidget = ({ WidgetType }) =>
+    class DocRunWidget extends WidgetType {
+      constructor(spec, words) {
+        super();
+        this.spec = spec;
+        this.words = words;
+      }
+      eq(other) {
+        return other.spec === this.spec && other.words === this.words;
+      }
+      toDOM() {
+        const [node, host] = mdRunNode(this.spec);
+        appendInlineRun(host, this.words, [], false, {});
+        return node;
+      }
+    };
+
+  //: The inline marks the markdown tree has no node for (ink, `<sup>`, `<sub>`, `<u>`, a size run), scanned
+  //: like the highlight above; `scan` is `docLiveScanPass`'s own.
+  const docLiveMarkScans = (scan, c, d) => {
+    const { ranges, widgetRevealed, rangeRevealed, hide } = c;
+    const { Decoration, DocRunWidget } = d;
+  //: **Ink, superscript, subscript and underline** (the colour menu and
+  //: the toolbar's "More"): the Read view draws these as `text-ink-*` and
+  //: the HTML tags, and Live left the raw syntax standing. Same rule as the
+  //: highlight above: words styled always, syntax hidden off the caret.
+  scan(/\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]{1,200})\+\+/g, (match, from, to) => {
+    ranges.push(Decoration.mark({ class: `cm-md-ink text-ink text-ink-${match[1]}` }).range(from, to));
+    if (rangeRevealed(from, to)) return;
+    hide(from, from + 3 + match[1].length);
+    hide(to - 2, to);
+  });
+  scan(/<(sup|sub|u)>([^<\n]{1,200})<\/\1>/g, (match, from, to) => {
+    ranges.push(Decoration.mark({ class: `cm-md-${match[1]}` }).range(from, to));
+    if (rangeRevealed(from, to)) return;
+    hide(from, from + match[1].length + 2);
+    hide(to - match[1].length - 3, to);
+  });
+  //: A run is drawn by the Read view's `mdRunNode`, which documents.js (this bundle) defines.
+  scan(/\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,500}?)\}\}/g, (match, from, to) => {
+    if (widgetRevealed(from, to)) return;
+    ranges.push(Decoration.replace({ widget: new DocRunWidget(match[1], match[2]) }).range(from, to));
+  });
+  };
+
   const docLiveScanPass = (c, d, visible) => {
     const { doc, ranges, widgetRevealed, rangeRevealed, tree, hide } = c;
-    const { Decoration, DocRunWidget, DocCommentWidget, DocMathWidget, DocIconWidget, DocTocWidget, DocEmbedWidget, DocBlockUseWidget } = d;
-    //: The two constructs the markdown tree has no node for. Scanned over
-    //: the visible text only, and skipped inside code for the same reason
-    //: the preview's own wiki-link pass skips `<code>`: a literal `[[x]]` in
-    //: a fenced snippet is a snippet, not a link.
+    const { Decoration, DocCommentWidget, DocMathWidget, DocIconWidget, DocTocWidget, DocEmbedWidget, DocBlockUseWidget } = d;
+    //: The constructs the markdown tree has no node for, scanned over the visible text only and skipped inside code
+    //: (as the preview's wiki-link pass skips `<code>`): a literal `[[x]]` in a fenced snippet is a snippet, not a link.
     const text = doc.sliceString(visible.from, visible.to);
     const inCode = (pos) => {
       const at = tree.resolveInner(pos, 1);
@@ -1274,27 +1286,7 @@
       hide(from, from + 2 + (colour ? colour.length + 1 : 0));
       hide(to - 2, to);
     });
-    //: **Ink, superscript, subscript and underline** (the colour menu and
-    //: the toolbar's "More"): the Read view draws these as `text-ink-*` and
-    //: the HTML tags, and Live left the raw syntax standing. Same rule as the
-    //: highlight above: words styled always, syntax hidden off the caret.
-    scan(/\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]{1,200})\+\+/g, (match, from, to) => {
-      ranges.push(Decoration.mark({ class: `cm-md-ink text-ink text-ink-${match[1]}` }).range(from, to));
-      if (rangeRevealed(from, to)) return;
-      hide(from, from + 3 + match[1].length);
-      hide(to - 2, to);
-    });
-    scan(/<(sup|sub|u)>([^<\n]{1,200})<\/\1>/g, (match, from, to) => {
-      ranges.push(Decoration.mark({ class: `cm-md-${match[1]}` }).range(from, to));
-      if (rangeRevealed(from, to)) return;
-      hide(from, from + match[1].length + 2);
-      hide(to - match[1].length - 3, to);
-    });
-    //: A run is drawn by the Read view's `mdRunNode`, which documents.js (this bundle) defines.
-    scan(/\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,500}?)\}\}/g, (match, from, to) => {
-      if (widgetRevealed(from, to)) return;
-      ranges.push(Decoration.replace({ widget: new DocRunWidget(match[1], match[2]) }).range(from, to));
-    });
+    docLiveMarkScans(scan, c, d);
     //: The remark itself. Revealed as its own text when the caret is on its
     //: line, which is how every marker in this view is edited.
     //: `[TOC]` on its own line, drawn as the contents while the caret is
@@ -1643,44 +1635,28 @@
   const docLiveRhythmPass = (c, d) => {
     const { view, doc, ranges, touched, gutterOn, tree, source } = c;
     const { Decoration } = d;
-    //: **The vertical rhythm** (DOCUMENTS_PLAN 17b). Measured before this
-    //: (`scratchpad/ui-sweeps/docpage17.js`): every gap between two blocks was
-    //: the blank line the writer typed, so a paragraph, a heading, a table and
-    //: a fence were all separated by exactly one 25.6px line of nothing, the
-    //: space above a section was the same as the space under it, and two
-    //: blank lines drew twice the gap the rendered view draws. The source's
-    //: blank line is what separates blocks, so it is the blank line that is
-    //: given the gap, from one small scale of tokens:
+    //: **The vertical rhythm** (DOCUMENTS_PLAN 17b). Measured (`scratchpad/ui-sweeps/docpage17.js`): every gap between two
+    //: blocks was the blank line the writer typed, one 25.6px line of nothing for a paragraph, heading, table and fence
+    //: alike, and two blank lines drew twice the gap the rendered view draws. The source's blank line separates blocks,
+    //: so it is the blank line that is given the gap, from one small scale of tokens:
     //:
     //: - `cm-md-gap`: between two blocks, `--space-6`;
-    //: - `cm-md-gap-major` / `-minor`: above an h1 or h2 / an h3 to h6,
-    //:   `--space-9` / `--space-8`, so a section starts visibly apart from
-    //:   the one before it;
-    //: - `cm-md-gap-tight`: under a heading, `--space-3`, so the heading
-    //:   belongs to the text it introduces rather than floating between two;
-    //: - `cm-md-gap-extra`: the second and later blank lines of a run, which
-    //:   the rendered view collapses to one gap and so does this.
+    //: - `cm-md-gap-major` / `-minor`: above an h1 or h2 / an h3 to h6, `--space-9` / `--space-8`, so a section starts
+    //:   visibly apart from the one before it;
+    //: - `cm-md-gap-tight`: under a heading, `--space-3`, so it belongs to the text it introduces;
+    //: - `cm-md-gap-extra`: the second and later blank lines of a run, which the rendered view collapses to one gap.
     //:
-    //: **By `line-height`, never by `height`**, and this is the reason the
-    //: caret does not jump. A blank line's only content is the `<br>`, so its
-    //: line height *is* its height, and the caret CodeMirror draws on it is
-    //: that tall: arrowing through a gap moves nothing, and the line grows to
-    //: a text line only when a character is typed into it, which is a
-    //: change the writer made. The one exception is an extra blank line,
-    //: which is zero tall until the caret arrives on it and then takes the
+    //: **By `line-height`, never by `height`**, which is why the caret does not jump. A blank line's only content is
+    //: the `<br>`, so its line height *is* its height, and the caret drawn on it is that tall: arrowing through a gap
+    //: moves nothing. The one exception is an extra blank line, zero tall until the caret arrives on it and then the
     //: plain gap, because a caret with no height is a caret nobody can find.
     //:
-    //: Never inside a fenced block (a blank line in code is code) or the
-    //: frontmatter (hidden above), and only in the documents editor: the note
-    //: editors mount this plugin too, and a note card is not a page.
+    //: Never inside a fenced block or the frontmatter, and only in the documents editor: the note editors mount this
+    //: plugin too, and a note card is not a page.
     //:
-    //: **And not while the line numbers are on**, the rule the quiet fence
-    //: rows already follow (INBOX 262): a gutter number keeps the editor's
-    //: line height whatever its line's height is, so a 16px gap left its
-    //: number standing 10px into the line below (measured by `docgutter.js`,
-    //: "9 paints 10px into 10"). One row, one number, in line with the text
-    //: it counts is the gutter's contract, and where the two disagree the
-    //: gutter wins and the blank line keeps its full row.
+    //: **And not while the line numbers are on** (INBOX 262): a gutter number keeps the editor's line height whatever
+    //: its line's height is, so a 16px gap left its number standing 10px into the line below (`docgutter.js`, "9 paints
+    //: 10px into 10"). One row, one number, in line with its text is the gutter's contract, and the gutter wins.
     if (view.dom.closest(".doc-editor") && !gutterOn) {
       const fence = (pos) => {
         for (let node = tree.resolveInner(pos, 1); node; node = node.parent) {
@@ -1788,7 +1764,7 @@
     const { Decoration, ViewPlugin, EditorView, WidgetType } = CM.view;
     const { syntaxTree } = CM.language;
     const hidden = Decoration.replace({});
-    const W = docLiveWidgets(CM);
+    const W = { ...docLiveWidgets(CM), DocRunWidget: docRunWidget(CM.view) };
     const d = { Decoration, EditorView, syntaxTree, hidden, ...W };
 
     //: `record` collects every reveal this build decided (`probes`, flat

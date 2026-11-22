@@ -634,10 +634,8 @@
       const BUCKETS = 4;
       const HUES = [-24, -10, 0, 12, 26];
       const STAR_SIZES = [0.85, 1.15];
-      // The far layer's four twinkle steps: the sprites' 0.62 + 0.38 sin at
-      // the middle of each quarter of the swing, times the layer's base
-      // strength (0.5 + 0.5z), times 0.8 because a hard square of a given
-      // alpha reads brighter than a soft dot of the same.
+      // The far layer's four twinkle steps: the sprites' 0.62 + 0.38 sin at the middle of each quarter of the swing,
+      // times the layer's base strength (0.5 + 0.5z), times 0.8 (a hard square reads brighter than a soft dot).
       const FAR_ALPHA = [0.335, 0.525, 0.715, 0.905].map((a) => a * 0.675 * 0.8);
       let farFill = "", farStep = null;
       let W = 0, H = 0, n = 0;
@@ -1179,16 +1177,9 @@
         HY.copyWithin(dst * HL, src * HL, src * HL + HL);
       };
 
-      // The bodies, drawn as vector paths batched per species: every
-      // organism of a species adds its outline to one path, which is filled
-      // and stroked once, then its organelles to a second and its flagella to
-      // a third. Each point is rotated by hand (`c`, `s`: the heading's cosine
-      // and sine) instead of through a canvas transform, because a transform
-      // per organism means a path per organism. Measured, sixty bodies: a
-      // rotated image each cost 3.5ms to raster (rotated bitmaps are the slow
-      // path in a software canvas), vector outlines batched like this 0.8ms.
-      // `ph` is the organism's animation phase: the flagellum's beat, the
-      // amoeba's wobble.
+      // The bodies: an atlas cell each (below), and the flagella as vector paths batched per species and opacity,
+      // each point rotated by hand (`c`, `s`: the heading's cosine and sine) rather than through a canvas transform,
+      // which would mean a path per organism. `ph` is the organism's animation phase: the flagellum's beat, the wobble.
       const PHASE_RATE = { vibrio: 0.3, flagellate: 0.22, amoeba: 0.05 };
       const outline = (g, sp, x, y, c, s, r, ph) => {
         switch (sp.form) {
@@ -1274,9 +1265,8 @@
           default: dot(g, x, y, c, s, r * 0.25, -r * 0.2, r * 0.34);
         }
       };
-      // The flagella of the bodies of species `si` whose opacity rounds to `q` quarters, added to the current path
-      // in the quarter-pixel space (`p.quarter`, set by the frame): whole numbers, so no coordinate is boxed, and
-      // the body is named by its index, so no fractional argument is passed. Two flagella while it divides.
+      // The flagella of species `si`'s bodies whose opacity rounds to `q` quarters, added to the current path in the
+      // quarter-pixel space (`p.quarter`): whole numbers, so nothing is boxed; a body is named by its index. Two while it divides.
       const lash = (g, sp, i, side) => {
         const c = Math.cos(ANG[i]), s = Math.sin(ANG[i]);
         const ph = frameNo * (PHASE_RATE[sp.form] || 0) + OFF[i];
@@ -1320,14 +1310,10 @@
         }
       };
 
-      // **The bodies are pre-rendered.** Each species' outline, fill and
-      // organelles are painted once into an atlas: one cell per heading (48
-      // for a body that points where it swims, 16 for one that only turns, 8
-      // for a round one) and, for the amoeba, per step of its wobble. A frame
-      // copies one cell per organism, upright, the cheap kind of image draw,
-      // where it used to build, fill and stroke every outline: 0.9ms of the
-      // frame, measured, for sixty bodies. The flagella still draw as lines,
-      // since their beat changes every frame and they are thin.
+      // **The bodies are pre-rendered.** Each species' outline, fill and organelles are painted once into an atlas: one
+      // cell per heading (48 for a body that points where it swims, 16 for one that only turns, 8 for a round one) and,
+      // for the amoeba, per step of its wobble. A frame copies one cell per organism, upright (0.9ms of the frame
+      // before, measured, for sixty bodies). The flagella still draw as lines: their beat changes every frame.
       const atlasOf = (sp) => {
         const r = sp.size;
         const cell = Math.ceil(r * 4.4 + 4);
@@ -1452,8 +1438,7 @@
           if (nx < -30) nx += W + 60; else if (nx > W + 30) nx -= W + 60;
           if (ny < -30) ny += H + 60; else if (ny > H + 30) ny -= H + 60;
           X[i] = nx; Y[i] = ny;
-          // A rod or a flagellate points where it swims; a round or radial
-          // body turns slowly on its own.
+            // A rod or a flagellate points where it swims; a round or radial body turns slowly on its own.
           if (sp.turns) {
             ANG[i] += SPIN[i];
           } else if (VX[i] * VX[i] + VY[i] * VY[i] > 0.0025) {
@@ -1521,8 +1506,7 @@
             const gene = bgArtGenome(strain);
             let lisA = gene.int(37, 4, 1), lisB = gene.int(41, 4, 1);
             if (lisA === lisB) lisB = (lisB % 4) + 1;
-            // Every species in one ecosystem has its own body: a form already
-            // taken passes to the next one in the list.
+              // Every species in one ecosystem has its own body: a taken form passes to the next in the list.
             let form = gene.pick(FORMS, 7, 31);
             while (used.has(form)) form = FORMS[(FORMS.indexOf(form) + 1) % FORMS.length];
             used.add(form);
@@ -1585,8 +1569,7 @@
           }
           moteFill = bgHsla(ctx.baseHue, 30, ctx.dark ? 70 : 50, 0.3);
         },
-        // A still frame shows the ecosystem after it has settled, not the
-        // scatter it starts from.
+        // A still frame shows the ecosystem after it has settled, not the starting scatter.
         settle() {
           for (let i = 0; i < 90; i++) step();
         },
@@ -1631,9 +1614,7 @@
             }
             if (wake) {
               g.strokeStyle = sp.cWake;
-              // Thin: a wide stroke was the single most expensive thing in
-              // this style to raster (1.4ms of strokes a frame, measured with
-              // the strokes switched off).
+              // Thin: a wide stroke was the most expensive thing here to raster (1.4ms a frame, measured).
               g.lineWidth = 4;
               g.stroke();
             } else {
@@ -1642,9 +1623,7 @@
             }
           }
           p.quarter(false);
-          // Glows: upright sprites (a glow looks the same at any heading, and
-          // an upright image is the cheap kind), each at its organism's own
-          // strength, pulsing for a pulsing species.
+          // Glows: upright sprites (the cheap image draw), each at its organism's own strength, pulsing for a pulsing species.
           AQN.fill(0);
           for (let i = 0; i < n; i++) {
             const a = BORN[i] * (1 - Math.min(1, DYING[i]));
@@ -1656,17 +1635,12 @@
             const pulse = sp.glow === "pulse" ? 0.55 + 0.45 * Math.sin(frameNo * 0.06 + OFF[i]) : 0.8;
             g.globalAlpha = bgAlpha(pulse * a);
             if (ctx.dark) g.globalCompositeOperation = "lighter";
-            // At its own size and on whole pixels, the plain copy: no
-            // resampling and no boxed coordinates.
+            // At its own size and on whole pixels: the plain copy, no resampling, no boxed coordinates.
             g.drawImage(sp.glowSprite, (X[i] - sp.glowHalf) | 0, (Y[i] - sp.glowHalf) | 0);
           }
           g.globalCompositeOperation = "source-over";
-          // Bodies: one atlas cell each, at the organism's own strength; a
-          // dividing organism is two, a little smaller, pulling apart. On
-          // whole pixels: at a fractional place every copy is resampled, which
-          // measured twice the cost (1.3ms against 0.6ms for sixty bodies in a
-          // CPU canvas), and a body crawling under a pixel a frame shows no
-          // step.
+          // Bodies: one atlas cell each, at the organism's own strength; a dividing organism is two, a little smaller,
+          // pulling apart. On whole pixels: a fractional place resamples every copy (twice the cost, measured).
           const TAU = Math.PI * 2;
           for (let i = 0; i < n; i++) {
             const sp = species[SP[i]];

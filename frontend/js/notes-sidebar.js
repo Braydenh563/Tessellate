@@ -86,37 +86,8 @@ function drawSidebar() {
 
   addRow("All", allEntries.filter(noteListed).length, null);
 
-  //: **One shape for the rows that are not categories** (Drafts, Favourites,
-  //: Meetings): a glyph and a name, a count, the current one marked, a press
-  //: that filters. Three hand-built copies of these eleven lines were how the
-  //: second and third came to exist; INBOX 644's Meetings made it a helper.
-  const filterRow = (label, count, current, title, run) => {
-    const li = document.createElement("li");
-    li.className = "category-drafts-row";
-    if (current) markSidebarRowCurrent(li);
-    wireSidebarRowKeys(li);
-    const name = document.createElement("span");
-    name.className = "category-name";
-    setLabel(name, label);
-    const badge = document.createElement("span");
-    badge.className = "count";
-    badge.textContent = count;
-    li.append(name, badge);
-    if (title) li.title = title;
-    li.addEventListener("click", run);
-    ul.appendChild(li);
-    return li;
-  };
-  const toggleFilter = (drafts) => () => {
-    if (drafts) draftsOnly = !draftsOnly;
-    else favouritesOnly = !favouritesOnly;
-    if (drafts) favouritesOnly = false;
-    else draftsOnly = false;
-    activeCategory = null;
-    showNotesSection("browse");
-    renderSidebar();
-    renderEntries();
-  };
+  const filterRow = (...args) => drawSidebar.filterRow(ul, ...args);
+  const toggleFilter = drawSidebar.toggleFilter;
 
   // Drafts: a filter row beside the categories, always shown (even at 0) so it stays findable.
   filterRow("ph:pencil-simple-line Drafts", allEntries.filter((e) => e.is_draft).length, draftsOnly, "", toggleFilter(true));
@@ -142,18 +113,7 @@ function drawSidebar() {
   queryRow("ph:lock Private", (e) => e.is_private, "is:private", "");
   //: Tags, beside Drafts and Favourites (INBOX 432): a sheet of every tag
   //: (categories-panel.js `openTagsSheet`), not a second long list here.
-  const sheetRow = (label, title, open) => {
-    const row = document.createElement("li");
-    row.className = "category-drafts-row";
-    const name = document.createElement("span");
-    name.className = "category-name";
-    setLabel(name, label);
-    row.append(name);
-    row.title = title;
-    row.addEventListener("click", open);
-    wireSidebarRowKeys(row);
-    ul.appendChild(row);
-  };
+  const sheetRow = (...args) => drawSidebar.sheetRow(ul, ...args);
   sheetRow("ph:hash Tags", "Every tag: see its notes, rename, merge or remove it", () => openTagsSheet());
   //: Groups of notes gathered by hand (L-world-class-172), a sheet too.
   sheetRow("ph:folders Groups", "Notes you gathered by hand, apart from categories and tags", () => openNoteGroupsSheet());
@@ -167,6 +127,51 @@ function drawSidebar() {
   sidebarRovingRows(ul);
   foldSide();
 }
+
+//: **One shape for the rows that are not categories** (Drafts, Favourites,
+//: Meetings): a glyph and a name, a count, the current one marked, a press
+//: that filters. Three hand-built copies of these eleven lines were how the
+//: second and third came to exist; INBOX 644's Meetings made it a helper.
+drawSidebar.filterRow = (ul, label, count, current, title, run) => {
+  const li = document.createElement("li");
+  li.className = "category-drafts-row";
+  if (current) markSidebarRowCurrent(li);
+  wireSidebarRowKeys(li);
+  const name = document.createElement("span");
+  name.className = "category-name";
+  setLabel(name, label);
+  const badge = document.createElement("span");
+  badge.className = "count";
+  badge.textContent = count;
+  li.append(name, badge);
+  if (title) li.title = title;
+  li.addEventListener("click", run);
+  ul.appendChild(li);
+  return li;
+};
+drawSidebar.toggleFilter = (drafts) => () => {
+  if (drafts) draftsOnly = !draftsOnly;
+  else favouritesOnly = !favouritesOnly;
+  if (drafts) favouritesOnly = false;
+  else draftsOnly = false;
+  activeCategory = null;
+  showNotesSection("browse");
+  renderSidebar();
+  renderEntries();
+};
+
+drawSidebar.sheetRow = (ul, label, title, open) => {
+  const row = document.createElement("li");
+  row.className = "category-drafts-row";
+  const name = document.createElement("span");
+  name.className = "category-name";
+  setLabel(name, label);
+  row.append(name);
+  row.title = title;
+  row.addEventListener("click", open);
+  wireSidebarRowKeys(row);
+  ul.appendChild(row);
+};
 
 //: **One tab stop for the whole category list** (UX1: 62 stops for 31
 //: categories, every name and then its ⋯, before the first note). The row that
