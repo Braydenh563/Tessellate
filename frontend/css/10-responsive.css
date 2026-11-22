@@ -151,6 +151,18 @@
   header#top-bar {
     min-height: calc(max(2.75rem, 44px) + 4px + 2 * var(--header-pad-y) + 1px);
   }
+  /* **A mouse keeps the laptop bar** (WORLD_CLASS_PLAN 22.4, shell pass): the
+     44px strip is for an iPad in landscape. At 1093x614 with a mouse it made
+     the bar 56 against 44 at 1280, 12px of a 614px window, for a pointer
+     that needs no more than the 32px row above 1200. */
+  @media (hover: hover) and (pointer: fine) {
+    #tab-bar {
+      --target-min: 1.75rem;
+    }
+    header#top-bar {
+      min-height: 0;
+    }
+  }
 }
 /* A count on a tab is a badge on its glyph, not a word beside it, wherever the
    strip is narrow enough to care (everything below 1100: band 2's icons, band
