@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: the five largest functions (`wbInitPointer` 1273 lines, `wbInitPan` 990, `wbInitMenus` 978, `renderWhiteboard` 957, `renderWbObjects` 901) are split by job into named pieces under 150 lines each, with no change to behaviour or event order; their rows left the size seed (L-whiteboard-78).
 - Docs: the copies of CHANGELOG, CONTRIBUTING and SECURITY under docs/ are gone (L787, owner decision 2026-11-12); the site links to the root files, and tests/test_docs_site.py now fails if a copy comes back.
 - Companion: its face holds still while the board under it pans or zooms, and while it is carried (that rule was outranked and never applied), so its idle loop stops restyling each frame; worst pan step at 500 topics on a long-lived notebook went from 466 to 523ms to 52 to 77ms (mapperf; 32 to 36ms with the companion off).
 - Mind map: a zoom step leaves the small-topic grip marks to the settle, so the worst zoom step at 500 topics went from 64 to 96ms back to 41 to 48ms (mapperf, two fresh runs).
