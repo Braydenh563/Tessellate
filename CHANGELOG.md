@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- ARCHITECTURE: document revisions, the packaged app's MCP, the MSI and asset caching now say what the code does (L-general-22).
 - Filing: a purged note's id is no longer left on another note as its "looks like a duplicate of" pointer, which named an unrelated new note once the id was reused; a launch sweep clears ones already left (L-general-21).
 - Web fetch guard: a NAT64 address (64:ff9b::/96) is judged by the IPv4 address it carries, so NAT64 forms of loopback and the metadata service are refused on Python 3.11 and 3.12 too (L-general-1).
 - Recorder: "What is this recording?" keeps a gap above its field's focus ring (the ring drew 4px into the label; now 2.4px clear at 1440 and 10.4px at 390, `--space-2` as the New space label; `tests/test_recording_label_gap_1122.py`).

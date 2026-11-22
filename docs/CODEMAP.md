@@ -32675,14 +32675,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4483 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4375 |
-| Needs hardware | docs/roadmap/LEDGER.md:470 |
+| Needs hardware | docs/roadmap/LEDGER.md:469 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:466 |
+| Owner calls | docs/roadmap/LEDGER.md:465 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4264 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32864,7 +32864,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1850 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:597 |
+| Plan session briefs | docs/roadmap/LEDGER.md:596 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Real-model run: several tool calls in one reply (L-world-class-69) | docs/roadmap/BACKLOG.md:709 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
@@ -32920,25 +32920,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:613 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:697 |
+| chat | docs/roadmap/LEDGER.md:612 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:696 |
 | documents | docs/roadmap/LEDGER.md:73 |
-| documents | docs/roadmap/LEDGER.md:637 |
+| documents | docs/roadmap/LEDGER.md:636 |
 | general | docs/roadmap/LEDGER.md:440 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:601 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:709 |
+| graph | docs/roadmap/LEDGER.md:600 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:708 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4392 |
 | mindmap | docs/roadmap/LEDGER.md:89 |
-| mindmap | docs/roadmap/LEDGER.md:649 |
+| mindmap | docs/roadmap/LEDGER.md:648 |
 | timeline | docs/roadmap/LEDGER.md:208 |
-| timeline | docs/roadmap/LEDGER.md:673 |
+| timeline | docs/roadmap/LEDGER.md:672 |
 | ui-modernisation | docs/roadmap/LEDGER.md:91 |
-| ui-modernisation | docs/roadmap/LEDGER.md:661 |
+| ui-modernisation | docs/roadmap/LEDGER.md:660 |
 | whiteboard | docs/roadmap/LEDGER.md:28 |
-| whiteboard | docs/roadmap/LEDGER.md:625 |
+| whiteboard | docs/roadmap/LEDGER.md:624 |
 | world-class | docs/roadmap/LEDGER.md:210 |
-| world-class | docs/roadmap/LEDGER.md:685 |
+| world-class | docs/roadmap/LEDGER.md:684 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |
