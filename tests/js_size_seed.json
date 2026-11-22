@@ -6,7 +6,6 @@
  "app-features.js::paletteCommands": 272,
  "app.js::startApp": 161,
  "ask-compose.js::askQuestion": 372,
- "atlas-motion.js::atlasRigFrame": 153,
  "atlas.js::atlasBody": 282,
  "atlas.js::atlasBuild": 287,
  "atlas.js::atlasBuildDefs": 218,

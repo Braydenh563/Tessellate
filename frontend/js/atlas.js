@@ -3103,6 +3103,43 @@ function atlasAuraAt(spec) {
 //: Every layer carries the mood and look attributes, so the CSS variables
 //: agree across them, and the lids layer mirrors the head's tilt.
 const ATLAS_ROOT_BOXES = ["body", "tail", "lower", "leg-l", "leg-r", "neb", "neb-front", "wisps", "wisps-back", "glint-a", "glint-b"];
+//: Why the figure is built the way `atlasDrawFigure` builds it, moved out of the function so it stays under the size cap
+//: (js_size_seed.json); each note says which part of the loop or of the tail of the function it explains.
+//: In the layer loop, where each root is put in its box:
+//: **A `rotate` or `translate` loop goes on a box of its own.** The
+//: body's slow sway, the tail's and the nebula's flow, the skirt's and
+//: the legs' limb gestures (`nameMarkBuddyLimbs`, rotate and scale; a
+//: leg's step, kick and dangle are `transform`, which an svg root
+//: does run on the compositor): Chromium never runs those two
+//: properties on the compositor for an `<svg>` root, so each restyled
+//: the page every frame (140 to 500ms of every 2.6s). On a plain HTML
+//: box they do, so the root sits in one (`.atl-lw`).
+//: **The lids breathe and sway with the face** (INBOX 540). The body
+//: layer breathed on its own root and swayed on its box, and the lids
+//: layer did neither, so a blink landed up to a unit off the eye it
+//: covered (measured: 0.9px at 1x, the right eye's white showing past
+//: the lid). Now the body's box holds a breathing box of its own
+//: (`.atl-lw-breathe`, the loop moved there from the root) and both
+//: the body and the lids roots sit in it.
+//: **The hair, a layer of its own** (INBOX 554, 564: secondary motion
+//: on the compositor). The mane is drawn behind the head in a root of
+//: its own, under the body's, in a box (`.atl-lw-hair`) that sways it
+//: about its roots a beat behind the body's sway, so the hair trails
+//: the head; the box is inside the body's breathing box, so it breathes
+//: and sways with the figure as well.
+//: The tip half turns about the joint in a box of its own inside the
+//: tail's box (`.atl-lw-tip`), so the root's sway carries it and its
+//: own sway, a quarter behind, is the wave.
+//: After the loop, where the lower body is seated in the body's breathing box:
+//: **The lower body moves with the torso** (INBOX 615, the owner: "the
+//: atlas masculine main body and lower body are slightly misaligned").
+//: The body's box swayed about the feet and breathed, and the lower
+//: body's box did neither, so at the join, where the torso fades into it,
+//: the two outlines slid apart by up to 3.4px at 2.2x at rest, and further
+//: through a change of pose (atlas615-join.js). Its box now sits in the
+//: body's breathing box, first, under the hair and the body as before, so
+//: every sway and breath moves the two as one; what it does of its own
+//: (its wind, its pose for the state) turns about the join itself.
 function atlasDrawFigure(mood) {
   const look = atlasLook();
   const frag = document.createDocumentFragment();
@@ -3157,30 +3194,6 @@ function atlasDrawFigure(mood) {
     const pose = atlasGroup(svg, "atl-pose", ATLAS_GEO.feet);
     const rig = atlasGroup(atlasGroup(pose, "atl-mood", ATLAS_GEO.feet), "atl-rig", ATLAS_GEO.feet);
     layers[name] = { svg, pose, rig };
-    //: **A `rotate` or `translate` loop goes on a box of its own.** The
-    //: body's slow sway, the tail's and the nebula's flow, the skirt's and
-    //: the legs' limb gestures (`nameMarkBuddyLimbs`, rotate and scale; a
-    //: leg's step, kick and dangle are `transform`, which an svg root
-    //: does run on the compositor): Chromium never runs those two
-    //: properties on the compositor for an `<svg>` root, so each restyled
-    //: the page every frame (140 to 500ms of every 2.6s). On a plain HTML
-    //: box they do, so the root sits in one (`.atl-lw`).
-    //: **The lids breathe and sway with the face** (INBOX 540). The body
-    //: layer breathed on its own root and swayed on its box, and the lids
-    //: layer did neither, so a blink landed up to a unit off the eye it
-    //: covered (measured: 0.9px at 1x, the right eye's white showing past
-    //: the lid). Now the body's box holds a breathing box of its own
-    //: (`.atl-lw-breathe`, the loop moved there from the root) and both
-    //: the body and the lids roots sit in it.
-    //: **The hair, a layer of its own** (INBOX 554, 564: secondary motion
-    //: on the compositor). The mane is drawn behind the head in a root of
-    //: its own, under the body's, in a box (`.atl-lw-hair`) that sways it
-    //: about its roots a beat behind the body's sway, so the hair trails
-    //: the head; the box is inside the body's breathing box, so it breathes
-    //: and sways with the figure as well.
-    //: The tip half turns about the joint in a box of its own inside the
-    //: tail's box (`.atl-lw-tip`), so the root's sway carries it and its
-    //: own sway, a quarter behind, is the wave.
     if (name === "tail-tip" && frag.querySelector(".atl-lw-tail")) {
       const tip = document.createElement("span");
       tip.className = "atl-lw atl-lw-tip";
@@ -3239,15 +3252,6 @@ function atlasDrawFigure(mood) {
       frag.appendChild(box);
     } else frag.appendChild(loopBox(name, svg));
   }
-  //: **The lower body moves with the torso** (INBOX 615, the owner: "the
-  //: atlas masculine main body and lower body are slightly misaligned").
-  //: The body's box swayed about the feet and breathed, and the lower
-  //: body's box did neither, so at the join, where the torso fades into it,
-  //: the two outlines slid apart by up to 3.4px at 2.2x at rest, and further
-  //: through a change of pose (atlas615-join.js). Its box now sits in the
-  //: body's breathing box, first, under the hair and the body as before, so
-  //: every sway and breath moves the two as one; what it does of its own
-  //: (its wind, its pose for the state) turns about the join itself.
   const lowerBox = [...frag.children].find((el) => el.classList.contains("atl-lw-lower"));
   const breathe = frag.querySelector(".atl-lw-breathe");
   if (lowerBox && breathe) {
