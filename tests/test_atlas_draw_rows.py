@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -19,7 +21,6 @@ def test_atlasrest1402_setup_uses_prefs_not_removed_selects():
 
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
-from tests._js_scope import unwrapped
 MOTION = unwrapped((ROOT / "frontend/js/atlas-motion.js").read_text(encoding="utf-8"))
 
 
