@@ -25,9 +25,9 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
 
 
 def test_the_server_keeps_the_words_it_is_given(client):
@@ -69,7 +69,7 @@ def test_the_browser_rebuilds_its_set_when_preferences_change():
     is not the array the set was built from. A version that memoises on the
     truthiness of the set alone is the bug, and it reads as correct.
     """
-    source = DOCUMENTS_JS.read_text(encoding="utf-8")
+    source = documents_text()
     body = re.search(r"function docDictionary\(\) \{(.*?)\n\}", source, re.S)
     assert body, "docDictionary() is gone or has been renamed"
     text = body.group(1)
@@ -94,7 +94,7 @@ def test_the_optimistic_add_is_pinned_to_the_preferences_it_speaks_for():
     """The other half: `docDictionaryWrite` sets the new set before its PUT
     resolves, so it must also claim the current source, or a read in that
     window rebuilds from the old array and throws the new word away."""
-    source = DOCUMENTS_JS.read_text(encoding="utf-8")
+    source = documents_text()
     body = re.search(r"async function docDictionaryWrite\(words\) \{(.*?)\n\}", source, re.S)
     assert body, "docDictionaryWrite() is gone or has been renamed"
     assert "docDictionarySource =" in body.group(1), (

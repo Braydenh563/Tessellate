@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import json
 import re
+
+from tests._app_js import documents_text
 import shutil
 import subprocess
 from pathlib import Path
@@ -17,7 +19,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS = (ROOT / "frontend/js/documents.js").read_text(encoding="utf-8")
+DOCUMENTS = documents_text()
 CSS = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
 
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")

@@ -85,3 +85,39 @@ def test_the_export_dialog_offers_it():
     table = js[start : js.index("\n];\n", start)]
     assert 'value: "folder", label: "Folder with notes"' in table
     assert '"/export/board-folder"' in table
+
+
+def test_a_large_board_is_built_on_disk_not_in_memory(tmp_path):
+    """Review 6008796874, finding 7: the uploads, the zip and the response were
+    each held whole, over 300 MB at the cap. Now the uploads are copied in
+    1 MB chunks into a zip that spills to disk past 4 MB. Measured with a
+    24 MB PNG: the old path peaked above 48 MB (the bytes plus the zip)."""
+    import os
+    import tracemalloc
+
+    from tessellate.api.routes_settings_transfer import _stream_and_close, build_board_folder
+
+    png_path = tmp_path / "board.png"
+    with png_path.open("wb") as out:
+        out.write(b"\x89PNG\r\n\x1a\n")
+        for _ in range(24):
+            out.write(os.urandom(1024 * 1024))
+    svg = io.BytesIO(SVG.encode())
+    with png_path.open("rb") as png:
+        tracemalloc.start()
+        try:
+            spool = build_board_folder(svg, png, "big", None)
+            size = sum(len(chunk) for chunk in _stream_and_close(spool))
+            _, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+    assert size > 24 * 1024 * 1024
+    assert peak < 8 * 1024 * 1024, f"peak {peak / 1e6:.1f} MB"
+
+
+def test_a_picture_past_the_cap_is_refused(client, monkeypatch):
+    from tessellate.api import routes_settings_transfer as transfer
+
+    monkeypatch.setattr(transfer, "BOARD_PNG_MAX", 16)
+    assert _post(client, "x", SVG, [], png=PNG + b"x" * 32).status_code == 413
+    assert _post(client, "x", "<svg>\xff</svg>".encode("latin-1"), []).status_code == 422

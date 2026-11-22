@@ -11,6 +11,7 @@ assistant panel's contracts. The UI itself is measured by
 """
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import re
@@ -892,7 +893,8 @@ def test_a_code_file_spell_checks_comments_and_strings_only():
     assert "string|template" in mask and "comment" in mask
     spell = _fn(docs, "docCmSpellcheck")
     assert "!docFileType().previewable" in spell
-    assert "docOpenSuggestFor(finding, false, point)" in docs[docs.index("DOC_HOVER_SUGGEST_MS =") :]
+    #: The hover wiring stays in documents.js, the constant moved to documents-findings.js (L-documents-117): no slice order between them.
+    assert "DOC_HOVER_SUGGEST_MS =" in docs and "docOpenSuggestFor(finding, false, point)" in docs
 
 
 # Audit 1028 D8: the ASCII word regex split "café" into "caf" and "naïve" into
@@ -969,6 +971,6 @@ def test_a_hash_tag_in_the_read_view_is_a_chip_that_searches_documents():
     )
     assert got["a"] == ["fix ", ["wip"], " and C# plus ##x then ", ["a-b"], ", #9 done"]
     assert got["b"] == ["no tags here"] and got["c"] == [["Start"]]
-    assert "docEmbedFill.tagChips(preview)" in (JS / "documents.js").read_text(encoding="utf-8")
+    assert "docEmbedFill.tagChips(preview)" in frontend_text("documents.js")
     assert 'openFinder("#" + tag, { kind: "document" })' in embeds
     assert "SKIP_TAG_CHIPS" in embeds and "closest(" in embeds

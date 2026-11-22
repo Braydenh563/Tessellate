@@ -51,7 +51,10 @@ const ok = (n, c, d) => { c ? good++ : bad++; console.log(`${c ? "PASS" : "FAIL"
   // Heights: one per tab, survive a reload
   const want = { output: 210, problems: 260, tests: 180, console: 300 };
   for (const [tab, h] of Object.entries(want)) {
-    await page.evaluate(([t, px]) => { docRunShowTab(t); docIdeRunApply(docRun.dom, px); }, [tab, h]);
+    //: Through the grip a person drags (`docIdeRunApply` is private to documents-ide.js's wrapper since its split).
+    await page.evaluate((t) => docRunShowTab(t), tab);
+    const g = await page.evaluate(() => { const r = document.querySelector(".doc-run-resize").getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, h: document.querySelector(".cm-run-panel").getBoundingClientRect().height }; });
+    await page.mouse.move(g.x, g.y); await page.mouse.down(); await page.mouse.move(g.x, g.y - (h - g.h), { steps: 4 }); await page.mouse.up();
   }
   // Fix the edit so the run is clean, then run and use the console
   await page.evaluate(() => { const d = docCmView.state.doc; const l = d.line(8); docCmView.dispatch({ changes: { from: l.from, to: l.to, insert: "const fixed = 1;" } }); });

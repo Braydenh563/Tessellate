@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import help_chat
 from tessellate.ai.provider import ProviderError
 from tessellate.api import routes_entries
+from tessellate.api.chat_agent import stop_when_gone
 from tessellate.api.schemas import EntryCreate
 from tessellate.core import activity, deps
 from tessellate.core.deps import get_session
@@ -114,8 +115,9 @@ def ask_stream(body: AskBody) -> StreamingResponse:
         ):
             yield json.dumps(event) + "\n"
 
+    stop = activity.StopEvent()
     return StreamingResponse(
-        activity.tracked_stream("generation", "Answering in the Guide", lines(), stopped_line=activity.STOPPED_DONE),
+        stop_when_gone(stop, activity.tracked_stream("generation", "Answering in the Guide", lines(), stop_event=stop, stopped_line=activity.STOPPED_DONE)),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )

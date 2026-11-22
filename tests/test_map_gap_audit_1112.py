@@ -1,6 +1,7 @@
 """The gap audit's topic tools (MINDMAP_PLAN rows 5 to 8, 9, 12): the pure parts
 run in node, and the doors are checked where a person finds them."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -11,8 +12,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MORE = (JS / "whiteboard-map-more.js").read_text(encoding="utf-8")
-MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
-BOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
+BOARD = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:

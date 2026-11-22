@@ -7,6 +7,7 @@ parts run in node against the source; the browser half is
 `scratchpad/ui-sweeps/wbwaypoints.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 FORMAT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 FUNCTIONS = (

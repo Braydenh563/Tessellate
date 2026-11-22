@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from tests._help_text import help_chat_text
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -23,7 +24,7 @@ CM_JS = ROOT / "frontend" / "vendor" / "codemirror" / "codemirror.min.js"
 
 
 def _table() -> str:
-    docs = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
+    docs = documents_text()
     return docs[docs.index("// DOC-COMMANDS-BEGIN") : docs.index("// DOC-COMMANDS-END")]
 
 
@@ -62,6 +63,6 @@ def test_the_prose_panel_lists_harper_findings_with_the_rest() -> None:
     Harper's findings (source "harper") are in the list it draws from."""
     prose = (JS / "documents-prose.js").read_text(encoding="utf-8")
     assert 'source: "harper"' in prose
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "docGrammarFindings" in prose and "docProseFound" in docs
     assert 'id="doc-prose-panel"' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

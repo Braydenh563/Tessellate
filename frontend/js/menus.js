@@ -1286,7 +1286,11 @@ function wireMenuKeyboard(menu, opener) {
   //: which leaves a menu wired here alone.
   menu.dataset.menuKeys = "1";
   menu.addEventListener("keydown", (event) => {
-    const menuItems = [
+    //: The board's two-column View menu holds its groups in columns and its rows are switches,
+    //: selects and a ⋯ as well as menuitems: the list below found none, so ArrowDown stuck on
+    //: the first row and Escape returned before closing it (menus.js at 1440). It walks every
+    //: control it shows, as the delegated walker does for markup menus.
+    const menuItems = menu.querySelector(":scope > .wb-menu-col") ? menuRowsOf(menu) : [
       ...menu.querySelectorAll(
         //: `role="option"` too: an enhanced select's listbox is wired here, and
         //: with menuitems alone its arrow keys found nothing and returned,

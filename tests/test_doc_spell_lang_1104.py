@@ -3,6 +3,7 @@ cannot spell French, so a document marked as another language gets no spelling c
 language pack is installed, rather than every word flagged."""
 
 from __future__ import annotations
+from tests._app_js import frontend_text
 
 import json
 import shutil
@@ -11,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-SOURCE = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("documents.js")
 
 
 def _block(start: str) -> str:

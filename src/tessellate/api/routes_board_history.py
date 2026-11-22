@@ -45,8 +45,8 @@ from sqlalchemy.orm import Session
 from tessellate.core import clock
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, WhiteboardNode, WhiteboardObject, WhiteboardSketch
-from tessellate.core.deps import get_session
 from tessellate.repo import whiteboard as whiteboard_repo
+from tessellate.core.deps import get_session
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -143,6 +143,14 @@ def _board_events(db: Session, board_id: int | None, current: dict[str, object])
     return out
 
 
+def _begins(row: AuditLog) -> bool:
+    """An event that made the item: `created`, or a card's `placed` that did
+    not find the note already on the board (`existing` false)."""
+    if row.action == "placed":
+        return (row.payload or {}).get("existing") is False
+    return row.action == "created"
+
+
 def _is_delete(row: AuditLog) -> bool:
     after = (row.payload or {}).get("after")
     return row.action == "deleted" or after == events.DELETED
@@ -152,7 +160,7 @@ def _state_before_log(kind: str, first: AuditLog, row_now: object) -> tuple[bool
     """Whether an item was there before its log began, and as what: as its
     first event's `before` says, or failing that as it is now (the nearest
     thing known). None when it was there and nothing says how."""
-    if first.action == "created":
+    if _begins(first):
         return False, {}
     before = (first.payload or {}).get("before")
     if isinstance(before, dict):
@@ -172,7 +180,7 @@ def _replay(rows: list[AuditLog], event_id: int, present: bool, state: dict) -> 
         payload = row.payload or {}
         if events.is_compacted(row):
             unknown = True
-            if row.action == "created":
+            if _begins(row):
                 present = True
             elif _is_delete(row):
                 present = False
@@ -185,7 +193,7 @@ def _replay(rows: list[AuditLog], event_id: int, present: bool, state: dict) -> 
             #: A `created` starts the row afresh: SQLite hands a deleted
             #: row's id to the next row made (no AUTOINCREMENT), so one
             #: id's log can hold two items, the second starting here.
-            if payload.get(events.COMPACTED) or row.action == "created":
+            if payload.get(events.COMPACTED) or _begins(row):
                 state, unknown = dict(after), False
             else:
                 state.update(after)
@@ -238,7 +246,7 @@ def _moments(rows: list[AuditLog]) -> list[dict]:
             out.append(current)
         current["first_id"] = row.id
         current["count"] += 1
-        if row.action == "created":
+        if _begins(row):
             current["added"] += 1
         elif _is_delete(row):
             current["removed"] += 1
@@ -394,6 +402,41 @@ def board_at(event_id: int, board_id: int | None = None, db: Session = Depends(g
         if row is not None:
             out[{"node": "nodes", "sketch": "sketches", "object": "objects"}[kind]].append(row)
     return out
+
+
+@router.post("/history/{event_id}/narrate")
+def narrate_change(event_id: int, board_id: int | None = None, against: int | None = None, db: Session = Depends(get_session)) -> dict:
+    """What changed between this version and `against` (the board now when
+    absent), in words (L-whiteboard-11): the composer's sentences from the
+    diff, rewritten by the local model when one runs, on a job thread with a
+    timeout. Nothing is saved."""
+    from tessellate.ai.ollama_client import OllamaError
+    from tessellate.api import wb_narrate
+    from tessellate.core import deps, jobs
+
+    board_id = _board_param(board_id)
+    _require_board(db, board_id)
+    for wanted in (event_id, against):
+        if wanted is not None and whiteboard_repo.audit_event(db, wanted) is None:
+            raise HTTPException(status_code=404, detail="That version could not be found.")
+    current = _current_rows(db, board_id)
+    logs = _board_events(db, board_id, current)
+    first, second = sorted((event_id, against if against is not None else 2**62))
+    older, known_a = _states_at(board_id, current, logs, first)
+    newer, known_b = _states_at(board_id, current, logs, second)
+    if not (known_a and known_b):
+        raise HTTPException(status_code=410, detail="That version is older than the board's history keeps in full, so it cannot be compared.")
+    text = wb_narrate.summary(wb_narrate.diff(db, older, newer))
+    ollama = deps.get_ollama()
+    if text != wb_narrate.NOTHING and ollama.is_running():
+        flight = jobs.future("board changes", wb_narrate.rewrite, text, deps.get_model_manager(), ollama)
+        try:
+            told = flight.result(timeout=wb_narrate.NARRATE_SECONDS)
+        except (OllamaError, TimeoutError):
+            told = ""
+        if told:
+            return {"summary": told, "by": "model"}
+    return {"summary": text, "by": "composer"}
 
 
 class RestoreBody(BaseModel):

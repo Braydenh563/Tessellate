@@ -17,6 +17,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPORT = ROOT / "frontend" / "js" / "documents-export.js"
@@ -87,7 +88,7 @@ def test_the_download_row_is_in_the_menu_the_palette_and_the_code_file_hide() ->
     assert 'id="doc-export-slides"' in markup
     near = markup[markup.index('id="doc-export-slides"') - 1500 :][:3500]
     assert 'id="doc-export-html"' in near
-    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert re.search(r'"doc-export-html", "doc-export-slides", "doc-export-zip"', docs)
     assert 'id: "export-slides"' in docs
     # a property of the HTML stand-in, not a new name in the shared scope (the ratchet)

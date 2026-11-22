@@ -21,6 +21,7 @@ because the suite cannot open a board; if one fails, the question to ask is
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -29,7 +30,7 @@ ROOT = Path(__file__).resolve().parent.parent
 #: whiteboard-map.js verbatim on 2026-09-24, and the renderer and the
 #: gestures that call into it stayed in whiteboard.js.
 WB = "\n".join(
-    (ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "whiteboard-map.js")
+    frontend_text(n) for n in ("whiteboard.js", "whiteboard-map.js", "whiteboard-map-record.js")
 )
 
 
@@ -179,7 +180,8 @@ def test_a_link_finds_its_two_paths_once_per_gesture() -> None:
     the document a second, for elements a keyed render does not replace."""
     body = _code("wbUpdateLinkedSketches")
     assert "entry.el.isConnected" in body
-    assert body.count("document.querySelector") == 1
+    #: The active board's lookup since L-whiteboard-55; still one.
+    assert body.count("document.querySelector") + body.count("wbInstances.query") == 1
 
 
 def test_a_synchronous_render_calls_off_the_queued_one() -> None:

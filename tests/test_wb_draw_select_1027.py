@@ -4,13 +4,15 @@ tool so strokes continue. Undo is the one `create` entry, so one step."""
 
 from __future__ import annotations
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _commit_block() -> str:
-    start = WB.index('const res = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify(sketchData) });')
+    #: L634: the pen's commit moved to whiteboard-strokes.js, read after whiteboard-drag.js, which
+    #: posts a sketch with the same line; so the search starts at the stroke handlers.
+    start = WB.index('const res = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify(sketchData) });', WB.index("function wbInitStrokes("))
     return WB[start:start + 1600]
 
 

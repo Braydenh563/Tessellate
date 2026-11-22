@@ -594,7 +594,7 @@ const loadResponseModes = (() => {
       if (active) select.title = active.description;
     }
   };
-  onSurface("chat", paint); onSurface("notes", paint); // Notes' quick-ask holds an Answer length list too (L-general-71)
+  onSurface("chat", paint); onSurface("notes", paint); // the Ask box's Answer length list is built with Notes (L-general-71)
   return async () => {
     body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
     paint();

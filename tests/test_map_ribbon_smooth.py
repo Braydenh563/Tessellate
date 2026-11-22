@@ -7,6 +7,7 @@ samples (`wbMapSmoothThrough`), and a longer branch gets more samples.
 The browser measurement is scratchpad/ui-sweeps/bm1005-curve.js.
 """
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -16,7 +17,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
 
 
 def _function(name: str) -> str:

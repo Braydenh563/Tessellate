@@ -93,6 +93,9 @@ OPEN = {
     # 404 until it is installed (tests/test_run_sandbox.py).
     "/documents/run-sandbox/python",
     "/documents/pyodide/{name}",
+    # Ruff's module and wasm (L-documents-50): the page import()s the module, which cannot send a token; the public
+    # release out of the extra's folder, only the names it unpacks, 404 until installed (tests/test_run_sandbox.py).
+    "/documents/ruff/{name}",
     #: The offline translator's engine and model (routes_translate.files_router):
     #: a Worker's fetch carries no token, and the files are public, nothing of
     #: the notebook's (Brief 83).

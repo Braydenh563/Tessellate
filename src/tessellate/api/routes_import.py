@@ -15,22 +15,18 @@ import tempfile
 import time
 import zipfile
 from pathlib import Path
-from typing import BinaryIO
+from typing import Any, BinaryIO, Callable, Coroutine
 
 import json
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.formparsers import MultiPartException
+from fastapi.routing import APIRoute
 from sqlalchemy.orm import Session
 
-from tessellate.api import bounds
 from tessellate.core import activity, deps, jobruns
 from tessellate.core.deps import get_session
 from tessellate.entry import app_import, export_folder, import_report, manager
-
-router = APIRouter(tags=["import"], route_class=bounds.FolderUploadRoute)
 
 #: Files in one request: a vault picked as a folder is many files.
 MAX_FILES = 5000
@@ -38,26 +34,26 @@ MAX_FILES = 5000
 EMBED_BATCH_NOTES = 100
 
 
-class _Upload:
-    """The parts of an app import: the files and the unticked keys."""
+class _ManyFilesRoute(APIRoute):
+    """Parses a multipart body with this import's own file cap before FastAPI
+    reads it (L-world-class-411). Starlette refuses more than 1,000 file parts
+    by default, so a folder of 5,000 notes got "Too many files" before
+    `MAX_FILES` was read. The form is cached on the request, so FastAPI's own
+    `request.form()` returns this one; one over the cap is let through so
+    `_received` refuses it in the import's own words."""
 
-    def __init__(self, files: list[UploadFile], exclude: str) -> None:
-        self.files, self.exclude = files, exclude
+    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+        handler = super().get_route_handler()
+
+        async def handle(request: Request) -> Response:
+            if request.headers.get("content-type", "").startswith("multipart/form-data"):
+                await request.form(max_files=MAX_FILES + 1)
+            return await handler(request)
+
+        return handle
 
 
-async def _upload_form(request: Request) -> _Upload:
-    """The form read here, not by FastAPI: its parser keeps Starlette's limit of 1,000
-    files, so a vault picked as a folder of more notes was refused before `MAX_FILES`
-    could answer (L-world-class-411). Over the cap, the refusal is the route's own words."""
-    try:
-        form = await request.form(max_files=MAX_FILES, max_fields=100)
-    except (MultiPartException, StarletteHTTPException) as exc:
-        if "files" not in str(getattr(exc, "detail", None) or getattr(exc, "message", exc)).lower():
-            raise
-        raise HTTPException(status_code=422, detail=f"More files at once than one import takes ({MAX_FILES}).") from exc
-    files = [part for part in form.getlist("files") if not isinstance(part, str)]
-    exclude = form.get("exclude")
-    return _Upload(files, exclude if isinstance(exclude, str) else "")
+router = APIRouter(tags=["import"], route_class=_ManyFilesRoute)
 
 
 def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:
@@ -123,10 +119,11 @@ def _refuse_open_private_while_locked(source: str, notes: list) -> None:
 
 @router.post("/import/app", status_code=201)
 def import_app(
+    files: list[UploadFile],
     response: Response,
     source: str = Query(pattern="^(notion|obsidian|evernote|apple|memorymap)$"),
     dry_run: bool = Query(False),
-    upload: _Upload = Depends(_upload_form),
+    exclude: str = Form(""),
     session: Session = Depends(get_session),
 ) -> dict:
     """Read, write, and keep a report. The write is a job with progress and
@@ -135,8 +132,8 @@ def import_app(
     and the embeddings are stored and committed in batches (L508)."""
     from tessellate.api.routes_settings_transfer import _parse_frontmatter
 
-    left_out = _excluded(upload.exclude)
-    raw = _received(upload.files)
+    left_out = _excluded(exclude)
+    raw = _received(files)
     label = app_import.LABELS[source]
     t0 = time.perf_counter()
     try:

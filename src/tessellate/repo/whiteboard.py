@@ -135,8 +135,29 @@ def children_of(db: Session, parent_id: int) -> list[WhiteboardObject]:
     return list(db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == parent_id)).all())
 
 
-def objects_of_kinds(db: Session, board_id: int, kinds) -> list[WhiteboardObject]:  # noqa: ANN001
-    """A board's objects whose kind is one of `kinds`."""
-    return list(
-        db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id, WhiteboardObject.kind.in_(kinds))).all()
-    )
+def objects_of_kinds(db: Session, board_id: int | None, kinds: tuple[str, ...]) -> list[WhiteboardObject]:
+    """The board's objects of these kinds (frames for bindings, words for a name)."""
+    where = (WhiteboardObject.board_id == board_id, WhiteboardObject.kind.in_(kinds))
+    return list(db.scalars(select(WhiteboardObject).where(*where)).all())
+
+
+def board_nodes(db: Session, board_id: int) -> list[WhiteboardNode]:
+    """The board's note cards, oldest first."""
+    return list(db.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id == board_id).order_by(WhiteboardNode.id)).all())
+
+
+def entry(db: Session, entry_id: int) -> Entry | None:
+    """The note behind a card."""
+    return db.get(Entry, entry_id)
+
+
+def entries(db: Session, ids: list[int]) -> list[Entry]:
+    """The notes behind these cards."""
+    return list(db.scalars(select(Entry).where(Entry.id.in_(ids))).all()) if ids else []
+
+
+def audit_event(db: Session, event_id: int):
+    """One audit-log row by id, or None (the board history's narrate route)."""
+    from tessellate.core.database import AuditLog
+
+    return db.get(AuditLog, event_id)

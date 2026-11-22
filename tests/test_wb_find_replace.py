@@ -5,6 +5,7 @@ nothing could be replaced. Find now reads labels; Replace all rewrites text
 boxes, shape labels and connector labels in one undo step (a card is a note,
 edited in the note). The browser half is `scratchpad/ui-sweeps/wbreplace.js`."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:

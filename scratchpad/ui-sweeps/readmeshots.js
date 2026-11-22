@@ -184,11 +184,11 @@ async function openBoard(page, name) {
 async function setBuddy(page, value) {
   await page.evaluate((v) => {
     openSettingsModal('appearance');
-    const select = document.getElementById('avatar-buddy');
+    const select = $('avatar-buddy');
     select.value = v;
     select.dispatchEvent(new Event('change', { bubbles: true }));
     if (v !== 'off') {
-      const size = document.getElementById('avatar-buddy-size');
+      const size = $('avatar-buddy-size');
       size.value = '1.3';
       size.dispatchEvent(new Event('change', { bubbles: true }));
     }

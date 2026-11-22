@@ -15,14 +15,13 @@ put back, or skip words that hold a placeholder.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
-from pathlib import Path
 
-JS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js"
 
 
 def render_sketches() -> str:
-    text = JS.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     start = text.index("sketchUpdate.each(function(d) {")
     return text[start : start + 1800]
 
@@ -34,7 +33,7 @@ def test_a_stroke_has_a_paint_key_and_a_skip():
 
 
 def test_the_key_keeps_the_pen_and_highlighter_branch_with_ink_and_mode():
-    text = JS.read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     start = text.index("const strokePaintKey = (d) =>")
     fn = text[start : text.index("sketchUpdate.each(function(d) {", start)]
     assert "wbBoardBg()" in text[start - 600 : start]

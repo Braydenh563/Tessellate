@@ -11,7 +11,7 @@
 //
 //   BASE=http://127.0.0.1:8785 SCRATCH=/tmp/mm-mapfix THEME=dark \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/exportcolours.js
-const { boot } = require("./lib.js");
+const { boot, newBoard: libNewBoard } = require("./lib.js");
 const { execFileSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
@@ -25,7 +25,7 @@ function check(label, ok, detail) {
   console.log(`${ok ? "PASS" : "FAIL"}  ${label}${detail ? "  " + detail : ""}`);
 }
 function pixel(file, x, y) {
-  const out = execFileSync(PY, [path.join("scratchpad", "pngpixel.py"), file, String(Math.round(x)), String(Math.round(y))], { encoding: "utf8" });
+  const out = execFileSync(PY, [path.join(__dirname, "..", "pngpixel.py"), file, String(Math.round(x)), String(Math.round(y))], { encoding: "utf8" });
   const m = out.match(/\((\d+), (\d+), (\d+)/);
   return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
 }
@@ -38,7 +38,8 @@ async function exportSelection(page, file) {
     const buf = new Uint8Array(await blob.arrayBuffer());
     let bin = "";
     for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
-    const b = wbSelectionBounds();
+    // The bounds the export itself uses: the selection plus 24 (whiteboard-export.js, wbBuildExportSvg).
+    const b = wbSelectionBounds(24);
     return { b64: btoa(bin), minX: b.minX, minY: b.minY };
   });
   fs.writeFileSync(file, Buffer.from(res.b64, "base64"));
@@ -46,15 +47,7 @@ async function exportSelection(page, file) {
 }
 
 async function openNew(page, name, kind) {
-  await page.evaluate(() => document.querySelector('[data-tab="library"]')?.click());
-  await page.waitForTimeout(500);
-  await page.evaluate(() => document.querySelector('[data-target="library-view-whiteboard"]')?.click());
-  await page.waitForTimeout(700);
-  await page.evaluate(() => document.getElementById("wb-boards-new")?.click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", name);
-  if (kind === "map") await page.click('#wb-template-kind button[data-value="map"]');
-  await page.click("#wb-template-create");
+  await libNewBoard(page, name, kind);
   await page.waitForFunction((kind) => (kind === "map" ? wbIsMap() && wbMapIndex().roots.length > 0 : Boolean(window.currentBoardId)), kind, { timeout: 90000 });
   await page.waitForTimeout(1500);
   await page.keyboard.press("Escape");
@@ -108,7 +101,8 @@ async function openNew(page, name, kind) {
   });
   const exp = await exportSelection(page, png);
   await page.evaluate(() => { wbMultiSelection.clear(); wbApplySelectionHighlight(); });
-  await page.waitForTimeout(300);
+  // Past the selection ring's fade, or the screen pixel is part shade (1 run in 4 at 300ms).
+  await page.waitForTimeout(800);
   await page.screenshot({ path: shot });
   for (const p of probes) {
     const onScreen = pixel(shot, p.sx, p.sy);

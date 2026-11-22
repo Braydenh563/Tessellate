@@ -60,7 +60,11 @@
    (0,1,1) and to `.wb-board-menu button` (0,1,1) - both of which are real
    rules doing a real job elsewhere in their own file. Pairing the shell
    class with the row class makes every declaration here 0,2,0, which wins
-   without any `!important` and without touching the rules it outranks. */
+   without any `!important` and without touching the rules it outranks.
+   A dock menu's switch row (`.dock-menu-check`) is a row too: on its own
+   padding it stood at 34.9px with an 8px inset in Logs and 33.2px in the
+   Timeline's Options, against 34.5px and 12.8px for the buttons beside it
+   (world-class menus.js at 1440). */
 :is(
   .action-menu,
   .select-menu,
@@ -68,16 +72,63 @@
   .nav-history-menu,
   .library-image-menu-list,
   .wb-board-menu
-) :is(
-  .menu-item,
-  .doc-dock-menu-item,
-  .dock-menu-check,
-  .nav-history-item,
-  .library-image-menu-item,
-  .action-menu-item,
-  .wb-menu-item,
-  .select-option
-) {
+) .menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .doc-dock-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .nav-history-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .library-image-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .action-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .wb-menu-item,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .select-option,
+:is(
+  .action-menu,
+  .select-menu,
+  .doc-dock-menu-list,
+  .nav-history-menu,
+  .library-image-menu-list,
+  .wb-board-menu
+) .dock-menu-check {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -113,6 +164,18 @@
   text-align: left;
   cursor: pointer;
 }
+/* A value field's list (the board's zoom percent) is as wide as its values: under the
+   menu's 12.5rem floor it stood 200px wide for 80px of "150%" (menus.js at 1440). */
+.action-menu.value-field-list {
+  min-width: 0;
+}
+/* Its switch keeps the row's end, as a `.doc-dock-menu-check` switch does,
+   so its icon and words start on the buttons' columns: led by the switch,
+   Logs' labels began 34.5px in, the buttons' 21.7px (menus.js at 1440). */
+:is(.doc-dock-menu-list, .action-menu) .dock-menu-check > input[type="checkbox"] {
+  order: 1;
+  margin-inline-start: auto;
+}
 /* Under a finger the row's floor is the finger's (DESIGN.md, "Hit targets"):
    measured at 390 in a touch context, the reminders' Quick set rows stood at
    36px, the control height above, under the 44px every `button.small` beside
@@ -125,16 +188,63 @@
     .nav-history-menu,
     .library-image-menu-list,
     .wb-board-menu
-  ) :is(
-    .menu-item,
-    .doc-dock-menu-item,
-    .dock-menu-check,
-    .nav-history-item,
-    .library-image-menu-item,
-    .action-menu-item,
-    .wb-menu-item,
-    .select-option
-  ) {
+  ) .menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .doc-dock-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .nav-history-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .library-image-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .action-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .wb-menu-item,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .select-option,
+  :is(
+    .action-menu,
+    .select-menu,
+    .doc-dock-menu-list,
+    .nav-history-menu,
+    .library-image-menu-list,
+    .wb-board-menu
+  ) .dock-menu-check {
     min-height: var(--target-min);
   }
 }
@@ -248,6 +358,13 @@
 .menu-item > .menu-item-words {
   display: flex;
   align-items: center;
+  /* A submenu row wraps its icon and words in this span, so the row's own
+     gap and the lead margin zeroing below never reached them: its words sat
+     0.9px left of every other row's (menu-rows.js, L-world-class-107). */
+  gap: var(--space-2);
+}
+.menu-item > .menu-item-words > .ph-lead {
+  margin-inline-end: 0;
 }
 .menu-item .ph-text {
   min-width: 0;
@@ -415,7 +532,8 @@
 .advanced-css > summary:not(.icon-only):not(.icon-button)::before,
 .task-log > summary:not(.icon-only):not(.icon-button)::before,
 .chat-sources > .chat-sources-summary::before,
-:is(.fold-summary, .agent-step-group-summary)::after {
+.fold-summary::after,
+.agent-step-group-summary::after {
   content: "\e136"; /* ph-caret-down, as `.contents-caret` */
   display: inline-block;
   flex: none;
@@ -1336,6 +1454,10 @@ summary > .ph-lead,
   .draft-columns {
     grid-template-columns: 1fr;
   }
+  /* One column: the boxes are not beside each other, so the foot keeps its own height. */
+  .draft-columns:has(#draft-versions:not(.hidden)) .draft-foot {
+    min-height: calc(3 * var(--control-h) + 2 * (2 * var(--space-2) + 2px) + 2 * 0.4rem);
+  }
   /* The attach row is a label, a select and five labelled buttons in about
      675px. Re-merging it with the commit row below is the one fix ruled out:
      index.html:708 records why the attach family was moved out of that row.
@@ -1644,14 +1766,6 @@ summary > .ph-lead,
    two typing helpers are switch rows at the same height as the buttons. */
 .doc-dock {
   --control-h: var(--control-h-lg);
-}
-.doc-dock-identity {
-  --identity-h: var(--control-h-lg);
-}
-.doc-view-cluster {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
 }
 .doc-view-menu > summary {
   width: var(--control-h-lg);
@@ -2712,7 +2826,8 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 }
 .entry-meta.note-meta > .chip.category + .chip.filing-sure,
 .entry-meta.note-meta > .chip.tag + .chip.tag,
-.entry-meta.note-meta > .chip.tag + :is(.chip.untagged, .chip.untagged-ai),
+.entry-meta.note-meta > .chip.tag + .chip.untagged,
+.entry-meta.note-meta > .chip.tag + .chip.untagged-ai,
 .entry-meta.note-meta > .chip.untagged + .chip.untagged-ai {
   margin-inline-start: calc(var(--space-3) - var(--space-6) - var(--space-1));
 }
@@ -2986,10 +3101,15 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    the position so a tick an earlier rule pins `absolute` keeps it; the
    stacking order is all this adds, at a weight above the hover-revealed
    tick's own `.library-card .library-card-tick` (z-index 1). */
-:where(.library-card-tick, .doc-list-tick, .library-card-preview a) {
+:where(.library-card-tick),
+:where(.doc-list-tick),
+:where(.library-card-preview a) {
   position: relative;
 }
-:is(.library-card, .doc-list-item) :is(.library-card-tick, .doc-list-tick, .menu-wrap, .library-card-preview a) {
+:is(.library-card, .doc-list-item) :where(.library-card-tick):is(.library-card-tick, .library-card-preview a),
+:is(.library-card, .doc-list-item) :where(.doc-list-tick):is(.doc-list-tick, .library-card-preview a),
+:is(.library-card, .doc-list-item) :where(.menu-wrap):is(.menu-wrap, .library-card-preview a),
+:is(.library-card, .doc-list-item) :is(.library-card-preview a) {
   z-index: 2;
 }
 /* The focus is on the title, and the ring is the card's, as it was when the
@@ -3005,7 +3125,12 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.library-note, .library-document, .library-chat, .library-file, .library-tag, .library-archived) {
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-note,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-document,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-chat,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-file,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-tag,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-archived {
   box-shadow: none;
 }
 /* --- the dashboard and the labels, de-vibecoded ------------------------------
@@ -3023,15 +3148,26 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .dash-wordmark {
   display: none;
 }
-:root[data-palette="utilitarian"] :is(
-  .card h3, .eyebrow, .nav-group-label, .launch-label,
-  .contents-heading, .msg-role,
-  #palette-list li.palette-group-header, .features-group, .reminder-group-head,
-  .rich-picker-group, .note-embed-head, .doc-prose-group,
-  .wb-export-card .wb-export-label, .wb-tool-section-label,
-  .dash-widgets-group-label, .wb-panel-group-label, .connection-heading,
-  .wb-help-section-head, .finder-group, .chord-guide-title
-) {
+:root[data-palette="utilitarian"] :where(.card h3):is(.card h3, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.eyebrow):is(.eyebrow, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.nav-group-label):is(.nav-group-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.launch-label):is(.launch-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.contents-heading):is(.contents-heading, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.msg-role):is(.msg-role, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :is(#palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.features-group):is(.features-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.reminder-group-head):is(.reminder-group-head, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.rich-picker-group):is(.rich-picker-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.note-embed-head):is(.note-embed-head, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.doc-prose-group):is(.doc-prose-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-export-card .wb-export-label):is(.wb-export-card .wb-export-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-tool-section-label):is(.wb-tool-section-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.dash-widgets-group-label):is(.dash-widgets-group-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-panel-group-label):is(.wb-panel-group-label, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.connection-heading):is(.connection-heading, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.wb-help-section-head):is(.wb-help-section-head, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.finder-group):is(.finder-group, #palette-list li.palette-group-header),
+:root[data-palette="utilitarian"] :where(.chord-guide-title):is(.chord-guide-title, #palette-list li.palette-group-header) {
   text-transform: none;
   letter-spacing: 0;
 }
@@ -3341,7 +3477,8 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .graph-group-add-row {
   align-items: stretch;
 }
-.graph-group-add-row > :is(input, button) {
+.graph-group-add-row > input,
+.graph-group-add-row > button {
   height: auto;
   min-height: var(--control-h);
 }
@@ -3631,7 +3768,8 @@ body .chip.item-label,
    line of their own under the description: hidden until pointed at, that
    own line was a band of empty space at the foot of every persona and
    custom skill. The description takes the full width below. */
-:is(.persona-row, .skill-row) > :is(.persona-preview, .skill-blurb) {
+:is(.persona-row, .skill-row) > .persona-preview,
+:is(.persona-row, .skill-row) > .skill-blurb {
   order: 10;
 }
 /* **A named item is two lines, not two lines and their margins**
@@ -3649,7 +3787,8 @@ body .chip.item-label,
   padding-block: var(--space-3);
   margin-bottom: var(--space-2);
 }
-:is(.persona-row, .skill-row) {
+.persona-row,
+.skill-row {
   row-gap: var(--space-1);
 }
 .skill-row > .skill-blurb {
@@ -3917,7 +4056,8 @@ body .chip.item-label,
     opacity: 0;
     transition: opacity var(--ui-fast) var(--ease-out);
   }
-  :is(.doc-list-top, .bookmark-row) > :is(.doc-list-icon, .bookmark-mark) {
+  :is(.doc-list-top, .bookmark-row) > .doc-list-icon,
+  :is(.doc-list-top, .bookmark-row) > .bookmark-mark {
     transition: opacity var(--ui-fast) var(--ease-out);
   }
   :is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) .doc-list-tick,
@@ -3929,8 +4069,10 @@ body .chip.item-label,
     opacity: 1;
   }
   :is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark),
-  :is(.doc-list-top, .bookmark-row):has(> .doc-list-tick:checked) > :is(.doc-list-icon, .bookmark-mark),
-  :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) :is(.doc-list-icon, .bookmark-mark) {
+  :is(.doc-list-top, .bookmark-row):has(> .doc-list-tick:checked) > .doc-list-icon,
+  :is(.doc-list-top, .bookmark-row):has(> .doc-list-tick:checked) > .bookmark-mark,
+  :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) .doc-list-icon,
+  :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) .bookmark-mark {
     opacity: 0;
   }
 }
@@ -3964,7 +4106,8 @@ body .chip.item-label,
        one (muted, `--ok` once read), and the fold keeps its tonal ground,
        which is the app's rule for a disclosure, at the width of its words
        rather than as a 1,200px bar. */
-:is(.doc-list-title, .bookmark-title),
+.doc-list-title,
+.bookmark-title,
 .library-file-rows .library-image-tile > figcaption {
   font-size: var(--text-lg);
   font-weight: 600;
@@ -4056,10 +4199,8 @@ body .chip.item-label,
        a hairline edge, so a chip has a shape again without a fill that
        shouts. Only chips that are still chips; a fact that became text in
        the first pass stays text. */
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(
-  .skill-card-facts > .skill-fact,
-  .library-image-tile .chip-interactive.library-image-usage-chip
-) {
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :where(.skill-card-facts > .skill-fact):is(.skill-card-facts > .skill-fact, .library-image-tile .chip-interactive.library-image-usage-chip),
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.library-image-tile .chip-interactive.library-image-usage-chip) {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
 }
 /* 15. The timeline's facts in the note meta row's grammar (app.js, the
@@ -4333,18 +4474,18 @@ body .chip.item-label,
    `data-scrolling` on <html> for the length of a scroll gesture; the trace
    is written there). The rows themselves only: a descendant selector here
    would restyle every node of every list twice per gesture. */
-:root[data-scrolling] :is(
-  #entry-list > li,
-  .library-card,
-  .doc-list-item,
-  .bookmark-row,
-  .library-image-tile,
-  .timeline-row,
-  .skill-card
-) {
+:root[data-scrolling] :is(#entry-list > li),
+:root[data-scrolling] :where(.library-card):is(.library-card, #entry-list > li),
+:root[data-scrolling] :where(.doc-list-item):is(.doc-list-item, #entry-list > li),
+:root[data-scrolling] :where(.bookmark-row):is(.bookmark-row, #entry-list > li),
+:root[data-scrolling] :where(.library-image-tile):is(.library-image-tile, #entry-list > li),
+:root[data-scrolling] :where(.timeline-row):is(.timeline-row, #entry-list > li),
+:root[data-scrolling] :where(.skill-card):is(.skill-card, #entry-list > li) {
   transition: none;
 }
-.library-file-rows .library-image-tile > :is(figcaption, .library-file-facts, .library-image-fields) {
+.library-file-rows .library-image-tile > :where(figcaption):is(figcaption, .library-file-facts),
+.library-file-rows .library-image-tile > .library-file-facts,
+.library-file-rows .library-image-tile > .library-image-fields {
   padding-inline-start: var(--space-2);
 }
 /* --- a label that lost its capitals keeps its rank ----------------------------
@@ -4360,11 +4501,15 @@ body .chip.item-label,
    apart by colour and weight at once (DESIGN.md: weight, colour and case
    before another size step). Paper and Mono keep their capitals and are
    untouched. */
-:root[data-palette="utilitarian"] :is(
-  .card h3, .eyebrow, .nav-group-label, .launch-label,
-  .features-group, .reminder-group-head,
-  .dash-widgets-group-label, .connection-heading, .finder-group
-) {
+:root[data-palette="utilitarian"] :is(.card h3),
+:root[data-palette="utilitarian"] :where(.eyebrow):is(.eyebrow, .card h3),
+:root[data-palette="utilitarian"] :where(.nav-group-label):is(.nav-group-label, .card h3),
+:root[data-palette="utilitarian"] :where(.launch-label):is(.launch-label, .card h3),
+:root[data-palette="utilitarian"] :where(.features-group):is(.features-group, .card h3),
+:root[data-palette="utilitarian"] :where(.reminder-group-head):is(.reminder-group-head, .card h3),
+:root[data-palette="utilitarian"] :where(.dash-widgets-group-label):is(.dash-widgets-group-label, .card h3),
+:root[data-palette="utilitarian"] :where(.connection-heading):is(.connection-heading, .card h3),
+:root[data-palette="utilitarian"] :where(.finder-group):is(.finder-group, .card h3) {
   color: var(--ink);
 }
 /* The Contents index is the one list whose group names are headings over
@@ -4844,12 +4989,10 @@ body .chip.item-label,
    of the note link border and the meatball button". Measured: a 28x24 button
    (the touch target floor widened it) in a 25px-high pill, 1px from the top,
    2.2px from the bottom and 5px from the right. With a mouse it is a round
-   button two pixels inside the pill on every side, centred; a finger keeps
-   the 28px target (the pill grows around it there). L-world-class-107
-   measured it 1px from the top and the bottom but 3px from the end (a 24px
-   button in a 26px pill, plus a 2px end margin): it now ends flush, and its
-   circle is drawn 2px inside a 24px target (padding, content-box), 3px from
-   the pill's outer edge on all three sides. */
+   button the pill's inner height, concentric with its end: 0px from the
+   border above, below and to the right (L-world-class-107 measured 0, 0
+   and 2 with a 2px end margin, the fill off the cap's curve); a finger
+   keeps the 28px target (the pill grows around it there). */
 @media (pointer: fine) {
   #entry-list .link-connection > .menu-wrap {
     display: inline-flex;
@@ -4861,8 +5004,6 @@ body .chip.item-label,
     min-width: 0;
     min-height: 0;
     margin-inline-end: 0;
-    padding: 2px;
-    background-clip: content-box;
   }
 }
 /* --- A note's time: the same corner on every card --- */
@@ -5095,13 +5236,6 @@ body .chip.item-label,
   white-space: nowrap;
 }
 /* A row of three fills three columns rather than leaving a fourth empty. */
-.wb-export-overlay .seg.wb-export-seg:has(> button:nth-child(3):last-child) {
-  grid-template-columns: repeat(3, 1fr);
-}
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):hover,
-.wb-export-overlay .seg.wb-export-seg > button:not(.active):not(:disabled):is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg);
-}
 /* The same fault in every icon-only button, smaller. Measured by
    scratchpad/ui-sweeps/inkcentre.js (each button photographed at 4x with its
    glyph painted red): 46 distinct icon buttons at 1440, their boxes centred
@@ -5173,14 +5307,6 @@ body .chip.item-label,
   margin: 0;
   gap: 0;
 }
-/* "How to edit" holds four one-word modes (Live, Source, Split, Plain), 113px
-   of content in the 15rem every dock list starts at: a menu twice as wide as
-   anything in it reads as a panel with nothing in it (menus.js, the only
-   menu past 2x). The floor it gets is the width of its longest row plus air,
-   not a new size of its own. */
-.doc-view-menu > .doc-dock-menu-list {
-  min-width: 10rem;
-}
 /* `kebabMenu`'s group hairline, in a menu written in markup (Quick set). */
 .doc-dock-menu-list > .menu-sep {
   flex: none;
@@ -5191,7 +5317,13 @@ body .chip.item-label,
 :is(.action-menu, .select-menu, .doc-dock-menu-list, .nav-history-menu, .wb-board-menu)
   :is(.menu-item, .doc-dock-menu-item, .nav-history-item, .wb-menu-item) > .ph:first-child,
 :is(.action-menu, .doc-dock-menu-list, .wb-board-menu)
-  .menu-item > span:first-child > .ph:first-child {
+  .menu-item > span:first-child > .ph:first-child,
+:is(.action-menu, .doc-dock-menu-list) .dock-menu-check > .ph-lead {
+  /* A switch row's icon follows its input in the markup (drawn at the end),
+     so it is not a first child: at its own 15.6px its words began 3.9px left
+     of the buttons' (menus.js at 1440, Logs and Timeline). The board's
+     menus are a shell of their own: their group rows (Diagram, Shapes and
+     icons) kept a 15.6px icon, words 4px left of the plain rows'. */
   flex: none;
   /* A group row's icon sits inline in its label span (`buildMenuGroupButton`),
      where a width means nothing until the box is a block of its own. */
@@ -5846,7 +5978,8 @@ h3.wb-sidebar-title {
    --button-min-h)`, 01-forms-settings.css) beats `height`, so under touch
    both are 44 like every other dialog foot; an id-weight min-height here
    held them at 32 (design-rows-1005, `improvefoot.js`). */
-:is(#improve-apply, #improve-retry) {
+#improve-apply,
+#improve-retry {
   height: var(--control-h);
   padding-block: 0;
 }
@@ -5999,7 +6132,11 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
 }
 /* The fill and the corner each family's chosen option was drawn with: the
    defaults at zero specificity, so each family below wins. */
-:where(.seg, #settings-nav, #tab-bar, .tabs-line, .settings-nav-groups) {
+:where(.seg),
+:where(#settings-nav),
+:where(#tab-bar),
+:where(.tabs-line),
+:where(.settings-nav-groups) {
   --glide-x: 0px;
   --glide-y: 0px;
   --glide-w: 0px;
@@ -6023,7 +6160,8 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
 }
 /* The control edge, as `.seg button.active` and the radio form's chosen
    option draw it (INBOX 464, 621). */
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.seg, #tab-bar) {
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :where(.seg):is(.seg, #tab-bar),
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) #tab-bar {
   --glide-fill: color-mix(in srgb, var(--ink) 11%, transparent);
   --glide-ring: inset 0 0 0 1px var(--control-edge);
 }
@@ -6058,7 +6196,9 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
   /* The chosen option is the indicator's now; its own fill, line or rail
      as well would draw it twice. `:not(#glide)` lifts this over every rule
      that paints a chosen option (the flat looks' top tab is (1,3,1)). */
-  :root .has-glide > :is(.active, [aria-selected="true"], [aria-current="location"]):not(#glide):not(#glide),
+  :root .has-glide > .active:not(#glide):not(#glide),
+  :root .has-glide > [aria-selected="true"]:not(#glide):not(#glide),
+  :root .has-glide > [aria-current="location"]:not(#glide):not(#glide),
   :root .has-glide > [role="group"] > .active:not(#glide):not(#glide) {
     background: transparent;
     box-shadow: none;
@@ -6106,9 +6246,40 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
    over `--ui-base` rather than between two frames. Zero specificity, so a
    row with a transition of its own keeps it; colours only. A button has its
    own list (01-forms-settings.css, the press). */
-:where(li, .cat-row, .contents-row, .feature-row, .sheet-row, .space-option, .nav-history-item,
-  .doc-comment-item, .doc-suggest-item, .quick-link, .outline-link, .legend-item, .link-connection,
-  .library-card, .notif-row, .ocr-rail-item, .bench-row, .ask-history-item, .chat-source-row, .link-card, .web-result, .note-picker-row, .note-picker-cell, .manage-cat-row, .att-card, .doc-dictionary-row, .embed-card, .wb-library-item, .check-row, .wb-layer-row, .wb-lib-tile, label.setting-check, .setting-check, .start-step) {
+:where(li),
+:where(.cat-row),
+:where(.contents-row),
+:where(.feature-row),
+:where(.sheet-row),
+:where(.space-option),
+:where(.nav-history-item),
+:where(.doc-comment-item),
+:where(.doc-suggest-item),
+:where(.quick-link),
+:where(.outline-link),
+:where(.legend-item),
+:where(.link-connection),
+:where(.library-card),
+:where(.notif-row),
+:where(.ocr-rail-item),
+:where(.bench-row),
+:where(.ask-history-item),
+:where(.chat-source-row),
+:where(.link-card),
+:where(.web-result),
+:where(.note-picker-row),
+:where(.note-picker-cell),
+:where(.manage-cat-row),
+:where(.att-card),
+:where(.doc-dictionary-row),
+:where(.embed-card),
+:where(.wb-library-item),
+:where(.check-row),
+:where(.wb-layer-row),
+:where(.wb-lib-tile),
+:where(label.setting-check),
+:where(.setting-check),
+:where(.start-step) {
   transition: background-color var(--ui-base) var(--ease-out), border-color var(--ui-base) var(--ease-out);
 }
 /* --- motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) ----
@@ -6151,11 +6322,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 .layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed:hover,
 .layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
   --sb-peek-transform: none;
-}
-/* Focus mode opens the documents sidebar whole as its own panel, folded on
-   the page or not; its rows are where they belong there. */
-#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > * {
-  transform: none;
 }
 /* The rail's sideways name is what the sidebar folded into: it comes in as
    the contents go, rather than being there before they have left. */
@@ -6310,12 +6476,9 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    hidden simply goes. `:where()` so the recipe is zero-weight: a dialog with
    motion of its own (Settings' peek) keeps it. The lock screen is not in
    it: it is the boot's curtain, which fades out (below) rather than in. */
-/* **The cards, by class, not `& > *`** (2026-11-21): with `.hidden` before a
-   subject that names nothing, every `hidden` toggle in the app restyled the
-   toggled element's whole subtree (a Settings pane: 775 to 1,791 elements).
-   Every overlay's child is one of these three; `:where` keeps the weight.
-   tests/test_css_invalidation.py holds the shape. */
-:where(.modal-overlay, .lock-overlay:not(#lock-overlay), #palette-overlay):not(.hidden) {
+:where(.modal-overlay):not(.hidden),
+:where(.lock-overlay:not(#lock-overlay)):not(.hidden),
+:where(#palette-overlay):not(.hidden) {
   transition: opacity var(--ui-base) var(--ease-out);
   & > :where(.card, .modal-card, .sheet-card) {
     transition: translate var(--ui-slow) var(--ease-out), scale var(--ui-slow) var(--ease-out);
@@ -6357,7 +6520,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    own arrival and its rows are in 10-responsive.css (`ui-grow` on the
    overshoot, `ui-row` eight deep). The reduced-motion sheet switches the
    overshoot, the stagger and the plus's turn off (motion-still.css). */
-:where(.ph-caret-down, .contents-caret) {
+:where(.ph-caret-down),
+:where(.contents-caret) {
   transition: transform var(--ui-base) var(--ease-out);
 }
 [aria-expanded="true"] > .select-caret {
@@ -6759,17 +6923,17 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    their edge. Across, the room is padding with the same negative margin, so
    nothing moves; at the start and the end of the scroll it is padding alone
    (a few pixels the first control and the last one stand in). */
-:is(
-  .doc-sidebar-section,
-  .doc-sidebar .doc-outline-wrap,
-  .library-view-section,
-  .doc-list,
-  .wb-side-section
-) {
+:where(.doc-sidebar-section):is(.doc-sidebar-section, .doc-sidebar .doc-outline-wrap),
+:is(.doc-sidebar .doc-outline-wrap),
+:where(.library-view-section):is(.library-view-section, .doc-sidebar .doc-outline-wrap),
+:where(.doc-list):is(.doc-list, .doc-sidebar .doc-outline-wrap),
+:where(.wb-side-section):is(.wb-side-section, .doc-sidebar .doc-outline-wrap) {
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
-:is(.doc-sidebar-section, .library-view-section, .doc-list) {
+.doc-sidebar-section,
+.library-view-section,
+.doc-list {
   padding-block: var(--ring-room);
 }
 /* A whiteboard side panel's section scrolls (07-whiteboard-misc.css), and its
@@ -6785,7 +6949,10 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    on all four sides, the layout unmoved; the section above holds the same
    room across, so the list's negative margin lands in the section's padding
    and not past its edge (the sweep read that as an overflow). */
-:is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree) {
+:where(.wb-lib-list):is(.wb-lib-list, .wb-side-section .wb-library-list),
+:is(.wb-side-section .wb-library-list),
+:where(.wb-layers-tree):is(.wb-layers-tree, .wb-side-section .wb-library-list),
+:where(.wb-outline-tree):is(.wb-outline-tree, .wb-side-section .wb-library-list) {
   padding: var(--ring-room);
   margin: calc(-1 * var(--ring-room));
 }
@@ -6854,10 +7021,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 }
 /* The one action an empty References section keeps (a quiet "Attach a link"
    with no padding of its own), in a wrap that scrolls. */
-#doc-bookmarks-wrap:has(> .doc-outline:empty) {
-  padding-block: var(--ring-room);
-  margin-top: calc(var(--space-3) - var(--ring-room));
-}
 /* The wrapzoom sweep (2026-11-11, every width and zoom), each ring cut 4px:
    - a sidebar's heading clips for its ellipsis, and the Notes sidebar builds
      its fold caret inside it, flush on three sides (`SIDEBAR_FOLDS`,
@@ -6992,7 +7155,9 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 /* Room: strips of chips and tiles that scroll across (`overflow-x: auto`
    clips down as well), and the notes page, whose cards stand on its edges
    under 600. */
-:is(.launch-row, .library-filters, #tab-notes .layout > .tab-main) {
+:where(.launch-row):is(.launch-row, #tab-notes .layout > .tab-main),
+:where(.library-filters):is(.library-filters, #tab-notes .layout > .tab-main),
+:is(#tab-notes .layout > .tab-main) {
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
@@ -7004,7 +7169,9 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #tab-notes .layout > .tab-main {
   margin-right: 0;
 }
-:is(.launch-row, .library-filters, #chat-suggest) {
+:where(.launch-row):is(.launch-row, #chat-suggest),
+:where(.library-filters):is(.library-filters, #chat-suggest),
+#chat-suggest {
   padding-block: var(--ring-room);
   margin-block: calc(-1 * var(--ring-room));
 }
@@ -7040,7 +7207,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    its chips (17px measured to the card's edge), so the row is given that:
    `--space-6` visible, less the 4px of ring room the padding already
    supplies. */
-:is(#library-boards-filter, #reminder-filter) {
+#library-boards-filter,
+#reminder-filter {
   margin-bottom: calc(var(--space-6) - var(--ring-room));
 }
 /* Three chips, "All 4", "Maps 1" and "Boards 3", ran 3px past the strip at
@@ -7242,7 +7410,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 }
 @media (hover: none) {
   #conversation-list li .conv-title,
-  .doc-item :is(.doc-item-title, .doc-item-meta) {
+  .doc-item .doc-item-title,
+  .doc-item .doc-item-meta {
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--target-min) - var(--space-2)), transparent calc(100% - var(--space-5)));
     mask-image: linear-gradient(to right, #000 calc(100% - var(--target-min) - var(--space-2)), transparent calc(100% - var(--space-5)));
   }
@@ -7273,7 +7442,6 @@ html[data-other-device] [data-this-computer="hide"] {
 #space-menu > .list-filter {
   margin: var(--space-1) var(--space-1) var(--space-2);
 }
-
 
 /* **Counts and totals hold still** (WORLD_CLASS_PLAN 7, "Numbers: tabular
    figures"). A number that changes while you watch (a count beside a title, a

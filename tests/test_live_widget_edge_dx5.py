@@ -19,8 +19,10 @@ from pathlib import Path
 
 import pytest
 
+from tests._app_js import documents_text
+
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 
 

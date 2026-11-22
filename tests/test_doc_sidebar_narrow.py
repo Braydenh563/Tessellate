@@ -11,7 +11,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+_CSSDIR = Path(__file__).resolve().parents[1] / "frontend" / "css"
+CSS = (_CSSDIR / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+# The strip's rules moved to library-lazy.css with the Library bundle (L308); the query is split between the two.
+LAZY = (_CSSDIR / "library-lazy.css").read_text(encoding="utf-8")
 
 
 def test_the_sidebar_is_a_named_container():
@@ -19,8 +22,8 @@ def test_the_sidebar_is_a_named_container():
 
 
 def test_a_narrow_sidebar_drops_the_lane_and_the_pull_up():
-    at = CSS.index("@container doc-sidebar (width < 14rem)")
-    block = CSS[at : CSS.index("\n}\n", at)]
+    q = "@container doc-sidebar (width < 14rem)"
+    block = "".join(t[t.index(q) : t.index("\n}\n", t.index(q))] for t in (CSS, LAZY))
     assert "padding-right: 0" in block
     assert "var(--sidebar-toggle-size)" in block and "margin-top" in block
     #: --space-1 since L-world-class-39: at --space-2 the strip ran 5px past the sidebar.

@@ -24,6 +24,7 @@ import pytest
 
 from tessellate.core import extra_downloads, extras, spellpacks
 from tests.test_extras_download import _Server, _wait
+from tests._app_js import documents_text
 
 @pytest.fixture(autouse=True)
 def _clean_extras():
@@ -273,7 +274,7 @@ globalThis.self = {
   postMessage: (message) => replies.push(message),
 };
 await import(pathToFileURL(`${root}/frontend/js/harper-worker.js`).href);
-const documents = await readFile(`${root}/frontend/js/documents.js`, "utf8");
+const documents = (await readFile(`${root}/frontend/js/documents-instruments.js`, "utf8")).replace(/^  /gm, "");
 const cut = (name) => new RegExp(`^function ${name}\\b[\\s\\S]*?^\\}`, "m").exec(documents)[0];
 const source = await readFile(`${root}/frontend/js/documents-spell.js`, "utf8");
 let renders = 0;
@@ -379,7 +380,7 @@ def test_with_the_grammar_checker_off_the_pack_is_not_started(tmp_path) -> None:
 
 # --- the wiring ---------------------------------------------------------------------------------
 
-DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCUMENTS = documents_text()
 SPELL = (JS / "documents-spell.js").read_text(encoding="utf-8")
 NOTICE = (JS / "extra-notice.js").read_text(encoding="utf-8")
 

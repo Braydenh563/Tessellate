@@ -60,7 +60,7 @@ KEYWORDS = frozenset(
 KNOWN_GLOBALS = frozenset(
     """
     Array ArrayBuffer Audio AudioContext BigInt MathfieldElement Blob Boolean BroadcastChannel CSS ClipboardItem
-    CSSStyleSheet CustomEvent DataView Date DecompressionStream DOMMatrix DOMParser Error EvalError Event MouseEvent
+    CSSStyleSheet CustomEvent DataView Date CompressionStream DecompressionStream DOMMatrix DOMParser Error EvalError Event MouseEvent
     EventSource File FileReader Float32Array Float64Array Int16Array FormData Function
     InputEvent KeyboardEvent PointerEvent WheelEvent DataTransfer DragEvent
     Headers Image Infinity Int32Array Intl IntersectionObserver JSON Map Math

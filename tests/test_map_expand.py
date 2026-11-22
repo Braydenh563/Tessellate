@@ -8,6 +8,7 @@ same `/branches` route Branches from my notes uses.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text
 
 NOTE = (
@@ -128,7 +129,7 @@ def test_the_menu_the_palette_and_the_guide_name_it():
 
     root = Path(__file__).resolve().parents[1]
     js = root / "frontend" / "js"
-    mapjs = (js / "whiteboard-map.js").read_text(encoding="utf-8")
+    mapjs = frontend_text("whiteboard-map.js")
     body = mapjs[mapjs.index("async function wbMapExpandFromNote(node)") :]
     body = body[: body.index("\n}\n")]
     assert "/expand`, { method: \"POST\" }" in body and "wbMapBranchPicker(" in body
@@ -136,7 +137,7 @@ def test_the_menu_the_palette_and_the_guide_name_it():
     assert "function wbMapIsNoteTopic(node)" in mapjs
     commands = (js / "whiteboard-commands.js").read_text(encoding="utf-8")
     assert 'id: "expand-from-note"' in commands and "notetopic: () => wbMapIsNoteTopic(" in commands
-    board = (js / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert 'sub("Expand from my notes…"' in board and "if (wbMapIsNoteTopic(mapNode))" in board
     guide = help_chat_text()
     assert "Expand from my notes…" in guide

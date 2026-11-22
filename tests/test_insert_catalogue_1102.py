@@ -9,12 +9,14 @@ browser number; these pin the source that makes it so.
 from __future__ import annotations
 
 import re
+
+from tests._app_js import documents_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = documents_text()
 EDITOR = (JS / "editor.js").read_text(encoding="utf-8")
 ROWS = EDITOR[EDITOR.index("function editorBlockRows") : EDITOR.index("function editorBackOverTrail")]
 BAR = INDEX[INDEX.index('id="doc-toolbar" role="toolbar"') : INDEX.index('id="doc-phone-bar"')]
