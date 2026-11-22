@@ -64,9 +64,9 @@ SCANNERS = {
 def test_scanner_is_linear_on_an_unclosed_run(name):
     scan = SCANNERS[name]
     for shape, text in SHAPES.items():
-        started = time.perf_counter()
+        started = time.process_time()  # CPU, not wall: a busy runner must not fail it (L-general-70)
         scan(text)
-        assert time.perf_counter() - started < BOUND_S, f"{name} on a run of {shape!r}"
+        assert time.process_time() - started < BOUND_S, f"{name} on a run of {shape!r}"
 
 
 def test_normal_links_still_read_the_same():

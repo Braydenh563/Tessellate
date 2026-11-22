@@ -4,8 +4,6 @@ teardown) waited its full 5 s for a thread that sleeps for hours."""
 
 from __future__ import annotations
 
-import time
-
 from tessellate.ai import autonomous
 from tessellate.core import jobs
 
@@ -14,8 +12,14 @@ def test_the_autonomous_loop_is_stoppable_and_teardown_does_not_wait_for_it():
     autonomous.start()
     try:
         assert any(row["name"] == "autonomous-agent" and row["stoppable"] for row in jobs.threads())
-        began = time.monotonic()
+        #: Teardown never joins it: a join is what waited, so it is counted, not timed (L-general-70).
+        joined = []
+        for job in jobs._seated("thread"):
+            if job.name == "autonomous-agent":
+                real = job.thread.join  # still joined by `autonomous.stop()` below
+                job.thread.join = lambda *a, real=real, **k: (joined.append(1), real(*a, **k))
+        assert "real" in locals(), "the loop's thread was not found to watch"
         jobs.join_threads(timeout=3.0)
-        assert time.monotonic() - began < 1.0
+        assert joined == []
     finally:
         autonomous.stop()

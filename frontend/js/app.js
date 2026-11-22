@@ -431,7 +431,8 @@ async function api(path, options = {}) {
   //: server answered: the fastest sign it is back after being down, ahead of
   //: the retry poll's own backoff.
   noteServerUp();
-  //: A write that landed tells the other windows (notes-sync.js hears it, L585).
+  //: A write that landed tells the other windows (notes-sync.js hears it, L585) and the
+  //: timeline's streak (review of PR 222: only the composer's Save told it before).
   if (response.ok && !readOnly && !/^(GET|HEAD)?$/.test(fetchOptions.method || "") && typeof document !== "undefined") document.dispatchEvent(new Event("notebook-written"));
   //: **A read that started in the old space is dropped here, for every loader at once.**
   //: Its rows are the old space's: applied after a switch they would sit in the new one's
@@ -472,12 +473,6 @@ async function api(path, options = {}) {
   //: this because they outlive any poll interval.
   if (fetchOptions.method && fetchOptions.method !== "GET" && JOB_STARTING_PATH.test(path)) {
     kickBackgroundTaskPoll();
-  }
-  //: Every note write passes here, so whoever keeps an answer a note changes
-  //: hears of it from one place: the timeline's streak (review of PR 222: only
-  //: the composer's Save sent it, so the editor and the daily note did not).
-  if (fetchOptions.method && fetchOptions.method !== "GET" && !readOnly && /^\/entries(?=[/?]|$)/.test(path)) {
-    document.dispatchEvent(new CustomEvent("tessellate:note-saved", { detail: { path } }));
   }
   return response;
 }

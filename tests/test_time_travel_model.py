@@ -193,9 +193,10 @@ def test_an_as_of_question_finds_a_note_by_what_it_said_then(ai_client, fake_emb
 def test_the_gate_as_of_retrieval_by_meaning_over_200_candidates_is_under_a_second(session, fake_embeddings):
     timetravel.forget_past_vectors()
     entries = [_note_with_history(session, [f"Groceries {k}: milk and eggs.", f"Race {k} at the carnival."], [0, 30]) for k in range(200)]
-    started = time.perf_counter()
+    #: CPU time, not wall time: a busy runner must not fail it (L-general-70).
+    started = time.process_time()
     picked = timetravel.rewind(session, "shopping", T0 + timedelta(days=10), entries, limit=5, embeddings=fake_embeddings)
-    elapsed = time.perf_counter() - started
+    elapsed = time.process_time() - started
     assert len(picked) == 5 and all("milk" in p.text for p in picked)
     assert elapsed < 1.0, f"{elapsed:.3f}s"
 

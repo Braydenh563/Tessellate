@@ -419,8 +419,8 @@ const ctx = {
   refuseStagedUrls() {}, clearApiCache() {}, authToken: () => "t", activeSpaceId: () => "alpha",
   noteServerUp() {}, noteServerDown() {}, showLockScreen() {}, recordBrowserLog() {}, plainHttpError: () => "bad",
   kickBackgroundTaskPoll() {}, setActiveSpace() {}, SPACE_ALL: "all",
-  //: `api` tells the page of a note write (`tessellate:note-saved`, review of PR 222).
-  document: { dispatchEvent() {} }, CustomEvent: class {}, Event: class {},
+  //: `api` tells the page of a write that landed (`notebook-written`).
+  document: { dispatchEvent() {} }, Event: class {},
   //: The server-down refusal (22.1 item 6) reads these; the server is up in this harness.
   serverUnreachable: false, retryServerNow() {}, showServerDownBanner: () => "",
   toast: Object.assign((m) => toasts.push(m), { refused: new Set() }),

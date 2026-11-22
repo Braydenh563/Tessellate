@@ -136,8 +136,8 @@ def test_the_strip_says_the_journal_streak():
 def test_walking_the_strip_never_asks_the_streak_again():
     """Review 5907787263: every strip render asked for 366 days. The streak is
     kept per today and asked again only on a new day or a timeline load
-    (`fresh`) or after a saved note (`tessellate:note-saved`, which every
-    note write sends from `api`), run here in node against a counting `apiJson`."""
+    (`fresh`) or after a write (`notebook-written`, which every write that
+    lands sends from `api`), run here in node against a counting `apiJson`."""
     import json
     import shutil
     import subprocess
@@ -147,7 +147,7 @@ def test_walking_the_strip_never_asks_the_streak_again():
     if not shutil.which("node"):
         pytest.skip("node is not installed")
     body = _function(TIMELINE, "async function renderTimelineDayStrip(")
-    listen = 'document.addEventListener("tessellate:note-saved", () => {'
+    listen = 'document.addEventListener("notebook-written", () => {'
     saved = TIMELINE[TIMELINE.index(listen) : TIMELINE.index("});", TIMELINE.index(listen)) + 2]
     saved = saved.replace(listen, "(() => {") + "();"  # the listener's body, run as the save would
     keep = body[body.index("  if (fresh ||") : body.index("  }\n", body.index("  if (fresh ||")) + 4]
@@ -175,7 +175,7 @@ console.log(JSON.stringify({ walked, loaded, day, saved: asked.length }));
     #: Walk, save, walk: one more call, not one per step.
     assert json.loads(out.stdout) == {"walked": 1, "loaded": 2, "day": 3, "saved": 4}
     # Sent from the shared write path, so every note save reaches it (review of PR 222), not the composer alone.
-    assert 'new CustomEvent("tessellate:note-saved"' in _function(frontend_text("app.js"), "async function api(")
+    assert 'document.dispatchEvent(new Event("notebook-written"))' in _function(frontend_text("app.js"), "async function api(")
     assert "tessellate:note-saved" not in frontend_text("capture-ask.js")
     assert "if (journal === null) timelineRenders.streak = null;" in body
     assert "renderTimelineDayStrip({ fresh: true })" in _function(TIMELINE, "async function renderTimeline(")

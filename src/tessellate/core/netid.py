@@ -349,6 +349,7 @@ def gateway() -> str:
     try:
         return gateway_linux() if sys.platform.startswith("linux") else ""
     except Exception:  # noqa: BLE001  # never let reading the network stop the app
+        log.debug("Could not read the default gateway; the full read decides.", exc_info=True)
         return ""
 
 
