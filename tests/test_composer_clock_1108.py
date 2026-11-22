@@ -69,9 +69,9 @@ def test_the_answer_ignores_the_model_voice_and_notes():
 
 @pytest.mark.parametrize("text", ["what week" + " " * 20000 + "x", "what " * 4000, "tomorrow" + " " * 20000 + "date", "what day of the year" + " is" * 7000])
 def test_a_20k_text_is_linear(text):
-    start = time.perf_counter()
+    start = time.process_time()
     composer_clock.answer(ctx(text))
-    assert time.perf_counter() - start < 0.5
+    assert time.process_time() - start < 0.5
 
 
 WEEK_LEAP_LEFT = [
@@ -106,6 +106,6 @@ def test_week_of_edge_cases_are_left_alone_or_current(q):
 
 @pytest.mark.parametrize("text", ["what week is" + " " * 20000 + "x", "is " + "a " * 9000 + "leap year", "how many days " * 2000, "week number of " + "3 " * 9000])
 def test_a_20k_text_is_linear_for_the_date_readers(text):
-    start = time.perf_counter()
+    start = time.process_time()
     composer_clock.answer(ctx(text))
-    assert time.perf_counter() - start < 0.5
+    assert time.process_time() - start < 0.5

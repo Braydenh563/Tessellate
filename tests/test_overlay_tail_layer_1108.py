@@ -243,10 +243,10 @@ def test_a_tick_costs_under_eight_ms_at_dpi_192(spr: sp.SpriteSet) -> None:
     base = spr.frame("idle3", 192, False)
     layer = bh.TailLayer()
     spr.tailed(base, "idle3", 192, False, layer.view(10.0))  # the first one builds the source and the mask
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     for k in range(40):
         spr.tailed(base, "idle3", 192, False, layer.view(10.0 + k * STEP))
-    assert (time.perf_counter() - t0) / 40 < 0.008
+    assert (time.process_time() - t0) / 40 < 0.008
 
 
 @pytest.mark.parametrize("dpi", [96, 192])

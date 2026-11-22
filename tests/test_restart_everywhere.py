@@ -55,12 +55,14 @@ def test_every_windows_desktop_relaunch_waits_for_the_old_copy(monkeypatch):
     assert calls == [[sys.executable, "--desktop", "--restart-after", "4242"]]
 
 
-def test_waiting_ends_when_the_old_copy_is_gone():
+def test_waiting_ends_when_the_old_copy_is_gone(monkeypatch):
     gone = subprocess.Popen([sys.executable, "-c", "pass"])
     gone.wait()
-    started = time.monotonic()
+    naps = []
+    real_sleep = time.sleep
+    monkeypatch.setattr(entry.time, "sleep", lambda s: (naps.append(s), real_sleep(s)))
     assert entry._wait_for_exit(gone.pid, timeout=5) is True
-    assert time.monotonic() - started < 2
+    assert naps == []  # counted (L-general-70): a copy already gone is not polled for
 
 
 def test_the_route_restarts_any_launch_the_launcher_made(client, monkeypatch):

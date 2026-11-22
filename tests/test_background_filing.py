@@ -67,15 +67,20 @@ def test_filing_jobs_are_deduplicated_per_note(monkeypatch):
 def test_a_slow_model_does_not_hold_filing_past_the_deadline(monkeypatch):
     from tessellate.ai import janitor
 
+    import threading
+
+    release, answered = threading.Event(), threading.Event()
+
     class _Slow:
         def chat(self, model, messages, mode=None):
-            time.sleep(5)
+            release.wait(10)  # held, not slept (L-general-70)
+            answered.set()
             return {"content": '{"category": "Late"}'}
 
-    started = time.time()
     with pytest.raises(TimeoutError):
         janitor._chat_within_deadline(_Slow(), "m", [], deadline=0.3)
-    assert time.time() - started < 2
+    assert not answered.is_set(), "filing waited for the model past its deadline"
+    release.set()
 
 
 def test_filing_asks_the_model_in_quick_mode():
@@ -281,22 +286,28 @@ def test_a_model_that_stalled_is_not_waited_for_again_note_after_note():
     meaning at once."""
     from tessellate.ai import janitor
 
+    import threading
+
     calls = []
+    release = threading.Event()
 
     class _Hung:
         def chat(self, model, messages, mode=None):
             calls.append(1)
-            time.sleep(1.5)
+            release.wait(10)  # held until the skipping is checked (L-general-70)
             return {"content": "{}"}
 
     hung = _Hung()
     with pytest.raises(TimeoutError):
         janitor._chat_within_deadline(hung, "m", [], deadline=0.1)
-    started = time.time()
+    raised = []
     for _ in range(5):
         with pytest.raises(janitor.ModelStalled):
             janitor._chat_within_deadline(hung, "m", [], deadline=0.1)
-    assert time.time() - started < 0.5 and len(calls) == 1
+        raised.append(release.is_set())
+    # Counted: the five skips asked the model nothing, all while the first call still hung.
+    assert len(calls) == 1 and raised == [False] * 5
+    release.set()
     #: A caller that chose to wait for the model (Tidy, the warm-up) still does.
     assert issubclass(janitor.ModelStalled, TimeoutError)
 

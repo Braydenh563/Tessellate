@@ -68,8 +68,8 @@ def test_no_note_is_read_or_quoted():
 
 @pytest.mark.parametrize("text", ["pick one of " + "a, " * 7000, "pick" + " " * 20000 + "x", "pick one of a" + " or" * 7000, "choose between " + " " * 20000 + "or"])
 def test_a_20k_text_is_linear(text):
-    start = time.perf_counter()
+    start = time.process_time()
     composer_chance.answer(ctx(text))
     composer_chance._PICK.match(" ".join(text.split()))
     composer_chance.options_in(text[:5000])
-    assert time.perf_counter() - start < 0.5
+    assert time.process_time() - start < 0.5

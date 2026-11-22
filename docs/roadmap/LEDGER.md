@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
 | documents | 0 | 0 | 0 | 0 | 0 | 0 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 0 | 1 | 0 | 0 | 0 | 1 |
+| ui-modernisation | 0 | 0 | 0 | 0 | 0 | 0 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
-| general | 0 | 1 | 0 | 0 | 1 | 1 |
-| all | 306 | 373 | 121 | 2 | 132 | 800 |
+| general | 0 | 0 | 0 | 0 | 1 | 0 |
+| all | 306 | 371 | 121 | 2 | 132 | 798 |
 
 ## graph
 
@@ -289,7 +289,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 
 ## ui-modernisation
-- [ ] **L-ui-modernisation-201** `ui-modernisation` open, M: Atlas idle: find and cut the 30 style recalcs a second at rest (companion_idle_cpu stays a strict xfail until then). From hub 2026-11-22, row 95 decision (a). Evidence: Atlas idle after an 8 s settle, marker off, 4 runs: medians 189, 215, 343, 201 ms/s over off (cap 120). Settled 3 s trace: style recalc 30 a second (about 30 ms/s), paint, prepaint and layerize about 41 ms/s, JS 12. The morph's tick is not it (225 ms gave no gain in an A/B); the orbit, ring and figure loops are composited. Likely the same class and mood writes that restyle the figure (companion_forced_cpu in tab-budgets.spec.js). Same cause, from the owner's lag log 2026-11-22: the Atlas animated spans make every restyle expensive (contain them, or pause them while typing); 4x CPU: buddy face click 664-680 ms, 470-816 Atlas elements restyled at 120-186 ms each, the forced read nameMarkBuddyBlend's getAnimations (avatars.js nameMarkBuddyBlend); chat keydown 176-304 ms, the browser's pre-edit style flush 169 ms, pending invalidations from atl-orbit-arm, atl-orbiter-glow, atl-ring-spin, atl-orbiter-swirl, emblem-float and the saccade class flips (atlas-motion.js atlasBlink.saccade.hold); selector matching 152 ms over 1,883 selectors, top 30 mostly Atlas rules (scratchpad/lag probe.js, trace-sel.js, inval.js)
 
 ## timeline
 
@@ -533,7 +532,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls
 

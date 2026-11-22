@@ -116,14 +116,14 @@ def test_a_warm_call_is_flat_in_the_notebook_size(client, session):
         session.commit()
         ids = _notebook(session, n)
         routes_graph.reset_graph_cache()
-        started = time.perf_counter()
+        started = time.process_time()
         _local(client, ids[0])
-        cold = time.perf_counter() - started
+        cold = time.process_time() - started
         runs = []
         for centre in ids[1:6]:
-            started = time.perf_counter()
+            started = time.process_time()
             _local(client, centre)
-            runs.append(time.perf_counter() - started)
+            runs.append(time.process_time() - started)
         took[n] = min(runs)
         print(f"graph/local n={n}: cold {cold * 1000:.0f} ms, warm {took[n] * 1000:.0f} ms")
     assert took[10000] < 3 * took[2000] + 0.05, took

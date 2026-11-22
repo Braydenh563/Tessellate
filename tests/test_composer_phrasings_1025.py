@@ -154,9 +154,9 @@ def test_when_is_next_is_linear_on_a_run_of_spaces():
 
     from tessellate.ai import composer_plan
 
-    start = time.perf_counter()
+    start = time.process_time()
     composer_plan._WHEN_IS_NEXT.match("a" + " " * 20000 + "x")
-    assert time.perf_counter() - start < 0.5
+    assert time.process_time() - start < 0.5
 
 
 def test_own_doings_need_a_time_word_or_the_question_shape():

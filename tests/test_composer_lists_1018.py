@@ -249,6 +249,6 @@ def test_a_count_that_reaches_the_pool_is_said_to_be_a_floor():
 def test_a_long_what_is_question_is_classified_in_linear_time():
     import time
 
-    started = time.perf_counter()
+    started = time.process_time()
     assert composer_lists.kind("what is " * 5000) is None
-    assert time.perf_counter() - started < 0.5
+    assert time.process_time() - started < 0.5

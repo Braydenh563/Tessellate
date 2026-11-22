@@ -253,30 +253,37 @@ def test_two_searches_in_one_reply_both_run(monkeypatch, app_state):
 
 
 def test_three_pages_in_one_reply_are_fetched_side_by_side(monkeypatch, app_state, session):
-    import time
 
     from tessellate.core import deps
     from tessellate.search import websearch
 
     deps.get_config().set_preference("web_search_enabled", True)
+    import threading
+
     fetched = []
+    #: All three must be in flight at once to pass (L-general-70): fetched in series,
+    #: the first waits alone and the barrier breaks.
+    side_by_side = threading.Barrier(3, timeout=10)
+    met = []
 
     def slow(url):
         fetched.append(url)
-        time.sleep(0.4)
+        try:
+            side_by_side.wait()
+            met.append(url)
+        except threading.BrokenBarrierError:
+            pass
         return {"url": url, "title": url, "text": "page text", "links": []}
 
     monkeypatch.setattr(websearch, "fetch_readable", slow)
     monkeypatch.setattr(agent.tools, "ollama_tools", lambda allowed=None: [])
     urls = [f"https://site{i}.example/" for i in range(3)]
     fake = _Fake([[{"name": "read_url", "arguments": {"url": u}} for u in urls], []])
-    started = time.monotonic()
     events = list(agent.run_agent(session, "q", [], _Models(), fake))
-    elapsed = time.monotonic() - started
     oks = [e for e in events if e.get("type") == "tool" and e.get("ok")]
     assert len(oks) == 3
     assert sorted(fetched) == urls, "each page fetched once, not again by the call"
-    assert elapsed < 1.0, f"three 0.4s pages took {elapsed:.2f}s: fetched in series"
+    assert sorted(met) == urls, "the three pages were fetched in series"
 
 
 def test_no_match_is_not_said_to_be_an_empty_notebook():

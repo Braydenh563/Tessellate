@@ -88,9 +88,9 @@ def test_no_window_when_none_is_named(question):
 
 @pytest.mark.parametrize("filler", ["the next " * 4000, "before " * 4000, "a " * 6000 + "weeks", "next 2 " * 4000, "on 1 " * 4000])
 def test_the_window_regexes_are_linear(filler):
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     composer_plan.window("what is due " + filler, TODAY)
-    assert time.perf_counter() - t0 < 1.0
+    assert time.process_time() - t0 < 1.0
 
 
 # --- the notebook -----------------------------------------------------------------------
@@ -197,6 +197,6 @@ def test_a_task_dated_outside_the_day_is_still_listed(notebook, phrasing, chat):
 def test_the_overdue_reader_is_linear(filler):
     from tessellate.ai.composer_plan import _OVERDUE
 
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     _OVERDUE.match(filler)
-    assert time.perf_counter() - t0 < 1.0
+    assert time.process_time() - t0 < 1.0

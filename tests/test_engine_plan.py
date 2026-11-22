@@ -179,9 +179,9 @@ def test_chance_is_in_range_and_the_same_for_a_salt():
     ["what is __import__('os').system('ls')", "what is 9**9**9", "what is 10 ** 1000", "what is (1).__class__", "calculate 2 ** 99999999"],
 )
 def test_hostile_sums_are_refused_quickly(hostile):
-    started = time.perf_counter()
+    started = time.process_time()
     assert utilities.answer(hostile, NOW) is None
-    assert time.perf_counter() - started < 0.05
+    assert time.process_time() - started < 0.05
 
 
 @pytest.mark.parametrize("question", ["what is the capital of Peru", "how many days until the dentist", "what time is the dentist"])

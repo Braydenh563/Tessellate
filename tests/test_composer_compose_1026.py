@@ -240,8 +240,8 @@ def test_composing_is_cheap():
     spent = []
     for ability in ("recent", "due", "left", "define", "until", "study_summary"):
         for n in range(200):
-            start = time.perf_counter()
+            start = time.process_time()
             cc.say(ability, cc.mood_of("what is due this week, quick", voice="natural", seed=f"s{n}", said=["x" * 400]), **FACTS[ability])
-            spent.append((time.perf_counter() - start) * 1000)
+            spent.append((time.process_time() - start) * 1000)
     spent.sort()
     assert spent[len(spent) // 2] < 1.0 and spent[int(len(spent) * 0.95)] < 5.0, (spent[len(spent) // 2], spent[int(len(spent) * 0.95)])

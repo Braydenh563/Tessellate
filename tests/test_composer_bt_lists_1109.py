@@ -37,9 +37,9 @@ def test_each_ask_is_read_by_words(said, got):
 
 def test_a_long_question_is_read_in_bounded_time():
     for text in ("what is the " + "budget " * 20_000 + "for each project", " " * 50_000 + "what is the budget for each project", "what is the budget for each " + "x" * 50_000):
-        start = time.perf_counter()
+        start = time.process_time()
         composer_each._asked(text)
-        assert time.perf_counter() - start < 0.5
+        assert time.process_time() - start < 0.5
 
 
 def test_a_comparison_names_each_note_where_its_lines_begin(ask):

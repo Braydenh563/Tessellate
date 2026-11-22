@@ -61,10 +61,10 @@ def test_a_statement_of_weather_is_still_a_remark(message):
 
 def test_a_remark_pattern_does_not_backtrack_on_repeats():
     for text in ("im " * 5000 + "x", "ive " * 5000 + "x", "i " * 5000 + "ate" + " the" * 2000, "ugh " * 5000, "so really " * 3000 + "hot"):
-        started = time.perf_counter()
+        started = time.process_time()
         composer_remark.reply(text)
         composer_remark.bare_hello(text)
-        assert time.perf_counter() - started < 0.05, text[:12]
+        assert time.process_time() - started < 0.05, text[:12]
 
 
 @pytest.fixture

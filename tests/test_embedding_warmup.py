@@ -120,14 +120,13 @@ def test_the_load_waits_for_the_app_to_go_quiet(fresh_warmup, monkeypatch):
     monkeypatch.setattr(embeddings, "WARMUP_MAX_WAIT_SECONDS", 10)
     service = _Service()
     embeddings.note_request()
-    started = time.monotonic()
     embeddings.start_warmup(service, session_factory=lambda: None)
     for _ in range(4):
         time.sleep(0.1)
         embeddings.note_request()
+    # Ordered, not timed (L-general-70): nothing loaded while the requests came, then it went.
     assert service.calls == 0, "the model loaded while requests were still arriving"
     assert service.done.wait(3)
-    assert time.monotonic() - started >= 0.6
 
 
 def test_a_never_visited_app_still_warms_within_the_cap(fresh_warmup, monkeypatch):
@@ -186,9 +185,8 @@ def test_a_cold_model_is_not_waited_for(monkeypatch):
     monkeypatch.setattr(jobs, "enqueue", lambda kind, fn, **kw: queued.append(kw.get("dedupe_key", kind)))
     cold = _Cold()
     assert cold.loads_cold()
-    started = time.perf_counter()
     assert search_manager.query_vector(cold, "courses and study") is None
-    assert time.perf_counter() - started < 0.1 and cold.loads == 0
+    assert cold.loads == 0  # counted (L-general-70): the 0.3 s load was never started here
     assert queued == ["search-warm"]
 
 
@@ -227,12 +225,12 @@ def test_through_the_route_a_cold_model_answers_at_once_and_says_so(client, sess
     monkeypatch.setattr(jobs, "enqueue", lambda *a, **kw: None)
     #: The engine is installed but not loaded; a missing engine is "off", not "loading" (E30).
     monkeypatch.setattr(embeddings, "_package_present", lambda: True)
-    deps.override_ai(embeddings=_Cold())
-    started = time.perf_counter()
+    cold = _Cold()
+    deps.override_ai(embeddings=cold)
     body = {"question": "what do I need to buy?", "history": [], "notes_only": True, "use_tools": False, "answer_from": "notes"}
     with client.stream("POST", "/chat/stream", json=body) as response:
         events = [json.loads(line) for line in response.iter_lines() if line.strip()]
-    assert time.perf_counter() - started < 5
+    assert cold.loads == 0  # counted (L-general-70): the answer never waited on a load
     text = "".join(e.get("delta", "") for e in events if e.get("type") == "answer")
     assert composer_digest_sentences.PHRASES["meaning_loading"] in text
     why = next(e for e in events if e.get("type") == "why")

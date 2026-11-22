@@ -35,12 +35,10 @@ def test_a_warmed_question_is_not_embedded_again(ai_client, session, fake_embedd
     slow = SlowCountingEmbeddings(fake_embeddings)
     assert search_manager.warm(session, "what did I buy at the shopping trip", slow) is True
     assert len(slow.calls) == 1
-    began = time.perf_counter()
     search_manager.retrieve(session, "what did I buy at the shopping trip", slow)
-    elapsed = time.perf_counter() - began
+    # Counted, not timed (L-general-70): no second embed, so the 200 ms the model
+    # would have taken is not spent after Enter.
     assert len(slow.calls) == 1, slow.calls
-    # The 200 ms the model would have taken is not spent after Enter.
-    assert elapsed < slow.delay
 
 
 def test_the_route_warms_and_never_fails(ai_client, monkeypatch):

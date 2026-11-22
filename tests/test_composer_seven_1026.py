@@ -129,10 +129,10 @@ def test_composing_the_rest_is_cheap():
 
     for msg in ("tell me a joke", "asdfgh", "test", "you're useless"):
         composer_smalltalk.social(msg, voice="playful", seed="warm")
-        began = time.perf_counter()
+        began = time.process_time()
         for n in range(20):
             composer_smalltalk.social(msg, voice="playful", seed=str(n))
-        assert (time.perf_counter() - began) / 20 < 0.005, msg
+        assert (time.process_time() - began) / 20 < 0.005, msg
 
 
 @pytest.mark.parametrize("register", ["natural", "professional", "playful", "plain"])

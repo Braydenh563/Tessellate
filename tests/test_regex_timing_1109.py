@@ -20,17 +20,17 @@ LIMIT = 0.2
 @pytest.mark.parametrize("size", [20_000, 50_000])
 def test_a_long_clause_after_an_amount_is_read_in_linear_time(size):
     rest = " for " + "w to " * (size // 5) + "\nx"
-    started = time.perf_counter()
+    started = time.process_time()
     composer_money._after_what(rest)
-    assert time.perf_counter() - started < LIMIT
+    assert time.process_time() - started < LIMIT
 
 
 @pytest.mark.parametrize("size", [20_000, 50_000])
 def test_a_long_planned_line_is_read_in_linear_time(size):
     body = "a planned for " * (size // 14) + "\nx"
-    started = time.perf_counter()
+    started = time.process_time()
     composer_digest_lines._day_clause(body)
-    assert time.perf_counter() - started < LIMIT
+    assert time.process_time() - started < LIMIT
 
 
 def test_ordinary_clauses_still_read():

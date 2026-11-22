@@ -27,6 +27,7 @@ class GatedEmbeddings(FakeEmbeddingService):
         super().__init__(available=True)
         self.texts: list[str] = []
         self.threads: list[str] = []
+        self.finished: list[str] = []
         self.gate = threading.Event()
         self.gate.set()
 
@@ -37,6 +38,7 @@ class GatedEmbeddings(FakeEmbeddingService):
         #: that lets itself go after N s is a wall-clock promise that the test
         #: thread gets to its next line inside N s, which a loaded machine breaks.
         self.gate.wait(120)
+        self.finished.append(text)
         return super().embed_text(text)
 
 
@@ -96,13 +98,11 @@ def test_an_edit_returns_before_its_text_is_embedded(gated):
     fake.gate.clear()  # the next embed waits until released
     fake.texts.clear()
     fake.threads.clear()
-    started = time.monotonic()
     response = client.put(f"/entries/{note['id']}", json={"content": "the work budget for spring"})
     assert response.status_code == 200
-    #: The embedder is parked on the gate for up to 120 s, so a PUT that
-    #: embedded on the request could not return in anything like this time; the
-    #: bound is far above a loaded machine's slowest honest request.
-    assert time.monotonic() - started < 60, "the PUT waited for the embedder"
+    #: Held, not timed (L-general-70): the embedder is parked on the gate, so a PUT
+    #: that embedded on the request could only return once that embed had finished.
+    assert not any("work budget" in text for text in fake.finished), "the PUT waited for the embedder"
     # The old meaning is gone at once; the new one arrives from the job.
     assert _vector_count(note["id"]) == 0
     fake.gate.set()

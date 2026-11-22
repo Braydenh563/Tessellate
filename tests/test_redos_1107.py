@@ -23,9 +23,9 @@ RUNS = {
 
 
 def _timed(fn, text):
-    started = time.perf_counter()
+    started = time.process_time()
     fn(text)
-    return time.perf_counter() - started
+    return time.process_time() - started
 
 
 @pytest.mark.parametrize("name", RUNS)

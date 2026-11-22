@@ -28,7 +28,7 @@ def test_r3_2_the_dentists_number_is_still_the_dentists(ask):
 def test_r3_2_the_has_phone_reader_is_linear():
     from tessellate.ai import composer_property
 
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     for run in ("does " + "a " * 5000 + "have a", "do " + "x " * 5000, "does " + " " * 9000 + "have a phone"):
         composer_property.subject(run)
-    assert time.perf_counter() - t0 < 1.0
+    assert time.process_time() - t0 < 1.0

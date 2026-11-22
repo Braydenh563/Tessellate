@@ -30,10 +30,10 @@ def test_d3_the_versus_cues_are_linear():
     mine = [p for p in composer_tables.EXTRA_COMPARE_SIDES if "of them" in p.pattern and "{1,40}" in p.pattern]
     assert len(mine) == 1
     for run in ("a or " * 3000 + "b, which", "x " * 6000 + "or y which", "a" * 10_000 + " or b which one", "a or b " + " " * 10_000 + "which"):
-        t0 = time.perf_counter()
+        t0 = time.process_time()
         mine[0].match(run)
-        assert time.perf_counter() - t0 < 0.5, run[:20]
+        assert time.process_time() - t0 < 0.5, run[:20]
     for run in ("x " * 6000 + "or y which", "a" * 10_000 + " or b which one"):
-        t0 = time.perf_counter()
+        t0 = time.process_time()
         composer_ask.classify(run)
-        assert time.perf_counter() - t0 < 2.0, run[:20]
+        assert time.process_time() - t0 < 2.0, run[:20]
