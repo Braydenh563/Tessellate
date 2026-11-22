@@ -2641,7 +2641,18 @@ def _capture() -> int:
 
 def main() -> None:
     _ensure_std_streams()
-    parser = argparse.ArgumentParser(prog="tessellate", description="Tessellate")
+    if sys.argv[1:2] == ["tool"]:
+        # A subcommand of its own rather than a flag: it takes a name and its
+        # own options, and never starts the server or its window.
+        from tessellate import mcp_server
+
+        raise SystemExit(mcp_server.run_cli(sys.argv[2:]))
+    parser = argparse.ArgumentParser(
+        prog="tessellate",
+        description="Tessellate",
+        epilog="tessellate tool [NAME] [--json ARGS]: run one of this notebook's tools from a script "
+        "and print its result as JSON (needs TESSELLATE_MCP_TOKEN, as --mcp does)",
+    )
     parser.add_argument(
         "--desktop",
         action="store_true",

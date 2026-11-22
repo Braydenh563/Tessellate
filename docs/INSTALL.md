@@ -295,6 +295,7 @@ Other commands:
 | `python -m tessellate --capture` | Open a one-line capture window on the running app: bind it to a key in your system settings |
 | `python -m tessellate.mcp_server` | A stdio MCP server for another program on this computer: the app's non-destructive tools, your notes as readable resources (`memorymap://note/<id>`, never a private note) and your skills as prompts. The program must pass this notebook's `TESSELLATE_MCP_TOKEN` (Settings shows it in the snippet to copy), and it can only read until "Let that app add and change notes" is on |
 | `Tessellate --mcp` | The same server from the packaged app, which has no Python to run the line above with (live behaviour of the windowed exe: needs device) |
+| `python -m tessellate tool [NAME] [--json ARGS]` | Run one of the same tools from a script and print its result as JSON; with no name, list them. Needs `TESSELLATE_MCP_TOKEN` like the server, and is logged as "command line" |
 
 ### Environment variables
 

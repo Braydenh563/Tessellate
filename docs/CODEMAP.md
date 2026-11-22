@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8571, frontend ids 2805, CSS sections 528, backend routes 746, backend modules 11519, test files 2962, tests 23244, plan headings 686, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8571, frontend ids 2805, CSS sections 528, backend routes 746, backend modules 11520, test files 2963, tests 23250, plan headings 686, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8571)
 
@@ -14353,7 +14353,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:154 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11519)
+## Backend modules (11520)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14413,7 +14413,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_run_desktop` | src/tessellate/__main__.py:1777 |
 | `_run_mcp` | src/tessellate/__main__.py:2436 |
 | `_run_server` | src/tessellate/__main__.py:211 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:2750 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2761 |
 | `_run_tray_loop` | src/tessellate/__main__.py:2422 |
 | `_serve_with_lan` | src/tessellate/__main__.py:293 |
 | `_serves_this_notebook` | src/tessellate/__main__.py:668 |
@@ -28194,7 +28194,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_loading_motion` | src/tessellate/launcher_loading.py:276 |
 | `_recolour_loading_page` | src/tessellate/launcher_loading.py:289 |
 
-### src/tessellate/mcp_server.py (29)
+### src/tessellate/mcp_server.py (30)
 
 | Name | File:line |
 |---|---|
@@ -28224,6 +28224,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `handle_as` | src/tessellate/mcp_server.py:93 |
 | `handle_request` | src/tessellate/mcp_server.py:425 |
 | `offered_tools` | src/tessellate/mcp_server.py:102 |
+| `run_cli` | src/tessellate/mcp_server.py:498 |
 | `serve` | src/tessellate/mcp_server.py:461 |
 | `token` | src/tessellate/mcp_server.py:128 |
 | `writes_allowed` | src/tessellate/mcp_server.py:75 |
@@ -29186,7 +29187,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23244)
+## Tests (23250)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31830,6 +31831,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tool_call_tags_566.py | 8 |
 | tests/test_tool_cards.py | 20 |
 | tests/test_tool_catalog_groups.py | 3 |
+| tests/test_tool_cli.py | 6 |
 | tests/test_tool_contracts.py | 14 |
 | tests/test_tool_dialect_evals.py | 5 |
 | tests/test_tool_labels_named_1030.py | 3 |

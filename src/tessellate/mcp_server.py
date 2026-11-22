@@ -493,3 +493,47 @@ def _serve_lines(stdin: TextIO, stdout: TextIO) -> None:
 
 if __name__ == "__main__":
     serve()
+
+
+def run_cli(argv: list[str], stdout: TextIO | None = None, stderr: TextIO | None = None) -> int:
+    """`tessellate tool [NAME] [--json ARGS]` (L-general-8): one offered tool
+    from a shell script or a skill, its result printed as one JSON document.
+    The same gate as the stdio server: `TESSELLATE_MCP_TOKEN`, the offered
+    list (Settings -> Tools, writes switch) and the event log under
+    "command line". No name lists what is offered. Exit 0 ok, 1 the tool
+    failed or is not offered, 2 a usage or token problem."""
+    import argparse
+
+    stdout = stdout or sys.stdout
+    stderr = stderr or sys.stderr
+    parser = argparse.ArgumentParser(prog="tessellate tool", description="Run one of this notebook's tools.")
+    parser.add_argument("name", nargs="?", help="the tool to run; leave out to list them")
+    parser.add_argument("--json", default="{}", metavar="ARGS", help="the tool's arguments as a JSON object")
+    args = parser.parse_args(argv)
+    deps.init_app_state()
+    denied = _check_token(os.environ.get(TOKEN_ENV, ""))
+    if denied:
+        print(denied, file=stderr)
+        return 2
+    if not args.name:
+        listed = [{"name": spec.name, "description": spec.description} for spec in offered_tools()]
+        print(json.dumps(listed, indent=2), file=stdout)
+        return 0
+    try:
+        arguments = json.loads(args.json)
+    except json.JSONDecodeError:
+        arguments = None
+    if not isinstance(arguments, dict):
+        print("--json takes the tool's arguments as a JSON object, like '{\"query\": \"tea\"}'.", file=stderr)
+        return 2
+    caller = _caller.set({"name": "command line", "writes": writes_allowed()})
+    try:
+        result = _call_tool(args.name, arguments)
+    finally:
+        _caller.reset(caller)
+    text = result["content"][0]["text"]
+    if result["isError"]:
+        print(text, file=stderr)
+        return 1
+    print(text, file=stdout)
+    return 0
