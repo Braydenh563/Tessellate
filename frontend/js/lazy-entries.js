@@ -127,6 +127,8 @@ Object.assign(LAZY_MODULES, {
   notesSidebar: ["/js/notes-sidebar.js"],
   //: The poll for a change made on another device (notes-sync.js, out of notes-list.js; L698). Started where notes-list.js loads.
   notesSync: ["/js/notes-sync.js"],
+  //: Swipe a row and the note as a page, phone band only (phone-gestures.js, out of phone-shell.js; L-world-class-810).
+  phoneGestures: ["/js/phone-gestures.js"],
   //: Quit, clear the caches, Reload the app (app-reset.js, out of phone-shell.js; L698).
   appReset: ["/js/app-reset.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
@@ -174,6 +176,7 @@ installStandIns({
   statusQuick: ["loadRecentQuestions", "loadMostUsed"],
   statusEmbedding: ["nudgeEmbeddingProblem"],
   statusAiPill: ["renderAiPill"],
+  phoneGestures: ["refreshNotePageNow"],
   appReset: ["quitApp", "clearAppCache", "forceReloadApp", "toggleAutonomousPanel"],
   notesSidebar: ["drawSidebar"],
   notesWire: ["wireNotesRail", "initEntryListKeyboardNav", "selectNoteRange", "offerWikiRename"],

@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8582, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11588, test files 2975, tests 23315, plan headings 688, app scripts 29, boot scripts 38, script files 325.
+Counts: frontend functions 8583, frontend ids 2810, CSS sections 529, backend routes 755, backend modules 11588, test files 2975, tests 23315, plan headings 688, app scripts 29, boot scripts 38, script files 326.
 
-## Frontend functions (8582)
+## Frontend functions (8583)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -107,18 +107,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:265 |
-| `charactersLost` | frontend/js/lazy-entries.js:274 |
-| `emblemHead` | frontend/js/lazy-entries.js:282 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:311 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:344 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:305 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:332 |
-| `onDomReady` | frontend/js/lazy-entries.js:355 |
-| `plainHead` | frontend/js/lazy-entries.js:288 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:296 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:367 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:391 |
+| `afterCharacters` | frontend/js/lazy-entries.js:268 |
+| `charactersLost` | frontend/js/lazy-entries.js:277 |
+| `emblemHead` | frontend/js/lazy-entries.js:285 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:314 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:347 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:308 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:335 |
+| `onDomReady` | frontend/js/lazy-entries.js:358 |
+| `plainHead` | frontend/js/lazy-entries.js:291 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:299 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:370 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:394 |
 
 ### frontend/js/att-chip.js (8)
 
@@ -1033,67 +1033,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:487 |
 | `wireReindexButton` | frontend/js/ai-tools.js:546 |
 
-### frontend/js/phone-shell.js (57)
+### frontend/js/phone-shell.js (53)
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1856 |
-| `closeNotePageIfGone` | frontend/js/phone-shell.js:1128 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:2016 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:2005 |
-| `dockChatAttachments` | frontend/js/phone-shell.js:1260 |
-| `dockChatTools` | frontend/js/phone-shell.js:1318 |
-| `dockPhoneStatus` | frontend/js/phone-shell.js:813 |
-| `dockShown` | frontend/js/phone-shell.js:2095 |
-| `dockTabBar` | frontend/js/phone-shell.js:652 |
-| `dockTight` | frontend/js/phone-shell.js:2102 |
-| `dropRepeatedTitle` | frontend/js/phone-shell.js:1056 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1847 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1663 |
+| `closeNotePageIfGone` | frontend/js/phone-shell.js:958 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1823 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1812 |
+| `dockChatAttachments` | frontend/js/phone-shell.js:1067 |
+| `dockChatTools` | frontend/js/phone-shell.js:1125 |
+| `dockPhoneStatus` | frontend/js/phone-shell.js:821 |
+| `dockShown` | frontend/js/phone-shell.js:1902 |
+| `dockTabBar` | frontend/js/phone-shell.js:660 |
+| `dockTight` | frontend/js/phone-shell.js:1909 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1654 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:132 |
-| `fitDock` | frontend/js/phone-shell.js:2222 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1942 |
+| `fitDock` | frontend/js/phone-shell.js:2029 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1749 |
 | `focusTabPage` | frontend/js/phone-shell.js:386 |
-| `foldDockActions` | frontend/js/phone-shell.js:2168 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2113 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2060 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:2028 |
-| `initBottomTabBar` | frontend/js/phone-shell.js:683 |
-| `initDockFolding` | frontend/js/phone-shell.js:2235 |
+| `foldDockActions` | frontend/js/phone-shell.js:1975 |
+| `foldDockArrange` | frontend/js/phone-shell.js:1920 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1867 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1835 |
+| `initBottomTabBar` | frontend/js/phone-shell.js:691 |
+| `initDockFolding` | frontend/js/phone-shell.js:2042 |
 | `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1768 |
-| `initNotePage` | frontend/js/phone-shell.js:1133 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1575 |
 | `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:590 |
-| `initOcrPhonePage` | frontend/js/phone-shell.js:1220 |
-| `initPhoneChatRow` | frontend/js/phone-shell.js:1373 |
-| `initPhoneHeaderMore` | frontend/js/phone-shell.js:727 |
-| `initPhoneStatus` | frontend/js/phone-shell.js:849 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1968 |
-| `initRowSwipe` | frontend/js/phone-shell.js:952 |
-| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:883 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:2048 |
-| `ocrPhonePage` | frontend/js/phone-shell.js:1184 |
-| `openNotePage` | frontend/js/phone-shell.js:1066 |
-| `openSheet` | frontend/js/phone-shell.js:1413 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1721 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1686 |
-| `phoneSheetDialogs` | frontend/js/phone-shell.js:1239 |
-| `refreshNotePage` | frontend/js/phone-shell.js:1114 |
+| `initOcrPhonePage` | frontend/js/phone-shell.js:1027 |
+| `initPhoneChatRow` | frontend/js/phone-shell.js:1180 |
+| `initPhoneHeaderMore` | frontend/js/phone-shell.js:735 |
+| `initPhoneStatus` | frontend/js/phone-shell.js:857 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1775 |
+| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:891 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:1855 |
+| `ocrPhonePage` | frontend/js/phone-shell.js:991 |
+| `openSheet` | frontend/js/phone-shell.js:1220 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1528 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1493 |
+| `phoneSheetDialogs` | frontend/js/phone-shell.js:1046 |
+| `refreshNotePage` | frontend/js/phone-shell.js:953 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:168 |
 | `releaseEmblem` | frontend/js/phone-shell.js:151 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:218 |
 | `renderEmblem` | frontend/js/phone-shell.js:174 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:255 |
-| `sheetRow` | frontend/js/phone-shell.js:1623 |
+| `sheetRow` | frontend/js/phone-shell.js:1430 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1730 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1695 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1537 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1502 |
 | `tabFromTop` | frontend/js/phone-shell.js:487 |
 | `tabPageScroller` | frontend/js/phone-shell.js:402 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
-| `watchStatusBarIdle` | frontend/js/phone-shell.js:795 |
+| `watchStatusBarIdle` | frontend/js/phone-shell.js:803 |
 
 ### frontend/js/wiring.js (34)
 
@@ -7039,6 +7035,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:238 |
 | `renderPersonas` | frontend/js/personas-pane.js:21 |
 | `savePersonaList` | frontend/js/personas-pane.js:10 |
+
+### frontend/js/phone-gestures.js (5)
+
+| Name | File:line |
+|---|---|
+| `dropRepeatedTitle` | frontend/js/phone-gestures.js:123 |
+| `initNotePage` | frontend/js/phone-gestures.js:191 |
+| `initRowSwipe` | frontend/js/phone-gestures.js:34 |
+| `openNotePage` | frontend/js/phone-gestures.js:133 |
+| `refreshNotePageNow` | frontend/js/phone-gestures.js:178 |
 
 ### frontend/js/phone-more.js (1)
 
@@ -32720,14 +32726,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4465 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4340 |
-| Needs hardware | docs/roadmap/LEDGER.md:531 |
+| Needs hardware | docs/roadmap/LEDGER.md:530 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1299 |
-| Owner calls | docs/roadmap/LEDGER.md:524 |
+| Owner calls | docs/roadmap/LEDGER.md:523 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4213 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32908,7 +32914,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3155 |
-| Plan session briefs | docs/roadmap/LEDGER.md:656 |
+| Plan session briefs | docs/roadmap/LEDGER.md:655 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2626 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32962,25 +32968,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:672 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:756 |
+| chat | docs/roadmap/LEDGER.md:671 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:755 |
 | documents | docs/roadmap/LEDGER.md:324 |
-| documents | docs/roadmap/LEDGER.md:696 |
-| general | docs/roadmap/LEDGER.md:491 |
+| documents | docs/roadmap/LEDGER.md:695 |
+| general | docs/roadmap/LEDGER.md:490 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:660 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:768 |
+| graph | docs/roadmap/LEDGER.md:659 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:767 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4349 |
 | mindmap | docs/roadmap/LEDGER.md:340 |
-| mindmap | docs/roadmap/LEDGER.md:708 |
+| mindmap | docs/roadmap/LEDGER.md:707 |
 | timeline | docs/roadmap/LEDGER.md:459 |
-| timeline | docs/roadmap/LEDGER.md:732 |
+| timeline | docs/roadmap/LEDGER.md:731 |
 | ui-modernisation | docs/roadmap/LEDGER.md:343 |
-| ui-modernisation | docs/roadmap/LEDGER.md:720 |
+| ui-modernisation | docs/roadmap/LEDGER.md:719 |
 | whiteboard | docs/roadmap/LEDGER.md:279 |
-| whiteboard | docs/roadmap/LEDGER.md:684 |
+| whiteboard | docs/roadmap/LEDGER.md:683 |
 | world-class | docs/roadmap/LEDGER.md:461 |
-| world-class | docs/roadmap/LEDGER.md:744 |
+| world-class | docs/roadmap/LEDGER.md:743 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2794 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2845 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2952 |
