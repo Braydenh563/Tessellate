@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 179 | 58 | 0 | 72 | 367 |
-| general | 0 | 25 | 2 | 0 | 5 | 27 |
-| all | 402 | 508 | 124 | 2 | 153 | 1034 |
+| general | 0 | 23 | 2 | 0 | 5 | 25 |
+| all | 402 | 506 | 124 | 2 | 153 | 1032 |
 
 ## graph
 
@@ -285,7 +285,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-104** `documents` partly, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile; documents side built behind boardInstance stub, 2349346a1; waits on #223's instance API Left for the wiring step: a card that CodeMirror removes is noticed only on the next doc-shown, doc-saved or board-edited (no MutationObserver, test_frontend_wake_sources), so the embed widget's destroy hook should end its instance; help and manual parity move then.
 
 ## mindmap
-
 
 ## ui-modernisation
 
@@ -672,8 +671,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
-- [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
-- [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls

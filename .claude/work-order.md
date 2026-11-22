@@ -1,5 +1,5 @@
 mode: continue
-status: running
+status: done
 pr: 216
 max-continues: 60
 max-idle-minutes: 60
@@ -7,47 +7,49 @@ finish-up: 70%
 started: 2026-11-07 14:40Z
 tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until about 2026-11-09 06:00Z to 07:00Z (late afternoon owner time, UTC+10)
 
+Closed 2026-11-14 (L-general-33): the 2026-11-12 open-work sweep carried every unticked line below into LEDGER or a plan, or found it built; LEDGER is where the open work lives now.
+
 ## 2026-11-09 away queue (tier: four agents, at most two Opus, Haiku scouts extra) (owner asleep from ~14:50Z; stop at 70% weekly; context 200k does not stop the run, owner override)
-- [ ] Push the 9 local commits when CI on 7d814c1 finishes; fix its failures
-- [ ] Merge zoom2-1109 (1717), desklane-1109 (1696 a,b,h,i,k,aa,kk; 1710 a,b; 1711 b; 1718), small3-1109 (constellation pause, 1693 a)
-- [ ] Composer deep-audit round (1719 c), then build its findings in Sonnet batches
-- [ ] Throw off the top of the screen, both companions (1719 a)
-- [ ] Life and biological design pass (1719 b) with 1696 j, v-w, dd; then Sonnet batches
-- [ ] Remaining: 1711 a,d; 1683 a (desk lower-body frames); audit rows 21, 36; further 37a batches; zoom and desk leftovers
-- [ ] Then, owner 2026-11-09 ~15:00Z ("the rest includes ..."): every open audit and deep-dive finding (audit-1031-ranked.md, FABLE_BRIEF, deep-dive files), every open INBOX item outside the BACKLOG, every open plan item in docs/roadmap/*_PLAN.md, and continuous refinement: optimisation, bug and security fixing, poke holes (reviewer, security-reviewer, blind-tester rounds), UI and UX redesign and fixes, backend and frontend
-- [ ] Priority polish (owner 2026-11-09 ~15:15Z): diagram builder finished and polished (open dgml/dgpic leftovers: shelf touch, gap drop marker, 390 px, default fold call), composer improved round after round, companions in-app and desk; blind-tester and ux-auditor on each
-- [ ] Docs and README kept current per merge (owner 2026-11-09 ~15:10Z): CHANGELOG, README numbers and names (test_readme_freshness), ARCHITECTURE, DESIGN, Guide topics; a docs pass before the boundary
-- [ ] BACKLOG boundary: HANDOVER Now and Morning summary, push, retro
+- Carried (2026-11-12 sweep, L-general-33): Push the 9 local commits when CI on 7d814c1 finishes; fix its failures
+- Carried (2026-11-12 sweep, L-general-33): Merge zoom2-1109 (1717), desklane-1109 (1696 a,b,h,i,k,aa,kk; 1710 a,b; 1711 b; 1718), small3-1109 (constellation pause, 1693 a)
+- Carried (2026-11-12 sweep, L-general-33): Composer deep-audit round (1719 c), then build its findings in Sonnet batches
+- Carried (2026-11-12 sweep, L-general-33): Throw off the top of the screen, both companions (1719 a)
+- Carried (2026-11-12 sweep, L-general-33): Life and biological design pass (1719 b) with 1696 j, v-w, dd; then Sonnet batches
+- Carried (2026-11-12 sweep, L-general-33): Remaining: 1711 a,d; 1683 a (desk lower-body frames); audit rows 21, 36; further 37a batches; zoom and desk leftovers
+- Carried (2026-11-12 sweep, L-general-33): Then, owner 2026-11-09 ~15:00Z ("the rest includes ..."): every open audit and deep-dive finding (audit-1031-ranked.md, FABLE_BRIEF, deep-dive files), every open INBOX item outside the BACKLOG, every open plan item in docs/roadmap/*_PLAN.md, and continuous refinement: optimisation, bug and security fixing, poke holes (reviewer, security-reviewer, blind-tester rounds), UI and UX redesign and fixes, backend and frontend
+- Carried (2026-11-12 sweep, L-general-33): Priority polish (owner 2026-11-09 ~15:15Z): diagram builder finished and polished (open dgml/dgpic leftovers: shelf touch, gap drop marker, 390 px, default fold call), composer improved round after round, companions in-app and desk; blind-tester and ux-auditor on each
+- Carried (2026-11-12 sweep, L-general-33): Docs and README kept current per merge (owner 2026-11-09 ~15:10Z): CHANGELOG, README numbers and names (test_readme_freshness), ARCHITECTURE, DESIGN, Guide topics; a docs pass before the boundary
+- Carried (2026-11-12 sweep, L-general-33): BACKLOG boundary: HANDOVER Now and Morning summary, push, retro
 
 ## 2026-11-08 away queue (HANDOVER Now 2026-11-08g)
-- [ ] Merge desklayers-1108 (C1, C4), appacts-1108 (D1, D2), dgmlive-1108 (diagram real-browser checks), deskmood-1108 (sad when left alone, welcome back, confused on a missed landing): targeted tests, reviewer on UI, push
-- [ ] Folder CONTEXT.md in frontend/js, src/tessellate/ai, src/tessellate/core/overlay (owner yes 16:00Z)
-- [ ] atlascat C2, C3, C5 (atlas-life.js tail acts and lower states) after desklayers
-- [ ] perf P6, P7, P9 (audit-1108-perf.md); coil breath on the compositor (restlayout-1108.md)
-- [ ] "put it in today's note" read by the move reader; r3fix single-list intro-line route
-- [ ] Layered deep dive next round per surface (desk, in-app, Atlas, diagram, composer)
-- [ ] Open audit rows on other surfaces (audit-1031-ranked.md first; board, mind map, notes, documents, code editor, OCR), FABLE_BRIEF findings, plans and BACKLOG, smallest first (owner 16:35Z)
-- [ ] Session end at 60% weekly or queue done: full suite, Morning summary, retro
+- Carried (2026-11-12 sweep, L-general-33): Merge desklayers-1108 (C1, C4), appacts-1108 (D1, D2), dgmlive-1108 (diagram real-browser checks), deskmood-1108 (sad when left alone, welcome back, confused on a missed landing): targeted tests, reviewer on UI, push
+- Carried (2026-11-12 sweep, L-general-33): Folder CONTEXT.md in frontend/js, src/tessellate/ai, src/tessellate/core/overlay (owner yes 16:00Z)
+- Carried (2026-11-12 sweep, L-general-33): atlascat C2, C3, C5 (atlas-life.js tail acts and lower states) after desklayers
+- Carried (2026-11-12 sweep, L-general-33): perf P6, P7, P9 (audit-1108-perf.md); coil breath on the compositor (restlayout-1108.md)
+- Carried (2026-11-12 sweep, L-general-33): "put it in today's note" read by the move reader; r3fix single-list intro-line route
+- Carried (2026-11-12 sweep, L-general-33): Layered deep dive next round per surface (desk, in-app, Atlas, diagram, composer)
+- Carried (2026-11-12 sweep, L-general-33): Open audit rows on other surfaces (audit-1031-ranked.md first; board, mind map, notes, documents, code editor, OCR), FABLE_BRIEF findings, plans and BACKLOG, smallest first (owner 16:35Z)
+- Carried (2026-11-12 sweep, L-general-33): Session end at 60% weekly or queue done: full suite, Morning summary, retro
 
 ## 2026-11-07 overnight queue (HANDOVER Now 2026-11-07c)
 - [x] Merge land1683 (e7ad8fe9) (agent/land1683-1107): overlay tests serially, CHANGELOG, CODEMAP, push
-- [x] Merge value-field (1d562540; follow-up agent/vf2-1107: keyboard reach, graph clock, scrubber) (agent/value-field-1107, INBOX 1694 b c): every slider readout typeable, lint
-- [x] Atlas composite and afterFrames regressions (93b010af; follow-up agent/atlasidle2-1107)
+- [x] Merge value-field (1d562540; then agent/vf2-1107: keyboard reach, graph clock, scrubber) (agent/value-field-1107, INBOX 1694 b c): every slider readout typeable, lint
+- [x] Atlas composite and afterFrames regressions (93b010af; then agent/atlasidle2-1107)
 - [x] CI fixes 1a15ca00 (6 failures) and atlasidle2 merged 399f5e3f (3 refused animations to 0; restyle unchanged)
-- [ ] Atlas at-rest writers (workflow wf_381edf17-a3a, agent/atlaswriters-1107)
-- [ ] Merge companion-s (agent/companion-s-1107): window perch bug, the 1683 (l) mind, S rows; reviewer
-- [ ] Coverage ledger of every owner ask (1683 a to y, 1692 a to q, 1694) against code and tests
-- [ ] 1683 (x)(y) build: pull-up, fling off a moved window, slide off, poof or portal escape with a miffed face, tuck behind smaller windows, peek from the taskbar on any edge, hidden taskbar, sidebars; in-app parity
-- [x] INBOX 1667 perf: partial 5d6bfcae (scroll-edge sync); follow-up agent/atlasidle-1107: idle Atlas restyle 2.2-3.2 s per 6 s at 4x, note-open long tasks
-- [ ] Layered deep dive round 1: desk companion (research, audit, fix, re-audit)
-- [ ] Deep dive round 1: in-app companion and Atlas
+- Carried (2026-11-12 sweep, L-general-33): Atlas at-rest writers (workflow wf_381edf17-a3a, agent/atlaswriters-1107)
+- Carried (2026-11-12 sweep, L-general-33): Merge companion-s (agent/companion-s-1107): window perch bug, the 1683 (l) mind, S rows; reviewer
+- Carried (2026-11-12 sweep, L-general-33): Coverage ledger of every owner ask (1683 a to y, 1692 a to q, 1694) against code and tests
+- Carried (2026-11-12 sweep, L-general-33): 1683 (x)(y) build: pull-up, fling off a moved window, slide off, poof or portal escape with a miffed face, tuck behind smaller windows, peek from the taskbar on any edge, hidden taskbar, sidebars; in-app parity
+- [x] INBOX 1667 perf: partial 5d6bfcae (scroll-edge sync); then agent/atlasidle-1107: idle Atlas restyle 2.2-3.2 s per 6 s at 4x, note-open long tasks
+- Carried (2026-11-12 sweep, L-general-33): Layered deep dive round 1: desk companion (research, audit, fix, re-audit)
+- Carried (2026-11-12 sweep, L-general-33): Deep dive round 1: in-app companion and Atlas
 - [x] Deep dive round 1: diagram builder (41a4919f, diagram-dive-1107.md, DD-1 to DD-15)
-- [ ] Diagram build: Tier 1 plus DD-7, 8, 9, 14 (workflow wf_cf66c311-c38, branch agent/diagbuild-1107, then review, UX audit, blind test, refix)
-- [ ] Deep dive round 1: composer (class rule 1357, parity decision 75)
-- [ ] Repeat rounds per surface until a round finds nothing new
-- [ ] Open deep-audit and Fable findings: ANALYSIS.md, AUDIT.md, FABLE_BRIEF.md
-- [ ] Then plans, BACKLOG, the rest of the 2026-11-07 order
-- [ ] Session end: full suite, INBOX 1693, HANDOVER morning summary, retro
+- Carried (2026-11-12 sweep, L-general-33): Diagram build: Tier 1 plus DD-7, 8, 9, 14 (workflow wf_cf66c311-c38, branch agent/diagbuild-1107, then review, UX audit, blind test, refix)
+- Carried (2026-11-12 sweep, L-general-33): Deep dive round 1: composer (class rule 1357, parity decision 75)
+- Carried (2026-11-12 sweep, L-general-33): Repeat rounds per surface until a round finds nothing new
+- Carried (2026-11-12 sweep, L-general-33): Open deep-audit and Fable findings: ANALYSIS.md, AUDIT.md, FABLE_BRIEF.md
+- Carried (2026-11-12 sweep, L-general-33): Then plans, BACKLOG, the rest of the 2026-11-07 order
+- Carried (2026-11-12 sweep, L-general-33): Session end: full suite, INBOX 1693, HANDOVER morning summary, retro
 
 - 17:4xZ: companion-s merged locally as c5a644b6 (not pushed): 6 overlay tests fail, all caused by companion-s (pass on ^1, fail on ^2). Fix workflow wf_32497065-27e (fix, review, refix) in the main checkout. Push after it is green, then start the edges build.
 - 17:5xZ: diagbuild done (agent/diagbuild-1107, 9 commits: DD-1,2,3,4,7,8 part,9 small,14 + refix of review, UX and blind findings); merge after the companion-s fix workflow lands. Composer round 1 started (wf_ca4f2f32-3d4: research, audit, verify, fix on agent/composer-r1-1107, review, refix). Edges build waits for the companion-s fix (both edit engine.py).
