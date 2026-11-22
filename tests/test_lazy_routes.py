@@ -11,26 +11,38 @@ path no route serves is still a 404. Each builds a lazy app explicitly, since
 
 from __future__ import annotations
 
+import logging
+import random
+import re
+
+import pytest
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
+from starlette.routing import Mount, Route, WebSocketRoute
 
 from tessellate.api import app as app_module
 
 SKIP_METHODS = {"HEAD", "OPTIONS"}
 
 
-def _walk(routes, prefix=""):
+def _walk(routes, prefix="", segments=None):
     """(method, path) of every route, included routers walked through (see
-    tests/test_every_route_is_locked.py for why a flat filter is not enough)."""
+    tests/test_every_route_is_locked.py for why a flat filter is not enough).
+    With `segments` (a row's), a route that is not an APIRoute (websocket, mount,
+    add_route) must start with one of them: the walk cannot list it as a method and
+    path, so the row's promise about it would otherwise go unchecked."""
     for route in routes:
         inner = getattr(route, "original_router", None)
         if inner is not None:
             context = getattr(route, "include_context", None)
-            yield from _walk(inner.routes, prefix + getattr(context, "prefix", ""))
+            yield from _walk(inner.routes, prefix + getattr(context, "prefix", ""), segments)
             continue
         if isinstance(route, APIRoute):
             for method in sorted(set(route.methods or []) - SKIP_METHODS):
                 yield method, prefix + route.path
+        elif segments is not None:
+            first = app_module._first_segment(prefix + getattr(route, "path", ""))
+            assert first in segments.split(), (type(route).__name__, prefix + getattr(route, "path", ""))
 
 
 def _row_index(module):
@@ -49,7 +61,7 @@ def test_each_row_names_exactly_the_segments_its_routes_start_with():
     for row in app_module.ROUTER_ROWS:
         router = row.router()
         served = {
-            app_module._first_segment(path) for _method, path in _walk(router.routes, router.prefix)
+            app_module._first_segment(path) for _method, path in _walk(router.routes, router.prefix, row.segments)
         }
         if served != set(row.segments.split()):
             wrong[f"{row.module}.{row.attr}"] = sorted(served)
@@ -161,3 +173,87 @@ def test_importing_the_app_imports_only_the_route_modules_it_calls():
     assert out.stdout.split() == [
         "tessellate.api.routes_auth", "tessellate.api.routes_diag", "tessellate.api.routes_update",
     ]
+
+
+def test_the_segment_walk_catches_a_route_that_is_not_an_api_route():
+    from fastapi import APIRouter
+
+    router = APIRouter()
+    router.routes.append(WebSocketRoute("/stray/ws", lambda ws: None))
+    router.routes.append(Mount("/other", routes=[Route("/x", lambda r: None)]))
+    with pytest.raises(AssertionError):
+        list(_walk(router.routes, "", "/entries"))
+    assert list(_walk(router.routes[:1], "", "/stray")) == []
+
+
+def test_no_row_router_has_lifespan_handlers():
+    """A lazily included router's startup, shutdown or lifespan handlers would never run
+    (`include_router` does not copy them), so none may have one."""
+    bad = {}
+    for row in app_module.ROUTER_ROWS:
+        router = row.router()
+        found = [
+            name
+            for name in ("on_startup", "on_shutdown")
+            if getattr(router, name, None)
+        ]
+        if getattr(router, "lifespan_context", None) is not None and not _is_default_lifespan(router):
+            found.append("lifespan")
+        if found:
+            bad[f"{row.module}.{row.attr}"] = found
+    assert not bad, bad
+
+
+def _is_default_lifespan(router) -> bool:
+    """The default, or the wrapper `include_router` makes when a router includes others
+    (its nested routers are rows or modules of their own, held to the same rule)."""
+    context = router.lifespan_context
+    return type(context).__name__ == "_DefaultLifespan" or context.__qualname__.startswith("_merge_lifespan_context")
+
+
+def test_a_router_that_fails_to_import_is_logged_and_the_rest_still_load(app_state, monkeypatch, caplog):  # noqa: ARG001
+    rows = list(app_module.ROUTER_ROWS)
+    index = _row_index("routes_entries_relations")
+    rows[index] = rows[index]._replace(module="no_such_route_module_for_test")
+    monkeypatch.setattr(app_module, "ROUTER_ROWS", tuple(rows))
+    app = app_module.create_app(lazy_routes=True)
+    client = TestClient(app, raise_server_exceptions=False)
+    headers = _setup(client)
+    with caplog.at_level(logging.ERROR):
+        client.get("/entries", headers=headers)
+        client.get("/entries", headers=headers)
+    errors = [r for r in caplog.records if r.levelno >= logging.ERROR and "no_such_route_module_for_test" in r.getMessage()]
+    assert len(errors) == 1, "one error naming the module, not one per request"
+    host = app.state.lazy_routes
+    sharing = [i for i in host.by_segment["/entries"] if i != index]
+    assert sharing and all(host.loaded[i] for i in sharing)
+    assert not host.loaded[index]
+
+
+def _concrete(path):
+    path = re.sub(r"\{[^}]*:path\}", "a/b", path)
+    return re.sub(r"\{[^}]*\}", "1", path)
+
+
+def test_a_lazy_app_answers_every_route_unauthenticated_as_the_eager_app_does(app_state):  # noqa: ARG001
+    """The gate parity of the whole table: after a password is set, every (method, path)
+    of the eager app is sent with no token to both apps, in a fixed shuffled order, and
+    the status codes must match."""
+    eager_app = app_module.create_app(lazy_routes=False)
+    pairs = sorted(set(_walk(eager_app.routes)))
+    random.Random(1).shuffle(pairs)
+    eager = TestClient(eager_app, raise_server_exceptions=False)
+    lazy = TestClient(app_module.create_app(lazy_routes=True), raise_server_exceptions=False)
+    # A third client sets the password: the one that does keeps its media cookie.
+    _setup(TestClient(app_module.create_app(lazy_routes=False)))
+    # Acting routes that are open by design (a shutdown, a sync, a handoff) are sent as GET only.
+    skip = ("/auth", "/shutdown", "/sync", "/mcp", "/origin-handoff", "/reminders/act")
+    diffs = []
+    for method, path in pairs:
+        url = _concrete(path)
+        if method != "GET" and url.startswith(skip):
+            continue
+        a, b = lazy.request(method, url).status_code, eager.request(method, url).status_code
+        if a != b:
+            diffs.append((method, url, a, b))
+    assert not diffs, diffs[:20]
