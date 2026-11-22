@@ -20,4 +20,4 @@ def test_warm_document_engine_answers_whether_it_warmed() -> None:
     src = frontend_text("documents-cm-load.js")
     body = src[src.index("function warmDocumentEngine()") :]
     body = body[: body.index("\n}\n")]
-    assert "return docWarmed;" in body and body.rstrip().endswith("return true;")
+    assert "if (docWarmed) return true;" in body and body.rstrip().endswith("return true;")

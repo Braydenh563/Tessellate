@@ -1032,51 +1032,7 @@ function withLibraryCopyActions(items, kind, title, id) {
 function libraryActions(item) {
   const reload = () => loadLibrary();
   if (item.kind === "chat") {
-    return [
-      makeMenuItem(
-        item.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
-        item.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
-        async () => {
-          const pinned = await apiJson(`/conversations/${item.id}/pin`, {
-            method: "PUT",
-            body: JSON.stringify({ pinned: !item.pinned }),
-          }).catch((e) => toast(e.message, true));
-          if (pinned) chatWriteRecord("chatPinUndo", item.id, !item.pinned);
-          reload();
-        }
-      ),
-      makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptTitle("Rename this chat", item.title);
-        if (!next) return;
-        const renamed = await apiJson(`/conversations/${item.id}`, {
-          method: "PUT",
-          body: JSON.stringify({ title: next }),
-        }).catch((e) => toast(e.message, true));
-        if (renamed) chatWriteRecord("chatTitleUndo", item.id, item.title, next);
-        reload();
-        loadConversationList();
-      }),
-      makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
-        const archived = await apiJson(`/conversations/${item.id}/archive`, { method: "PUT" }).catch((e) =>
-          toast(e.message, true)
-        );
-        if (chatConv && chatConv.id === item.id) newChatConversation();
-        reload();
-        await loadConversationList();
-        if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
-      }),
-      makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
-        if (!(await confirmDialog("Delete this saved chat?"))) return;
-        const gone = await apiJson(`/conversations/${item.id}`, { method: "DELETE" }).catch((e) => {
-          toast(e.message, true);
-          return null;
-        });
-        if (chatConv && chatConv.id === item.id) newChatConversation();
-        reload();
-        loadConversationList();
-        chatDeleteUndo(gone, reload);
-      }),
-    ];
+    return libraryActions.chat(item, reload);
   }
   if (item.kind === "document" || item.kind === "diagram") {
     return [
@@ -1314,6 +1270,54 @@ function libraryActions(item) {
   }
   return [];
 }
+//: The chat row's menu, split from `libraryActions`.
+libraryActions.chat = (item, reload) => {
+  return [
+    makeMenuItem(
+      item.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
+      item.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
+      async () => {
+        const pinned = await apiJson(`/conversations/${item.id}/pin`, {
+          method: "PUT",
+          body: JSON.stringify({ pinned: !item.pinned }),
+        }).catch((e) => toast(e.message, true));
+        if (pinned) chatWriteRecord("chatPinUndo", item.id, !item.pinned);
+        reload();
+      }
+    ),
+    makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
+      const next = await promptTitle("Rename this chat", item.title);
+      if (!next) return;
+      const renamed = await apiJson(`/conversations/${item.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title: next }),
+      }).catch((e) => toast(e.message, true));
+      if (renamed) chatWriteRecord("chatTitleUndo", item.id, item.title, next);
+      reload();
+      loadConversationList();
+    }),
+    makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
+      const archived = await apiJson(`/conversations/${item.id}/archive`, { method: "PUT" }).catch((e) =>
+        toast(e.message, true)
+      );
+      if (chatConv && chatConv.id === item.id) newChatConversation();
+      reload();
+      await loadConversationList();
+      if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
+    }),
+    makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
+      if (!(await confirmDialog("Delete this saved chat?"))) return;
+      const gone = await apiJson(`/conversations/${item.id}`, { method: "DELETE" }).catch((e) => {
+        toast(e.message, true);
+        return null;
+      });
+      if (chatConv && chatConv.id === item.id) newChatConversation();
+      reload();
+      loadConversationList();
+      chatDeleteUndo(gone, reload);
+    }),
+  ];
+};
 
 //: **The bin holds five kinds** (WORLD_CLASS_PLAN 5 item 10): notes (with
 //: boards and maps), documents, reminders, OCR readings and recordings, told apart by `subtype`
@@ -1614,41 +1618,7 @@ function libraryCard(item) {
   // A thumbnail where there is one to show. A grid of picture files that shows
   // the word "PNG" seven times is a list pretending to be a gallery, and this
   // is the one kind whose content *is* what it looks like.
-  if (item.kind === "file" && (item.mime || "").startsWith("image/")) {
-    const thumb = document.createElement("img");
-    thumb.className = "library-card-thumb";
-    thumb.src = mediaSrc(`/files/${item.id}`);
-    thumb.alt = "";
-    thumb.loading = "lazy";
-    // A file whose bytes have gone leaves a broken-image glyph, which reads as
-    // a bug in the Library rather than as a missing file.
-    thumb.addEventListener("error", () => thumb.remove());
-    card.appendChild(thumb);
-  } else if (
-    (item.kind === "note" || item.kind === "shelved" || item.kind === "archived") &&
-    (item.thumb_attachment_id || (item.thumb_url && !isRemoteImage(item.thumb_url)))
-  ) {
-    // A sketch is a note whose actual content is a file attachment, not
-    // text: without this a sketch card in the Library was a bare title
-    // with nothing under it, indistinguishable from any empty note.
-    //
-    // `thumb_url` is the other half of the same fix: a pasted or dropped
-    // image lives as inline markdown in the note's own content, never as an
-    // Attachment, so it needed its own source, a sketch's card showed its
-    // drawing and a pasted-image note's card showed nothing at all, which
-    // is the inconsistency this closes. Already an absolute URL
-    // (`/media/...` or `https://...`, whatever the note itself renders it
-    // as), so it goes to mediaSrc() as-is rather than through `/files/{id}`.
-    const thumb = document.createElement("img");
-    thumb.className = "library-card-thumb";
-    thumb.src = item.thumb_attachment_id
-      ? mediaSrc(`/files/${item.thumb_attachment_id}`)
-      : mediaSrc(item.thumb_url);
-    thumb.alt = "";
-    thumb.loading = "lazy";
-    thumb.addEventListener("error", () => thumb.remove());
-    card.appendChild(thumb);
-  }
+  libraryCard.thumb(card, item);
 
   const top = document.createElement("div");
   top.className = "library-card-top";
@@ -1807,6 +1777,44 @@ function libraryCard(item) {
   setLibraryCardStop(card, false);
   return card;
 }
+//: A card's picture, split from `libraryCard`.
+libraryCard.thumb = (card, item) => {
+  if (item.kind === "file" && (item.mime || "").startsWith("image/")) {
+    const thumb = document.createElement("img");
+    thumb.className = "library-card-thumb";
+    thumb.src = mediaSrc(`/files/${item.id}`);
+    thumb.alt = "";
+    thumb.loading = "lazy";
+    // A file whose bytes have gone leaves a broken-image glyph, which reads as
+    // a bug in the Library rather than as a missing file.
+    thumb.addEventListener("error", () => thumb.remove());
+    card.appendChild(thumb);
+  } else if (
+    (item.kind === "note" || item.kind === "shelved" || item.kind === "archived") &&
+    (item.thumb_attachment_id || (item.thumb_url && !isRemoteImage(item.thumb_url)))
+  ) {
+    // A sketch is a note whose actual content is a file attachment, not
+    // text: without this a sketch card in the Library was a bare title
+    // with nothing under it, indistinguishable from any empty note.
+    //
+    // `thumb_url` is the other half of the same fix: a pasted or dropped
+    // image lives as inline markdown in the note's own content, never as an
+    // Attachment, so it needed its own source, a sketch's card showed its
+    // drawing and a pasted-image note's card showed nothing at all, which
+    // is the inconsistency this closes. Already an absolute URL
+    // (`/media/...` or `https://...`, whatever the note itself renders it
+    // as), so it goes to mediaSrc() as-is rather than through `/files/{id}`.
+    const thumb = document.createElement("img");
+    thumb.className = "library-card-thumb";
+    thumb.src = item.thumb_attachment_id
+      ? mediaSrc(`/files/${item.thumb_attachment_id}`)
+      : mediaSrc(item.thumb_url);
+    thumb.alt = "";
+    thumb.loading = "lazy";
+    thumb.addEventListener("error", () => thumb.remove());
+    card.appendChild(thumb);
+  }
+};
 
 //: **One Tab stop for the whole grid** (libtl-0926). Every card was three
 //: stops (itself, its tick, its ⋯), and the grid keeps growing as it
@@ -3782,26 +3790,7 @@ libraryDocsScroll.item = function (doc) {
     const docPreview = libraryTitleAndPreview(doc.title || "", doc.preview || "", false).preview;
     //: **A page, not a line of grey text** (INBOX 1325, L-documents-54): the heading and the opening lines on a small page,
     //: drawn from the summary the list already has (nothing stored, nothing fetched); `.doc-list-page` in library-lazy.css.
-    const page = document.createElement("span");
-    page.className = "doc-list-page";
-    page.setAttribute("aria-hidden", "true");
-    const leaf = mk("span", "doc-list-page-leaf");
-    const leafHead = mk("span", "doc-list-page-head");
-    leafHead.textContent = doc.title || "Untitled";
-    const leafLines = mk("span", "doc-list-page-lines");
-    leafLines.textContent = docPreview;
-    leaf.append(leafHead, leafLines);
-    page.append(leaf);
-    //: The document's first picture is the page's cover (L-documents-80): the summary names it, the image loads lazily, and a broken one leaves the text page.
-    if (doc.cover) {
-      const cover = mk("img", "doc-list-page-cover");
-      cover.loading = "lazy";
-      cover.decoding = "async";
-      cover.alt = "";
-      cover.addEventListener("error", () => cover.remove());
-      cover.src = doc.cover;
-      page.append(cover);
-    }
+    const page = libraryDocsScroll.page(doc, docPreview);
     if (docPreview) body.append(mk("span", "doc-list-preview", docPreview));
 
     // Same three actions `libraryActions()` gives a document's card in the
@@ -3879,6 +3868,30 @@ libraryDocsScroll.item = function (doc) {
     libraryDocsScroll.tree?.decorate(item, open, doc, renderLibraryDocuments);
     item.appendChild(open);
     return item;
+};
+//: The page thumbnail of a document row, split from `libraryDocsScroll.item`.
+libraryDocsScroll.page = (doc, docPreview) => {
+  const page = document.createElement("span");
+  page.className = "doc-list-page";
+  page.setAttribute("aria-hidden", "true");
+  const leaf = mk("span", "doc-list-page-leaf");
+  const leafHead = mk("span", "doc-list-page-head");
+  leafHead.textContent = doc.title || "Untitled";
+  const leafLines = mk("span", "doc-list-page-lines");
+  leafLines.textContent = docPreview;
+  leaf.append(leafHead, leafLines);
+  page.append(leaf);
+  //: The document's first picture is the page's cover (L-documents-80): the summary names it, the image loads lazily, and a broken one leaves the text page.
+  if (doc.cover) {
+    const cover = mk("img", "doc-list-page-cover");
+    cover.loading = "lazy";
+    cover.decoding = "async";
+    cover.alt = "";
+    cover.addEventListener("error", () => cover.remove());
+    cover.src = doc.cover;
+    page.append(cover);
+  }
+  return page;
 };
 
 //: Sub-pages (D14): the tree, its kebab rows, `/subpage` and the breadcrumb, lazy (documents-subpages.js). Fetched as
@@ -9468,22 +9481,7 @@ function filterLibraryImagesGallery() {
   // has to be the kind-filtered one, otherwise a notebook holding only PDFs
   // would show the Images tab as "no match for your search" with an empty
   // search box.
-  const readState = libraryMediaKind === "files" ? $("library-media-read")?.value || "all" : "all";
-  const ofKind = libraryImagesCache
-    .filter((i) => (libraryMediaKind === "files" ? !i._isImage : i._isImage))
-    //: Applied with the kind rather than with the search box, deliberately:
-    //: the empty-state copy below distinguishes "nothing in this sub-tab" from
-    //: "nothing matches your search", and a read filter is part of *which
-    //: files this sub-tab is showing*, not part of the query.
-    .filter((i) => {
-      if (readState === "read") return mediaHasBeenRead(i);
-      if (readState === "unread") return !mediaHasBeenRead(i);
-      return true;
-    })
-    //: The Images half of the same idea: which kind of picture is part of
-    //: which pictures this sub-tab shows, so it is applied with the kind and
-    //: the sort still runs over what is left.
-    .filter((i) => libraryMediaKind === "files" || libraryImageOriginsOn.has(libraryImageOrigin(i)));
+  const ofKind = filterLibraryImagesGallery.ofKind();
   renderLibraryImageOrigins();
   nounCount.dock("library-media", ofKind.length, libraryMediaKind === "files" ? "file" : "image");
   //: The empty state's Upload is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
@@ -11036,6 +11034,26 @@ function filterLibraryImagesGallery() {
     grid.appendChild(fig);
   }
 }
+//: The files or images this sub-tab shows, before the search box; split from `filterLibraryImagesGallery`.
+filterLibraryImagesGallery.ofKind = () => {
+  const readState = libraryMediaKind === "files" ? $("library-media-read")?.value || "all" : "all";
+  const ofKind = libraryImagesCache
+    .filter((i) => (libraryMediaKind === "files" ? !i._isImage : i._isImage))
+    //: Applied with the kind rather than with the search box, deliberately:
+    //: the empty-state copy below distinguishes "nothing in this sub-tab" from
+    //: "nothing matches your search", and a read filter is part of *which
+    //: files this sub-tab is showing*, not part of the query.
+    .filter((i) => {
+      if (readState === "read") return mediaHasBeenRead(i);
+      if (readState === "unread") return !mediaHasBeenRead(i);
+      return true;
+    })
+    //: The Images half of the same idea: which kind of picture is part of
+    //: which pictures this sub-tab shows, so it is applied with the kind and
+    //: the sort still runs over what is left.
+    .filter((i) => libraryMediaKind === "files" || libraryImageOriginsOn.has(libraryImageOrigin(i)));
+  return ofKind;
+};
 
 // The Library's own sub-tab switcher, plus the Documents/Media sub-tabs'
 // refresh, search and upload controls, moved here from whiteboard.js's
@@ -13554,7 +13572,7 @@ if (!navigator.connection?.saveData && (navigator.hardwareConcurrency || 2) >= 4
     //: Then, once every file has settled, the evaluation in a later idle slot: the editor's 80 ms and the documents file's 130 ms
     //: stop landing on the first open (documents.js `warmDocumentEngine` keeps its own phone and data-saving guard).
     Promise.all(bytes.map((file) => fetch(file + (file.startsWith("/js/") ? lazyAssetStamp(file) : ""), { priority: "low" }).catch(() => 0))).then(() =>
-      setTimeout(() => (window.requestIdleCallback || setTimeout)(() => ensureModule("library").then(() => (window.warmDocumentEngine() && window.loadCodeMirror())).then((CM) => CM && (window.requestIdleCallback || setTimeout)(() => ensureDocEditor()))), 1000)
+      setTimeout(() => (window.requestIdleCallback || setTimeout)(() => ensureModule("library").then(() => window.warmDocumentEngine() && window.loadCodeMirror()).then((CM) => CM && (window.requestIdleCallback || setTimeout)(() => ensureDocEditor()))), 1000)
     );
   });
 }

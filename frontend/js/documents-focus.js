@@ -700,10 +700,6 @@
     for (const bar of document.querySelectorAll(".doc-toolbar:not(#tab-notes *)")) mountDocToolbarControlsFor(bar);
     applyDocToolbarLayoutButtons();
     applyDocToolbarCollapsed(docToolbarCollapsed());
-    //: A late font changes every tool's width and not the strip's, so the width observer never sees it:
-    //: the row was fitted on the fallback face and ran past its end on the real one.
-    document.fonts?.ready?.then(fitDocToolbars);
-    document.fonts?.addEventListener?.("loadingdone", fitDocToolbars);
   }
 
 
@@ -823,10 +819,9 @@
   });
 
   mountDocToolbarControls();
-  //: Ctrl+Shift+X anywhere on the Documents tab, not only inside the text
-  //: (the editor's own keymap has it too): with the strip hidden, the focus
-  //: is as likely to be on the dock as in the page. Module level, beside the
-  //: mount, so no render adds a page listener (tests/test_perf_1031.py).
+  //: Ctrl+Shift+X anywhere on the Documents tab (the editor's keymap has it too): with the strip
+  //: hidden, the focus is as likely on the dock as in the page. Module level, beside the mount, so
+  //: no render adds a page listener (tests/test_perf_1031.py).
   document.addEventListener("keydown", (event) => {
     if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey || event.key.toLowerCase() !== "x") return;
     if (event.defaultPrevented || $("tab-documents")?.classList.contains("hidden") || !currentDoc) return;

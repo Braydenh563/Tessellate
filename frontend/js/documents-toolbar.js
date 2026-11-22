@@ -676,9 +676,13 @@
     const shown = [...document.querySelectorAll(".doc-toolbar")].filter((bar) => bar.getClientRects().length);
     for (const bar of shown) fitDocToolbarRow(bar);
   }
+  //: A late font changes every tool's width and not the strip's, so the width observer never sees it:
+  //: the row was fitted on the fallback face and ran past its end on the real one. Once, at load.
+  document.fonts?.ready?.then(fitDocToolbars);
+  document.fonts?.addEventListener?.("loadingdone", fitDocToolbars);
 
   //: The file's surface: what other files call.
-  Object.assign(window, { docGutterPref, docGutterWanted, applyDocGutter, docToolbarCollapsed, applyDocToolbarCollapsed, setDocToolbarCollapsed, docSyncFormatShow, toggleDocToolbar, mountDocToolbarControlsFor, applyDocToolbarLayoutButtons, fitDocToolbars });
+  Object.assign(window, { docGutterPref, docGutterWanted, applyDocGutter, docToolbarCollapsed, applyDocToolbarCollapsed, setDocToolbarCollapsed, docSyncFormatShow, toggleDocToolbar, mountDocToolbarControlsFor, applyDocToolbarLayoutButtons });
 
   //: Applied on load as well as on click: the toolbar exists before a document
   //: is opened, and a remembered mode that only took effect after the next
