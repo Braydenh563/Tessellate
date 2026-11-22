@@ -1947,76 +1947,7 @@ async function loadConversationList() {
     // taking most of the row, leaving a few characters of the chat's name.
     const actions = document.createElement("span");
     actions.className = "entry-actions";
-    const items = [];
-    items.push(
-      makeMenuItem(
-        conversation.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
-        conversation.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
-        async () => {
-          await apiJson(`/conversations/${conversation.id}/pin`, {
-            method: "PUT",
-            body: JSON.stringify({ pinned: !conversation.pinned }),
-          });
-          chatWriteRecord("chatPinUndo", conversation.id, !conversation.pinned);
-          loadConversationList();
-        }
-      )
-    );
-    items.push(
-      makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptTitle("Rename this chat", conversation.title);
-        if (!next) return;
-        await apiJson(`/conversations/${conversation.id}`, {
-          method: "PUT",
-          body: JSON.stringify({ title: next }),
-        });
-        chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
-        if (chatConv.id === conversation.id) $("chat-title").textContent = next;
-        loadConversationList();
-      })
-    );
-    items.push(
-      makeMenuItem("ph:sparkle Name with Atlas", "Let Atlas name this chat", async () => {
-        //: Asked for, so answered directly: the activity notice below obeys
-        //: "AI activity: panel only", and with that set the click showed
-        //: nothing at all, start or finish (the owner at release).
-        toast("Atlas is naming this chat…");
-        const named = await apiJson(`/conversations/${conversation.id}/retitle`, {
-          method: "POST",
-        }).catch((e) => {
-          toast(e.message, true);
-          return null;
-        });
-        if (!named) return;
-        if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
-        if (named.title === conversation.title) toast("Kept the first question as the title.");
-        else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
-        loadConversationList();
-      })
-    );
-    items.push(appLinkMenuItem("chat", conversation.id));
-    items.push(
-      // Not destructive, so not grouped with Delete below, same "keep it,
-      // but out of the way" action Notes already has for entries (BACKLOG
-      // §30b's named remaining scope: chats and documents). Reachable
-      // again from the Library's Shelved filter.
-      makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
-        await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
-        if (chatConv.id === conversation.id) newChatConversation();
-        //: Awaited, so the row is gone by the time the toast says where it went (AI21).
-        await loadConversationList();
-        chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
-      })
-    );
-    items.push(
-      makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
-        if (!(await confirmDialog("Delete this saved chat?"))) return;
-        const gone = await apiJson(`/conversations/${conversation.id}`, { method: "DELETE" });
-        if (chatConv.id === conversation.id) newChatConversation();
-        loadConversationList();
-        chatDeleteUndo(gone);
-      })
-    );
+    const items = loadConversationList.menu(conversation);
     //: Six rows is past the ceiling (DESIGN.md): what you do to it, its address, and the two that put it away.
     const group = (item) => (/Copy app link/.test(item.label) ? "copy" : /Archive|Delete/.test(item.label) ? "end" : "act");
     actions.appendChild(kebabMenu(items.map((item) => ({ ...item, group: group(item) })), `Actions for ${conversation.title}`, { vertical: true }));
@@ -2026,6 +1957,80 @@ async function loadConversationList() {
   //: The Group by control and the section headings (lazy, chat-groups.js).
   lazyScript("/js/chat-groups.js").then((ok) => ok && chatGroups(list));
 }
+//: One chat row's menu items, split from `loadConversationList`.
+loadConversationList.menu = (conversation) => {
+  const items = [];
+  items.push(
+    makeMenuItem(
+      conversation.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
+      conversation.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
+      async () => {
+        await apiJson(`/conversations/${conversation.id}/pin`, {
+          method: "PUT",
+          body: JSON.stringify({ pinned: !conversation.pinned }),
+        });
+        chatWriteRecord("chatPinUndo", conversation.id, !conversation.pinned);
+        loadConversationList();
+      }
+    )
+  );
+  items.push(
+    makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
+      const next = await promptTitle("Rename this chat", conversation.title);
+      if (!next) return;
+      await apiJson(`/conversations/${conversation.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title: next }),
+      });
+      chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
+      if (chatConv.id === conversation.id) $("chat-title").textContent = next;
+      loadConversationList();
+    })
+  );
+  items.push(
+    makeMenuItem("ph:sparkle Name with Atlas", "Let Atlas name this chat", async () => {
+      //: Asked for, so answered directly: the activity notice below obeys
+      //: "AI activity: panel only", and with that set the click showed
+      //: nothing at all, start or finish (the owner at release).
+      toast("Atlas is naming this chat…");
+      const named = await apiJson(`/conversations/${conversation.id}/retitle`, {
+        method: "POST",
+      }).catch((e) => {
+        toast(e.message, true);
+        return null;
+      });
+      if (!named) return;
+      if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
+      if (named.title === conversation.title) toast("Kept the first question as the title.");
+      else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
+      loadConversationList();
+    })
+  );
+  items.push(appLinkMenuItem("chat", conversation.id));
+  items.push(
+    // Not destructive, so not grouped with Delete below, same "keep it,
+    // but out of the way" action Notes already has for entries (BACKLOG
+    // §30b's named remaining scope: chats and documents). Reachable
+    // again from the Library's Shelved filter.
+    makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
+      await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
+      if (chatConv.id === conversation.id) newChatConversation();
+      //: Awaited, so the row is gone by the time the toast says where it went (AI21).
+      await loadConversationList();
+      chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
+    })
+  );
+  items.push(
+    makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
+      if (!(await confirmDialog("Delete this saved chat?"))) return;
+      const gone = await apiJson(`/conversations/${conversation.id}`, { method: "DELETE" });
+      if (chatConv.id === conversation.id) newChatConversation();
+      loadConversationList();
+      chatDeleteUndo(gone);
+    })
+  );
+  return items;
+};
 
 // An edited answer is labelled, always. A transcript that silently presents
 // your words as the model's is worse than no transcript.

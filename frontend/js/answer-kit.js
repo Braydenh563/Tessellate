@@ -1192,31 +1192,7 @@ async function streamChatEvents({
   // Running a skill sends its name, not its prompt: the server owns what a
   // skill is, the steps, the values, the tools it may use, so the two
   // definitions can't drift apart.
-  if (skill) {
-    body.skill = skill;
-    if (skillInputs && Object.keys(skillInputs).length) body.skill_inputs = skillInputs;
-    // Resuming: the steps before this one ran in an earlier attempt and are
-    // not repeated. Sent as an index rather than as a list of what to skip,
-    // so the server stays the one place that knows what the steps are.
-    if (skillFromStep) body.skill_from_step = skillFromStep;
-    //: Re-running one step, optionally reworded (AGENT_SKILLS_REFORM.md Phase
-    //: D). `!= null` rather than truthiness: step 0 is a step.
-    if (skillOnlyStep != null) body.skill_only_step = skillOnlyStep;
-    if (skillStepText) body.skill_step_text = skillStepText;
-  }
-  // A plan the model just made. Carries its own steps because nothing saved
-  // it: that is the only way it differs from a skill run, here and on the
-  // server.
-  const hasPlan = plan && plan.steps && plan.steps.length;
-  if (hasPlan) body.plan = plan;
-  // Manual (step-through) mode: a pause after every completed step. Applies
-  // equally to a saved skill or a plan the model just drew, both run
-  // through the same step-by-step runner server-side. Sent on every call for
-  // this run, resume included, since a run started manual stays manual.
-  if (skill || hasPlan) {
-    if (skillManual) body.skill_manual = true;
-    if (skillManualNote) body.skill_manual_note = skillManualNote;
-  }
+  streamChatEvents.skillBody(body, { skill, skillInputs, skillFromStep, skillOnlyStep, skillStepText, plan, skillManual, skillManualNote });
   // NDJSON over a plain POST, deliberately, not a WebSocket. A WebSocket was
   // tried here and reverted: it needed the session on a second thread (a
   // SQLAlchemy Session is not thread-safe), it had to be mounted outside the
@@ -1363,6 +1339,34 @@ async function streamChatEvents({
     }
   }
 }
+//: The skill and plan fields of the request, split from `streamChatEvents`.
+streamChatEvents.skillBody = (body, { skill, skillInputs, skillFromStep, skillOnlyStep, skillStepText, plan, skillManual, skillManualNote }) => {
+  if (skill) {
+    body.skill = skill;
+    if (skillInputs && Object.keys(skillInputs).length) body.skill_inputs = skillInputs;
+    // Resuming: the steps before this one ran in an earlier attempt and are
+    // not repeated. Sent as an index rather than as a list of what to skip,
+    // so the server stays the one place that knows what the steps are.
+    if (skillFromStep) body.skill_from_step = skillFromStep;
+    //: Re-running one step, optionally reworded (AGENT_SKILLS_REFORM.md Phase
+    //: D). `!= null` rather than truthiness: step 0 is a step.
+    if (skillOnlyStep != null) body.skill_only_step = skillOnlyStep;
+    if (skillStepText) body.skill_step_text = skillStepText;
+  }
+  // A plan the model just made. Carries its own steps because nothing saved
+  // it: that is the only way it differs from a skill run, here and on the
+  // server.
+  const hasPlan = plan && plan.steps && plan.steps.length;
+  if (hasPlan) body.plan = plan;
+  // Manual (step-through) mode: a pause after every completed step. Applies
+  // equally to a saved skill or a plan the model just drew, both run
+  // through the same step-by-step runner server-side. Sent on every call for
+  // this run, resume included, since a run started manual stays manual.
+  if (skill || hasPlan) {
+    if (skillManual) body.skill_manual = true;
+    if (skillManualNote) body.skill_manual_note = skillManualNote;
+  }
+};
 
 //: The id of the note offer the last composed answer ended with, while its button is unpressed.
 chatHistoryToSend.heldOffer = ""; // a property, not a global: one name fewer in the shared scope (ratchet)

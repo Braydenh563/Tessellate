@@ -357,12 +357,7 @@ function renderEditForm(li, entry) {
     });
   }
 
-  const categorySelect = document.createElement("select");
-  fillCategoryOptions(categorySelect, entry.category);
-  categorySelect.setAttribute("aria-label", "Category");
-  if (draft && [...categorySelect.options].some((o) => o.value === draft.category)) {
-    categorySelect.value = draft.category;
-  }
+  const categorySelect = renderEditForm.categorySelect(entry, draft);
   categorySelect.addEventListener("change", () => { noteFormDirty = true; });
   //: **The category is its chip** (INBOX 606): the note card's own category
   //: chip, dot and name, opening a menu of the categories. The select is the
@@ -572,19 +567,7 @@ ${textarea.value}`));
   for (const field of [titleInput, textarea]) field.addEventListener("input", recount);
   const foot = document.createElement("div");
   foot.className = "note-edit-foot";
-  //: The margin reader, the note half (WORLD_CLASS_PLAN I2): one switch with
-  //: the document editor's, its column under the text (margin-reader.js).
-  const marginBtn = document.createElement("button");
-  marginBtn.type = "button";
-  marginBtn.className = "ghost small icon-only note-edit-margin-toggle";
-  marginBtn.setAttribute("aria-pressed", "false");
-  marginBtn.setAttribute("aria-label", "Margin reader");
-  marginBtn.title = "Show notes of yours about the paragraph you are writing, under the text";
-  marginBtn.innerHTML = '<i class="ph ph-notepad" aria-hidden="true"></i>';
-  const marginHost = document.createElement("aside");
-  marginHost.className = "doc-margin note-edit-margin hidden";
-  marginHost.setAttribute("aria-label", "Margin reader");
-  marginHost.setAttribute("aria-live", "polite");
+  const { marginBtn, marginHost } = renderEditForm.margin();
   foot.append(count, marginBtn, row);
   const toolbarEl = noteEditToolbar(textarea.id);
   //: Preview: reported: "there is no preview", then, once there was one,
@@ -602,13 +585,7 @@ ${textarea.value}`));
     sourceBtn.setAttribute("aria-pressed", String(noteSourceOn()));
     sourceBtn.classList.toggle("is-active", noteSourceOn());
   }
-  //: Attachment cards for the files this note's text points at, the same
-  //: cards and the same menu as the capture box (INBOX 440 (2)).
-  const chipsHost = document.createElement("div");
-  chipsHost.className = "att-cards hidden";
-  chipsHost.id = "entry-edit-attachment-chips";
-  chipsHost.setAttribute("role", "group");
-  chipsHost.setAttribute("aria-label", "Files in this note");
+  const chipsHost = renderEditForm.chipsHost();
   //: **One writing surface** (INBOX 606): the title, the properties line, the
   //: strip and the text in the capture box's own `.note-composer`, which
   //: carries the edge, the ground and the focus ring for all of them.
@@ -640,6 +617,44 @@ ${textarea.value}`));
   renderRelatedWhileEditing(li, entry);
   renderNoteBookmarksWhileEditing(li, entry);
 }
+//: The category select of the edit form, filled and set from the draft; split from `renderEditForm`.
+renderEditForm.categorySelect = (entry, draft) => {
+  const categorySelect = document.createElement("select");
+  fillCategoryOptions(categorySelect, entry.category);
+  categorySelect.setAttribute("aria-label", "Category");
+  if (draft && [...categorySelect.options].some((o) => o.value === draft.category)) {
+    categorySelect.value = draft.category;
+  }
+  return categorySelect;
+};
+//: The attachment cards' host of the edit form, split from `renderEditForm`.
+//: The margin reader's switch and column, split from `renderEditForm`.
+renderEditForm.margin = () => {
+  //: The margin reader, the note half (WORLD_CLASS_PLAN I2): one switch with
+  //: the document editor's, its column under the text (margin-reader.js).
+  const marginBtn = document.createElement("button");
+  marginBtn.type = "button";
+  marginBtn.className = "ghost small icon-only note-edit-margin-toggle";
+  marginBtn.setAttribute("aria-pressed", "false");
+  marginBtn.setAttribute("aria-label", "Margin reader");
+  marginBtn.title = "Show notes of yours about the paragraph you are writing, under the text";
+  marginBtn.innerHTML = '<i class="ph ph-notepad" aria-hidden="true"></i>';
+  const marginHost = document.createElement("aside");
+  marginHost.className = "doc-margin note-edit-margin hidden";
+  marginHost.setAttribute("aria-label", "Margin reader");
+  marginHost.setAttribute("aria-live", "polite");
+  return { marginBtn, marginHost };
+};
+renderEditForm.chipsHost = () => {
+  //: Attachment cards for the files this note's text points at, the same
+  //: cards and the same menu as the capture box (INBOX 440 (2)).
+  const chipsHost = document.createElement("div");
+  chipsHost.className = "att-cards hidden";
+  chipsHost.id = "entry-edit-attachment-chips";
+  chipsHost.setAttribute("role", "group");
+  chipsHost.setAttribute("aria-label", "Files in this note");
+  return chipsHost;
+};
 //: The note form's page-level keys (Escape with focus on <body>, Ctrl+S): one
 //: capture listener for the page's life, calling whichever form renderEditForm set.
 document.addEventListener("keydown", (event) => renderEditForm.bodyKeys?.(event), true);
