@@ -211,3 +211,19 @@ def test_the_scan_sees_fetchers_that_do_not_use_requests():
         "    snapshot_download(repo_id='r')\n"
     )
     assert {"urllib.request.urlopen", "snapshot_download"} <= _calls(sample) & OUTBOUND
+
+
+def test_nat64_addresses_are_judged_by_the_ipv4_inside():
+    """64:ff9b::/96 (RFC 6052) carries an IPv4 address in its last 32 bits; on
+    a NAT64 network it reaches that address, but Python calls it global, so
+    the metadata service and loopback passed the guard (L-general-1)."""
+    import ipaddress
+
+    from tessellate.core import security
+
+    for inside in ("169.254.169.254", "127.0.0.1", "10.0.0.5", "100.100.100.200"):
+        nat64 = ipaddress.ip_address(f"64:ff9b::{inside}")
+        assert nat64.is_global, "the hole this test guards needs Python to call it global"
+        assert security.is_internal_address(nat64), inside
+    # A public IPv4 inside stays public, so NAT64 users can still clip the web.
+    assert not security.is_internal_address(ipaddress.ip_address("64:ff9b::93.184.216.34"))
