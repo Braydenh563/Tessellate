@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 2 | 0 | 0 | 0 | 2 |
 | ui-modernisation | 96 | 113 | 4 | 0 | 17 | 213 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 179 | 58 | 0 | 72 | 367 |
+| world-class | 130 | 177 | 58 | 0 | 72 | 365 |
 | general | 0 | 4 | 0 | 0 | 5 | 4 |
-| all | 502 | 541 | 126 | 2 | 184 | 1169 |
+| all | 502 | 539 | 126 | 2 | 184 | 1167 |
 
 ## graph
 
@@ -501,7 +501,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L530** `world-class` open, S: Fix flaky test_relations_kg2 10k timing under load. From OPEN.md:660; OPEN.md:3282. Evidence: No fix located; timing test remains in tests/test_relations_kg2.py
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
 - [ ] **L532** `world-class` open, S: Re-run Quick add 56/60 measure after F1 fixes. From OPEN.md:864. Evidence: scratchpad/ui-sweeps/quickadd.js exists; no re-run figure recorded
-- [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L534** `world-class` open, S: Undo counts per surface are static reads; drive documents/OCR/meetings and whiteboard 43/14. From OPEN.md:1116; OPEN.md:1485. Evidence: Undo ledger not closed; counts recorded, uncovered writes remain (see 587)
 - [ ] **L535** `world-class` open, S: decide is 34 ms/call at 5,000 notes vs 8-17 ms old tally. From OPEN.md:1496. Evidence: Perf measurement (scratchpad/filing-tools/perf.py); no optimisation found
 - [ ] **L536** `world-class` open, S: clip.html/capture.html unhashed ?v=<version> stamps. From OPEN.md:1504. Evidence: frontend/clip.html:13,18 still ?v=0.7.0 static stamps
@@ -510,7 +509,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L539** `world-class` open, S: Run errors.js in THEME=dark and FAULTS=1. From OPEN.md:1889. Evidence: No record of the dark/fault runs; cheap to run
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
 - [ ] **L541** `world-class` open, S: Exercise slow/failed app-features.js fetch and late Quick access paint. From OPEN.md:1921; OPEN.md:2719. Evidence: No fault test found
-- [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
 - [ ] **L543** `world-class` open, S: undo.js trust sweep does not walk the OCR workspace. From OPEN.md:1634. Evidence: scratchpad/ui-sweeps/undo.js has no OCR step; ocr79.js measures it instead (still the case)
 - [ ] **L544** `world-class` open, S: Give scripts left in counted bundles (noteFirstImage etc.) a shared home. From OPEN.md:1643. Evidence: noteFirstImage still only in library.js:13226 and used at :13238; graph.js:2913 repeats the rule in a comment, no shared home
 - [ ] **L545** `world-class` open, S: --staged gate took 6 min; measure slowest step. From OPEN.md:2066. Evidence: gate.sh header still says ~40 s base; no timing/measure step found
