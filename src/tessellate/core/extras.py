@@ -466,6 +466,116 @@ def _spell_pack_extras() -> tuple[Extra, ...]:
     )
 
 
+#: **The translator's language pairs (L-world-class-41).** Each direction is the
+#: Mozilla release's three gzipped files (`mozilla/translations`, MPL-2.0), as the
+#: registry `db/models.json` lists its "Release" model, read 2026-11-22; the sha256
+#: and size are of the `.gz` as fetched, and each model's unpacked sha256 matched
+#: the registry's `uncompressedHash`. Rows: pair to (training run, (file, sha256,
+#: bytes) x 3). **To add a language:** take its two Release rows from the registry,
+#: `sha256sum` the six files, add them here, in `_TRANSLATE_LANGUAGES` and in
+#: `ai/translate.PAIRS`.
+_TRANSLATE_BASE = "https://storage.googleapis.com/moz-fx-translations-data--303e-prod-translations-data/models"
+_TRANSLATE_PAIRS = {
+    "en-es": ("retrain_hr_fix_names_CUAEXUHoQum_cFqh-ZAryw", (
+        ("model.enes.intgemm.alphas.bin", "fe4025fde24a4d5f80533cfb7acd53d0eb7f194dfc2d8f427f0d4563cfb6ac06", 22698792),
+        ("lex.50.50.enes.s2t.bin", "37a067966f28ff0ba430fddb7412bc5b07afa2cd2fd5a46d9ad74045a1a06380", 2265250),
+        ("vocab.enes.spm", "ae2760c04bc6eb5362b16e5c2f145c376bb04bac421c33ba3c0766805e6f03b3", 409312),
+    )),
+    "es-en": ("retrain_hr_HbNjJ60BTwmVTbhfFxuduA", (
+        ("model.esen.intgemm.alphas.bin", "54247f1e057180bca1d404dfd5c12836f65bc96cef7af98e59e55acb8bd093b1", 23288494),
+        ("lex.50.50.esen.s2t.bin", "3d7856bfa3b12804bdc80f12fd828fd9062c462113ab73fbf87c5c3b68420813", 2543246),
+        ("vocab.esen.spm", "1658b529b8858cf2e1e8cef2c4e2d69654d77b5f714ac52205864b336dfeb3ee", 409312),
+    )),
+    "en-fr": ("retrain_hr_NLIxDbE1TBGyOTI-zwZagw", (
+        ("model.enfr.intgemm.alphas.bin", "22cdaf3dc9a1da6e5818b5576737182467f3cd97e6fd6f94e4273eb7b56d1e3f", 23045432),
+        ("lex.50.50.enfr.s2t.bin", "055987f0b585b61c4914fb4469e2392fda0b25d3f7784275974f920e7b631997", 2297334),
+        ("vocab.enfr.spm", "5dcadaad8191fb4eb7677bce07098a20221dec95976a4db796f3a17cc82b4541", 409706),
+    )),
+    "fr-en": ("retrain_hr_EFgIftH_RrCyzl5gjemVNg", (
+        ("model.fren.intgemm.alphas.bin", "06b1eeedd3944260d00a393d12ec7192490c5b7c930b97212faf4d5f5c90a2ee", 23175075),
+        ("lex.50.50.fren.s2t.bin", "395aa7767220e1bcfc085f2b2787ff98005d0075e55451f1e0832885e3d9642a", 2649934),
+        ("vocab.fren.spm", "8d15b219ffd32327b4cabf0d94a05a4fecb8923a4f386badbcbe5e86ede453a7", 409706),
+    )),
+    "en-de": ("retrain_hr_fix_names_SCgGhxUPQ2WAECHLRtzrMg", (
+        ("model.ende.intgemm.alphas.bin", "e3a74458faba3ab2752ed8355c5e3979f13395279c8fc1bd3f54a3c2316e4975", 22992073),
+        ("lex.50.50.ende.s2t.bin", "0370d79cda6fed5dfa8f9b2a0009459bd2766893825bb5b8b5114169d18da6c4", 2314750),
+        ("vocab.ende.spm", "3b2ddbfac73f994f151a8994447d6b3d41ab0d3435da56f79c233f34d03e45c2", 413879),
+    )),
+    "de-en": ("retrain_hr2_WZOW24i4QJmIib61LeHfwg", (
+        ("model.deen.intgemm.alphas.bin", "38b245bcfc23f6d61fd98a187436ea1320a38f41896df411b103df3e83f51681", 22403755),
+        ("lex.50.50.deen.s2t.bin", "231e9caf62e0e867775d5f4c1f4cfae21e37c70d9bf2bd628fa468aeeb2ba869", 2626658),
+        ("vocab.deen.spm", "88dcd7fdbf20dc60837ce837244d0d55b20f7079f2cbd2ba8e63530632028310", 413879),
+    )),
+    "en-it": ("retrain_hr_fix_names_GPSr_u8PSmC9fOx1ZDCHoA", (
+        ("model.enit.intgemm.alphas.bin", "cfff470e9f29e27132723589a8bc985648f92773410e5f6fc43293d9e19f97f1", 23892889),
+        ("lex.50.50.enit.s2t.bin", "cd7ef06c0b872c15286a9796f105eb62693f14665490546ac70ce1c6c8f16d47", 2209348),
+        ("vocab.enit.spm", "8f99a6f493bf7e1a03fbba19928d7dc7bf9a1b7938238467f3e80a58c0d50485", 407598),
+    )),
+    "it-en": ("retrain_hr_d1nPDwVeSD6t-HdtWA4xNg", (
+        ("model.iten.intgemm.alphas.bin", "0bc7221c2730723ac4477e8aa1d1d5bd0b9c3450cb8d006a6f86fe5da9129c27", 23301774),
+        ("lex.50.50.iten.s2t.bin", "504877085b31edfa3d31a1918a9a42c20fcbf85ff018caf46c54641db5538e62", 2532929),
+        ("vocab.iten.spm", "df05fae498f519a828eb388cd08ec1b7205a8bcaf2405a5feb9f5e30c49a0977", 407598),
+    )),
+    "en-pt": ("retrain_hr_fix_names_Vnb0RUXTTd67hR-oLHM3eg", (
+        ("model.enpt.intgemm.alphas.bin", "afb5ae08a2e40b622cd191584cca1df00721fea43de85cec74191fc180370f08", 23340019),
+        ("lex.50.50.enpt.s2t.bin", "265cff4ca31d3fc95628181de98cf668868b44903d69680284dc456aa4191545", 2117608),
+        ("vocab.enpt.spm", "c2fbaf26f10563c77fa95cca465ad3666f61dd08bfaef5bb170abd582901f389", 408686),
+    )),
+    "pt-en": ("retrain_hr_drxrs5bGSsOWvfK9lyZISw", (
+        ("model.pten.intgemm.alphas.bin", "f2d2bb46d452cef561d35504bd198fa6c6ffc47187ee987406a2ac05d9c3935f", 22700409),
+        ("lex.50.50.pten.s2t.bin", "b31185389533a97177cbf68ea756b78bfbaa24d31a865d72c6ed203fa414b2f6", 2487847),
+        ("vocab.pten.spm", "28c9eb4fb13f8eb661f6bb098560a1bf368d25ff890275028ea9d4f3f97b0416", 408686),
+    )),
+}
+
+#: The packages beside the engine's own Spanish: (lang, name), both directions each.
+_TRANSLATE_LANGUAGES = (("fr", "French"), ("de", "German"), ("it", "Italian"), ("pt", "Portuguese"))
+
+
+def _translate_pair_downloads(*pairs: str) -> tuple[Download, ...]:
+    return tuple(
+        Download(
+            url=f"{_TRANSLATE_BASE}/{pair}/{_TRANSLATE_PAIRS[pair][0]}/exported/{name}.gz",
+            sha256=sha,
+            size=size,
+            unpack="gzip",
+            members=(("", name),),
+        )
+        for pair in pairs
+        for name, sha, size in _TRANSLATE_PAIRS[pair][1]
+    )
+
+
+def _translate_megabytes(*pairs: str) -> int:
+    return round(sum(size for pair in pairs for _n, _s, size in _TRANSLATE_PAIRS[pair][1]) / 1e6)
+
+
+def _translate_language_extras() -> tuple[Extra, ...]:
+    """One package per language, both directions, beside the engine
+    (`translate`): the owner's rule for spelling lists (D30, optional
+    per-language downloads) applied to the translator, so nobody downloads
+    200 MB for one language (INBOX 1863)."""
+    return tuple(
+        Extra(
+            id=f"translate-{lang}",
+            label=f"Translate offline: {name} (Bergamot)",
+            short_label=f"{name} translation",
+            enables=f"Translate this between English and {name}, both ways, on this "
+            "computer, with no model and nothing sent anywhere.",
+            packages=(f"en-{lang} model", f"{lang}-en model"),
+            module="",
+            size=f"~{_translate_megabytes(f'en-{lang}', f'{lang}-en')} MB download, 74 MB on disk",
+            caveat="Needs Translate offline (the engine) as well. A small on-device "
+            "model: good for the gist and a first draft, not for legal or medical text.",
+            kind="download",
+            version=f"{lang}-1",
+            licence="MPL-2.0",
+            downloads=_translate_pair_downloads(f"en-{lang}", f"{lang}-en"),
+        )
+        for lang, name in _TRANSLATE_LANGUAGES
+    )
+
+
 #: The allowlist. Adding an entry here is the only way to make something
 #: installable, which is the point.
 EXTRAS: tuple[Extra, ...] = (
@@ -760,7 +870,9 @@ EXTRAS: tuple[Extra, ...] = (
     #: **The offline translator (WORLD_CLASS 28.5 row 10, Brief 83).** The
     #: owner, 2026-10-10: "What about ai free translations?" Bergamot, the
     #: engine behind Firefox's translations (marian-nmt compiled to
-    #: WebAssembly), and one language pair, English to Spanish. The engine
+    #: WebAssembly), and English and Spanish both ways; French, German,
+    #: Italian and Portuguese are packages of their own beside it
+    #: (`_translate_language_extras`, L-world-class-41). The engine
     #: runs in a Web Worker in the page (`frontend/js/translate-worker.js`)
     #: under the app's own policy, which already allows WebAssembly for the
     #: grammar checker; these files are served from the data dir by
@@ -777,23 +889,21 @@ EXTRAS: tuple[Extra, ...] = (
     #:
     #: **To bump:** the engine is `@browsermt/bergamot-translator` on npm
     #: (`npm view @browsermt/bergamot-translator dist`, then `sha256sum` the
-    #: tarball); a model's three files and their sizes are in the registry
-    #: at `mozilla/translations`' `db/models.json`. A new pair is a new
-    #: entry here and a row in `ai/translate.PAIRS`.
+    #: tarball); the pairs are `_TRANSLATE_PAIRS`, which says how to add one.
     Extra(
         id="translate",
-        label="Translate offline (Bergamot, English to Spanish)",
+        label="Translate offline (Bergamot, English and Spanish)",
         short_label="the translator",
         enables="Translate this, in the command palette: a passage of a note, "
-        "a document or a reading turned into Spanish on this computer in "
-        "about a second, with no model and nothing sent anywhere.",
-        packages=("bergamot-translator 0.4.9", "en-es model"),
+        "a document or a reading turned into Spanish, or Spanish into English, "
+        "on this computer in about a second, with no model and nothing sent anywhere.",
+        packages=("bergamot-translator 0.4.9", "en-es model", "es-en model"),
         module="",
-        size="~27 MB download, 42 MB on disk",
+        size="~54 MB download, 79 MB on disk",
         caveat="A small on-device model: good for the gist and a first draft, "
-        "not for legal or medical text. English to Spanish only for now.",
+        "not for legal or medical text. Other languages are packages of their own.",
         kind="download",
-        version="0.4.9-enes-1",
+        version="0.4.9-es-2",
         licence="MPL-2.0",
         downloads=(
             Download(
@@ -814,27 +924,10 @@ EXTRAS: tuple[Extra, ...] = (
                 unpack="file",
                 members=(("", "LICENSE"),),
             ),
-            *(
-                Download(
-                    url="https://storage.googleapis.com/moz-fx-translations-data--303e-prod-"
-                    "translations-data/models/en-es/retrain_hr_fix_names_CUAEXUHoQum_cFqh-"
-                    f"ZAryw/exported/{name}.gz",
-                    sha256=sha,
-                    size=size,
-                    unpack="gzip",
-                    members=(("", name),),
-                )
-                for name, sha, size in (
-                    ("model.enes.intgemm.alphas.bin",
-                     "fe4025fde24a4d5f80533cfb7acd53d0eb7f194dfc2d8f427f0d4563cfb6ac06", 22698792),
-                    ("lex.50.50.enes.s2t.bin",
-                     "37a067966f28ff0ba430fddb7412bc5b07afa2cd2fd5a46d9ad74045a1a06380", 2265250),
-                    ("vocab.enes.spm",
-                     "ae2760c04bc6eb5362b16e5c2f145c376bb04bac421c33ba3c0766805e6f03b3", 409312),
-                )
-            ),
+            *_translate_pair_downloads("en-es", "es-en"),
         ),
     ),
+    *_translate_language_extras(),
     Extra(
         id="localllm",
         label="Built-in model runner (llama-cpp-python)",
@@ -1124,8 +1217,8 @@ BUNDLES: tuple[Bundle, ...] = (
     Bundle(
         id="languages",
         label="Languages",
-        about="Translate a passage into Spanish, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
-        extras=("translate", "languagetool", "spell-fr", "spell-de", "spell-es"),
+        about="Translate a passage between English and Spanish, French, German, Italian or Portuguese, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
+        extras=("translate", "translate-fr", "translate-de", "translate-it", "translate-pt", "languagetool", "spell-fr", "spell-de", "spell-es"),
     ),
     Bundle(
         id="code",
