@@ -208,6 +208,7 @@ def test_b55_the_web_menu_still_offers_to_start_searxng_on_duckduckgo():
         "async function apiJson() { return { backend: 'source', state: 'stopped', responding: false, installing: false }; }\n"
         "function setWebEngineDot(state, provider) { calls.dot.push(state); }\n"
         "function renderWebPanelMenu(engine) { calls.menu.push(engine); }\n"
+        "const $ = () => ({ querySelector: () => null });\n"
         + _js_function("web-panel.js", "refreshWebSearxngStrip")
         + "\nrefreshWebSearxngStrip().then(() => console.log(JSON.stringify(calls)));\n"
     )

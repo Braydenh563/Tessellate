@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 2 | 0 | 0 | 0 | 2 |
 | chat | 176 | 206 | 60 | 2 | 59 | 442 |
-| whiteboard | 30 | 0 | 1 | 0 | 0 | 31 |
-| documents | 70 | 0 | 0 | 0 | 3 | 70 |
+| whiteboard | 0 | 0 | 1 | 0 | 0 | 1 |
+| documents | 0 | 0 | 0 | 0 | 3 | 0 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 15 | 0 | 0 | 0 | 15 |
 | general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 372 | 362 | 67 | 2 | 85 | 801 |
+| all | 272 | 362 | 67 | 2 | 85 | 701 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
