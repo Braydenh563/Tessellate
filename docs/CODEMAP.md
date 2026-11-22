@@ -1920,10 +1920,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `featureCommandRows` | frontend/js/app-features.js:226 |
 | `paletteCommands` | frontend/js/app-features.js:299 |
 | `popupToolMaths` | frontend/js/app-features.js:257 |
-| `quickAccessCurrent` | frontend/js/app-features.js:613 |
-| `quickAccessItems` | frontend/js/app-features.js:604 |
-| `quickCatalogue` | frontend/js/app-features.js:582 |
-| `renderQuickLinks` | frontend/js/app-features.js:618 |
+| `quickAccessCurrent` | frontend/js/app-features.js:615 |
+| `quickAccessItems` | frontend/js/app-features.js:606 |
+| `quickCatalogue` | frontend/js/app-features.js:584 |
+| `renderQuickLinks` | frontend/js/app-features.js:620 |
 | `renderToolShortcutList` | frontend/js/app-features.js:273 |
 
 ### frontend/js/app-import.js (6)

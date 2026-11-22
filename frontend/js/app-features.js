@@ -539,6 +539,8 @@ function paletteCommands() {
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
+    //: The panel's second tab, one chord away: from Chat's ⋯ it was four clicks deep (L-world-class-780, reach.js).
+    { label: "ph:clock-counter-clockwise Activity history", keywords: "past agent runs history log clear finished", about: "The agent's past runs, with their log.", act: () => openActivity("runs") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
     { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
     { label: "ph:tree-evergreen Settings, Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },

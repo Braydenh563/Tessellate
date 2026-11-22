@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- L-world-class-780: the Activity panel's History tab has a palette command ("Activity history"); from Chat's menu it was four clicks deep. Running was already "Activity".
 - Lost CI runners on the 3.11 legs: the overlay test fake (`tests/_overlay_fake.py`) kept a copy of every frame's pixels, so one xdist worker grew past 6 GB and the kernel killed it (reproduced locally twice: 6.5 GB and 5.7 GB). Only the newest frame keeps its pixels now; `test_no_periodic_read_lands_in_a_flight` peaks at 1.2 GB on 3.11 (was 3.6 GB) and 0.6 GB on 3.13 (was 1.6 GB).
 - CodeQL timeout on #230: `render_desk_frames.rest_line_is_one` hands the sprite set its folder instead of rebinding `sprites.frames_dir` (a module attribute written from a script, added in c6e4a314, the first commit after the last Analyze that finished, 7m13s at 4a2ecc7a; every run since was cut at 20 minutes); same result on both shipped looks. CodeQL not run locally.
 - CodeQL alerts on #230 (all 16 of 68df6ec8): six slow patterns (commands, library_acts, study links, headings and pairs, fact_check ranges) read long repeats in linear time (`tests/test_regex_linear_2338.py`); spelling pack paths come from the module's own tables; a failed act preview is logged and answered as no act; dead code and unused names removed.
