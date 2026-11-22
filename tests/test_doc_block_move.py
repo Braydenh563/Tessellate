@@ -107,7 +107,7 @@ def _run() -> list:
     node = shutil.which("node")
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
-    source = "\n".join(_fn(name) for name in ("docScanHeadings", "docSectionRange", "docBlockMoveEdit"))
+    source = "\n".join(_fn(name) for name in ("docScanHeadings", "docSectionRange", "docMoveBlocks", "docBlockMoveEdit"))
     out = subprocess.run([node, "-e", source + DRIVER], capture_output=True, text=True, timeout=60, check=False)
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)

@@ -759,16 +759,11 @@
       to: visible.to,
       enter: (node) => {
         const name = node.name;
-        //: `Setext` as well as `ATX`, and this was a real hole. A setext
-        //: heading is the `Title` / `=====` form, and its underline is a
-        //: `HeaderMark` like any other, so the branch below was already
-        //: hiding it while this branch matched `ATXHeading` only: the
-        //: underline vanished, the line got no heading class, and a setext
-        //: heading rendered as ordinary body text. Found by taking an
-        //: inventory of every markdown line against what it renders as,
-        //: which is what `scratchpad/ui-sweeps/cm-reveal.js` now does.
-        //: A setext heading spans two lines and the class belongs on the
-        //: first, which `doc.lineAt(node.from)` already gives.
+        //: `Setext` as well as `ATX`: a setext heading (`Title` / `=====`) has its
+        //: underline as a `HeaderMark` too, and matching `ATXHeading` only left it
+        //: rendered as body text (found by `scratchpad/ui-sweeps/cm-reveal.js`'s
+        //: inventory). It spans two lines; the class belongs on the first, which
+        //: `doc.lineAt(node.from)` gives.
         const heading = /^(?:ATX|Setext)Heading([1-6])$/.exec(name);
         if (heading) {
           const line = doc.lineAt(node.from);

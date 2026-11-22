@@ -7,6 +7,142 @@
 // from `docCmExtensions` and on a theme change, after the bundle.
 
 (() => {
+  // The table filter chip and the finding underlines, split out so docCmTheme
+  // stays under the function-size cap; merged at the end of the spec.
+  const DOC_CM_TAIL_RULES = {
+    //: The filter chip sits left of the menu on the header row, out of the
+    //: grid's flow like the menu itself.
+    ".cm-md-table-filter": {
+      position: "absolute",
+      right: "calc(1.75rem + var(--space-2))",
+      top: "calc(50% - 0.75rem)",
+      maxWidth: "min(18rem, 40vw)",
+      height: "1.5rem",
+      minHeight: "0",
+      padding: "0 var(--space-2)",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+    },
+
+    //: --- the prose findings ---------------------------------------------
+    //: Three shapes, one per kind of claim. Wavy for a spelling
+    //: the checker is sure about, wavy in the accent for a style note,
+    //: dotted for a repeated word: three, because three is what a reader can
+    //: decode at a glance from the shape of a line.
+    ".cm-finding": {
+      textDecorationSkipInk: "none",
+      textUnderlineOffset: "0.18em",
+      cursor: "pointer",
+    },
+    //: **The hover, which was the one surface in this feature with none.**
+    //: Four things draw a finding (the underline, the word menu, the panel,
+    //: the dictionary) and three of them answered the pointer; the underline
+    //: offered `cursor: pointer` and nothing else, so the only way to learn
+    //: that a squiggle is pressable was to press it.
+    //:
+    //: A tint rather than a thicker line: the three kinds are told apart by
+    //: the *shape* of their underline (wavy, wavy, dotted), and thickening
+    //: one on hover moves it towards another kind's shape. A ground behind
+    //: the word says "this is one object" without touching the mark that
+    //: says which kind it is, and it is the same thing `.menu-item:hover`
+    //: does one surface over.
+    //:
+    //: 12% of the kind's own colour, mixed against the page rather than
+    //: stated as an alpha, so it composes on the editor's ground in either
+    //: theme and follows `[data-contrast="on"]`'s redefinitions of
+    //: `--error`, `--accent` and `--muted` without a branch of its own.
+    //: Measured light and dark in `prosepanel.js`.
+    ".cm-finding-spelling:hover": {
+      backgroundColor: "color-mix(in srgb, var(--error) 12%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-style:hover": {
+      backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-repeat:hover": {
+      backgroundColor: "color-mix(in srgb, var(--muted) 12%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-grammar:hover": {
+      backgroundColor: "color-mix(in srgb, var(--warn) 14%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-ai:hover": {
+      backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-claim:hover": {
+      backgroundColor: "color-mix(in srgb, var(--warn) 14%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-access:hover": {
+      backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-link:hover": {
+      backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
+      borderRadius: "3px",
+    },
+    ".cm-finding-spelling": {
+      textDecoration: "underline wavy",
+      textDecorationColor: "color-mix(in srgb, var(--error) 80%, transparent)",
+    },
+    ".cm-finding-style": {
+      textDecoration: "underline wavy",
+      textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
+    },
+    ".cm-finding-repeat": {
+      textDecoration: "underline dotted",
+      textDecorationThickness: "2px",
+      textDecorationColor: "var(--muted)",
+    },
+    //: Grammar (Harper, INBOX 401): a double line, the shape Word gives
+    //: grammar, in the warning ink, so it reads as neither a typo (wavy
+    //: red) nor a style note (wavy accent).
+    ".cm-finding-grammar": {
+      textDecoration: "underline double",
+      textDecorationColor: "var(--warn)",
+    },
+    //: Accessibility (INBOX 404): dashed, the one line shape left, in the
+    //: accent, because it is about structure rather than a mistake.
+    //: Check with AI (INBOX 410): dotted accent, a lighter mark than the
+    //: style note's wavy accent, because a model's reading is a suggestion
+    //: to consider rather than a rule broken.
+    ".cm-finding-ai": {
+      textDecoration: "underline dotted",
+      textDecorationThickness: "2px",
+      textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
+    },
+    //: A claim no note backs (Phase G): dotted in the warning ink, the model's
+    //: dotted shape but not its accent, because it is about the notebook.
+    ".cm-finding-claim": {
+      textDecoration: "underline dotted",
+      textDecorationThickness: "2px",
+      textDecorationColor: "var(--warn)",
+    },
+    //: A claim a note supports: a thin quiet line, marked but not a warning.
+    ".cm-finding-backed": {
+      textDecoration: "underline solid",
+      textDecorationThickness: "1px",
+      textDecorationColor: "color-mix(in srgb, var(--muted) 60%, transparent)",
+    },
+    ".cm-finding-access": {
+      textDecoration: "underline dashed",
+      textDecorationThickness: "2px",
+      textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
+    },
+    //: A link offer (VC5): a plain thin underline in the accent, the line a
+    //: link wears, because this is where one could be, not a mistake.
+    ".cm-finding-link": {
+      textDecoration: "underline solid",
+      textDecorationThickness: "1px",
+      textUnderlineOffset: "3px",
+      textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
+    },
+  };
+
   function docCmTheme(CM) {
     const dark = document.documentElement.dataset.mode === "dark";
     return CM.view.EditorView.theme(
@@ -1029,137 +1165,7 @@
         ".cm-md-table.cm-md-row-hidden": { display: "none" },
         //: A formula's result reads as a computed value, not typed text.
         ".cm-md-td-calc": { fontVariantNumeric: "tabular-nums", fontStyle: "italic" },
-        //: The filter chip sits left of the menu on the header row, out of the
-        //: grid's flow like the menu itself.
-        ".cm-md-table-filter": {
-          position: "absolute",
-          right: "calc(1.75rem + var(--space-2))",
-          top: "calc(50% - 0.75rem)",
-          maxWidth: "min(18rem, 40vw)",
-          height: "1.5rem",
-          minHeight: "0",
-          padding: "0 var(--space-2)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        },
-
-        //: --- the prose findings ---------------------------------------------
-        //: Three shapes, one per kind of claim. Wavy for a spelling
-        //: the checker is sure about, wavy in the accent for a style note,
-        //: dotted for a repeated word: three, because three is what a reader can
-        //: decode at a glance from the shape of a line.
-        ".cm-finding": {
-          textDecorationSkipInk: "none",
-          textUnderlineOffset: "0.18em",
-          cursor: "pointer",
-        },
-        //: **The hover, which was the one surface in this feature with none.**
-        //: Four things draw a finding (the underline, the word menu, the panel,
-        //: the dictionary) and three of them answered the pointer; the underline
-        //: offered `cursor: pointer` and nothing else, so the only way to learn
-        //: that a squiggle is pressable was to press it.
-        //:
-        //: A tint rather than a thicker line: the three kinds are told apart by
-        //: the *shape* of their underline (wavy, wavy, dotted), and thickening
-        //: one on hover moves it towards another kind's shape. A ground behind
-        //: the word says "this is one object" without touching the mark that
-        //: says which kind it is, and it is the same thing `.menu-item:hover`
-        //: does one surface over.
-        //:
-        //: 12% of the kind's own colour, mixed against the page rather than
-        //: stated as an alpha, so it composes on the editor's ground in either
-        //: theme and follows `[data-contrast="on"]`'s redefinitions of
-        //: `--error`, `--accent` and `--muted` without a branch of its own.
-        //: Measured light and dark in `prosepanel.js`.
-        ".cm-finding-spelling:hover": {
-          backgroundColor: "color-mix(in srgb, var(--error) 12%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-style:hover": {
-          backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-repeat:hover": {
-          backgroundColor: "color-mix(in srgb, var(--muted) 12%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-grammar:hover": {
-          backgroundColor: "color-mix(in srgb, var(--warn) 14%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-ai:hover": {
-          backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-claim:hover": {
-          backgroundColor: "color-mix(in srgb, var(--warn) 14%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-access:hover": {
-          backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-link:hover": {
-          backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
-          borderRadius: "3px",
-        },
-        ".cm-finding-spelling": {
-          textDecoration: "underline wavy",
-          textDecorationColor: "color-mix(in srgb, var(--error) 80%, transparent)",
-        },
-        ".cm-finding-style": {
-          textDecoration: "underline wavy",
-          textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
-        },
-        ".cm-finding-repeat": {
-          textDecoration: "underline dotted",
-          textDecorationThickness: "2px",
-          textDecorationColor: "var(--muted)",
-        },
-        //: Grammar (Harper, INBOX 401): a double line, the shape Word gives
-        //: grammar, in the warning ink, so it reads as neither a typo (wavy
-        //: red) nor a style note (wavy accent).
-        ".cm-finding-grammar": {
-          textDecoration: "underline double",
-          textDecorationColor: "var(--warn)",
-        },
-        //: Accessibility (INBOX 404): dashed, the one line shape left, in the
-        //: accent, because it is about structure rather than a mistake.
-        //: Check with AI (INBOX 410): dotted accent, a lighter mark than the
-        //: style note's wavy accent, because a model's reading is a suggestion
-        //: to consider rather than a rule broken.
-        ".cm-finding-ai": {
-          textDecoration: "underline dotted",
-          textDecorationThickness: "2px",
-          textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
-        },
-        //: A claim no note backs (Phase G): dotted in the warning ink, the model's
-        //: dotted shape but not its accent, because it is about the notebook.
-        ".cm-finding-claim": {
-          textDecoration: "underline dotted",
-          textDecorationThickness: "2px",
-          textDecorationColor: "var(--warn)",
-        },
-        //: A claim a note supports: a thin quiet line, marked but not a warning.
-        ".cm-finding-backed": {
-          textDecoration: "underline solid",
-          textDecorationThickness: "1px",
-          textDecorationColor: "color-mix(in srgb, var(--muted) 60%, transparent)",
-        },
-        ".cm-finding-access": {
-          textDecoration: "underline dashed",
-          textDecorationThickness: "2px",
-          textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
-        },
-        //: A link offer (VC5): a plain thin underline in the accent, the line a
-        //: link wears, because this is where one could be, not a mistake.
-        ".cm-finding-link": {
-          textDecoration: "underline solid",
-          textDecorationThickness: "1px",
-          textUnderlineOffset: "3px",
-          textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
-        },
+        ...DOC_CM_TAIL_RULES,
       },
       { dark }
     );

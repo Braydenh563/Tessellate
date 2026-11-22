@@ -2,9 +2,9 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9041, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11066, test files 2899, tests 23200, plan headings 695, app scripts 29, boot scripts 38, script files 402.
+Counts: frontend functions 9045, frontend ids 2835, CSS sections 528, backend routes 721, backend modules 11066, test files 2899, tests 23200, plan headings 695, app scripts 29, boot scripts 38, script files 402.
 
-## Frontend functions (9041)
+## Frontend functions (9045)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3896,17 +3896,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCmTheme` | frontend/js/documents-cm-theme.js:10 |
+| `docCmTheme` | frontend/js/documents-cm-theme.js:146 |
 
 ### frontend/js/documents-cm.js (8)
 
 | Name | File:line |
 |---|---|
-| `docLiveFrontmatterPass` | frontend/js/documents-cm.js:1687 |
-| `docLivePlugin` | frontend/js/documents-cm.js:1736 |
-| `docLiveRhythmPass` | frontend/js/documents-cm.js:1593 |
-| `docLiveScanPass` | frontend/js/documents-cm.js:1193 |
-| `docLiveTablesPass` | frontend/js/documents-cm.js:1442 |
+| `docLiveFrontmatterPass` | frontend/js/documents-cm.js:1682 |
+| `docLivePlugin` | frontend/js/documents-cm.js:1731 |
+| `docLiveRhythmPass` | frontend/js/documents-cm.js:1588 |
+| `docLiveScanPass` | frontend/js/documents-cm.js:1188 |
+| `docLiveTablesPass` | frontend/js/documents-cm.js:1437 |
 | `docLiveTreePass` | frontend/js/documents-cm.js:754 |
 | `docLiveWidgets` | frontend/js/documents-cm.js:47 |
 | `sameOrigin` | frontend/js/documents-cm.js:22 |
@@ -4173,20 +4173,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docColumnsBlocks` | frontend/js/documents-columns.js:63 |
 | `docColumnsField` | frontend/js/documents-columns.js:154 |
 
-### frontend/js/documents-commands.js (11)
+### frontend/js/documents-commands.js (13)
 
 | Name | File:line |
 |---|---|
-| `docBlockMoveCommand` | frontend/js/documents-commands.js:622 |
-| `docBlockMoveEdit` | frontend/js/documents-commands.js:434 |
-| `docBlockMoveRun` | frontend/js/documents-commands.js:605 |
+| `docBlockMoveCommand` | frontend/js/documents-commands.js:630 |
+| `docBlockMoveEdit` | frontend/js/documents-commands.js:465 |
+| `docBlockMoveRun` | frontend/js/documents-commands.js:613 |
+| `docMoveBlocks` | frontend/js/documents-commands.js:420 |
 | `docOutlineClearDrop` | frontend/js/documents-commands.js:385 |
 | `docOutlineDropAfter` | frontend/js/documents-commands.js:381 |
 | `docOutlineMoveSection` | frontend/js/documents-commands.js:344 |
 | `docOutlineNudge` | frontend/js/documents-commands.js:400 |
+| `docOutlineWireDrag` | frontend/js/documents-commands.js:637 |
 | `docPaletteCommands` | frontend/js/documents-commands.js:284 |
-| `docVisibleTopLine` | frontend/js/documents-commands.js:919 |
-| `renderDocOutline` | frontend/js/documents-commands.js:627 |
+| `docVisibleTopLine` | frontend/js/documents-commands.js:933 |
+| `renderDocOutline` | frontend/js/documents-commands.js:675 |
 | `renderDocShortcutSheet` | frontend/js/documents-commands.js:305 |
 
 ### frontend/js/documents-comments.js (35)
@@ -4649,23 +4651,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `fenceIn` | frontend/js/documents-math.js:628 |
 | `fenceWrite` | frontend/js/documents-math.js:619 |
 
-### frontend/js/documents-md-actions.js (13)
+### frontend/js/documents-md-actions.js (15)
 
 | Name | File:line |
 |---|---|
-| `applyMarkdown` | frontend/js/documents-md-actions.js:251 |
-| `clearInlineFormatting` | frontend/js/documents-md-actions.js:484 |
+| `applyMarkdown` | frontend/js/documents-md-actions.js:306 |
+| `clearInlineFormatting` | frontend/js/documents-md-actions.js:497 |
 | `docImagePasteAsk` | frontend/js/documents-md-actions.js:233 |
 | `docImagePick` | frontend/js/documents-md-actions.js:173 |
 | `docImageStub` | frontend/js/documents-md-actions.js:242 |
 | `docImageUpload` | frontend/js/documents-md-actions.js:184 |
-| `docNextFootnote` | frontend/js/documents-md-actions.js:460 |
-| `finishMarkdownEdit` | frontend/js/documents-md-actions.js:470 |
-| `insertAround` | frontend/js/documents-md-actions.js:431 |
+| `docNextFootnote` | frontend/js/documents-md-actions.js:473 |
+| `finishMarkdownEdit` | frontend/js/documents-md-actions.js:483 |
+| `insertAround` | frontend/js/documents-md-actions.js:444 |
+| `mdApplyPair` | frontend/js/documents-md-actions.js:252 |
+| `mdApplyPlain` | frontend/js/documents-md-actions.js:276 |
 | `mdLineKind` | frontend/js/documents-md-actions.js:132 |
 | `mdLinePrefixEdit` | frontend/js/documents-md-actions.js:140 |
-| `shiftDocIndent` | frontend/js/documents-md-actions.js:441 |
-| `wrapDocSelection` | frontend/js/documents-md-actions.js:497 |
+| `shiftDocIndent` | frontend/js/documents-md-actions.js:454 |
+| `wrapDocSelection` | frontend/js/documents-md-actions.js:510 |
 
 ### frontend/js/documents-mermaid.js (27)
 
