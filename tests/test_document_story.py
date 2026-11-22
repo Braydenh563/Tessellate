@@ -155,3 +155,43 @@ def test_a_real_model_writes_an_account_of_a_known_history(app_state, fake_embed
     with capsys.disabled():
         print("\nREAL MODEL ACCOUNT:", got["source"], got["reason"], repr(got["summary"]))
     assert got["source"] == "model" and got["summary"]
+
+
+def test_a_private_document_is_never_shown_to_the_model(ai_client, fake_ollama):
+    """Review 6008801452: a private document's changed lines are its plaintext, so the account comes from the counts."""
+    from tessellate.core.database import Document
+
+    doc = _history(ai_client, [V0, V1, V2])
+    with routes_documents.deps.get_db().session() as session:
+        session.get(Document, doc).is_private = True
+        session.commit()
+    got = ai_client.post(f"/documents/{doc}/revisions/summary").json()
+    assert got["source"] == "words" and got["reason"] == "private"
+    assert fake_ollama.chat_calls == []
+
+
+def test_a_document_in_a_private_space_is_never_shown_to_the_model(ai_client, fake_ollama, monkeypatch):
+    doc = _history(ai_client, [V0, V1])
+    monkeypatch.setattr(routes_document_story.private_space, "is_private_space", lambda session, space: True)
+    got = ai_client.post(f"/documents/{doc}/revisions/summary").json()
+    assert got["reason"] == "private" and fake_ollama.chat_calls == []
+
+
+def test_the_summary_runs_off_the_event_loop_and_a_huge_diff_is_bounded(monkeypatch):
+    """Review 6008801452: the route is a plain `def` (FastAPI runs it on a worker thread, so a 150 s model wait never
+    holds the event loop), and two very long versions are compared with the junk heuristic on, not quadratically."""
+    import inspect
+
+    assert not inspect.iscoroutinefunction(routes_document_story.revisions_summary)
+    seen = []
+    real = routes_document_story.difflib.SequenceMatcher
+
+    def spy(isjunk, a, b, autojunk=True):
+        seen.append(autojunk)
+        return real(isjunk, a, b, autojunk=autojunk)
+
+    monkeypatch.setattr(routes_document_story.difflib, "SequenceMatcher", spy)
+    routes_document_story._step("a\n", "b\n")
+    many = "\n".join(f"row {n}" for n in range(routes_document_story.EXACT_DIFF_LINES + 1))
+    routes_document_story._step(many, many + "\nmore")
+    assert seen == [False, True]

@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 from tessellate.api.routes_board_affinity import bounded_chat
 from tessellate.core import deps
 from tessellate.core.deps import get_session
+from tessellate.entry import private_space
 from tessellate.repo import documents as document_repo
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -39,6 +40,9 @@ BUDGET_CHARS = 5000
 #: A cold first call to the 1.5B local model passed bounded_chat's 45 s (L-documents-97); only this call waits longer.
 SUMMARY_SECONDS = 150.0
 SUMMARY_CHARS = 900
+#: Up to this many lines a side, versions are compared exactly; past it difflib's junk heuristic keeps a
+#: pair of very long versions from a quadratic compare on the request's worker thread (review 6008801452).
+EXACT_DIFF_LINES = 4000
 _HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*?)\s*#*\s*$")
 
 
@@ -67,7 +71,8 @@ def _step(older: str, newer: str) -> dict:
     added: list[str] = []
     removed: list[str] = []
     sections: list[str] = []
-    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+    exact = max(len(a), len(b)) <= EXACT_DIFF_LINES
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=not exact).get_opcodes():
         if tag == "equal":
             continue
         removed += [x for x in a[i1:i2] if x.strip()]
@@ -141,7 +146,8 @@ def _ask_model(steps: list[dict]) -> str:
 
 @router.post("/{document_id}/revisions/summary")
 def revisions_summary(document_id: int, db: Session = Depends(get_session)) -> dict:
-    """An account of the newest versions' changes; nothing written."""
+    """An account of the newest versions' changes; nothing written. A plain `def`: FastAPI runs it on a worker
+    thread, so the model's wait never holds the event loop."""
     from tessellate.api.routes_documents import _existing
 
     document = _existing(db, document_id)
@@ -159,6 +165,9 @@ def revisions_summary(document_id: int, db: Session = Depends(get_session)) -> d
     out = {"steps": len(steps), "added": sum(s["added"] for s in steps), "removed": sum(s["removed"] for s in steps)}
     if not changed:
         return {**out, "summary": plain, "source": "words", "reason": "none"}
+    #: A private document's changed lines are its plaintext: no model reads them (as Atlas reads no private note).
+    if document.is_private or private_space.is_private_space(db, document.workspace_id):
+        return {**out, "summary": plain, "source": "words", "reason": "private"}
     if not deps.get_ollama().is_running():
         return {**out, "summary": plain, "source": "words", "reason": "offline"}
     try:
