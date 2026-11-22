@@ -272,7 +272,7 @@ def test_three_pages_in_one_reply_are_fetched_side_by_side(monkeypatch, app_stat
             side_by_side.wait()
             met.append(url)
         except threading.BrokenBarrierError:
-            pass
+            pass  # fetched one at a time: `met` stays short and the assert below says so
         return {"url": url, "title": url, "text": "page text", "links": []}
 
     monkeypatch.setattr(websearch, "fetch_readable", slow)

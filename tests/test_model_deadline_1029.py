@@ -85,7 +85,7 @@ class HangingModel:
             try:
                 conn.shutdown(socket.SHUT_RDWR)
             except OSError:
-                pass
+                pass  # the client already hung up; close() below still frees it
 
 
 @pytest.fixture()
