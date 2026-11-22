@@ -423,7 +423,9 @@ function countSelection(caught) {
 //: rendering follow), a rich editor through the browser's own insert at the
 //: range it held. With no editor in hand it goes at the end of Capture.
 async function insertTemplate(template, caught) {
-  const { text } = await noteTemplateForUse(template);
+  const filled = await noteTemplateForUse(template);
+  if (!filled) return;
+  const { text } = filled;
   let { target, start, end, range } = caught;
   if (!target?.isContentEditable && typeof target?.setRangeText !== "function") {
     await switchTab("notes");

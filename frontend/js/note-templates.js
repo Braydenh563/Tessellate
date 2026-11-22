@@ -112,6 +112,7 @@ async function useNoteTemplate() {
     if (!replace) return;
   }
   const filled = await noteTemplateForUse(template);
+  if (!filled) return;
   box.value = filled.text;
   box.dispatchEvent(new Event("input", { bubbles: true }));
   placeTemplateCaret(box, filled.caret);

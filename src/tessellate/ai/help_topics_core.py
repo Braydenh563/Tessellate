@@ -430,7 +430,9 @@ HELP_TOPICS: list[dict] = [
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
             "switch made in the first, and an answer still on its way from the old space is dropped. "
-            "A space can be private: Private in New space or Edit space seals everything in it."
+            "A space can be private: Private in New space or Edit space seals everything in it. "
+            "Export in a space's row of the picker saves just that space as a markdown folder, named after it; "
+            "a private space exports only while your private spaces are unlocked."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
