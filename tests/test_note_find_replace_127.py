@@ -36,7 +36,7 @@ def test_ctrl_h_opens_on_the_replace_field():
 
 
 def test_page_find_yields_to_an_editor_that_answered():
-    # The chord check moved to `typingBurst.skips` (a split of the keydown handler): it returns instead of continuing.
+    # The yield moved into settings-wiring.js's shortcut filter, which answers "skip" with `return true`.
     assert 'if (id === "find" && e.defaultPrevented) return true;' in JS
 
 
