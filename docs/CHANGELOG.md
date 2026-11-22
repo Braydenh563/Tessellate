@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a `<tool_call>` block whose body does not parse (or a stream cut inside one) is dropped from the shown answer, not shown as raw markup (L-general-65).
 - CI leg 1: two tests make their request before asserting (side-effect cap 226 to 225), the support-bundle pin no longer collides with a log seq number, and the board group-edit help topic opens on a sentence that stands alone.
 - JS size: seventeen over-long functions split by job into named helpers (chat turn, atlas motion, answer kit, ask compose, prose check, editor, entry card, navigation, sheets, palette); chat-turn.js and atlas-motion.js wrapped to pay for the new names; the size seed only shrank.
 - Models: a finished download reads as running until the model list shows it, so "Downloaded" never sits beside the list from before it (CI on #230, 3.13).

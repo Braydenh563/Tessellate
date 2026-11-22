@@ -33,6 +33,7 @@ from tessellate.ai.provider import (
     _ThinkTagSplitter,
     _ToolTextGate,
     _ns_to_ms,
+    drop_tool_call_blocks,
     extract_text_tool_calls,
     is_transient_server_error,
     known_context,
@@ -1008,7 +1009,8 @@ class OllamaClient(Provider):
                     {"function": {"name": c["name"], "arguments": c["arguments"]}}
                     for c in recovered
                 ]
-        held = gate.flush()
+        # An unparsed `<tool_call>` block in the held text is markup, not prose (L-general-65).
+        held = drop_tool_call_blocks(gate.flush())
         if held and not calls:
             # Gated text that turned out to be ordinary prose (a short answer
             # that merely started with "{"). Show it rather than lose it.

@@ -56,6 +56,7 @@ from tessellate.ai.provider import (
     _ThinkTagSplitter,
     _ToolTextGate,
     context_from_catalog_entry,
+    drop_tool_call_blocks,
     extract_text_tool_calls,
     is_transient_server_error,
     known_context,
@@ -967,7 +968,8 @@ class OpenAICompatClient(Provider):
             return
 
         calls, raw_calls, clean = self._settle_calls(buckets, content, tools)
-        held = gate.flush()
+        # An unparsed `<tool_call>` block in the held text is markup, not prose (L-general-65).
+        held = drop_tool_call_blocks(gate.flush())
         if held and not calls:
             # Gated text that turned out to be ordinary prose (a short answer
             # that merely started with "{"). Show it rather than lose it.

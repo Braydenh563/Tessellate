@@ -1528,7 +1528,27 @@ def extract_text_tool_calls(
         for _ in range(2):
             cleaned = _CALL_DEBRIS_RE.sub("", cleaned)
 
-    return calls, cleaned.strip()
+    return calls, drop_tool_call_blocks(cleaned).strip()
+
+
+def drop_tool_call_blocks(text: str) -> str:
+    """A `<tool_call>` block is a special token pair, never prose, so one
+    whose body did not parse as a call (L-general-65: truncated or invalid
+    JSON) is dropped too rather than shown as raw markup; an opener with no
+    close runs to the end. A scan, not a lazy regex, so the cost is linear."""
+    opener, closer = "<tool_call>", "</tool_call>"
+    out, i = [], 0
+    while True:
+        start = text.find(opener, i)
+        if start < 0:
+            out.append(text[i:])
+            break
+        out.append(text[i:start])
+        end = text.find(closer, start + len(opener))
+        if end < 0:
+            break
+        i = end + len(closer)
+    return "".join(out)
 
 
 def _ns_to_ms(value) -> int | None:

@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9155, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11701, test files 3144, tests 24339, plan headings 700, app scripts 32, boot scripts 41, script files 415.
+Counts: frontend functions 9155, frontend ids 2868, CSS sections 528, backend routes 742, backend modules 11702, test files 3145, tests 24343, plan headings 700, app scripts 32, boot scripts 41, script files 415.
 
 ## Frontend functions (9155)
 
@@ -15466,7 +15466,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11701)
+## Backend modules (11702)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20696,32 +20696,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OllamaClient` | src/tessellate/ai/ollama_client.py:261 |
-| `_is_down` | src/tessellate/ai/ollama_client.py:172 |
-| `_is_refusal` | src/tessellate/ai/ollama_client.py:257 |
-| `_mark_down` | src/tessellate/ai/ollama_client.py:163 |
-| `_mark_up` | src/tessellate/ai/ollama_client.py:168 |
-| `_note_failure` | src/tessellate/ai/ollama_client.py:250 |
-| `_quiet_key` | src/tessellate/ai/ollama_client.py:200 |
-| `_up_key` | src/tessellate/ai/ollama_client.py:220 |
-| `describe_http_error` | src/tessellate/ai/ollama_client.py:65 |
-| `forget_quiet` | src/tessellate/ai/ollama_client.py:237 |
-| `held_off` | src/tessellate/ai/ollama_client.py:187 |
-| `hold_off` | src/tessellate/ai/ollama_client.py:182 |
-| `is_quiet` | src/tessellate/ai/ollama_client.py:233 |
-| `mark_quiet` | src/tessellate/ai/ollama_client.py:204 |
-| `note_online` | src/tessellate/ai/ollama_client.py:241 |
-| `recently_up` | src/tessellate/ai/ollama_client.py:229 |
-| `remember_up` | src/tessellate/ai/ollama_client.py:224 |
+| `OllamaClient` | src/tessellate/ai/ollama_client.py:262 |
+| `_is_down` | src/tessellate/ai/ollama_client.py:173 |
+| `_is_refusal` | src/tessellate/ai/ollama_client.py:258 |
+| `_mark_down` | src/tessellate/ai/ollama_client.py:164 |
+| `_mark_up` | src/tessellate/ai/ollama_client.py:169 |
+| `_note_failure` | src/tessellate/ai/ollama_client.py:251 |
+| `_quiet_key` | src/tessellate/ai/ollama_client.py:201 |
+| `_up_key` | src/tessellate/ai/ollama_client.py:221 |
+| `describe_http_error` | src/tessellate/ai/ollama_client.py:66 |
+| `forget_quiet` | src/tessellate/ai/ollama_client.py:238 |
+| `held_off` | src/tessellate/ai/ollama_client.py:188 |
+| `hold_off` | src/tessellate/ai/ollama_client.py:183 |
+| `is_quiet` | src/tessellate/ai/ollama_client.py:234 |
+| `mark_quiet` | src/tessellate/ai/ollama_client.py:205 |
+| `note_online` | src/tessellate/ai/ollama_client.py:242 |
+| `recently_up` | src/tessellate/ai/ollama_client.py:230 |
+| `remember_up` | src/tessellate/ai/ollama_client.py:225 |
 
 ### src/tessellate/ai/openai_client.py (4)
 
 | Name | File:line |
 |---|---|
-| `OpenAICompatClient` | src/tessellate/ai/openai_client.py:126 |
-| `_fill_null_content` | src/tessellate/ai/openai_client.py:75 |
-| `_label` | src/tessellate/ai/openai_client.py:69 |
-| `_looks_like_tools_rejection` | src/tessellate/ai/openai_client.py:86 |
+| `OpenAICompatClient` | src/tessellate/ai/openai_client.py:127 |
+| `_fill_null_content` | src/tessellate/ai/openai_client.py:76 |
+| `_label` | src/tessellate/ai/openai_client.py:70 |
+| `_looks_like_tools_rejection` | src/tessellate/ai/openai_client.py:87 |
 
 ### src/tessellate/ai/page_analysis.py (8)
 
@@ -20861,7 +20861,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `proofread` | src/tessellate/ai/proofread.py:48 |
 | `said` | src/tessellate/ai/proofread.py:120 |
 
-### src/tessellate/ai/provider.py (39)
+### src/tessellate/ai/provider.py (40)
 
 | Name | File:line |
 |---|---|
@@ -20874,12 +20874,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_bare_json_calls` | src/tessellate/ai/provider.py:1395 |
 | `_call_end` | src/tessellate/ai/provider.py:1274 |
 | `_calls_in_blob` | src/tessellate/ai/provider.py:1349 |
-| `_close_open_json` | src/tessellate/ai/provider.py:1606 |
+| `_close_open_json` | src/tessellate/ai/provider.py:1626 |
 | `_first_json_object_after` | src/tessellate/ai/provider.py:1263 |
-| `_json_too_deep` | src/tessellate/ai/provider.py:1635 |
+| `_json_too_deep` | src/tessellate/ai/provider.py:1655 |
 | `_literal_keywords` | src/tessellate/ai/provider.py:1299 |
 | `_named_calls` | src/tessellate/ai/provider.py:1413 |
-| `_ns_to_ms` | src/tessellate/ai/provider.py:1534 |
+| `_ns_to_ms` | src/tessellate/ai/provider.py:1554 |
 | `_prose_read_calls` | src/tessellate/ai/provider.py:1452 |
 | `_python_calls` | src/tessellate/ai/provider.py:1439 |
 | `_python_style_calls` | src/tessellate/ai/provider.py:1312 |
@@ -20888,21 +20888,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_steps_end` | src/tessellate/ai/provider.py:849 |
 | `_tagged_calls` | src/tessellate/ai/provider.py:1374 |
 | `_think_header` | src/tessellate/ai/provider.py:833 |
-| `_unfence` | src/tessellate/ai/provider.py:1594 |
+| `_unfence` | src/tessellate/ai/provider.py:1614 |
 | `context_from_catalog_entry` | src/tessellate/ai/provider.py:300 |
 | `detect_provider` | src/tessellate/ai/provider.py:346 |
+| `drop_tool_call_blocks` | src/tessellate/ai/provider.py:1534 |
 | `extract_text_tool_calls` | src/tessellate/ai/provider.py:1492 |
 | `first_chat_model` | src/tessellate/ai/provider.py:338 |
 | `is_transient_server_error` | src/tessellate/ai/provider.py:119 |
 | `known_context` | src/tessellate/ai/provider.py:259 |
-| `loads_lenient` | src/tessellate/ai/provider.py:1658 |
+| `loads_lenient` | src/tessellate/ai/provider.py:1678 |
 | `memory_budget_bytes` | src/tessellate/ai/provider.py:162 |
-| `normalise_tool_calls` | src/tessellate/ai/provider.py:1697 |
-| `offered_tool_names` | src/tessellate/ai/provider.py:1731 |
+| `normalise_tool_calls` | src/tessellate/ai/provider.py:1717 |
+| `offered_tool_names` | src/tessellate/ai/provider.py:1751 |
 | `resolve_tool_name` | src/tessellate/ai/provider.py:1189 |
 | `set_sampling_overrides_getter` | src/tessellate/ai/provider.py:62 |
 | `set_write_tools` | src/tessellate/ai/provider.py:1341 |
-| `split_thinking` | src/tessellate/ai/provider.py:1542 |
+| `split_thinking` | src/tessellate/ai/provider.py:1562 |
 | `tools_unsupported_message` | src/tessellate/ai/provider.py:93 |
 
 ### src/tessellate/ai/provider_http.py (17)
@@ -30511,7 +30512,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (24339)
+## Tests (24343)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -33278,6 +33279,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_toggle_icons.py | 1 |
 | tests/test_token_tables_1031.py | 4 |
 | tests/test_tool_call_dialects.py | 15 |
+| tests/test_tool_call_markup_g65.py | 4 |
 | tests/test_tool_calls_evals.py | 2 |
 | tests/test_tool_calls_index_69.py | 6 |
 | tests/test_tool_cards.py | 20 |
