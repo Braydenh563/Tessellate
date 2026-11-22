@@ -65,3 +65,24 @@ def test_a_map_that_unpacks_too_large_is_refused(ai_client, monkeypatch):
     root = {"id": "r", "title": "Big", "children": {"attached": [{"id": str(i), "title": f"Topic {i}"} for i in range(20)]}}
     out = ai_client.post("/whiteboard/boards/import", json={"format": "xmind", "content": _xmind({"content.json": _sheet(root)})})
     assert out.status_code == 422 and "too large" in out.text
+
+
+def test_a_zip_header_that_understates_the_map_is_still_refused(ai_client, monkeypatch):
+    """Audit 1028 K15: the size in the zip's header is the file's own claim.
+    A header saying 10 bytes over a bigger map is refused in words, never a 500."""
+    from tessellate.api import wb_import as service
+
+    monkeypatch.setattr(service, "MAX_XMIND_JSON_BYTES", 100)
+    root = {"id": "r", "title": "Big", "children": {"attached": [{"id": str(i), "title": f"Topic {i}"} for i in range(20)]}}
+    body = _sheet(root)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("content.json", body)
+    raw = bytearray(buf.getvalue())
+    real = len(body).to_bytes(4, "little")
+    lie = (10).to_bytes(4, "little")
+    #: The uncompressed size sits in the local header and the central directory.
+    assert raw.count(real) >= 2
+    raw = raw.replace(real, lie)
+    out = ai_client.post("/whiteboard/boards/import", json={"format": "xmind", "content": base64.b64encode(bytes(raw)).decode("ascii")})
+    assert out.status_code == 422, out.text

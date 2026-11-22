@@ -403,8 +403,17 @@ def _parse_xmind(content: str) -> tuple[str, list[dict]]:
     info = archive.getinfo("content.json")
     if info.file_size > MAX_XMIND_JSON_BYTES:
         raise HTTPException(status_code=422, detail="That XMind map is too large to import: split it up first.")
+    #: The header's size is the zip's own claim; the read is bounded too, so a
+    #: header that lies cannot unpack more than the cap (audit 1028 K15).
     try:
-        sheets = json.loads(archive.read("content.json").decode("utf-8"))
+        with archive.open(info) as member:
+            body = member.read(MAX_XMIND_JSON_BYTES + 1)
+    except (zipfile.BadZipFile, OSError) as err:  # a header that lies fails its own check
+        raise HTTPException(status_code=422, detail="That XMind file's map could not be read.") from err
+    if len(body) > MAX_XMIND_JSON_BYTES:
+        raise HTTPException(status_code=422, detail="That XMind map is too large to import: split it up first.")
+    try:
+        sheets = json.loads(body.decode("utf-8"))
     except (ValueError, UnicodeDecodeError) as err:
         raise HTTPException(status_code=422, detail="That XMind file's map could not be read.") from err
     sheet = sheets[0] if isinstance(sheets, list) and sheets else {}

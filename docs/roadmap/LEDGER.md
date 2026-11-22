@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 16 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 0 | 12 | 0 | 0 | 0 | 12 |
-| general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 272 | 359 | 67 | 2 | 84 | 698 |
+| general | 0 | 28 | 2 | 0 | 6 | 30 |
+| all | 272 | 358 | 67 | 2 | 84 | 697 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -465,7 +465,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-64** `general` open, S: Sign in from a real remote client such as claude.ai through a tunnel and approve in Settings; only TestClient tests and scratchpad/ui-sweeps/mcp-scope-560.js (light, 1440) ran. From L-world-class-560 leftover.
 - [ ] **L-general-65** `general` open, M: A tool_call block that does not parse is shown to the person as raw markup: strip it from the answer and say the model tried a tool it could not name. From L-world-class-842 eval, 2026-11-21. Evidence: tests/test_browser_tools_evals.py on Qwen 2.5 1.5B q4 (llama-cpp-python, native template): 0 of 5 browser picks after the doubled-brace fix; case 4 wrote <tool_call>{{"name": "browser_back", "arguments": {"}}} which no parser can read, and the raw block reached the answer text because _ToolTextGate flushes held text when nothing parses
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
-- [ ] **L-general-75** `general` open, S: Close three import and fetch size and rebinding gaps from the 1028 and 1031 audits. From L623 audit-1028-backend K15 K34; audit-1031-ai AI20. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; .xmind import trusts the zip header size (wb_import.py:396 area), routes_import.py:62 _received holds up to 200 MB of uploads in memory, fetch_readable resolves the host twice (core/security.py:726 _resolve).
 
 ## Owner calls
 
