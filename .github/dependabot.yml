@@ -46,4 +46,4 @@ updates:
     # wheel (onnxruntime) may not exist for it yet (Dependabot's #243 wanted 3.15).
     ignore:
       - dependency-name: python
-        versions: [">=3.14"]
+        versions: [">=3.15"]

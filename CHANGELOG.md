@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Tracking: L686 closed on a code check (optional-package notices, Motion at rest, the model-online window, the first-run preferences step, Where you left off); INBOX 1716, 1726 and 1748 moved to HISTORY.
 - Documents: a board card edits in place (L-documents-104). Edit in place loads the boards bundle and opens the board in the text with its own tools, one instance per card; a card the live editor drops ends its instance at once (`doc-embed-gone`); the read-only window stays as the fallback.
+- Docker and the package and release builds run Python 3.14 now that its CI legs pass; Dependabot holds the image below 3.15.
 - CI: Python 3.14 runs as a fourth parallel leg of both test matrices (classifier added; every dependency installs from a 3.14 wheel on Linux); FastAPI's floor is 0.162.6; Dependabot holds the Docker image below Python 3.14 until that leg is green; the greeting test reads a fixed clock.
 - Styles: the menu-row recipe from the base merge is one selector per row class again, so the list `:is()` and universal-bucket ratchets hold at 136 and 375 (L342).
 - Tests: the overlay fake keeps only the newest frame's pixels; a copy of every frame took an xdist worker past 6 GB and lost the 3.11 CI runners.
