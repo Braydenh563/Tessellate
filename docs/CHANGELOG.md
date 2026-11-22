@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI leg 1: two tests make their request before asserting (side-effect cap 226 to 225), the support-bundle pin no longer collides with a log seq number, and the board group-edit help topic opens on a sentence that stands alone.
 - Models: a finished download reads as running until the model list shows it, so "Downloaded" never sits beside the list from before it (CI on #230, 3.13).
 - Reminder fact split is a one-pass scan, not a regex (CodeQL 2354 still saw the lookbehind form as polynomial).
 - Reminder fact split reads a long run of "!" in linear time (CodeQL 2354); a test assert no longer holds the write it checks (CodeQL 2355).

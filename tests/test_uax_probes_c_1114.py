@@ -81,7 +81,8 @@ def test_c13_undo_that_takes_back_the_last_confirmed_card(client, session, monke
     go = seed.asker(client, monkeypatch, chat=True)
     _, events = go("tick off charger")
     card = next(e for e in events if e.get("type") == "act")
-    assert client.post("/chat/command/run", json={"steps": card["steps"], "skipped": [], "consent_id": card["consent_id"]}).json()["ok"]
+    ran = client.post("/chat/command/run", json={"steps": card["steps"], "skipped": [], "consent_id": card["consent_id"]})
+    assert ran.json()["ok"]
     said, _ = go("undo that")
     assert said.startswith("Undone:") and "charger" in said, said
     packing = next(e for e in session.query(Entry) if "Lisbon packing" in (e.content or ""))

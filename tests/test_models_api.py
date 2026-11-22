@@ -924,7 +924,8 @@ def test_a_list_slower_than_every_budget_never_shows_downloaded_beside_the_old_l
 
     _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
     monkeypatch.setattr(fake_ollama, "list_models", slow_list)
-    assert ai_client.post("/models/pull", json={"name": "nomic-embed-text"}).status_code == 200
+    pulled = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert pulled.status_code == 200
     seen = []
 
     def done(body):

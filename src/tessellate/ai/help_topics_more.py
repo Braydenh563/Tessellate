@@ -2349,7 +2349,7 @@ MORE_TOPICS.extend([
             "save panel layout", "workspaces", "which panels are open",
         ),
         "body": (
-            "Edit inside a group: double-click a grouped item (or Ctrl+K, Edit inside the group) and the rest "
+            "Double-click a grouped item (or Ctrl+K, Edit inside the group) to edit inside it: the rest "
             "of the board dims and cannot be clicked, swept or reached with Select all or Tab; the group's own "
             "items select one at a time. Escape leaves it. Workspaces, in the View menu's Panels, save which "
             "panels are open (the context bar, overview, search, Format and the sidebar with its tab) under a "

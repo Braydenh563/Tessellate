@@ -159,17 +159,18 @@ def test_an_import_marks_the_index_stale_until_a_rebuild(ai_client):
 
 
 def test_the_support_bundle_has_no_note_text_or_secret(ai_client, fake_ollama):
-    _note(ai_client, "Quixotic walrus diary entry about my bank pin 4417")
+    _note(ai_client, "Quixotic walrus diary entry about my bank pin 4417-9305")
     config = deps.get_config()
     config.set_preference("display_name", "Zanzibar Person")
     config.set_preference("openai_base_url", "http://alice:hunter2secret@localhost:8080/v1")
-    fake_ollama.librarian_reply = "Your quixotic walrus note mentions 4417."
+    fake_ollama.librarian_reply = "Your quixotic walrus note mentions 4417-9305."
     _events(ai_client, "what did I write about the quixotic walrus")
     bundle = ai_client.get("/support-bundle")
     assert bundle.status_code == 200
     with zipfile.ZipFile(io.BytesIO(bundle.content)) as archive:
         text = "\n".join(archive.read(name).decode("utf-8") for name in archive.namelist()).lower()
-    for secret in ("quixotic", "walrus", "4417", "zanzibar", "hunter2secret"):
+    # A bare "4417" also matches a log record's seq once a worker has logged that many lines.
+    for secret in ("quixotic", "walrus", "4417-9305", "zanzibar", "hunter2secret"):
         assert secret not in text, f"the support bundle carries {secret!r}"
 
 
