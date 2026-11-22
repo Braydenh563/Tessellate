@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 172 | 55 | 0 | 69 | 357 |
-| general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 326 | 355 | 66 | 0 | 122 | 747 |
+| general | 0 | 24 | 2 | 0 | 5 | 26 |
+| all | 326 | 356 | 66 | 0 | 122 | 748 |
 
 ## graph
 
@@ -464,6 +464,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
+- [ ] **L-general-71** `general` open, S: Three Ollama-model tests write the repo's data/ folder when run serially (repo-data guard). From gate --changed 2026-11-22 (chat-plan). Evidence: serial run of tests/test_audit_1028_e_rows_b.py test_model_specs.py test_sampling.py test_window_report.py: 52 passed, 3 errors at teardown (conftest.py:251 repo data/ guard), same on base 359f40630; passes under -n 4
 
 ## Owner calls
 

@@ -59,7 +59,8 @@ def test_batches_inside_the_back_off_are_not_sent_and_not_logged_again(client, m
     calls = _counting(monkeypatch, OllamaError("Ollama is not running at http://localhost:11434"))
     pairs = _pairs(client, 3)
     for _ in range(5):
-        assert client.post("/entries/link-suggestions/reasons", json={"pairs": pairs}).json()["ai_unavailable"] is True
+        result = client.post("/entries/link-suggestions/reasons", json={"pairs": pairs}).json()
+        assert result["ai_unavailable"] is True
         _fresh_backoff[0] += 1.0
     assert len(calls) == 1
     assert len(_skips(caplog)) == 1
