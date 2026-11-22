@@ -1265,8 +1265,12 @@
 /* The hair's own layer (INBOX 554, 564), in the breathing box under the
    body's root; its box sways it about the crown, a beat behind the body. */
 .atl-lw-breathe > .atl-lw-hair,
-.atl-lw-breathe > .atl-lw-torso { position: absolute; left: 0; top: 0; width: 64px; height: 92px; }
-.atl-lw-breathe > .atl-lw-hair { transform-origin: 32px 15px; will-change: rotate; }
+.atl-lw-breathe > .atl-lw-torso,
+.atl-lw-breathe > .atl-lw-head { position: absolute; left: 0; top: 0; width: 64px; height: 92px; }
+.atl-lw-breathe > .atl-lw-hair { transform-origin: 32px 15px; will-change: rotate, transform; }
+
+/* The head and its lids, tilted and nodded about the neck (`atlasMicroDo`, INBOX 564's neck). */
+.atl-lw-breathe > .atl-lw-head { transform-origin: 31px 37px; will-change: transform; }
 
 .atl-lw-tail { transform-origin: 34px 60px; will-change: rotate; }
 

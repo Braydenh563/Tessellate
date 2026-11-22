@@ -39,7 +39,8 @@ const buddy = { id: "nm-buddy", dataset: { pose: "stand" }, classList: { contain
 const box = {
   isConnected: true, dataset: { atlasMood: "calm", atlasLook: "feminine" }, atlasRig: { heads, arms: [{ side: "r", hand, geo: { segs: [[0, 0, 0, 0, 0, 0, 40, 30], [0, 0, 0, 0, 0, 0, 46, 38]] } }, { side: "l", hand: null, geo: { segs: [[0, 0, 0, 0, 0, 0, 20, 30], [0, 0, 0, 0, 0, 0, 14, 38]] } }] }, classList: { contains: () => false },
   closest: () => buddy,
-  querySelector: (s) => (s.includes("atl-lw-body") ? body : null),
+  //: The tilt and the hum turn the head's and the hair's HTML boxes (L-ui-modernisation-201).
+  querySelector: (s) => (s.includes("atl-lw-body") ? body : s.includes("atl-lw-head") ? heads[0] : s.includes("atl-lw-hair") ? heads[1] : null),
   querySelectorAll: (s) => (s.includes("atl-ear") ? ears : []),
 };
 let ok = true;

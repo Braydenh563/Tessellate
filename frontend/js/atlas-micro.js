@@ -205,7 +205,7 @@ atlasMicroDo.rare = function (kind, box, sign) {
   } else if (kind === "hum") {
     const nod = (deg) => ({ transform: `rotate(${(sign * deg).toFixed(2)}deg)` });
     const frames = [nod(0), { ...nod(1.4), offset: 0.17 }, { ...nod(-0.6), offset: 0.33 }, { ...nod(1.2), offset: 0.5 }, { ...nod(-0.5), offset: 0.67 }, { ...nod(1), offset: 0.83 }, nod(0)];
-    for (const head of box.atlasRig?.heads || []) atlasMicroPlay(head, frames, 1800 + Math.random() * 400);
+    atlasMicroDo.turnHead(box, frames, 1800 + Math.random() * 400);
   } else {
     const sink = (y) => ({ translate: `0px ${y}px` });
     atlasMicroPlay(box.querySelector(".atl-lw-body"), [sink(0), { ...sink(0.9), offset: 0.45 }, { ...sink(0.9), offset: 0.6 }, sink(0)], 2200 + Math.random() * 600);
@@ -218,6 +218,16 @@ atlasMicroDo.exhale = function (box) {
   const sink = (y) => ({ translate: `0px ${y}px` });
   atlasMicroPlay(box.querySelector(".atl-lw-body"), [sink(0), { ...sink(2), offset: 0.4 }, { ...sink(2), offset: 0.55 }, sink(0)], 1500);
 };
+//: **A tilt or a hum turns the head's box and the hair's** (L-ui-modernisation-201): HTML boxes, so a `transform`
+//: Web Animation on them is the compositor's; on the SVG head groups it was the main thread's, every frame of its
+//: two to four seconds. Both turn about the neck; the hair's box pivots at its crown, so its turn carries the
+//: offset, and it swings a third further, its follow-through (the rig's head lag has the same 1.3).
+atlasMicroDo.turnHead = function (box, frames, ms) {
+  const deg = (f) => +/rotate\((-?[\d.]+)deg\)/.exec(f.transform)[1];
+  atlasMicroPlay(box.querySelector(".atl-lw-head"), frames, ms);
+  const hair = frames.map((f) => ({ ...f, transform: `translate(-1px, 22px) rotate(${(deg(f) * 1.3).toFixed(2)}deg) translate(1px, -22px)` }));
+  atlasMicroPlay(box.querySelector(".atl-lw-hair"), hair, ms);
+};
 function atlasMicroDo(kind, box) {
   const sign = Math.random() < 0.5 ? -1 : 1;
   if (kind === "glance") return atlasMicroDo.glance(box);
@@ -226,14 +236,8 @@ function atlasMicroDo(kind, box) {
   if (kind === "tilt") {
     const d = sign * (1.8 + Math.random() * 2.4);
     const ms = 1700 + Math.random() * 1900;
-    (box.atlasRig?.heads || []).forEach((head, k) => {
-      //: The head's own `rotate` is the rig's (written every wake), and an
-      //: svg part's individual `rotate` is the main thread's whatever the
-      //: composite; `transform` on it is the compositor's, and the head has
-      //: none of its own, so the tilt replaces it (audit 1031 row 17).
-      const a = `rotate(${(d * (k ? 1.3 : 1)).toFixed(2)}deg)`;
-      atlasMicroPlay(head, [{ transform: "none" }, { transform: a, offset: 0.3 }, { transform: a, offset: 0.72 }, { transform: "none" }], ms);
-    });
+    const a = { transform: `rotate(${d.toFixed(2)}deg)` };
+    atlasMicroDo.turnHead(box, [{ transform: "rotate(0deg)" }, { ...a, offset: 0.3 }, { ...a, offset: 0.72 }, { transform: "rotate(0deg)" }], ms);
     return;
   }
   if (kind === "shift") {

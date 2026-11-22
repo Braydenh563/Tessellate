@@ -3181,7 +3181,7 @@ function atlasDrawFigure(mood) {
     box.appendChild(svg);
     return box;
   };
-  const names = ["neb", "back", ...(spec.wisps ? ["wisps-back"] : []), "tail", ...(spec.tailWave ? ["tail-tip"] : []), ...(spec.lowers ? ["lower"] : []), ...(legs ? ["leg-l", "leg-r"] : []), "hair", "torso", "body", "lidf-1", "lidf-2", "lids", "front", "neb-front", ...(spec.wisps ? ["wisps", "glint-a", "glint-b"] : []), "fx-1", "fx-2"];
+  const names = ["neb", "back", ...(spec.wisps ? ["wisps-back"] : []), "tail", ...(spec.tailWave ? ["tail-tip"] : []), ...(spec.lowers ? ["lower"] : []), ...(legs ? ["leg-l", "leg-r"] : []), "hair", "torso", "body", "head", "lidf-1", "lidf-2", "lids", "front", "neb-front", ...(spec.wisps ? ["wisps", "glint-a", "glint-b"] : []), "fx-1", "fx-2"];
   for (const name of names) {
     const legSide = name.startsWith("leg-") ? name.slice(4) : "";
     //: Her tail's tip half (`tailWave`) is a tail layer too, so every
@@ -3222,7 +3222,16 @@ function atlasDrawFigure(mood) {
       torsoBox.className = "atl-lw-torso";
       torsoBox.dataset.atlasLook = look;
       torsoBox.appendChild(svg);
-    } else if (name.startsWith("lid") && frag.querySelector(".atl-lw-breathe")) frag.querySelector(".atl-lw-breathe").appendChild(svg);
+    } else if (name === "head" && frag.querySelector(".atl-lw-breathe")) {
+      //: **The head is a box of its own** (L-ui-modernisation-201): drawn over the body as it was, with the lids in it,
+      //: so the micro habits' tilt and hum (atlas-micro.js) are a `transform` on an HTML box the compositor runs, not
+      //: a Web Animation on an SVG group the main thread lays out and repaints every frame (about 80 ms/s while one ran).
+      const headBox = document.createElement("span");
+      headBox.className = "atl-lw-head";
+      headBox.dataset.atlasLook = look;
+      headBox.appendChild(svg);
+      frag.querySelector(".atl-lw-breathe").appendChild(headBox);
+    } else if (name.startsWith("lid") && frag.querySelector(".atl-lw-head")) frag.querySelector(".atl-lw-head").appendChild(svg);
     else if (ATLAS_ROOT_BOXES.includes(name)) {
       const box = document.createElement("span");
       box.className = `atl-lw atl-lw-${name}`;
@@ -3278,7 +3287,7 @@ function atlasDrawFigure(mood) {
   //: `atl-head-lag` (the rig, INBOX 564): the head's lag behind a change of
   //: pose, a turn of its own inside every rule that turns the head.
   const headChain = (rig) => atlasGroup(atlasGroup(atlasGroup(rig, "nm-buddy-head", ATLAS_GEO.neck), "atl-head-lag", ATLAS_GEO.neck), "name-mark atl-face");
-  const host = headChain(layers.body.rig);
+  const host = headChain(layers.head.rig);
   //: The hair layer turns as the head does: the same chain of groups, so
   //: every rule that turns, tilts or nods the head moves its hair.
   const hairAt = atlasGroup(atlasGroup(headChain(layers.hair.rig), "atl-head", ATLAS_GEO.neck), "atl-sway", ATLAS_GEO.neck);
@@ -3293,7 +3302,7 @@ function atlasDrawFigure(mood) {
   //: The head drew its extras in the body layer; the two that rise (the
   //: Zs, the hearts) move to their roots, each pair under the wrappers the
   //: mood shows and hides (`.atl-fx-hearts`, `.atl-fx-zz`).
-  const extras = layers.body.rig.querySelector(".atl-fx");
+  const extras = layers.head.rig.querySelector(".atl-fx");
   if (extras) {
     for (const [name, late] of [["fx-1", false], ["fx-2", true]]) {
       const fx = atlasGroup(layers[name].rig, "atl-fx");

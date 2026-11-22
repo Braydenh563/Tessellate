@@ -26,7 +26,7 @@ function atlasBlink(box, slow = false, waited = 0) {
 }
 //: The ms until no transition moves the face's eyes and not its lids (a box round both moves the two alike), and a frame.
 atlasBlink.settling = (box) => {
-  const eye = box.querySelector(".atl-layer-body .atl-eye");
+  const eye = box.querySelector(".atl-layer-head .atl-eye");
   const lids = box.querySelector(".atl-layer-lids");
   if (!eye || !lids || typeof CSSTransition !== "function") return 0;
   let left = 0;

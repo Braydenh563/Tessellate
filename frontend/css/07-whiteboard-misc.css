@@ -16837,7 +16837,8 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .atl-lw-pose > svg,
 .atl-lw-drift > svg,
 .atl-lw-root > svg,
-.atl-lw-breathe > svg {
+.atl-lw-breathe > svg,
+.atl-lw-head > svg {
   position: absolute;
   left: 0;
   top: 0;
