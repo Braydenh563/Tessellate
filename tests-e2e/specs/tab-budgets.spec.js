@@ -29,3 +29,21 @@ for (const tab of ["notes", "library", "graph", "timeline", "chat", "reminders",
     expect(Math.min(...seen), `${tab}: ${seen.join(", ")} ms of CPU over ${seen.length} round(s); the cap is ${TAB_TASK_CPU_CAP_MS} ms`).toBeLessThanOrEqual(TAB_TASK_CPU_CAP_MS);
   });
 }
+
+// The companion's looks restyle the whole figure (the owner's lag log 2026-11-22:
+// `nameMarkBuddyAfterCleanTask` 202 to 294 ms, 187 to 286 of it forced layout). Measured
+// 2026-11-22 at 4x, CPU time: the worst call 512 ms, 232 ms of it a style recalc of 1,414
+// elements (a move's writes: act, route, way and mood classes each restyle 36 to 388 parts);
+// layout 0 to 8 ms. A strict expected failure until the companion's selectors touch only the
+// parts each write moves; the cap is a frame. Never widen the cap.
+const COMPANION_FORCED_CAP_MS = 16;
+test("companion_forced_cpu: a companion look forces at most 16 ms of style and layout at 4x", async ({ page }) => {
+  test.fail(true, "L-ui-modernisation-95 follow-on: a look restyles the whole figure, about 1,400 elements");
+  await openApp(page);
+  await measure.pinFullFigure(page);
+  await page.evaluate(async () => { localStorage.removeItem("nm-buddy-spots"); prefs.set("avatar-buddy", "atlas"); await ensureModule("characters"); syncNameMarkBuddy(); });
+  await page.waitForTimeout(4000);
+  const worst = await measure.companionForcedCpu(page);
+  expect(worst.calls, "no companion look ran during the tab switches").toBeGreaterThan(0);
+  expect(worst.forced, `worst look: ${worst.forced} ms forced of ${worst.whole} ms, ${worst.elements} elements restyled, over ${worst.calls} calls; the cap is ${COMPANION_FORCED_CAP_MS}`).toBeLessThanOrEqual(COMPANION_FORCED_CAP_MS);
+});

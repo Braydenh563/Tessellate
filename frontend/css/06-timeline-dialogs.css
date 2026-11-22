@@ -1543,7 +1543,29 @@
   gap: var(--space-1);
   padding-inline: var(--space-5) 0;
 }
-.settings-nav-groups:not(.is-open) .settings-nav-group:not([aria-current="location"]) {
+/* The id's weight: `#settings-nav .settings-nav-group` sets `display: block` for its
+   one-line ellipsis (01-forms-settings.css), which outranked a class-only hide, so
+   neither the short list nor the fold below hid a link. */
+#settings-nav .settings-nav-groups:not(.is-open) .settings-nav-group:not([aria-current="location"]) {
+  display: none;
+}
+/* The head is a disclosure that folds the whole list (settings-find.js): it keeps the
+   head's own small muted words, so only the caret is new. */
+.settings-nav-groups-head button.ghost.settings-nav-fold {
+  width: auto;
+  gap: var(--space-1);
+  padding: 0;
+  /* The caret hangs in the head's gutter, so the words and Show all keep the one
+     line they had (at 1440: 90 + 4 + 110px wanted 199 and wrapped the head to 72px). */
+  margin-inline-start: calc(-1 * var(--space-4));
+  color: inherit;
+  font: inherit;
+}
+.settings-nav-fold[aria-expanded="false"] .contents-caret {
+  transform: rotate(-90deg);
+}
+#settings-nav .settings-nav-groups.is-folded .settings-nav-group,
+#settings-nav .settings-nav-groups.is-folded .settings-nav-groups-head .linklike {
   display: none;
 }
 /* --- the chat toolbar, grouped (§36B) ---------------------------------------
