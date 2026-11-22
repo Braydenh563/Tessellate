@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: no test bounds a wall-clock difference any more; CPU work is timed in CPU time, waits are held fakes, op counts or the join timeouts offered, and a lint with no file list keeps it so (L-general-70).
 - Settings: each page's "On this page" list in the sidebar folds away from its head, remembered per page; the short list hides the other links again (an id-weighted `display: block` had shown all 8 of 8).
 - Code: the 23 functions over the size ratchet are split by job, none re-seeded: the shell's palette, entry menu, menu group and Settings opener; the board's map preview, object render, map strip and pointer setup; the Library gallery steps; the companion's act, build, tempo, figure and rig frames and three ambient scenes.
 - Map: at 500 topics a zoom no longer flips `wb-tiny` on every topic (map topics have no grips), the grammar repaint indexes the board once and repaints only the labels answered, and a topic's action row takes the inverse zoom only while shown (mapcpu 500 at 4x: open 1,088 to 850ms, worst zoom 131 to 45.5ms).

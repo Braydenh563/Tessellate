@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import socket
 import threading
-import time
 
 import pytest
 
@@ -22,9 +21,8 @@ from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.core import deps
 from tessellate.entry import manager
 
-#: The slowest honest wait is one probe (1 s connect or read budget); the margin
-#: is for a loaded CI box, not for a second probe.
-BUDGET = 2.5
+#: Counted, not timed (L-general-70): the claim is one probe, so the tests count the
+#: connections that reached the silent runner; each probe's wait is its own 1 s budget.
 
 
 @pytest.fixture()
@@ -52,19 +50,15 @@ def silent_server():
 def test_repeated_liveness_checks_wait_once(silent_server):
     url, held = silent_server
     client = OllamaClient(base_url=url)
-    started = time.monotonic()
     answers = [client.is_running() for _ in range(8)]
     assert answers == [False] * 8
-    assert time.monotonic() - started < BUDGET
     assert len(held) == 1
 
 
 def test_an_openai_shaped_server_is_remembered_too(silent_server):
     url, held = silent_server
     client = OpenAICompatClient(base_url=url + "/v1")
-    started = time.monotonic()
     assert [client.is_running() for _ in range(6)] == [False] * 6
-    assert time.monotonic() - started < BUDGET
     assert len(held) == 1
 
 
@@ -92,17 +86,13 @@ def test_the_answer_does_not_wait_on_a_silent_runner(app_state, silent_server):
     client = TestClient(create_app())
     body = {"question": "give me an overview of my social connections", "use_tools": False}
 
-    def ask() -> float:
-        started = time.monotonic()
+    def ask() -> None:
         seen = []
         with client.stream("POST", "/chat/stream", json=body) as response:
             for line in response.iter_lines():
                 if line.strip():
                     seen.append(json.loads(line)["type"])
         assert "answer" in seen
-        return time.monotonic() - started
 
-    first, second = ask(), ask()
-    assert first < BUDGET + 2  # one probe plus the app's own first-use work
-    assert second < BUDGET
-    assert len(held) == 1
+    ask(), ask()
+    assert len(held) == 1  # one probe for both answers, not one each

@@ -15,7 +15,26 @@ from __future__ import annotations
 import threading
 import time
 
+import pytest
+
 from tessellate.core import jobs
+
+
+@pytest.fixture()
+def joins_offered(monkeypatch):
+    """Every `Thread.join` timeout asked for while the fixture is live (L-general-70):
+    a shutdown's budget is the waits it allows itself, not a loaded runner's clock."""
+    import threading
+
+    offered: list = []
+    real = threading.Thread.join
+
+    def join(self, timeout=None):  # noqa: ANN001, ANN202
+        offered.append(timeout)
+        return real(self, timeout)
+
+    monkeypatch.setattr(threading.Thread, "join", join)
+    return offered
 
 
 def test_a_lane_never_exceeds_its_width() -> None:
@@ -56,7 +75,7 @@ def test_a_lane_never_exceeds_its_width() -> None:
     assert finished == 50
 
 
-def test_shutdown_returns_inside_its_deadline_with_jobs_pending() -> None:
+def test_shutdown_returns_inside_its_deadline_with_jobs_pending(joins_offered) -> None:
     """A queue full of work does not make quitting slow.
 
     The pool drops what is still queued rather than draining it: the process
@@ -83,15 +102,19 @@ def test_shutdown_returns_inside_its_deadline_with_jobs_pending() -> None:
         pool.enqueue("ocr", never)
 
     assert pool.queued_count() > 100
-    began = time.monotonic()
+    before = len(joins_offered)
     clean = pool.shutdown(deadline=0.4)
-    elapsed = time.monotonic() - began
+    offered = joins_offered[before:]
     release.set()
 
     # The in-flight job is still blocked, so this is the honest "not clean"
     # answer: the workers are daemons and die with the process.
     assert clean is False
-    assert elapsed < 2.0, f"shutdown took {elapsed:.2f}s against a 0.4s deadline"
+    # The waits it allowed itself, not the runner's clock (L-general-70).
+    # One deadline shared by every join: each wait is what is left of it, so none
+    # passes the budget and each is no longer than the one before.
+    assert offered and None not in offered and max(offered) <= 0.4, offered
+    assert offered == sorted(offered, reverse=True), offered
     assert "never" not in ran
     assert pool.queued_count() == 0
 

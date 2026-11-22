@@ -263,9 +263,8 @@ def test_stop_posts_close_and_joins_within_a_second() -> None:
     fake = FakeWin32()
     host = host_mod.OverlayHost(fake)
     assert host.start()
-    t0 = time.monotonic()
+    # stop() is True only when the join landed inside its own 1 s (L-general-70).
     assert host.stop(timeout=1.0)
-    assert time.monotonic() - t0 < 1.0
     assert not host.alive
     names = fake.names()
     assert "DestroyWindow" in names and "UnregisterClassW" in names and "DeleteDC" in names

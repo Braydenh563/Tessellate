@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 0 | 1 | 0 | 0 | 0 | 1 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 177 | 58 | 0 | 72 | 365 |
-| general | 0 | 1 | 0 | 0 | 1 | 1 |
-| all | 306 | 373 | 121 | 2 | 132 | 800 |
+| general | 0 | 0 | 0 | 0 | 1 | 0 |
+| all | 306 | 372 | 121 | 2 | 132 | 799 |
 
 ## graph
 
@@ -533,7 +533,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L-general-70** `general` open, L: Wall-clock bounds in tests: convert each to CPU time, an op count or an event-held fake, keeping every budget; add a lint in tests/test_fixed_clock_lint.py that fails any such difference compared with a number, with no file list. From hub 2026-11-21, #241 CI. Evidence: 63 test files assert perf_counter/time.time/monotonic differences against a number; #241 claim-check hostile4 2.26 s on a 0.05 s read, #242 slow-model timeout
 
 ## Owner calls
 

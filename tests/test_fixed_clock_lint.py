@@ -237,3 +237,90 @@ def test_the_pin_lists_every_module_that_holds_a_clock_by_name():
     assert len(HOLDERS) == len(set(HOLDERS))
     assert not found - set(HOLDERS), f"add to tests/_clock.HOLDERS: {sorted(found - set(HOLDERS))}"
     assert not set(HOLDERS) - found, f"drop from tests/_clock.HOLDERS: {sorted(set(HOLDERS) - found)}"
+
+
+#: Wall clocks (L-general-70): a loaded runner stretches them, so a difference of two
+#: reads compared with a number measured the runner (#241: 2.26 s on a 0.05 s read).
+#: CPU time (`time.process_time`), an op count or a fake held on an event say the same
+#: thing without the runner in it.
+_WALL = {"perf_counter", "perf_counter_ns", "monotonic", "monotonic_ns", "time", "time_ns"}
+_ORDER = (ast.Lt, ast.LtE, ast.Gt, ast.GtE)
+
+
+def _wall_call(node: ast.AST) -> bool:
+    func = node.func if isinstance(node, ast.Call) else None
+    if isinstance(func, ast.Attribute) and func.attr in _WALL:
+        owner = func.value
+        return (owner.attr if isinstance(owner, ast.Attribute) else getattr(owner, "id", "")) == "time"
+    return isinstance(func, ast.Name) and func.id in {"perf_counter", "monotonic"}
+
+
+def _wall_differences(text: str) -> list[int]:
+    """Lines comparing a wall-clock difference with anything by size: the difference
+    itself, a name it was stored in, a list it was appended to, or a function
+    returning one (`took()`, `_timed()`), through `min`, `max`, `round` and the like."""
+    tree = ast.parse(text)
+    stamps: set[str] = set()
+    held: set[str] = set()
+
+    def timed(node: ast.AST) -> bool:
+        if isinstance(node, ast.Name):
+            return node.id in held
+        if isinstance(node, ast.BinOp):
+            if isinstance(node.op, ast.Sub) and any(
+                _wall_call(side) or (isinstance(side, ast.Name) and side.id in stamps) for side in (node.left, node.right)
+            ):
+                return True
+            return timed(node.left) or timed(node.right)
+        if isinstance(node, ast.Call):
+            callee = node.func.id if isinstance(node.func, ast.Name) else ""
+            return callee in held or any(timed(arg) for arg in node.args)
+        if isinstance(node, (ast.Subscript, ast.Starred)):
+            return timed(node.value)
+        if isinstance(node, (ast.Tuple, ast.List)):
+            return any(timed(elt) for elt in node.elts)
+        if isinstance(node, (ast.GeneratorExp, ast.ListComp)):
+            return timed(node.elt) or any(timed(gen.iter) for gen in node.generators)
+        return False
+
+    for _ in range(4):  # names feed names: settle the sets
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                targets = [t for target in node.targets for t in (target.elts if isinstance(target, ast.Tuple) else [target])]
+                names = [t.id for t in targets if isinstance(t, ast.Name)]
+                if _wall_call(node.value):
+                    stamps.update(names)
+                elif timed(node.value):
+                    held.update(names)
+            elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "append":
+                if any(timed(arg) for arg in node.args) and isinstance(node.func.value, ast.Name):
+                    held.add(node.func.value.id)
+            elif isinstance(node, ast.FunctionDef):
+                if any(isinstance(n, ast.Return) and n.value is not None and timed(n.value) for n in ast.walk(node)):
+                    held.add(node.name)
+    return sorted(
+        node.lineno
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Compare)
+        and any(isinstance(op, _ORDER) for op in node.ops)
+        and any(timed(side) for side in (node.left, *node.comparators))
+    )
+
+
+def test_no_test_bounds_a_wall_clock_difference():
+    """No file list: time CPU work with `time.process_time()`, count the operations,
+    or hold the fake on an event and assert what had not happened yet."""
+    offenders = [f"{path.name}:{line}" for path, text in _sources() for line in _wall_differences(text)]
+    assert not offenders, f"a wall-clock bound measures the runner (L-general-70): {offenders}"
+
+
+def test_the_lint_sees_each_shape_of_a_wall_clock_bound():
+    seen = _wall_differences
+    assert seen("import time\nt = time.perf_counter()\nf()\nassert time.perf_counter() - t < 0.5\n") == [4]
+    assert seen("import time\nt = time.monotonic()\nelapsed = time.monotonic() - t\nassert elapsed < 2\n") == [4]
+    assert seen("import time\nts = []\nt = time.time()\nts.append(time.time() - t)\nassert min(ts) < 1\n") == [5]
+    assert seen("import time\ndef took():\n    t = time.perf_counter()\n    return time.perf_counter() - t\nassert took() < 1\n") == [5]
+    assert seen("import time\ndef timed():\n    t = time.monotonic()\n    return 1, time.monotonic() - t\nr, took = timed()\nassert took < 1\n") == [6]
+    assert seen("import time\nt = time.process_time()\nassert time.process_time() - t < 0.5\n") == []
+    assert seen("import time\ndeadline = time.monotonic() + 5\nwhile time.monotonic() < deadline:\n    pass\n") == []
+    assert seen("import time\nt = time.monotonic()\nx = time.monotonic() - t\nassert x is not None\n") == []

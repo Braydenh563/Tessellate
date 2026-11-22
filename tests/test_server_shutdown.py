@@ -41,6 +41,8 @@ import socket
 import threading
 import time
 
+import pytest
+
 from tessellate.__main__ import _stop_lingering_worker_threads
 
 
@@ -136,7 +138,24 @@ def _leftover_worker() -> threading.Thread:
         loop.close()
 
 
-def test_a_leftover_non_daemon_worker_thread_is_cleared_by_the_fix(app_state) -> None:
+@pytest.fixture()
+def joins_offered(monkeypatch):
+    """Every `Thread.join` timeout asked for while the fixture is live (L-general-70):
+    a shutdown's budget is the waits it allows itself, not a loaded runner's clock."""
+    import threading
+
+    offered: list = []
+    real = threading.Thread.join
+
+    def join(self, timeout=None):  # noqa: ANN001, ANN202
+        offered.append(timeout)
+        return real(self, timeout)
+
+    monkeypatch.setattr(threading.Thread, "join", join)
+    return offered
+
+
+def test_a_leftover_non_daemon_worker_thread_is_cleared_by_the_fix(app_state, joins_offered) -> None:
     """The fix, proven against a leftover worker: first any the real server
     left (the race, when it lands), then one built in exactly that state, so
     the proof never depends on scheduling luck. If this fails,
@@ -153,20 +172,23 @@ def test_a_leftover_non_daemon_worker_thread_is_cleared_by_the_fix(app_state) ->
     worker = _leftover_worker()
     assert worker.is_alive() and not worker.daemon, "the built leftover should match the race's state"
 
-    started = time.monotonic()
+    before = len(joins_offered)
     _stop_lingering_worker_threads(timeout=1.0)
-    elapsed = time.monotonic() - started
+    offered = joins_offered[before:]
 
-    assert elapsed < 1.1, f"took {elapsed:.2f}s, over the 1s budget plus slack"
+    # The waits it allowed itself, not the runner's clock (L-general-70).
+    # One deadline shared by every join: each wait is what is left of it, so none
+    # passes the budget and each is no longer than the one before.
+    assert offered and None not in offered and max(offered) <= 1.0, offered
+    assert offered == sorted(offered, reverse=True), offered
     assert not _anyio_worker_threads(), "a worker thread is still alive after being asked to stop"
 
 
-def test_stop_lingering_worker_threads_is_a_quiet_no_op_with_nothing_to_stop() -> None:
+def test_stop_lingering_worker_threads_is_a_quiet_no_op_with_nothing_to_stop(joins_offered) -> None:
     """Called on every server-mode exit, whether or not any sync route was
     ever actually hit: must never raise or hang when there is nothing to do."""
-    started = time.monotonic()
     _stop_lingering_worker_threads(timeout=1.0)
-    assert time.monotonic() - started < 0.5
+    assert joins_offered == []  # nothing to stop, nothing waited on (L-general-70)
 
 
 def test_only_the_named_anyio_class_is_touched() -> None:

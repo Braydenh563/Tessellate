@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import sqlite3
 import threading
-import time
 
 from tessellate.ai import entities, facts
 from tessellate.core import deps
@@ -40,6 +39,9 @@ class SlowOllama(FakeOllama):
     def __init__(self) -> None:
         super().__init__(running=True)
         self.thinking = threading.Event()
+        #: Held, not slept (L-general-70): the model thinks until the save has landed.
+        self.release = threading.Event()
+        self.thought = threading.Event()
         self.lock_free: list[bool] = []
 
     def think(self) -> None:
@@ -47,7 +49,8 @@ class SlowOllama(FakeOllama):
         # could catch that save's lock rather than the pass's (PR 216 CI, 3.13: [False, True]).
         self.lock_free.append(_write_lock_is_free())
         self.thinking.set()
-        time.sleep(SLOW)
+        self.release.wait(SLOW * 10)
+        self.thought.set()
 
     def chat(self, model, messages, mode=None):  # noqa: ANN001, ANN201
         self.think()
@@ -72,14 +75,15 @@ def _write_lock_is_free() -> bool:
         probe.close()
 
 
-def _save_while_thinking(client, slow: SlowOllama, worker: threading.Thread) -> tuple[int, float]:
+def _save_while_thinking(client, slow: SlowOllama, worker: threading.Thread) -> tuple[int, bool]:
+    """The save's status, and whether it landed while the model still thought."""
     worker.start()
     assert slow.thinking.wait(10), "the pass never asked the model"
-    started = time.monotonic()
     reply = client.post("/entries", json={"content": "Written while the model was thinking."})
-    elapsed = time.monotonic() - started
+    during = not slow.thought.is_set()
+    slow.release.set()
     worker.join(30)
-    return reply.status_code, elapsed
+    return reply.status_code, during
 
 
 def test_a_save_during_a_night_pass_is_not_blocked(client, app_state):
@@ -93,12 +97,12 @@ def test_a_save_during_a_night_pass_is_not_blocked(client, app_state):
             outcome.update(facts.run(session, budget=20_000, force=True, provider=slow, model="m"))
             session.commit()
 
-    status, elapsed = _save_while_thinking(client, slow, threading.Thread(target=night))
+    status, during = _save_while_thinking(client, slow, threading.Thread(target=night))
     assert status == 201
     assert slow.lock_free and all(slow.lock_free), f"a pass held the write lock while the model thought: {slow.lock_free}"
     # A save that queued behind the model would take the whole call and
     # more; a scheduling stall on a busy runner is the one other way past it.
-    assert elapsed < 2 * SLOW, f"the save waited {elapsed:.2f}s behind the model"
+    assert during, "the save waited behind the model"
     assert outcome.get("derived"), outcome
     assert outcome["run_id"]
 
@@ -114,12 +118,12 @@ def test_a_save_during_an_entity_pass_is_not_blocked(client, app_state):
         with deps.get_db().session() as session:
             processed.append(entities.extract_entities_pass(session, deps.get_model_manager(), slow, limit=5))
 
-    status, elapsed = _save_while_thinking(client, slow, threading.Thread(target=pass_))
+    status, during = _save_while_thinking(client, slow, threading.Thread(target=pass_))
     assert status == 201
     assert slow.lock_free and all(slow.lock_free), f"a pass held the write lock while the model thought: {slow.lock_free}"
     # A save that queued behind the model would take the whole call and
     # more; a scheduling stall on a busy runner is the one other way past it.
-    assert elapsed < 2 * SLOW, f"the save waited {elapsed:.2f}s behind the model"
+    assert during, "the save waited behind the model"
     assert processed and processed[0] >= 2
 
 

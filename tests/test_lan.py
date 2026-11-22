@@ -1521,12 +1521,13 @@ def test_silent_connections_do_not_hold_up_the_page(lan):
     try:
         time.sleep(0.2)
         context = ssl.create_default_context(cadata=lancert.authority_pem(data_dir).decode())
-        started = time.monotonic()
+        # The client's 5 s is the bound (L-general-70): a request queued behind a
+        # silent connection waits that connection's 10 s first-byte limit first.
+        assert lanserve.FIRST_BYTE_SECONDS > 5
         conn = http.client.HTTPSConnection("127.0.0.1", port, context=context, timeout=5)
         conn.request("GET", "/hello")
         assert conn.getresponse().status == 200
         conn.close()
-        assert time.monotonic() - started < 2
     finally:
         for s in silent:
             s.close()

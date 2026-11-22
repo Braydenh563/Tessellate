@@ -91,22 +91,28 @@ def test_unreadable_pages_fall_back_to_the_result_snippets(client, session, monk
 
 
 def test_pages_are_read_in_parallel_under_one_deadline(monkeypatch):
-    import time
 
     from tessellate.search import websearch
 
 
     monkeypatch.setattr(routes_chat, "WEB_PAGES_DEADLINE", 0.5)
 
+    import threading
+
+    release = threading.Event()
+    fetched = []
+
     def slow(url):
-        time.sleep(2)
+        # Held, not slept (L-general-70): no page arrives before the deadline.
+        release.wait(10)
+        fetched.append(url)
         return {"url": url, "text": "late"}
 
     monkeypatch.setattr(websearch, "fetch_readable_cached", slow)
     hits = [{"title": f"T{i}", "url": f"https://e.org/{i}", "snippet": f"snippet {i}"} for i in range(3)]
-    started = time.monotonic()
     pages = routes_chat._web_pages(websearch, hits)
-    assert time.monotonic() - started < 1.5
+    assert fetched == [], "the pages were waited for past the deadline"
+    release.set()
     assert [p["snippet"] for p in pages] == ["snippet 0", "snippet 1", "snippet 2"]
 
 
