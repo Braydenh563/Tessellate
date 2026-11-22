@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, sealed_aware, sealed_http
-from tessellate.core import activity, deps, jobs, recordings, sealed_files, transcript
+from tessellate.core import activity, deps, jobs, recording_trim, recordings, sealed_files, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
@@ -224,6 +224,57 @@ def finish_recording(
     row.updated_at = utcnow()
     session.commit()
     return recordings.as_dict(row)
+
+
+class RecordingTrim(BaseModel):
+    start_ms: int = Field(ge=0, le=24 * 3600 * 1000)
+    end_ms: int = Field(ge=1, le=24 * 3600 * 1000)
+
+
+@router.post("/recordings/{recording_id}/trim", status_code=201)
+def trim_recording(recording_id: int, body: RecordingTrim, session: Session = Depends(get_session)) -> dict:
+    """Keep part of a wav recording as a new recording, on the server (L685
+    D18): same container, the original untouched, its range written on the
+    new row's marks and peaks. Other containers answer 415 and are trimmed in
+    the tab, which has the decoder."""
+    row = _writable(session, recording_id)
+    if row.state != "saved" or row.mime != "audio/wav":
+        raise HTTPException(status_code=415, detail="Only a saved wav recording can be trimmed on the server.")
+    if body.end_ms <= body.start_ms:
+        raise HTTPException(status_code=400, detail="The end must come after the start.")
+    made = Recording(
+        size_bytes=0, title=f"{row.title or 'Recording'} (trimmed)"[:200], mime="audio/wav", filename=recordings.new_filename("audio/wav"),
+        entry_id=row.entry_id, source_id=row.id, derived="trim", state="recording",
+    )
+    path = recordings.path_of(made)
+    sealed = sealed_files.wanted(session, row.workspace_id)
+    try:
+        with sealed_files.readable(recordings.path_of(row)) as source:
+            channels, width, rate, frames = recording_trim.span(source)
+            first, last = recording_trim.frame_range(rate, frames, body.start_ms, body.end_ms)
+            if last <= first:
+                raise HTTPException(status_code=400, detail="That range holds no audio.")
+            for block in recording_trim.cut(source, first, last):
+                sealed_files.append(path, block, sealed=sealed)
+                made.size_bytes += len(block)
+    except recording_trim.NotTrimmable as exc:
+        path.unlink(missing_ok=True)
+        raise HTTPException(status_code=415, detail=str(exc)) from exc
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
+    kept_ms = (last - first) * 1000 // rate
+    made.duration_ms = kept_ms
+    made.peaks = recordings.clean_peaks(recording_trim.kept_peaks(row.peaks, row.duration_ms, body.start_ms, body.end_ms))
+    made.markers = recordings.clean_markers(
+        recording_trim.kept_markers(transcript.marks_of(row), body.start_ms, body.end_ms), kept_ms or None
+    )
+    made.state = "saved"
+    session.add(made)
+    session.flush()
+    log_action(session, "created", "recording", made.id, detail=f"trim of {row.id}")
+    session.commit()
+    return recordings.as_dict(made)
 
 
 @router.get("/recordings/{recording_id}")

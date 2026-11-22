@@ -2419,11 +2419,11 @@
         kept.setAttribute("role", "status");
         //: **Said before it is spent** (libr-1011 row 1219): a trim decodes the
         //: whole take in this tab (about 12 MB a minute), so a long one says so
-        //: here, and a short one stays quiet. The cut itself cannot be made on
-        //: the server until the app ships a container writer.
+        //: here, and a short one stays quiet. A wav is cut on the server (L685
+        //: D18, `POST /recordings/{id}/trim`), so it decodes nothing here.
         const minutes = Math.round(total / 60000);
         const heavy = [];
-        if (minutes >= RECORDING_TRIM_HEAVY_MINUTES) {
+        if (minutes >= RECORDING_TRIM_HEAVY_MINUTES && rec.mime !== "audio/wav") {
           const note = document.createElement("p");
           note.className = "muted recording-trim-weight";
           note.textContent = `Trimming opens the whole recording in this tab: about ${minutes * RECORDING_TRIM_MB_PER_MINUTE} MB of memory for ${nounCount(minutes, "minute")}.`;
@@ -2482,6 +2482,11 @@
   }
 
   async function trimRecording(rec, startMs, endMs) {
+    if (rec.mime === "audio/wav") {
+      const made = await apiJson(`/recordings/${rec.id}/trim`, { method: "POST", body: JSON.stringify({ start_ms: startMs, end_ms: endMs }) });
+      pushUndo("Trimmed a recording", () => apiJson(`/recordings/${made.id}`, { method: "DELETE" }).then(renderRecordings), () => apiJson(`/recordings/${made.id}/restore`, { method: "POST" }).then(renderRecordings));
+      return made;
+    }
     const buffer = await (await api(`/media/recordings/${rec.id}`)).arrayBuffer();
     const context = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 1, 44100);
     const decoded = await context.decodeAudioData(buffer);
