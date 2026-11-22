@@ -17,6 +17,21 @@
 //: down and rebuild it on every view switch.
 let docLivePluginCache = null;
 
+//: **Every inline mark the toolbar and the "/" menu can insert, and how Live
+//: draws it** (`tests/test_documents_live_marks.py` reads this table and
+//: `MD_ACTIONS`, so a new mark with no entry here fails). The key is the
+//: `MD_ACTIONS` key (`ink` is the colour menu's `++colour|words++`, `run` the
+//: `{{size=24|words}}` run). `tree` is the markdown tree, `scan` a regex pass
+//: in `docLivePlugin` that hides the syntax off the caret and styles the
+//: words, `widget` a replacement drawn by a widget. `<sup>`, `<sub>` and
+//: `<u>` are not markdown, so they were raw tags in Live until they got a scan.
+docLivePlugin.marks = Object.freeze({
+  bold: "tree", italic: "tree", strike: "tree", code: "tree",
+  highlight: "scan", ink: "scan", sup: "scan", sub: "scan", underline: "scan",
+  run: "widget", math: "widget", comment: "widget", wikilink: "scan",
+});
+
+
 //: The one place a source offset becomes a rendered thing. Everything here is
 //: computed from the lezer markdown tree (`syntaxTree`) over the visible
 //: ranges only, except the two constructs the tree does not know about:
@@ -462,6 +477,25 @@ function docLivePlugin(CM) {
       const wrap = docTableMenu(this.context);
       wrap.classList.add("cm-md-table-menu");
       return wrap;
+    }
+  }
+
+  //: **A run** (`{{size=24 ink=red|words}}`) drawn by the Read view's own
+  //: `mdRunNode`, so size and face (CSSOM, never an inline style) come out the
+  //: same. A widget because a decoration cannot carry a font size under the CSP.
+  class DocRunWidget extends WidgetType {
+    constructor(spec, words) {
+      super();
+      this.spec = spec;
+      this.words = words;
+    }
+    eq(other) {
+      return other.spec === this.spec && other.words === this.words;
+    }
+    toDOM() {
+      const [node, host] = mdRunNode(this.spec);
+      appendInlineRun(host, this.words, [], false, {});
+      return node;
     }
   }
 
@@ -1245,6 +1279,27 @@ function docLivePlugin(CM) {
         //: than read as part of the highlighted words.
         hide(from, from + 2 + (colour ? colour.length + 1 : 0));
         hide(to - 2, to);
+      });
+      //: **Ink, superscript, subscript and underline** (the colour menu and
+      //: the toolbar's "More"): the Read view draws these as `text-ink-*` and
+      //: the HTML tags, and Live left the raw syntax standing. Same rule as the
+      //: highlight above: words styled always, syntax hidden off the caret.
+      scan(/\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]{1,200})\+\+/g, (match, from, to) => {
+        ranges.push(Decoration.mark({ class: `cm-md-ink text-ink text-ink-${match[1]}` }).range(from, to));
+        if (rangeRevealed(from, to)) return;
+        hide(from, from + 3 + match[1].length);
+        hide(to - 2, to);
+      });
+      scan(/<(sup|sub|u)>([^<\n]{1,200})<\/\1>/g, (match, from, to) => {
+        ranges.push(Decoration.mark({ class: `cm-md-${match[1]}` }).range(from, to));
+        if (rangeRevealed(from, to)) return;
+        hide(from, from + match[1].length + 2);
+        hide(to - match[1].length - 3, to);
+      });
+      //: A run is drawn by the Read view's `mdRunNode`, which documents.js (this bundle) defines.
+      scan(/\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,500}?)\}\}/g, (match, from, to) => {
+        if (widgetRevealed(from, to)) return;
+        ranges.push(Decoration.replace({ widget: new DocRunWidget(match[1], match[2]) }).range(from, to));
       });
       //: The remark itself. Revealed as its own text when the caret is on its
       //: line, which is how every marker in this view is edited.

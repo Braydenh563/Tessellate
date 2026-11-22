@@ -586,6 +586,11 @@
         //: same tokens as 05-sidebars-themes.css so the two views match in both
         //: themes.
         ".cm-md-highlight": { backgroundColor: "var(--warn-soft)", borderRadius: "3px" },
+        //: Superscript, subscript and underline as the Read view's tags draw them. `lineHeight: 0` so a raised run does not grow its line.
+        ".cm-md-sup, .cm-md-sub": { fontSize: "0.75em", lineHeight: "0" },
+        ".cm-md-sup": { verticalAlign: "super" },
+        ".cm-md-sub": { verticalAlign: "sub" },
+        ".cm-md-u": { textDecoration: "underline" },
         ".cm-md-highlight-yellow": { backgroundColor: "var(--warn-soft)" },
         ".cm-md-highlight-green": { backgroundColor: "var(--ok-soft)" },
         ".cm-md-highlight-blue": { backgroundColor: "var(--accent-soft)" },

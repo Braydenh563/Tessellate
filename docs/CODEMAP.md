@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8584, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11596, test files 2978, tests 23330, plan headings 688, app scripts 29, boot scripts 38, script files 326.
+Counts: frontend functions 8584, frontend ids 2809, CSS sections 529, backend routes 755, backend modules 11596, test files 2979, tests 23333, plan headings 688, app scripts 29, boot scripts 38, script files 326.
 
 ## Frontend functions (8584)
 
@@ -3745,7 +3745,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docLivePlugin` | frontend/js/documents-cm.js:27 |
+| `docLivePlugin` | frontend/js/documents-cm.js:42 |
 
 ### frontend/js/documents-code.js (180)
 
@@ -29345,7 +29345,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23330)
+## Tests (23333)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30391,6 +30391,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_documents_api.py | 50 |
 | tests/test_documents_closeout_1112.py | 7 |
 | tests/test_documents_help.py | 4 |
+| tests/test_documents_live_marks.py | 3 |
 | tests/test_documents_outline.py | 7 |
 | tests/test_documents_replace_all.py | 12 |
 | tests/test_documents_row_patch.py | 4 |
