@@ -38,10 +38,12 @@ iframe{border:0;width:100%;height:100%;display:block;background:#fff}</style>
   function pad(d) { var n = Math.max(0, Math.min(100000, Number(d.lineOffset) || 0)); return new Array(n + 1).join("\n"); }
   //: True when the code fails to parse as a script only because of `await`, and parses as an
   //: async function body. The page may compile (its policy has 'unsafe-eval'); nothing runs here.
+  //: A plain and an async function body differ only in `await`, so the two parses decide it; the
+  //: error's wording, which differs between engines, is not read (review 6008801452).
   function topLevelAwait(code) {
     if (!/\bawait\b/.test(code)) return false;
     try { new Function(code); return false; } catch (e) {
-      if (!(e instanceof SyntaxError) || !/await/.test(e.message)) return false;
+      if (!(e instanceof SyntaxError)) return false;
     }
     try { new (Object.getPrototypeOf(async function () {}).constructor)(code); return true; } catch (e) { return false; }
   }

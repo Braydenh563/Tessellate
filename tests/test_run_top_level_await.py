@@ -35,7 +35,9 @@ function runOnce(code, opts) {
       Worker: function (src) { made = src; this.postMessage = () => {}; this.terminate = () => {}; },
     };
     page.window = page;
+    //: An engine whose SyntaxError names no keyword (review 6008801452): the page's check must not read the message.
     vm.createContext(page);
+    if (opts && opts.vague) vm.runInContext("var F0 = Function; Function = function () { try { return F0.apply(null, arguments); } catch (e) { throw new SyntaxError('Unexpected identifier'); } };", page);
     vm.runInContext(PAGE, page);
     page.onmessage({ source: parent, data: Object.assign({ mmRun: 1, type: "run", kind: "js", source: code }, opts || {}) });
     const logs = [];
@@ -101,3 +103,11 @@ def test_a_plain_script_keeps_its_global_names_and_await_as_a_name():
     assert out["plain"]["hasX"], "a plain script's var stays global for the console"
     assert [m["text"] for m in out["plain"]["logs"] if m["t"] == "log"] == ["x 1"]
     assert [m["text"] for m in out["awaitname"]["logs"] if m["t"] == "log"] == ["3"]
+
+
+def test_top_level_await_is_found_whatever_the_engine_calls_the_syntax_error():
+    """Review 6008801452: the check compares a script parse with an async-body parse; the error's text is not read."""
+    out = _run({"vague": ["await null;\nconsole.log('here');\n", {"vague": True}], "plainvague": ["var x = 1;\nconsole.log('x', x);\n", {"vague": True}]})
+    assert [m["text"] for m in out["vague"]["logs"] if m["t"] == "log"] == ["here"], out["vague"]
+    assert out["plainvague"]["hasX"]
+    assert "e.message" not in _PAGE[_PAGE.index("function topLevelAwait") : _PAGE.index("function runJs")]
