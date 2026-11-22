@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Boot CSS: the companion's 15 `@property` registrations and the Atlas one-off plays (1,835 B served, 390 gzipped) moved from 08-consistency.css to the top of characters-lazy.css, computed styles unchanged over 2,352 state combinations; boot CSS 154,487 to 154,101 gzipped and the sweep total 142,612 to 142,222 (L685).
 - Recordings: a wav recording is trimmed on the server (`POST /recordings/{id}/trim`, same container, original kept, kept peaks and shifted marks), so the tab decodes nothing for it; webm, ogg and mp4 still trim in the tab (L685 D18).
 ## [Unreleased]
 - Tour: a step waits until its control can be seen through every parent, so the graph section no longer rings the zoom buttons while the graph card is still faded in (about 800 ms); the tour sweeps run again (82 steps, 0 faults). A phone's search notice hides under Settings by a class instead of a page-wide `body:has` rule.
