@@ -25,5 +25,7 @@ def test_a_canvas_frame_marks_the_companion_for_the_gesture():
 
 def test_the_carried_rule_holds_the_face_still_for_a_canvas_gesture_too():
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
-    rule = re.search(r"#nm-buddy:is\(\.nm-buddy-dragging, \.nm-buddy-canvas-moving\) \.name-mark \* \{\s*animation-play-state: paused;", css)
+    rule = re.search(r"#nm-buddy#nm-buddy:is\(\.nm-buddy-dragging, \.nm-buddy-canvas-moving\) \.name-mark \* \{\s*animation-play-state: paused;", css)
+    #: Two ids: the motion rules (`:is(... #nm-buddy .nm-live .name-mark) .nm-body`) outrank it; measured
+    #: in the page, `animationPlayState` read "running" under the rule without it.
     assert rule, "the face's pause rule does not cover a canvas gesture"

@@ -825,6 +825,7 @@ vendors d3 and p5 locally rather than take a CDN.
     gracefully on a model that doesn't support the setting instead of
     sending a parameter Ollama silently ignores or errors on, which is a
     real gap regardless of whether task-based auto-routing ever happens.
+- **Map pan with the companion on: the first frame still spikes** (from L-mindmap-24, after two measured attempts). mapperf SIZES=500 on a long-lived notebook: worst pan 466 to 523ms before; 52 to 77ms with the face held still for the gesture (946e8654c and the two-id rule); 32 to 36ms with the companion off on the same notebook, as on a fresh one, so the notebook's size is not the cause. Traced: the companion's animations no longer restyle; the remaining spike is the first pan step (99ms of 31, the rest 11 to 28ms). **Next:** trace the first step's work with the companion on (`nameMarkBuddyKeepUp`'s follow loop starting, the class write) against companion off.
 - **Dynamically switch models by task complexity.** **Next:** the manual per-mode assignment this item says to build first exists (`openFeatureModelSheet`, `frontend/js/ai-tools.js:698`, `ai/provider.py` per-purpose model); the automatic half is a design call for the owner (a cheap difficulty estimate is wrong sometimes) and stays open on purpose. A related but separate
   ask: "optional," and worth keeping optional: a short factual question
   routed to a small fast model and an agent job routed to a larger one,
