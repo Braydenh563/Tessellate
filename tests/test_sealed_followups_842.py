@@ -8,7 +8,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.core import deps, sealed_files, spacelock, vault
-from tessellate.core.database import Entry, impersonate_workspace
+from tessellate.core.database import Document, Entry, impersonate_workspace
 from tests.test_captions import CHUNK
 from tests.test_sealed_writes_670 import (  # noqa: F401  (fixtures)
     PASSWORD,
@@ -25,6 +25,17 @@ def _entry(entry_id: int) -> Entry:
     try:
         with impersonate_workspace(session, ""):
             row = session.get(Entry, entry_id)
+            session.expunge(row)
+            return row
+    finally:
+        session.close()
+
+
+def _document(document_id: int) -> Document:
+    session = deps.get_db().session()
+    try:
+        with impersonate_workspace(session, ""):
+            row = session.get(Document, document_id)
             session.expunge(row)
             return row
     finally:
@@ -53,6 +64,29 @@ def test_undo_of_that_delete_makes_the_note_sealed_by_its_space_again(signed_in)
     back = client.post("/spaces/restore", json=gone.json()["restore"])
     assert back.status_code == 200, back.text
     assert _entry(note).sealed_by_space is True
+
+
+def test_a_document_of_a_deleted_private_space_is_no_longer_sealed_by_a_space(signed_in):
+    """The same for a document (L-world-class-892): one still marked sealed by
+    a space that is gone would be unsealed by a later move in and out."""
+    client = signed_in
+    doc = client.post("/documents", json={"title": "Plan", "content": "boathouse"}, headers=client.space).json()["id"]
+    assert _document(doc).sealed_by_space is True
+    gone = client.delete(f"/spaces/{client.space_id}?move_to=default")
+    assert gone.status_code == 200, gone.text
+    moved = _document(doc)
+    assert moved.workspace_id == "default"
+    assert moved.sealed_by_space is False
+    assert moved.is_private  # still sealed, now its own
+
+
+def test_undo_of_that_delete_makes_the_document_sealed_by_its_space_again(signed_in):
+    client = signed_in
+    doc = client.post("/documents", json={"title": "Plan", "content": "boathouse"}, headers=client.space).json()["id"]
+    gone = client.delete(f"/spaces/{client.space_id}?move_to=default")
+    back = client.post("/spaces/restore", json=gone.json()["restore"])
+    assert back.status_code == 200, back.text
+    assert _document(doc).sealed_by_space is True
 
 
 # --- 843 ------------------------------------------------------------------------------

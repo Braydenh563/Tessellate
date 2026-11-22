@@ -364,27 +364,31 @@ def unseal_space_files(session: Session, space_id: str) -> int:
     return _seal_files(_owned_rows(session, space_id), False)
 
 
-def forget_sealed_by_space(session: Session, space_id: str) -> list[int]:
-    """A private space deleted into an ordinary one: its notes stay private
-    notes of their own, no longer sealed by a space that is gone, so a later
-    move into another private space and out cannot unseal them
-    (L-world-class-842). The ids, for Undo to mark again."""
-    entries, _documents = _members(session, space_id)
+def forget_sealed_by_space(session: Session, space_id: str) -> tuple[list[int], list[int]]:
+    """A private space deleted into an ordinary one: its notes and documents
+    stay private of their own, no longer sealed by a space that is gone, so a
+    later move into another private space and out cannot unseal them
+    (L-world-class-842, 892). The note and document ids, for Undo to mark again."""
+    entries, documents = _members(session, space_id)
     ids = [entry.id for entry in entries if entry.sealed_by_space]
-    for entry in entries:
-        entry.sealed_by_space = False
+    doc_ids = [document.id for document in documents if document.sealed_by_space]
+    for row in (*entries, *documents):
+        row.sealed_by_space = False
     session.flush()
-    return ids
+    return ids, doc_ids
 
 
-def mark_sealed_by_space(session: Session, space_id: str, ids: list[int]) -> None:
-    """Undo of that delete: the notes the space had sealed are its again."""
-    if not ids:
+def mark_sealed_by_space(session: Session, space_id: str, ids: list[int], doc_ids: list[int] | None = None) -> None:
+    """Undo of that delete: the notes and documents the space had sealed are its again."""
+    if not ids and not doc_ids:
         return
-    entries, _documents = _members(session, space_id)
+    entries, documents = _members(session, space_id)
     for entry in entries:
         if entry.id in ids and entry.is_private:
             entry.sealed_by_space = True
+    for document in documents:
+        if document.id in (doc_ids or []) and document.is_private:
+            document.sealed_by_space = True
 
 
 def keep_members_private(session: Session, space_id: str) -> None:

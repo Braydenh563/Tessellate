@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8568, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11516, test files 2955, tests 23219, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8568, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11516, test files 2955, tests 23221, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8568)
 
@@ -14109,11 +14109,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/source-status` | GET | `source_update_status` | src/tessellate/api/routes_update.py:724 |
 | `/spaces` | GET | `get_spaces` | src/tessellate/api/routes_spaces.py:75 |
 | `/spaces` | POST | `create_space` | src/tessellate/api/routes_spaces.py:87 |
-| `/spaces/restore` | POST | `restore_space` | src/tessellate/api/routes_spaces.py:158 |
-| `/spaces/{space_id}` | DELETE | `delete_space` | src/tessellate/api/routes_spaces.py:311 |
+| `/spaces/restore` | POST | `restore_space` | src/tessellate/api/routes_spaces.py:160 |
+| `/spaces/{space_id}` | DELETE | `delete_space` | src/tessellate/api/routes_spaces.py:314 |
 | `/spaces/{space_id}` | PUT | `update_space` | src/tessellate/api/routes_spaces.py:103 |
 | `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:80 |
-| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:342 |
+| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:345 |
 | `/spaces/{space_id}/private` | PUT | `set_space_private` | src/tessellate/api/routes_private_spaces.py:144 |
 | `/speak` | POST | `speak` | src/tessellate/api/routes_voice.py:56 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:793 |
@@ -23776,26 +23776,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `MoveNotesBody` | src/tessellate/api/routes_spaces.py:335 |
-| `SpaceDeleted` | src/tessellate/api/routes_spaces.py:212 |
+| `MoveNotesBody` | src/tessellate/api/routes_spaces.py:338 |
+| `SpaceDeleted` | src/tessellate/api/routes_spaces.py:214 |
 | `SpaceRestore` | src/tessellate/api/routes_spaces.py:140 |
-| `_delete_space_moving` | src/tessellate/api/routes_spaces.py:218 |
+| `_delete_space_moving` | src/tessellate/api/routes_spaces.py:220 |
 | `_generate_space_id` | src/tessellate/api/routes_spaces.py:28 |
-| `_move_back` | src/tessellate/api/routes_spaces.py:191 |
+| `_move_back` | src/tessellate/api/routes_spaces.py:193 |
 | `_move_space_contents` | src/tessellate/api/routes_spaces.py:129 |
-| `_purge_collect` | src/tessellate/api/routes_spaces.py:245 |
-| `_purge_forget_index` | src/tessellate/api/routes_spaces.py:256 |
-| `_purge_space` | src/tessellate/api/routes_spaces.py:274 |
+| `_purge_collect` | src/tessellate/api/routes_spaces.py:248 |
+| `_purge_forget_index` | src/tessellate/api/routes_spaces.py:259 |
+| `_purge_space` | src/tessellate/api/routes_spaces.py:277 |
 | `_refuse_duplicate_name` | src/tessellate/api/routes_spaces.py:66 |
-| `_refuse_locked_private` | src/tessellate/api/routes_spaces.py:151 |
-| `_seal_restored` | src/tessellate/api/routes_spaces.py:202 |
+| `_refuse_locked_private` | src/tessellate/api/routes_spaces.py:153 |
+| `_seal_restored` | src/tessellate/api/routes_spaces.py:204 |
 | `_validate_icon` | src/tessellate/api/routes_spaces.py:44 |
 | `_validate_name` | src/tessellate/api/routes_spaces.py:53 |
 | `create_space` | src/tessellate/api/routes_spaces.py:88 |
-| `delete_space` | src/tessellate/api/routes_spaces.py:312 |
+| `delete_space` | src/tessellate/api/routes_spaces.py:315 |
 | `get_spaces` | src/tessellate/api/routes_spaces.py:76 |
-| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:343 |
-| `restore_space` | src/tessellate/api/routes_spaces.py:159 |
+| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:346 |
+| `restore_space` | src/tessellate/api/routes_spaces.py:161 |
 | `space_counts` | src/tessellate/api/routes_spaces.py:81 |
 | `update_space` | src/tessellate/api/routes_spaces.py:104 |
 
@@ -27770,21 +27770,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_owned_rows` | src/tessellate/entry/private_space.py:279 |
 | `_seal_board_log` | src/tessellate/entry/private_space.py:138 |
 | `_seal_files` | src/tessellate/entry/private_space.py:259 |
-| `after_leaving` | src/tessellate/entry/private_space.py:414 |
+| `after_leaving` | src/tessellate/entry/private_space.py:418 |
 | `audit_title` | src/tessellate/entry/private_space.py:66 |
 | `chat_notes` | src/tessellate/entry/private_space.py:296 |
 | `file_of` | src/tessellate/entry/private_space.py:242 |
 | `forget_sealed_by_space` | src/tessellate/entry/private_space.py:367 |
 | `is_private_space` | src/tessellate/entry/private_space.py:62 |
-| `keep_members_private` | src/tessellate/entry/private_space.py:390 |
-| `leave_private_space` | src/tessellate/entry/private_space.py:423 |
-| `leaving_ids` | src/tessellate/entry/private_space.py:406 |
-| `mark_sealed_by_space` | src/tessellate/entry/private_space.py:380 |
+| `keep_members_private` | src/tessellate/entry/private_space.py:394 |
+| `leave_private_space` | src/tessellate/entry/private_space.py:427 |
+| `leaving_ids` | src/tessellate/entry/private_space.py:410 |
+| `mark_sealed_by_space` | src/tessellate/entry/private_space.py:381 |
 | `member_count` | src/tessellate/entry/private_space.py:327 |
 | `private_space_ids` | src/tessellate/entry/private_space.py:58 |
 | `seal_document` | src/tessellate/entry/private_space.py:190 |
 | `seal_entry` | src/tessellate/entry/private_space.py:118 |
-| `seal_if_private_space` | src/tessellate/entry/private_space.py:398 |
+| `seal_if_private_space` | src/tessellate/entry/private_space.py:402 |
 | `seal_new` | src/tessellate/entry/private_space.py:110 |
 | `seal_space_members` | src/tessellate/entry/private_space.py:332 |
 | `starts_private` | src/tessellate/entry/private_space.py:97 |
@@ -29177,7 +29177,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23219)
+## Tests (23221)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31505,7 +31505,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_listener_cost.py | 7 |
 | tests/test_sealed_background_381.py | 24 |
 | tests/test_sealed_files_format.py | 18 |
-| tests/test_sealed_followups_842.py | 6 |
+| tests/test_sealed_followups_842.py | 8 |
 | tests/test_sealed_ocr_671.py | 7 |
 | tests/test_sealed_readers.py | 3 |
 | tests/test_sealed_title_cache_1111.py | 2 |
@@ -32556,14 +32556,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Lag rows measured and not removable, 2026-11-21 | docs/roadmap/BACKLOG.md:4494 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4370 |
-| Needs hardware | docs/roadmap/LEDGER.md:548 |
+| Needs hardware | docs/roadmap/LEDGER.md:547 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:541 |
+| Owner calls | docs/roadmap/LEDGER.md:540 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4243 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -32744,7 +32744,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3162 |
-| Plan session briefs | docs/roadmap/LEDGER.md:670 |
+| Plan session briefs | docs/roadmap/LEDGER.md:669 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2627 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -32798,25 +32798,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:686 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:770 |
+| chat | docs/roadmap/LEDGER.md:685 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:769 |
 | documents | docs/roadmap/LEDGER.md:325 |
-| documents | docs/roadmap/LEDGER.md:710 |
-| general | docs/roadmap/LEDGER.md:513 |
+| documents | docs/roadmap/LEDGER.md:709 |
+| general | docs/roadmap/LEDGER.md:512 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:674 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:782 |
+| graph | docs/roadmap/LEDGER.md:673 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:781 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4379 |
 | mindmap | docs/roadmap/LEDGER.md:341 |
-| mindmap | docs/roadmap/LEDGER.md:722 |
+| mindmap | docs/roadmap/LEDGER.md:721 |
 | timeline | docs/roadmap/LEDGER.md:459 |
-| timeline | docs/roadmap/LEDGER.md:746 |
+| timeline | docs/roadmap/LEDGER.md:745 |
 | ui-modernisation | docs/roadmap/LEDGER.md:343 |
-| ui-modernisation | docs/roadmap/LEDGER.md:734 |
+| ui-modernisation | docs/roadmap/LEDGER.md:733 |
 | whiteboard | docs/roadmap/LEDGER.md:280 |
-| whiteboard | docs/roadmap/LEDGER.md:698 |
+| whiteboard | docs/roadmap/LEDGER.md:697 |
 | world-class | docs/roadmap/LEDGER.md:461 |
-| world-class | docs/roadmap/LEDGER.md:758 |
+| world-class | docs/roadmap/LEDGER.md:757 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2795 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2846 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2953 |
