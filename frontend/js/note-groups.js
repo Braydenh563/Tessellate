@@ -32,7 +32,8 @@
 
   //: Every group; a press opens that group's own sheet.
   async function listGroupsSheet() {
-    const groups = await apiJson("/groups").catch(() => []);
+    const groups = await apiJson("/groups").catch(() => null);
+    if (!groups) return;
     openSheet({
       label: "Groups",
       sub: groups.length ? "Notes you gathered by hand. No sorting moves a note out of one." : "Gather notes by hand: no sorting moves them. Add a note from its category menu.",
@@ -92,7 +93,8 @@
 
   //: The groups a note is in: a press toggles it, and the sheet stays open.
   async function chooseNoteGroups(entry) {
-    const groups = await apiJson("/groups").catch(() => []);
+    const groups = await apiJson("/groups").catch(() => null);
+    if (!groups) return;
     const here = new Set(entry.groups || []);
     openSheet({
       label: "Add to a group",

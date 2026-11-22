@@ -161,7 +161,9 @@ def unlock(path: Path, password: str) -> bool:
     try:
         with _pdfium_lock:
             pdfium.PdfDocument(str(path), password=password).close()
-    except Exception:  # noqa: BLE001  # a wrong password, or a file that will not open at all
+    except Exception as exc:  # noqa: BLE001  # a wrong password, or a file that will not open at all
+        # The type only: the message could echo the file's path, never the password.
+        logger.debug("unlock: the PDF did not open with that password (%s); not kept", type(exc).__name__)
         return False
     if len(_passwords) >= MAX_PASSWORDS:
         _passwords.pop(next(iter(_passwords)))

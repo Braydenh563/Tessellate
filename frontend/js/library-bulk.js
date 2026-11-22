@@ -131,7 +131,9 @@
   }
 
   async function libraryMetaCategory(write) {
-    const rows = await apiJson("/categories").catch(() => []);
+    //: A failed read says so (apiJson toasts) and opens nothing, rather than a sheet that offers no categories.
+    const rows = await apiJson("/categories").catch(() => null);
+    if (!rows) return;
     const names = rows.map((row) => row.name).sort((a, b) => a.localeCompare(b));
     openSheet({
       label: "Move to category",

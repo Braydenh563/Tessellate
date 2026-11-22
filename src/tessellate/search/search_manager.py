@@ -321,9 +321,10 @@ def _stemmed_forms(term: str) -> list[str]:
 def _likeness(typed: str, whole: bool, word: str) -> float:
     """How alike a typed form and a vocabulary word are. One slip (a letter wrong, missing, extra or two swapped)
     is a typo however low the ratio says, so it outranks a word that is merely alike ("libary" and "librari",
-    VC8); the ratio ranks among those."""
+    VC8); the ratio ranks among those. Not for a four-letter word: it is one slip from dozens, and an acronym
+    ("PaaS", a mind map's word the index never holds) became "pass"."""
     ratio = difflib.SequenceMatcher(None, typed, word).ratio()
-    return ratio + 1.0 if whole and len(word) >= CORRECT_MIN_LEN and one_edit_apart(typed, word) else ratio
+    return ratio + 1.0 if whole and len(word) > CORRECT_MIN_LEN and one_edit_apart(typed, word) else ratio
 
 
 def _near_words(term: str, vocabulary: list[str]) -> list[str]:

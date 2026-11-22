@@ -41,4 +41,5 @@ def test_page_find_yields_to_an_editor_that_answered():
 
 def test_the_panel_wears_the_document_restyle_in_a_note():
     for sel in (".cm-panels {", ".cm-search {", ".cm-search .cm-textfield {", ".cm-search .cm-button {"):
-        assert f".note-surface {sel[:-2]},\n.doc-editor {sel}" in LAZY_CSS, sel
+        # The one rule reaches both editors through :is() (the pair of selectors was folded, same rule).
+        assert f":is(.doc-editor, .note-surface) {sel}" in LAZY_CSS, sel

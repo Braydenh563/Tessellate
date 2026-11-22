@@ -174,7 +174,7 @@ HELP_TOPICS: list[dict] = [
         "keywords": ("reminder", "due date", "snooze", "recur", "recurring", "early alert"),
         "body": (
             "The Reminders tab groups items into Overdue / Today / Upcoming / "
-            "Done. To add or set a reminder, at the top of the tab, type it in plain words on the "
+            "Done. To add or set a reminder, at the top of Reminders, type it in plain words on the "
             'Magic add line and press the sparkle (hedges such as "probably '
             'around 7pm" are read as the time, and a place like "when I get '
             'home" is left out of the title), or fill in Remind me to, the '

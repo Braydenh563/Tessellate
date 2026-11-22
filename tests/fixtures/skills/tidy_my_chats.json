@@ -1,0 +1,30 @@
+{
+ "skill": "Tidy my chats",
+ "small_class": false,
+ "cases": [
+  {
+   "id": "long-chat-first",
+   "notebook": [
+    {"content": "Trip plan for Lisbon, flights and hotel", "category": "Travel", "tags": []},
+    {"content": "Tax questions for the spring return", "category": "Admin", "tags": []}
+   ],
+   "expect": {"unchanged": true, "answer_mentions": ["pinned"]}
+  },
+  {
+   "id": "group-by-month",
+   "notebook": [
+    {"content": "Dinner ideas for the week", "category": "Cooking", "tags": []},
+    {"content": "Bike repair checklist", "category": "Home", "tags": []}
+   ],
+   "expect": {"unchanged": true, "answer_mentions": ["month"]}
+  },
+  {
+   "id": "nothing-stands-out",
+   "notebook": [
+    {"content": "Quick unit conversion question", "category": "Misc", "tags": []},
+    {"content": "Weather for Saturday", "category": "Misc", "tags": []}
+   ],
+   "expect": {"unchanged": true, "answer_mentions": ["grouped"]}
+  }
+ ]
+}

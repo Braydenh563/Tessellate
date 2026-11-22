@@ -162,6 +162,10 @@ class IndexesMixin:
         # (`entry/manager.py`'s `category_entry_ids`/`move_category_entries`)
         # and by every `/library` row that resolves a note's category name.
         ("ix_entries_category_id", "entries (category_id)"),
+        # A document's and an uploaded file's category (L-world-class-393) are
+        # foreign keys too: deleting a category looks both tables up by it.
+        ("ix_documents_category_id", "documents (category_id)"),
+        ("ix_media_uploads_category_id", "media_uploads (category_id)"),
         # `Attachment.entry_id`, same gap: an unindexed ForeignKey, searched
         # both singly (a note opening its own attachments) and via `IN (...)`
         # over a page of notes (`/library`'s thumbnail lookup,

@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11488, test files 2943, tests 23157, plan headings 688, app scripts 29, boot scripts 38, script files 322.
+Counts: frontend functions 8567, frontend ids 2805, CSS sections 528, backend routes 743, backend modules 11488, test files 2943, tests 23158, plan headings 688, app scripts 29, boot scripts 38, script files 322.
 
 ## Frontend functions (8567)
 
@@ -1604,123 +1604,123 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_segActive` | frontend/js/settings.js:2708 |
-| `accentInk` | frontend/js/settings.js:2321 |
-| `accentTone` | frontend/js/settings.js:2325 |
-| `activeAccent` | frontend/js/settings.js:1384 |
-| `activeLogContainer` | frontend/js/settings.js:906 |
-| `activePalette` | frontend/js/settings.js:3087 |
-| `activeThemePreset` | frontend/js/settings.js:1736 |
-| `appearancePref` | frontend/js/settings.js:1753 |
-| `applyAccent` | frontend/js/settings.js:1420 |
-| `applyAppearance` | frontend/js/settings.js:2553 |
-| `applyCustomAccent` | frontend/js/settings.js:2349 |
-| `applyCustomCss` | frontend/js/settings.js:2393 |
-| `applyCustomCssLegacy` | frontend/js/settings.js:2416 |
-| `applyEffectiveAccent` | frontend/js/settings.js:1456 |
-| `applyPageBackground` | frontend/js/settings.js:2366 |
-| `applyResolvedMode` | frontend/js/settings.js:2654 |
-| `applySavedTheme` | frontend/js/settings.js:2171 |
-| `applyThemeChoice` | frontend/js/settings.js:2676 |
-| `applyThemePreset` | frontend/js/settings.js:1773 |
-| `applyZoomVar` | frontend/js/settings.js:2549 |
-| `bgArtOn` | frontend/js/settings.js:3184 |
-| `bgArtRefreshSeed` | frontend/js/settings.js:3178 |
-| `bgArtStyle` | frontend/js/settings.js:3296 |
-| `bgLuma` | frontend/js/settings.js:2307 |
-| `browserLogRecords` | frontend/js/settings.js:784 |
-| `bumpLogErrorBadge` | frontend/js/settings.js:1058 |
-| `clearLogs` | frontend/js/settings.js:1227 |
-| `closeLogs` | frontend/js/settings.js:1196 |
-| `closeSettingsModal` | frontend/js/settings.js:700 |
-| `collapseLongSettingHints` | frontend/js/settings.js:3618 |
-| `currentAccentHex` | frontend/js/settings.js:1401 |
-| `currentLookValues` | frontend/js/settings.js:1924 |
-| `currentPageBackground` | frontend/js/settings.js:2377 |
-| `deleteSavedTheme` | frontend/js/settings.js:2188 |
-| `downloadSupportBundle` | frontend/js/settings.js:1250 |
-| `effectiveDensity` | frontend/js/settings.js:2468 |
-| `effectiveTheme` | frontend/js/settings.js:2616 |
+| `_segActive` | frontend/js/settings.js:2710 |
+| `accentInk` | frontend/js/settings.js:2323 |
+| `accentTone` | frontend/js/settings.js:2327 |
+| `activeAccent` | frontend/js/settings.js:1386 |
+| `activeLogContainer` | frontend/js/settings.js:908 |
+| `activePalette` | frontend/js/settings.js:3089 |
+| `activeThemePreset` | frontend/js/settings.js:1738 |
+| `appearancePref` | frontend/js/settings.js:1755 |
+| `applyAccent` | frontend/js/settings.js:1422 |
+| `applyAppearance` | frontend/js/settings.js:2555 |
+| `applyCustomAccent` | frontend/js/settings.js:2351 |
+| `applyCustomCss` | frontend/js/settings.js:2395 |
+| `applyCustomCssLegacy` | frontend/js/settings.js:2418 |
+| `applyEffectiveAccent` | frontend/js/settings.js:1458 |
+| `applyPageBackground` | frontend/js/settings.js:2368 |
+| `applyResolvedMode` | frontend/js/settings.js:2656 |
+| `applySavedTheme` | frontend/js/settings.js:2173 |
+| `applyThemeChoice` | frontend/js/settings.js:2678 |
+| `applyThemePreset` | frontend/js/settings.js:1775 |
+| `applyZoomVar` | frontend/js/settings.js:2551 |
+| `bgArtOn` | frontend/js/settings.js:3186 |
+| `bgArtRefreshSeed` | frontend/js/settings.js:3180 |
+| `bgArtStyle` | frontend/js/settings.js:3298 |
+| `bgLuma` | frontend/js/settings.js:2309 |
+| `browserLogRecords` | frontend/js/settings.js:786 |
+| `bumpLogErrorBadge` | frontend/js/settings.js:1060 |
+| `clearLogs` | frontend/js/settings.js:1229 |
+| `closeLogs` | frontend/js/settings.js:1198 |
+| `closeSettingsModal` | frontend/js/settings.js:701 |
+| `collapseLongSettingHints` | frontend/js/settings.js:3620 |
+| `currentAccentHex` | frontend/js/settings.js:1403 |
+| `currentLookValues` | frontend/js/settings.js:1926 |
+| `currentPageBackground` | frontend/js/settings.js:2379 |
+| `deleteSavedTheme` | frontend/js/settings.js:2190 |
+| `downloadSupportBundle` | frontend/js/settings.js:1252 |
+| `effectiveDensity` | frontend/js/settings.js:2470 |
+| `effectiveTheme` | frontend/js/settings.js:2618 |
 | `ensureSettingsPaneTitle` | frontend/js/settings.js:74 |
-| `filterSettings` | frontend/js/settings.js:629 |
-| `focusSettingsHeading` | frontend/js/settings.js:3426 |
-| `focusSettingsPane` | frontend/js/settings.js:3418 |
-| `harmonyScheme` | frontend/js/settings.js:1875 |
-| `hexRatio` | frontend/js/settings.js:2312 |
-| `hexToHsl` | frontend/js/settings.js:1827 |
-| `hexToRgbParts` | frontend/js/settings.js:2289 |
-| `hslToHex` | frontend/js/settings.js:1848 |
-| `jobDurationWords` | frontend/js/settings.js:3885 |
-| `jobRunLine` | frontend/js/settings.js:3896 |
-| `lessTransparencyWanted` | frontend/js/settings.js:2440 |
-| `loadChangelog` | frontend/js/settings.js:490 |
-| `loadSamplingSettings` | frontend/js/settings.js:3584 |
-| `logLevelRank` | frontend/js/settings.js:758 |
-| `logMatchesFilters` | frontend/js/settings.js:806 |
-| `logRecordText` | frontend/js/settings.js:899 |
-| `logRow` | frontend/js/settings.js:828 |
-| `logTerminalParts` | frontend/js/settings.js:992 |
-| `logTerminalRow` | frontend/js/settings.js:999 |
-| `logTerminalTraceRow` | frontend/js/settings.js:1022 |
-| `manualOverrides` | frontend/js/settings.js:1810 |
-| `measureLabelOptics` | frontend/js/settings.js:2505 |
-| `noticePerfMode` | frontend/js/settings.js:3545 |
+| `filterSettings` | frontend/js/settings.js:630 |
+| `focusSettingsHeading` | frontend/js/settings.js:3428 |
+| `focusSettingsPane` | frontend/js/settings.js:3420 |
+| `harmonyScheme` | frontend/js/settings.js:1877 |
+| `hexRatio` | frontend/js/settings.js:2314 |
+| `hexToHsl` | frontend/js/settings.js:1829 |
+| `hexToRgbParts` | frontend/js/settings.js:2291 |
+| `hslToHex` | frontend/js/settings.js:1850 |
+| `jobDurationWords` | frontend/js/settings.js:3887 |
+| `jobRunLine` | frontend/js/settings.js:3898 |
+| `lessTransparencyWanted` | frontend/js/settings.js:2442 |
+| `loadChangelog` | frontend/js/settings.js:491 |
+| `loadSamplingSettings` | frontend/js/settings.js:3586 |
+| `logLevelRank` | frontend/js/settings.js:760 |
+| `logMatchesFilters` | frontend/js/settings.js:808 |
+| `logRecordText` | frontend/js/settings.js:901 |
+| `logRow` | frontend/js/settings.js:830 |
+| `logTerminalParts` | frontend/js/settings.js:994 |
+| `logTerminalRow` | frontend/js/settings.js:1001 |
+| `logTerminalTraceRow` | frontend/js/settings.js:1024 |
+| `manualOverrides` | frontend/js/settings.js:1812 |
+| `measureLabelOptics` | frontend/js/settings.js:2507 |
+| `noticePerfMode` | frontend/js/settings.js:3547 |
 | `openSettingsModal` | frontend/js/settings.js:330 |
-| `paintIntegrity` | frontend/js/settings.js:539 |
-| `paintJobLine` | frontend/js/settings.js:3928 |
-| `perfModeOn` | frontend/js/settings.js:2446 |
-| `perfModeReason` | frontend/js/settings.js:2455 |
-| `placeFoldHelp` | frontend/js/settings.js:3827 |
-| `refreshJobRuns` | frontend/js/settings.js:3944 |
-| `renderActiveLogView` | frontend/js/settings.js:1044 |
-| `renderAppearance` | frontend/js/settings.js:2810 |
-| `renderBgMotionHint` | frontend/js/settings.js:2973 |
-| `renderBgStyleGrid` | frontend/js/settings.js:3217 |
-| `renderBgStyleHint` | frontend/js/settings.js:2954 |
-| `renderCopyLogsLabel` | frontend/js/settings.js:1208 |
-| `renderCustomThemes` | frontend/js/settings.js:2199 |
-| `renderGlassRows` | frontend/js/settings.js:2797 |
-| `renderJobOverview` | frontend/js/settings.js:3975 |
-| `renderLogErrorBadge` | frontend/js/settings.js:1064 |
-| `renderLogGap` | frontend/js/settings.js:768 |
-| `renderLogList` | frontend/js/settings.js:951 |
-| `renderLogSharedUI` | frontend/js/settings.js:917 |
-| `renderLogTerminal` | frontend/js/settings.js:1029 |
-| `renderLogs` | frontend/js/settings.js:1164 |
-| `renderPaletteGrid` | frontend/js/settings.js:3094 |
-| `renderProgressMotionHint` | frontend/js/settings.js:2937 |
-| `renderThemePresets` | frontend/js/settings.js:2714 |
-| `renderThemeToggle` | frontend/js/settings.js:2644 |
-| `repaintThemeAtOnce` | frontend/js/settings.js:1295 |
-| `resetAppearance` | frontend/js/settings.js:3146 |
-| `resolvedTheme` | frontend/js/settings.js:2627 |
-| `saveCurrentLook` | frontend/js/settings.js:2144 |
-| `savedThemeCard` | frontend/js/settings.js:2233 |
-| `savedThemes` | frontend/js/settings.js:2139 |
-| `scheduleThemeArt` | frontend/js/settings.js:1311 |
-| `scrollLogToBottom` | frontend/js/settings.js:910 |
-| `serverLogRecord` | frontend/js/settings.js:793 |
-| `setLogLive` | frontend/js/settings.js:1048 |
+| `paintIntegrity` | frontend/js/settings.js:540 |
+| `paintJobLine` | frontend/js/settings.js:3930 |
+| `perfModeOn` | frontend/js/settings.js:2448 |
+| `perfModeReason` | frontend/js/settings.js:2457 |
+| `placeFoldHelp` | frontend/js/settings.js:3829 |
+| `refreshJobRuns` | frontend/js/settings.js:3946 |
+| `renderActiveLogView` | frontend/js/settings.js:1046 |
+| `renderAppearance` | frontend/js/settings.js:2812 |
+| `renderBgMotionHint` | frontend/js/settings.js:2975 |
+| `renderBgStyleGrid` | frontend/js/settings.js:3219 |
+| `renderBgStyleHint` | frontend/js/settings.js:2956 |
+| `renderCopyLogsLabel` | frontend/js/settings.js:1210 |
+| `renderCustomThemes` | frontend/js/settings.js:2201 |
+| `renderGlassRows` | frontend/js/settings.js:2799 |
+| `renderJobOverview` | frontend/js/settings.js:3977 |
+| `renderLogErrorBadge` | frontend/js/settings.js:1066 |
+| `renderLogGap` | frontend/js/settings.js:770 |
+| `renderLogList` | frontend/js/settings.js:953 |
+| `renderLogSharedUI` | frontend/js/settings.js:919 |
+| `renderLogTerminal` | frontend/js/settings.js:1031 |
+| `renderLogs` | frontend/js/settings.js:1166 |
+| `renderPaletteGrid` | frontend/js/settings.js:3096 |
+| `renderProgressMotionHint` | frontend/js/settings.js:2939 |
+| `renderThemePresets` | frontend/js/settings.js:2716 |
+| `renderThemeToggle` | frontend/js/settings.js:2646 |
+| `repaintThemeAtOnce` | frontend/js/settings.js:1297 |
+| `resetAppearance` | frontend/js/settings.js:3148 |
+| `resolvedTheme` | frontend/js/settings.js:2629 |
+| `saveCurrentLook` | frontend/js/settings.js:2146 |
+| `savedThemeCard` | frontend/js/settings.js:2235 |
+| `savedThemes` | frontend/js/settings.js:2141 |
+| `scheduleThemeArt` | frontend/js/settings.js:1313 |
+| `scrollLogToBottom` | frontend/js/settings.js:912 |
+| `serverLogRecord` | frontend/js/settings.js:795 |
+| `setLogLive` | frontend/js/settings.js:1050 |
 | `setSettingsPeek` | frontend/js/settings.js:306 |
-| `settingsFoldState` | frontend/js/settings.js:3775 |
+| `settingsFoldState` | frontend/js/settings.js:3777 |
 | `settingsScroller` | frontend/js/settings.js:103 |
-| `settingsSectionText` | frontend/js/settings.js:592 |
+| `settingsSectionText` | frontend/js/settings.js:593 |
 | `showSettingsSection` | frontend/js/settings.js:150 |
-| `smallMachine` | frontend/js/settings.js:2433 |
-| `sortLogRecords` | frontend/js/settings.js:797 |
-| `startBgArt` | frontend/js/settings.js:3301 |
-| `startLogStream` | frontend/js/settings.js:1094 |
-| `stopBgArt` | frontend/js/settings.js:3188 |
-| `stopLogStream` | frontend/js/settings.js:1153 |
-| `taskLogButton` | frontend/js/settings.js:3524 |
-| `themeDefaultAccent` | frontend/js/settings.js:2773 |
-| `themeSwatch` | frontend/js/settings.js:1721 |
-| `themeValue` | frontend/js/settings.js:1746 |
-| `toggleBgArt` | frontend/js/settings.js:3370 |
-| `toggleTheme` | frontend/js/settings.js:1323 |
+| `smallMachine` | frontend/js/settings.js:2435 |
+| `sortLogRecords` | frontend/js/settings.js:799 |
+| `startBgArt` | frontend/js/settings.js:3303 |
+| `startLogStream` | frontend/js/settings.js:1096 |
+| `stopBgArt` | frontend/js/settings.js:3190 |
+| `stopLogStream` | frontend/js/settings.js:1155 |
+| `taskLogButton` | frontend/js/settings.js:3526 |
+| `themeDefaultAccent` | frontend/js/settings.js:2775 |
+| `themeSwatch` | frontend/js/settings.js:1723 |
+| `themeValue` | frontend/js/settings.js:1748 |
+| `toggleBgArt` | frontend/js/settings.js:3372 |
+| `toggleTheme` | frontend/js/settings.js:1325 |
 | `updatePeekAvailability` | frontend/js/settings.js:318 |
-| `wireFoldHelps` | frontend/js/settings.js:3840 |
-| `wireSettingsFolds` | frontend/js/settings.js:3784 |
+| `wireFoldHelps` | frontend/js/settings.js:3842 |
+| `wireSettingsFolds` | frontend/js/settings.js:3786 |
 
 ### frontend/js/account-recovery.js (20)
 
@@ -5926,8 +5926,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `libraryMeta` | frontend/js/library-bulk.js:9 |
 | `libraryMetaCategory` | frontend/js/library-bulk.js:133 |
-| `libraryMetaMenu` | frontend/js/library-bulk.js:171 |
-| `libraryMetaProperty` | frontend/js/library-bulk.js:162 |
+| `libraryMetaMenu` | frontend/js/library-bulk.js:173 |
+| `libraryMetaProperty` | frontend/js/library-bulk.js:164 |
 | `libraryMetaTags` | frontend/js/library-bulk.js:42 |
 
 ### frontend/js/library-links.js (37)
@@ -6636,13 +6636,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `afterChange` | frontend/js/note-groups.js:16 |
-| `chooseAlsoCategories` | frontend/js/note-groups.js:138 |
-| `chooseNoteGroups` | frontend/js/note-groups.js:94 |
+| `chooseAlsoCategories` | frontend/js/note-groups.js:140 |
+| `chooseNoteGroups` | frontend/js/note-groups.js:95 |
 | `groupQuery` | frontend/js/note-groups.js:14 |
 | `listGroupsSheet` | frontend/js/note-groups.js:34 |
 | `newGroup` | frontend/js/note-groups.js:22 |
-| `openGroupSheet` | frontend/js/note-groups.js:58 |
-| `openNoteGroupsSheet` | frontend/js/note-groups.js:182 |
+| `openGroupSheet` | frontend/js/note-groups.js:59 |
+| `openNoteGroupsSheet` | frontend/js/note-groups.js:184 |
 
 ### frontend/js/note-history.js (3)
 
@@ -13531,7 +13531,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/characters-lazy.css | 3528 |
-| frontend/css/chat-groups-lazy.css | 20 |
+| frontend/css/chat-groups-lazy.css | 21 |
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |
@@ -13579,7 +13579,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/reply-kit-lazy.css | 906 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
-| frontend/css/semantic-notice-lazy.css | 16 |
+| frontend/css/semantic-notice-lazy.css | 17 |
 | frontend/css/settings-controls-lazy.css | 341 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
@@ -24939,7 +24939,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_docx_run_text` | src/tessellate/core/docview.py:438 |
 | `_docx_style_and_numbering` | src/tessellate/core/docview.py:524 |
 | `_docx_table` | src/tessellate/core/docview.py:566 |
-| `_extract_converted` | src/tessellate/core/docview.py:833 |
+| `_extract_converted` | src/tessellate/core/docview.py:834 |
 | `_first_conversion` | src/tessellate/core/docview.py:809 |
 | `_read_text_file` | src/tessellate/core/docview.py:706 |
 | `docx_has_revisions` | src/tessellate/core/docview.py:377 |
@@ -26519,22 +26519,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_cache_clear` | src/tessellate/core/pdfpages.py:354 |
-| `_cache_get` | src/tessellate/core/pdfpages.py:331 |
-| `_cache_put` | src/tessellate/core/pdfpages.py:339 |
-| `_count_pages` | src/tessellate/core/pdfpages.py:194 |
-| `_draw_page` | src/tessellate/core/pdfpages.py:409 |
+| `_cache_clear` | src/tessellate/core/pdfpages.py:356 |
+| `_cache_get` | src/tessellate/core/pdfpages.py:333 |
+| `_cache_put` | src/tessellate/core/pdfpages.py:341 |
+| `_count_pages` | src/tessellate/core/pdfpages.py:196 |
+| `_draw_page` | src/tessellate/core/pdfpages.py:411 |
 | `_fingerprint` | src/tessellate/core/pdfpages.py:96 |
 | `_locked_error` | src/tessellate/core/pdfpages.py:106 |
 | `_open` | src/tessellate/core/pdfpages.py:110 |
 | `_outline` | src/tessellate/core/pdfpages.py:122 |
-| `_render_all` | src/tessellate/core/pdfpages.py:271 |
-| `_render_one` | src/tessellate/core/pdfpages.py:217 |
-| `available` | src/tessellate/core/pdfpages.py:172 |
+| `_render_all` | src/tessellate/core/pdfpages.py:273 |
+| `_render_one` | src/tessellate/core/pdfpages.py:219 |
+| `available` | src/tessellate/core/pdfpages.py:174 |
 | `details` | src/tessellate/core/pdfpages.py:135 |
-| `page_count` | src/tessellate/core/pdfpages.py:186 |
-| `render_page` | src/tessellate/core/pdfpages.py:367 |
-| `render_pages` | src/tessellate/core/pdfpages.py:253 |
+| `page_count` | src/tessellate/core/pdfpages.py:188 |
+| `render_page` | src/tessellate/core/pdfpages.py:369 |
+| `render_pages` | src/tessellate/core/pdfpages.py:255 |
 | `unlock` | src/tessellate/core/pdfpages.py:155 |
 
 ### src/tessellate/core/pinstore.py (19)
@@ -28923,63 +28923,63 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Retrieval` | src/tessellate/search/search_manager.py:1018 |
-| `_append_connected` | src/tessellate/search/search_manager.py:1437 |
-| `_candidates` | src/tessellate/search/search_manager.py:1281 |
-| `_category_named_whole` | src/tessellate/search/search_manager.py:1184 |
-| `_category_notes` | src/tessellate/search/search_manager.py:1240 |
-| `_category_only` | src/tessellate/search/search_manager.py:1234 |
-| `_category_scope` | src/tessellate/search/search_manager.py:1454 |
+| `Retrieval` | src/tessellate/search/search_manager.py:1019 |
+| `_append_connected` | src/tessellate/search/search_manager.py:1438 |
+| `_candidates` | src/tessellate/search/search_manager.py:1282 |
+| `_category_named_whole` | src/tessellate/search/search_manager.py:1185 |
+| `_category_notes` | src/tessellate/search/search_manager.py:1241 |
+| `_category_only` | src/tessellate/search/search_manager.py:1235 |
+| `_category_scope` | src/tessellate/search/search_manager.py:1455 |
 | `_corrected_terms` | src/tessellate/search/search_manager.py:275 |
-| `_dated_candidates` | src/tessellate/search/search_manager.py:1467 |
-| `_early_answer` | src/tessellate/search/search_manager.py:1257 |
-| `_fuse` | src/tessellate/search/search_manager.py:763 |
-| `_latest_about` | src/tessellate/search/search_manager.py:1475 |
-| `_learned_down` | src/tessellate/search/search_manager.py:1663 |
-| `_learned_order` | src/tessellate/search/search_manager.py:1612 |
+| `_dated_candidates` | src/tessellate/search/search_manager.py:1468 |
+| `_early_answer` | src/tessellate/search/search_manager.py:1258 |
+| `_fuse` | src/tessellate/search/search_manager.py:764 |
+| `_latest_about` | src/tessellate/search/search_manager.py:1476 |
+| `_learned_down` | src/tessellate/search/search_manager.py:1664 |
+| `_learned_order` | src/tessellate/search/search_manager.py:1613 |
 | `_likeness` | src/tessellate/search/search_manager.py:321 |
-| `_linked_neighbours` | src/tessellate/search/search_manager.py:802 |
-| `_load_later` | src/tessellate/search/search_manager.py:435 |
-| `_match_info` | src/tessellate/search/search_manager.py:1376 |
-| `_meaningful_terms` | src/tessellate/search/search_manager.py:376 |
-| `_named_category` | src/tessellate/search/search_manager.py:1199 |
-| `_narrow_to_range` | src/tessellate/search/search_manager.py:1298 |
-| `_near_words` | src/tessellate/search/search_manager.py:329 |
-| `_nothing_matched` | src/tessellate/search/search_manager.py:1344 |
-| `_outside_window` | src/tessellate/search/search_manager.py:1322 |
-| `_rank` | src/tessellate/search/search_manager.py:1132 |
-| `_rank_inner` | src/tessellate/search/search_manager.py:1145 |
-| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:737 |
-| `_retrieve` | src/tessellate/search/search_manager.py:1539 |
-| `_score_from_matrix` | src/tessellate/search/search_manager.py:604 |
-| `_score_from_table` | src/tessellate/search/search_manager.py:643 |
+| `_linked_neighbours` | src/tessellate/search/search_manager.py:803 |
+| `_load_later` | src/tessellate/search/search_manager.py:436 |
+| `_match_info` | src/tessellate/search/search_manager.py:1377 |
+| `_meaningful_terms` | src/tessellate/search/search_manager.py:377 |
+| `_named_category` | src/tessellate/search/search_manager.py:1200 |
+| `_narrow_to_range` | src/tessellate/search/search_manager.py:1299 |
+| `_near_words` | src/tessellate/search/search_manager.py:330 |
+| `_nothing_matched` | src/tessellate/search/search_manager.py:1345 |
+| `_outside_window` | src/tessellate/search/search_manager.py:1323 |
+| `_rank` | src/tessellate/search/search_manager.py:1133 |
+| `_rank_inner` | src/tessellate/search/search_manager.py:1146 |
+| `_recency_pin_ranking` | src/tessellate/search/search_manager.py:738 |
+| `_retrieve` | src/tessellate/search/search_manager.py:1540 |
+| `_score_from_matrix` | src/tessellate/search/search_manager.py:605 |
+| `_score_from_table` | src/tessellate/search/search_manager.py:644 |
 | `_stemmed_forms` | src/tessellate/search/search_manager.py:314 |
 | `_substring_entries` | src/tessellate/search/search_manager.py:227 |
 | `_user_today` | src/tessellate/search/search_manager.py:50 |
-| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1508 |
-| `_within` | src/tessellate/search/search_manager.py:1002 |
-| `_without_private` | src/tessellate/search/search_manager.py:1682 |
-| `_word_for_stem` | src/tessellate/search/search_manager.py:347 |
-| `_written_at` | src/tessellate/search/search_manager.py:961 |
-| `clip_query` | src/tessellate/search/search_manager.py:1531 |
-| `configured_thresholds` | src/tessellate/search/search_manager.py:381 |
-| `day_mentions` | src/tessellate/search/search_manager.py:972 |
-| `direct_before_linked` | src/tessellate/search/search_manager.py:1424 |
+| `_when_nothing_ranked` | src/tessellate/search/search_manager.py:1509 |
+| `_within` | src/tessellate/search/search_manager.py:1003 |
+| `_without_private` | src/tessellate/search/search_manager.py:1683 |
+| `_word_for_stem` | src/tessellate/search/search_manager.py:348 |
+| `_written_at` | src/tessellate/search/search_manager.py:962 |
+| `clip_query` | src/tessellate/search/search_manager.py:1532 |
+| `configured_thresholds` | src/tessellate/search/search_manager.py:382 |
+| `day_mentions` | src/tessellate/search/search_manager.py:973 |
+| `direct_before_linked` | src/tessellate/search/search_manager.py:1425 |
 | `entries_between` | src/tessellate/search/search_manager.py:107 |
-| `graph_expansion` | src/tessellate/search/search_manager.py:867 |
-| `in_range` | src/tessellate/search/search_manager.py:933 |
+| `graph_expansion` | src/tessellate/search/search_manager.py:868 |
+| `in_range` | src/tessellate/search/search_manager.py:934 |
 | `is_exact_term` | src/tessellate/search/search_manager.py:268 |
 | `keyword_search` | src/tessellate/search/search_manager.py:134 |
-| `last_search` | src/tessellate/search/search_manager.py:1127 |
-| `meaning_floor` | src/tessellate/search/search_manager.py:1405 |
-| `note_search_mode` | src/tessellate/search/search_manager.py:1140 |
-| `query_vector` | src/tessellate/search/search_manager.py:410 |
+| `last_search` | src/tessellate/search/search_manager.py:1128 |
+| `meaning_floor` | src/tessellate/search/search_manager.py:1406 |
+| `note_search_mode` | src/tessellate/search/search_manager.py:1141 |
+| `query_vector` | src/tessellate/search/search_manager.py:411 |
 | `recent_entries` | src/tessellate/search/search_manager.py:85 |
-| `retrieve` | src/tessellate/search/search_manager.py:1097 |
-| `retrieve_detailed` | src/tessellate/search/search_manager.py:1065 |
-| `semantic_search` | src/tessellate/search/search_manager.py:499 |
-| `warm` | src/tessellate/search/search_manager.py:470 |
-| `widened_limit` | src/tessellate/search/search_manager.py:1061 |
+| `retrieve` | src/tessellate/search/search_manager.py:1098 |
+| `retrieve_detailed` | src/tessellate/search/search_manager.py:1066 |
+| `semantic_search` | src/tessellate/search/search_manager.py:500 |
+| `warm` | src/tessellate/search/search_manager.py:471 |
+| `widened_limit` | src/tessellate/search/search_manager.py:1062 |
 
 ### src/tessellate/search/searxng_docker.py (8)
 
@@ -29143,7 +29143,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23157)
+## Tests (23158)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -31220,7 +31220,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_path_explain_kg8.py | 4 |
 | tests/test_patterns_g12_1110.py | 4 |
 | tests/test_pdf_first_page_only_when_renderable.py | 3 |
-| tests/test_pdf_password_133.py | 6 |
+| tests/test_pdf_password_133.py | 7 |
 | tests/test_pdfpages.py | 16 |
 | tests/test_pending_note_rows.py | 5 |
 | tests/test_per_model_context_window.py | 8 |

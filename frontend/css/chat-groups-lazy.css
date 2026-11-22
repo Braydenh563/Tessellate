@@ -8,7 +8,8 @@
   border-radius: var(--radius-sm);
   cursor: default;
 }
-#conversation-list .conv-group-head:hover {
+#conversation-list .conv-group-head:hover,
+#conversation-list .conv-group-head:is(:focus-visible, :has(:focus-visible)) {
   background: transparent;
 }
 #conversation-list .conv-group-head .conv-group-name {

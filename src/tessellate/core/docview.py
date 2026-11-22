@@ -827,6 +827,7 @@ def _first_conversion(path: Path, suffix: str) -> str:
     except Exception:  # noqa: BLE001
         # A file markitdown cannot parse is a viewer message, never a 500,
         # the same contract `/import/document` keeps for the same reason.
+        logging.getLogger(__name__).debug("_first_conversion: markitdown could not read %s; the viewer says so", suffix, exc_info=True)
         return ""
 
 

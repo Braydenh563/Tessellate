@@ -59,7 +59,9 @@ def test_every_overlay_in_the_page_closes_on_escape():
 
 
 def test_a_native_dialog_is_not_made_to_ignore_escape():
-    assert len(re.findall(r"<dialog\b", HTML)) >= 5
+    # Most dialogs became `<sheet-host>` (a dialog on a desktop, a sheet on a phone; L-world-class-421, 530),
+    # so the guard counts both kinds: the list must not be empty by a rename.
+    assert len(re.findall(r"<(?:dialog|sheet-host)\b", HTML)) >= 5
     assert 'closedby="none"' not in HTML
     for name, text in JS.items():
         assert not re.search(r'addEventListener\("cancel",[^)]*preventDefault', text), name

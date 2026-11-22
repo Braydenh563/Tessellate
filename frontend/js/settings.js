@@ -352,6 +352,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     await ensureModule("settingsControls");
   }
   $("settings-modal").classList.remove("hidden");
+  document.body.classList.add("settings-open");
   //: The window's own selects outside a pane; each pane wraps its own when shown (L-world-class-14).
   for (const select of $("settings-modal").querySelectorAll("select")) if (!select.closest(".settings-section")) enhanceSelect(select);
   // Runs on open rather than once at load: several sections are built
@@ -717,6 +718,7 @@ function closeSettingsModal() {
   focusBackTo(overlayReturnFocus, "#settings-btn");
   overlayReturnFocus = null;
   $("settings-modal").classList.add("hidden");
+  document.body.classList.remove("settings-open");
 }
 
 // --- logs viewer (Wave A) ---------------------------------------------------------

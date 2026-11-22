@@ -137,6 +137,28 @@ def test_the_routes_ask_once_and_then_serve_pages(client):
     assert page.status_code == 200 and page.content[:4] == b"\x89PNG"
 
 
+@needs_pdfium
+def test_an_attached_locked_pdf_opens_through_its_files_route(client):
+    from tessellate.core import deps
+    from tessellate.entry import manager
+
+    with deps.get_db().session() as session:
+        entry_id = manager.create_entry(session, "A note with a locked file", manager.UNCATEGORISED).id
+    up = client.post(
+        f"/entries/{entry_id}/files",
+        files={"file": ("locked.pdf", _pdf(b"Hello", password=PASSWORD), "application/pdf")},
+    )
+    assert up.status_code in (200, 201), up.text
+    fid = client.get(f"/entries/{entry_id}").json()["attachments"][0]["id"]
+    info = client.get(f"/files/{fid}/pdf-info")
+    assert info.json()["locked"] is True
+    wrong = client.post(f"/files/{fid}/pdf-unlock", json={"password": "wrong"})
+    assert wrong.status_code == 422
+    right = client.post(f"/files/{fid}/pdf-unlock", json={"password": PASSWORD})
+    assert right.status_code == 200, right.text
+    assert right.json()["available"] is True and right.json()["pages"] == 1
+
+
 def test_a_locked_pdf_is_never_called_broken():
     from tessellate.api import routes_files
 
