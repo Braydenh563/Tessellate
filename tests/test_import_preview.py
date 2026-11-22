@@ -66,8 +66,9 @@ def _text(*parts: str) -> str:
 def test_every_multi_note_import_shows_the_preview_before_it_runs():
     app = _text("frontend", "js", "app-import.js")
     data = _text("frontend", "js", "settings-data.js")
-    # The app imports read with a dry run, then run with what was unticked.
-    assert "dry_run=1" in app and "importPreview(" in app and 'form.append("exclude"' in app
+    # The app imports read with a dry run, then run with what was unticked
+    # (sent as the "exclude" field through upload-worker.js, L-world-class-891).
+    assert "dry_run=1" in app and "importPreview(" in app and '[["exclude", JSON.stringify(left)]]' in app
     # The markdown files are previewed in the browser and only the ticked ones are sent.
     body = data.split("async function importMarkdown", 1)[1].split("\n}\n", 1)[0]
     assert "markdownPreview(" in body

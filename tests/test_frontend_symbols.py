@@ -329,7 +329,7 @@ def test_every_function_the_browser_calls_exists():
 #: The files that share the page's one global scope. `graph-worker.js` runs
 #: in a `Worker`, which has a scope of its own, so a name it declares cannot
 #: collide with the page's.
-WORKER_FILES = frozenset({"graph-worker.js", "harper-worker.js", "translate-worker.js", "caption-tap-worker.js", "sw.js"})
+WORKER_FILES = frozenset({"graph-worker.js", "harper-worker.js", "translate-worker.js", "caption-tap-worker.js", "upload-worker.js", "sw.js"})
 
 #: A top-level declaration, which is what the global scope actually holds.
 #: Not the nested ones `DECLARATIONS` collects: a `const` inside a function

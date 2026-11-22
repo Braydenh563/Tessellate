@@ -21,7 +21,7 @@ def _api_body() -> str:
 def test_a_hand_lock_without_a_key_refuses_before_fetch():
     body = _api_body()
     guard = body.index("if (lockedByHand && !authToken() && !ownsAuthErrors")
-    assert guard < body.index("await fetch(path")
+    assert guard < body.index("await (send || fetch)(path")
     line = body[guard : body.index("\n", guard)]
     #: Sign-in itself and the health probe still go out.
     assert '!path.startsWith("/auth/")' in line and '!path.startsWith("/health")' in line

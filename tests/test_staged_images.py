@@ -39,7 +39,7 @@ def test_every_request_passes_through_the_guard():
     #: put 1,400 more characters between the guard and the fetch.
     body = source[start : source.index("\n}\n", start)]
     guard = body.index("refuseStagedUrls(fetchOptions.body)")
-    fetch = body.index("await fetch(path")
+    fetch = body.index("await (send || fetch)(path")
     assert guard < fetch, (
         "the staged-URL guard has to run before the request leaves, after it, "
         "the corrupted note is already saved"

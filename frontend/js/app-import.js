@@ -96,6 +96,42 @@ const APP_IMPORTS = [
   { source: "memorymap", button: "import-memorymap", input: "import-memorymap-file", label: "Tessellate" },
 ];
 
+//: L-world-class-891: the browser builds a multipart body on the page's
+//: thread inside `fetch` (2.9 s and 1.4 s of frozen page at 5,000 files), so
+//: the files go to upload-worker.js by reference and `api()` takes its answer
+//: as the response. Without workers the body is built here, as before.
+let importWorker = null;
+//: Hands the chosen files to the worker in chunks, a task each, once per import.
+async function importStage(named) {
+  if (typeof Worker === "undefined") return named;
+  importWorker ||= new Worker(`/js/upload-worker.js${lazyAssetStamp("/js/upload-worker.js")}`);
+  for (let at = 0; at < named.length || at === 0; at += 200) {
+    importWorker.postMessage({ stage: named.slice(at, at + 200), first: at === 0 });
+    await new Promise((resolve) => setTimeout(resolve));
+  }
+  return null;
+}
+function importUpload(path, named, fields = []) {
+  if (named) {
+    const form = new FormData();
+    for (const [file, name] of named) form.append("files", file, name);
+    for (const [key, value] of fields) form.append(key, value);
+    return api.upload(path, form);
+  }
+  const send = (url, init) => new Promise((resolve, reject) => {
+    const id = Math.random();
+    const heard = ({ data }) => {
+      if (data.id !== id) return;
+      importWorker.removeEventListener("message", heard);
+      if (data.failed) reject(new TypeError(data.failed));
+      else resolve(new Response([101, 204, 205, 304].includes(data.status) ? null : data.text, { status: data.status, statusText: data.statusText, headers: data.headers }));
+    };
+    importWorker.addEventListener("message", heard);
+    importWorker.postMessage({ id, path: url, headers: init.headers, fields });
+  });
+  return api(path, { method: "POST", send });
+}
+
 async function importFromApp(spec) {
   const input = $(spec.input);
   const status = $("import-app-status");
@@ -108,12 +144,12 @@ async function importFromApp(spec) {
     $("import-app-status").textContent = `No ${spec.label} notes in what you chose.`;
     return;
   }
-  const form = new FormData();
-  for (const file of files) form.append("files", file, file.webkitRelativePath || file.name);
   setLabel(status, `ph:spin Reading ${spec.label}…`);
+  //: `named` stays only where there is no worker; otherwise the worker holds the files.
+  const named = await importStage(files.map((file) => [file, file.webkitRelativePath || file.name]));
   let left = [];
   try {
-    const seen = await (await api.upload(`/import/app?source=${spec.source}&dry_run=1`, form)).json();
+    const seen = await (await importUpload(`/import/app?source=${spec.source}&dry_run=1`, named)).json();
     if (!seen.found) {
       status.textContent = `No ${spec.label} notes in what you chose.`;
       return;
@@ -129,12 +165,11 @@ async function importFromApp(spec) {
     status.classList.add("error");
     return;
   }
-  if (left.length) form.append("exclude", JSON.stringify(left));
   setLabel(status, `ph:spin Importing from ${spec.label}…`);
   try {
     //: `api.upload` throws the server's own words on a refusal; the catch
     //: below shows them.
-    const response = await api.upload(`/import/app?source=${spec.source}`, form);
+    const response = await importUpload(`/import/app?source=${spec.source}`, named, left.length ? [["exclude", JSON.stringify(left)]] : []);
     const body = await response.json().catch(() => ({}));
     const parts = [`Imported ${nounCount(body.imported, "note")} from ${spec.label}.`];
     if (body.already) parts.push(`${body.already} ${body.already === 1 ? "was" : "were"} already here.`);

@@ -464,6 +464,8 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "app-import.js:importUpload": "job: sends importFromApp's dry run and import; importFromApp offers the Undo (undoImport)",
+    "upload-worker.js:onmessage": "job: the worker sends what importUpload hands it; importFromApp offers the Undo (undoImport)",
     "note-groups.js:newGroup": "job: makes an empty group; the group's own Delete removes it and no note is changed",
     "note-groups.js:toggle": "settings: a check row that is its own undo (press again) and no note text is changed",
     "note-groups.js:save": "settings: a check row that is its own undo (press again) and no note text is changed",

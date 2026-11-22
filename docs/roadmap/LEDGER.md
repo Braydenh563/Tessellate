@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 17 | 1 | 0 | 1 | 18 |
+| world-class | 0 | 16 | 1 | 0 | 1 | 17 |
 | general | 0 | 29 | 2 | 0 | 6 | 31 |
-| all | 272 | 368 | 69 | 2 | 86 | 709 |
+| all | 272 | 367 | 69 | 2 | 86 | 708 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -442,7 +442,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-844** `world-class` open, M: Perf rows from the 1031 audit with no recorded fix. From L623 audit-1031-perf PF4 PF5 PF10; audit-1031-notes N4; audit-1031-shell SH7 SH12; audit-1031-ux UX3 UX8. Evidence: No CHANGELOG, HISTORY or code pointer found, and not re-driven in L623; boot parses 1,557 KB of scripts (PF4), first tab open blocks seconds at 4x (PF5), graph draw loop while settling (PF10), notes list not smooth at 199 notes (N4), phone renders every note (SH7), Settings panes 135 to 234 ms (SH12), 70 idle animations (UX3), theme button 858 ms (UX8); remeasure at head before fixing; PF6 is in L619.
 - [ ] **L-world-class-810** `graph` partly, L: Finish the status.js, notes-list.js and phone-shell.js splits by job. From L639, L698 (CA batch). Evidence: status.js 3,086 to 2,968, notes-list.js 3,622 to 3,578, phone-shell.js 2,390 to 2,334 via lazy pieces status-quick, status-embedding, notes-sync, app-reset. Boot splits blocked: a new script tag lifts index.html past BOOT_ELEMENTS 749 (test_boot_diet3), so only lazy pieces fit; remaining blocks (sidebar, rail, chip builders, openSheet, emblem, dock folding) return values synchronously or run at load
 - [ ] **L-world-class-890** `world-class` open, S: Find the remaining 0.5 MB a minute of heap growth in the ten-minute browser loop. From agent checks 2026-11-22, scratchpad/ui-sweeps/memrun.js. Evidence: after the note-surface fix the ten-minute loop still grows the forced-GC heap 28.3 to 33.2 MB (min 1 to end) with nodes +650 and listeners +374; the source of the JS heap creep is not found (a heap snapshot run crashed the page)
-- [ ] **L-world-class-891** `world-class` open, S: Folder import of thousands of files freezes the page for seconds while the request body is built. From agent checks 2026-11-22, scratchpad/ui-sweeps/upload5000.js. Evidence: 5,000-file folder import: the page stalls 2.9 s (long task) when the files are chosen and 1.4 s at the import POST while the browser builds the multipart body (CDP profile: fetch 3.4 s self time); a chunked upload would need a server-side batch protocol
 
 ## general
 
