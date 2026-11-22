@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 109 | 4 | 0 | 16 | 209 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 36 | 0 | 0 | 0 | 36 |
+| world-class | 0 | 35 | 0 | 0 | 0 | 35 |
 | general | 0 | 23 | 2 | 0 | 5 | 25 |
-| all | 372 | 427 | 75 | 2 | 111 | 874 |
+| all | 372 | 426 | 75 | 2 | 111 | 873 |
 
 ## graph
 - [ ] **L-world-class-840** `graph` open, M: Move routes_graph.py's 32 raw queries into src/tessellate/repo/ (the graph session owns the file); then lower ROUTE_QUERIES_CAP 35 to 0. From L-world-class-820.
@@ -508,7 +508,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-878** `world-class` open, M: Budgets UI: show the six interaction budgets (measured, cap, live server share) somewhere a person can read them; needs a recipe-compliant home first (a Health pane row in Settings once its files are free, with a data-help-for line and the Guide topic). From L603 (budgets UI half). Evidence: docs/DESIGN.md recipe index has no readout or diagnostics recipe outside Settings; Statistics tab is note statistics; Settings markup and settings-body.js are off-limits this pass; the data is ready: GET /models/bench/budgets (routes_bench.py) serves the six budgets and ?live=true times the server share
 - [ ] **L-world-class-879** `world-class` open, M: Boot: the opening curtain waits for the slowest dashboard widget (digest, week); lift it on the visible first row, or serve those two widgets' data in one request, without bringing back the layout shift INBOX 577 fixed. From L603 (boot cost left). Evidence: scratch trace at phone width, 500 notes: the opening curtain lifts about 0.9 to 1.2 s after load, when the slowest dashboard widget settles (digest 340 to 400 ms and week 360 to 440 ms of server-bound fetches on a busy 4-core box; boards 370, art 260); widgets draw in parallel so the curtain waits for the longest
 - [ ] **L-world-class-873** `world-class` open, M: Notes list paint grows with note count. From wc-perf measure, 27897dbf. Evidence: notes list paint 65 to 74 ms at 2,000 notes, 112 to 168 ms at 5,000 (headless Chromium, idle): paint grows with note count, not with rows shown
-- [ ] **L-world-class-874** `world-class` open, S: /categories fetched twice at boot. From wc-perf measure, 27897dbf. Evidence: boot network log: GET /categories requested twice before first interaction
 
 ## general
 
