@@ -36,7 +36,10 @@ const { check, summary } = checker();
     const { svg } = wbBuildExportSvg("whole");
     wbOpenBoardSearch();
     wbBoardSearchRun("Alpha");
-    const found = /^\d/.test(document.getElementById("wb-search-count")?.textContent || "") ? 1 : 0;
+    //: "1 of 2" when it finds something, "No matches" when it ran and found
+    //: nothing; anything else (an empty count) means the search never ran.
+    const said = document.getElementById("wb-search-count")?.textContent || "";
+    const found = /^\d/.test(said) ? 1 : said === "No matches" ? 0 : `search did not run: "${said}"`;
     wbCloseBoardSearch();
     return {
       drawn: el ? getComputedStyle(el).display !== "none" : false,
