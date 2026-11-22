@@ -2,7 +2,7 @@
 
 Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 9058, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11088, test files 2922, tests 23310, plan headings 695, app scripts 29, boot scripts 38, script files 403.
+Counts: frontend functions 9058, frontend ids 2841, CSS sections 528, backend routes 722, backend modules 11091, test files 2924, tests 23315, plan headings 695, app scripts 29, boot scripts 38, script files 403.
 
 ## Frontend functions (9058)
 
@@ -15264,7 +15264,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:298 |
 | `RUFF_PATH + '{name}'` | GET | `ruff_file` | src/tessellate/api/run_sandbox.py:313 |
 
-## Backend modules (11088)
+## Backend modules (11091)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26989,34 +26989,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick_spell` | src/tessellate/core/overlay/presence.py:51 |
 | `spells_for` | src/tessellate/core/overlay/presence.py:46 |
 
-### src/tessellate/core/overlay/props.py (28)
+### src/tessellate/core/overlay/props.py (31)
 
 | Name | File:line |
 |---|---|
 | `Spec` | src/tessellate/core/overlay/props.py:33 |
 | `_act` | src/tessellate/core/overlay/props.py:44 |
 | `_add` | src/tessellate/core/overlay/props.py:178 |
-| `_beanbag` | src/tessellate/core/overlay/props.py:280 |
-| `_blanket` | src/tessellate/core/overlay/props.py:358 |
-| `_book` | src/tessellate/core/overlay/props.py:266 |
-| `_bowl` | src/tessellate/core/overlay/props.py:384 |
+| `_beanbag` | src/tessellate/core/overlay/props.py:311 |
+| `_blanket` | src/tessellate/core/overlay/props.py:389 |
+| `_book` | src/tessellate/core/overlay/props.py:297 |
+| `_bowl` | src/tessellate/core/overlay/props.py:415 |
 | `_breath` | src/tessellate/core/overlay/props.py:48 |
-| `_cup` | src/tessellate/core/overlay/props.py:331 |
-| `_dumbbell` | src/tessellate/core/overlay/props.py:324 |
-| `_eddy` | src/tessellate/core/overlay/props.py:463 |
+| `_cup` | src/tessellate/core/overlay/props.py:362 |
+| `_dumbbell` | src/tessellate/core/overlay/props.py:355 |
+| `_eddy` | src/tessellate/core/overlay/props.py:494 |
 | `_fetch` | src/tessellate/core/overlay/props.py:191 |
-| `_gust` | src/tessellate/core/overlay/props.py:438 |
-| `_journal` | src/tessellate/core/overlay/props.py:340 |
-| `_knit` | src/tessellate/core/overlay/props.py:421 |
-| `_lantern` | src/tessellate/core/overlay/props.py:315 |
-| `_map` | src/tessellate/core/overlay/props.py:304 |
-| `_mat` | src/tessellate/core/overlay/props.py:298 |
-| `_plant` | src/tessellate/core/overlay/props.py:368 |
-| `_rod` | src/tessellate/core/overlay/props.py:287 |
-| `_spiral` | src/tessellate/core/overlay/props.py:450 |
-| `_stars` | src/tessellate/core/overlay/props.py:348 |
-| `_wand` | src/tessellate/core/overlay/props.py:401 |
-| `draw` | src/tessellate/core/overlay/props.py:230 |
+| `_gust` | src/tessellate/core/overlay/props.py:469 |
+| `_journal` | src/tessellate/core/overlay/props.py:371 |
+| `_knit` | src/tessellate/core/overlay/props.py:452 |
+| `_lantern` | src/tessellate/core/overlay/props.py:346 |
+| `_layer` | src/tessellate/core/overlay/props.py:244 |
+| `_map` | src/tessellate/core/overlay/props.py:335 |
+| `_mat` | src/tessellate/core/overlay/props.py:329 |
+| `_plant` | src/tessellate/core/overlay/props.py:399 |
+| `_rod` | src/tessellate/core/overlay/props.py:318 |
+| `_spiral` | src/tessellate/core/overlay/props.py:481 |
+| `_stars` | src/tessellate/core/overlay/props.py:379 |
+| `_wand` | src/tessellate/core/overlay/props.py:432 |
+| `clear_layers` | src/tessellate/core/overlay/props.py:236 |
+| `draw` | src/tessellate/core/overlay/props.py:273 |
+| `layer_count` | src/tessellate/core/overlay/props.py:240 |
 | `next_step` | src/tessellate/core/overlay/props.py:207 |
 | `register` | src/tessellate/core/overlay/props.py:162 |
 | `spec_of` | src/tessellate/core/overlay/props.py:185 |
@@ -29431,7 +29434,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23310)
+## Tests (23315)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30488,6 +30491,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_documents_closeout_1112.py | 7 |
 | tests/test_documents_cold_open.py | 7 |
 | tests/test_documents_help.py | 4 |
+| tests/test_documents_load_order.py | 2 |
 | tests/test_documents_outline.py | 7 |
 | tests/test_documents_plan_recount.py | 3 |
 | tests/test_documents_replace_all.py | 12 |
@@ -31415,6 +31419,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_portal_share_1111.py | 3 |
 | tests/test_overlay_pose_silhouette_1111.py | 1 |
 | tests/test_overlay_presence_1692.py | 18 |
+| tests/test_overlay_prop_layer_cache.py | 3 |
 | tests/test_overlay_react_1700.py | 8 |
 | tests/test_overlay_release_1696.py | 5 |
 | tests/test_overlay_rest_1670.py | 22 |
