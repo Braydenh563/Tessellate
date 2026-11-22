@@ -138,3 +138,13 @@ def test_show_details_on_hover_is_a_stored_display_switch_default_on() -> None:
     # Off hides the card and takes the canvas's aria-describedby with it.
     frame = _function(CANVAS, "gcHoverCardFrame")
     assert "gcHoverCardOn(s)" in frame and 'removeAttribute("aria-describedby")' in frame
+
+
+def test_the_card_stays_across_the_gap_between_its_dot_and_its_close_x() -> None:
+    """A walk of 313 px at 290 px/s took 1,078 ms, past the 600 ms linger, so the
+    X could not be reached: the pointer inside the box of dot and card keeps it."""
+    bridge = _function(CANVAS, "gcCardBridge")
+    assert "s._ptr" in bridge and "card._ax" in bridge
+    frame = _function(CANVAS, "gcHoverCardFrame")
+    assert "gcCardBridge(s, shown)" in frame
+    assert 'addEventListener("pointermove"' in _function(CANVAS, "gcHoverCardEl")

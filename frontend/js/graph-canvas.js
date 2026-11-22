@@ -5580,6 +5580,24 @@
   //: elsewhere, so the map under it still answers.
   const GC_CARD_LINGER_MS = 600;
 
+  //: Whether the pointer is inside the one box that holds the shown card's dot
+  //: and the card (screen pixels over the map), so it can walk across the gap.
+  function gcCardBridge(s, card) {
+    const p = s._ptr;
+    const node = s.byId && s.byId.get(card._for);
+    if (!p || !node || card._ax == null) return false;
+    const t = s.transform;
+    const r = (node.r + (node._grow || 0)) * t.k;
+    const sx = node.x * t.k + t.x;
+    const sy = node.y * t.k + t.y;
+    const rect = s.canvas.getBoundingClientRect();
+    const x = p[0] - rect.left;
+    const y = p[1] - rect.top;
+    const w = card._w || 0;
+    const h = card._h || 0;
+    return x >= Math.min(sx - r, card._ax) && x <= Math.max(sx + r, card._ax + w) && y >= Math.min(sy - r, card._ay) && y <= Math.max(sy + r, card._ay + h);
+  }
+
   //: Hide the shown card for its note (the X, or Escape on the map) until the
   //: pointer leaves that note and a note is pointed at again. True when a card
   //: was showing, so Escape does nothing else then.
@@ -5606,6 +5624,17 @@
     card.hidden = true;
     box.appendChild(card);
     s._hoverCard = card;
+    //: Where the pointer is while a card shows, for `gcCardBridge`; a move
+    //: redraws only then, and leaving the map forgets it.
+    box.addEventListener("pointermove", (event) => {
+      if (card.hidden) return;
+      s._ptr = [event.clientX, event.clientY];
+      gcRequestDraw(s, true);
+    });
+    box.addEventListener("pointerleave", () => {
+      s._ptr = null;
+      if (!card.hidden) gcRequestDraw(s, true);
+    });
     //: Escape on the map hides a shown card and does nothing else then: this
     //: listens first (capture) on the map's box, ahead of graph.js's own keys.
     box.addEventListener("keydown", (event) => {
@@ -5719,8 +5748,12 @@
     //: Nothing under the pointer: the shown card stays while the pointer is on
     //: its close button, and a moment after, to be reached.
     if (id == null && shown) {
-      if (shown._over) id = shown._for;
-      else if (shown._lingerAt == null) shown._lingerAt = performance.now();
+      //: Between the dot and the card (their joint box) the card stays however
+      //: slowly the pointer walks to the X; the linger only starts outside it.
+      if (shown._over || gcCardBridge(s, shown)) {
+        id = shown._for;
+        shown._lingerAt = null;
+      } else if (shown._lingerAt == null) shown._lingerAt = performance.now();
       if (id == null && performance.now() - shown._lingerAt < GC_CARD_LINGER_MS) {
         id = shown._for;
         if (!s._lingerTimer) s._lingerTimer = setTimeout(() => { s._lingerTimer = null; gcRequestDraw(s, true); }, GC_CARD_LINGER_MS + 1);
