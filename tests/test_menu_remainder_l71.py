@@ -22,8 +22,9 @@ def _rule(text: str, selector: str) -> str:
 
 def test_a_switch_row_in_a_dock_menu_is_a_menu_row() -> None:
     css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
-    row = _rule(css, ".doc-dock-menu-list .dock-menu-check")
-    assert "min-height: var(--control-h-lg)" in row
+    row = _rule(css, ".doc-dock-menu-list :is(.dock-menu-check, .doc-dock-menu-check)")
+    #: The button floor itself, so touch and phone widths get the 44px target too (390 stood at 34.5 against 44).
+    assert "min-height: max(var(--target-min), var(--button-min-h))" in row
     assert "padding-block: 0" in _rule(css, "#settings-modal .settings-section .doc-dock-menu-list .dock-menu-check")
     assert "width: 1.25em" in _rule(css, ".doc-dock-menu-list .dock-menu-check > .ph-lead")
     assert "order: 1" in _rule(css, ".doc-dock-menu-list .dock-menu-check > input")
@@ -67,3 +68,12 @@ def test_the_sweep_does_not_call_a_dialog_opener_or_a_lifted_list_a_finding() ->
     assert "select-opener:not([aria-haspopup=\"dialog\"])" in sweep
     assert "wbLiftMenuOffOptionsBar" in sweep
     assert "Math.max(m.natural, m.op.r - m.op.l)" in sweep
+
+
+def test_the_board_view_menus_switch_rows_are_walked_by_the_arrows():
+    """The View menu is two columns of switch rows: the arrows found one command and stopped."""
+    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    menus = (JS / "menus.js").read_text(encoding="utf-8")
+    assert '.wb-menu-row > input[type="checkbox"]' in board and '"menuitemcheckbox"' in board
+    assert "':scope > .wb-menu-col > [role=\"group\"] > [role=\"menuitem\"], '" in menus
+    assert "':scope [role=\"group\"] > .wb-menu-row > [role=\"menuitemcheckbox\"]'" in menus

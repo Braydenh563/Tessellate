@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Menus: switch rows in dock menus stand on the button height (44px under touch), the board View menu's switch rows take the arrow keys, Escape closes an open list before its menu, the zoom list is as wide as its numbers, and long rows in a phone sheet wrap; the menu sweep went from 31 findings to 1.
 - Tests and lints after the #222 merge: clock pins moved to `pin_clock`, MCP sign-in uses the one loopback host list, the five translation language packages have notice sentences, the warm-up worker builds its date pattern directly, the card link row reads one custom property from its `:has` anchor (paid for by `--cal-hours-min`), and a windowed build fixes its streams before the parse child starts.
 - Menus: the first ArrowDown in a menu whose first row opens a submenu (every note's ⋯, Atlas) moves to the next row again instead of opening the flyout and staying; the connection pill's ⋯ circle sits 3px inside the pill on the top, the bottom and the end (was 1, 1 and 3) (L-world-class-107).
 - Design re-measured at laptop widths: note cards 12 to 16px of padding with 14.72px text, Settings section heads at 650 over 400 labels, the toast clear of the dashboard head; one icon weight is now a lint, and the pinned model's dead fill class is gone (L-world-class-105).
