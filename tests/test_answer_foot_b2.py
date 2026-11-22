@@ -18,6 +18,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parent.parent
 KIT = (ROOT / "frontend/js/answer-kit.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend/css/answer-foot-lazy.css").read_text(encoding="utf-8")
@@ -144,7 +146,7 @@ def test_an_answers_actions_are_in_its_head_row() -> None:
     over the head's corner covered the byline and the first line at 390 with
     touch on. Chat and the popup agent put the row in the name row, in its
     flow, as Ask's column head does; a question's row stays under its bubble."""
-    chat = (ROOT / "frontend/js/chat-turn.js").read_text(encoding="utf-8")
+    chat = unwrapped((ROOT / "frontend/js/chat-turn.js").read_text(encoding="utf-8"))
     reopened = (ROOT / "frontend/js/sheets-selects.js").read_text(encoding="utf-8")
     palette = (ROOT / "frontend/js/palette.js").read_text(encoding="utf-8")
     #: The failed turn's row, and the one list the live and reopened paths share.
@@ -154,7 +156,7 @@ def test_an_answers_actions_are_in_its_head_row() -> None:
     assert shared.rstrip().endswith('return (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(row);')
     for text in (chat, reopened):
         assert "appendChild(\n    assistantMessageActions(" not in text and "appendChild(assistantMessageActions(" not in text
-    assert "      assistantMessageActions({\n        bubble: handles.bubble," in reopened
+    assert "  assistantMessageActions({\n    bubble: handles.bubble," in reopened
     assert "agentLabel.appendChild(\n    chatMessageActions([" in palette and "actionRow" not in palette
     head = CSS[CSS.index(".msg-role > .msg-actions {") :]
     head = head[: head.index("}")]

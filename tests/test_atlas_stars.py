@@ -14,7 +14,7 @@ Reduced motion keeps the drawn stars where they are.
 
 from __future__ import annotations
 
-from tests._js_scope import nmb_curve_js
+from tests._js_scope import nmb_curve_js, unwrapped
 import json
 import shutil
 import subprocess
@@ -25,7 +25,7 @@ from tests._css_paths import css_glob_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MOTION = nmb_curve_js() + (JS / "atlas-motion.js").read_text(encoding="utf-8")
+MOTION = nmb_curve_js() + unwrapped((JS / "atlas-motion.js").read_text(encoding="utf-8"))
 CSS = css_glob_text()
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

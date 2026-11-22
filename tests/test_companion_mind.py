@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MENU = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
 AV = (JS / "avatars.js").read_text(encoding="utf-8")
-MOTION = nmb_curve_js() + (JS / "atlas-motion.js").read_text(encoding="utf-8")
+MOTION = nmb_curve_js() + unwrapped((JS / "atlas-motion.js").read_text(encoding="utf-8"))
 MIND = nmb_curve_js() + MENU[MENU.index("const NMB_MIND_ACTS") :]
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

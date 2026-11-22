@@ -1800,6 +1800,109 @@ function relativeTime(iso) {
 //: fitting beside a conversation.
 const RECENT_CHATS_SHOWN = 8;
 
+//: The empty-state recipe (icon, title, one sentence, one action), drawn here and not
+//: shipped in the page (the boot element cap); the grey line it replaces had none of them.
+function chatListEmptyState(empty, term) {
+  const icon = document.createElement("span");
+  icon.className = "empty-icon";
+  icon.setAttribute("aria-hidden", "true");
+  setLabel(icon, "ph:chats");
+  const title = document.createElement("p");
+  title.className = "empty-title";
+  title.textContent = term ? "No chats match" : "No saved chats yet";
+  const hint = document.createElement("p");
+  hint.textContent = term ? "The search reads titles and what was said." : "Ask something to start one.";
+  empty.replaceChildren(icon, title, hint);
+  if (!term) {
+    const start = document.createElement("button");
+    start.type = "button";
+    start.className = "ghost small";
+    start.dataset.emptyAction = "new-chat";
+    setLabel(start, "ph:plus New chat");
+    empty.appendChild(start);
+  }
+}
+
+//: The ⋯ menu's rows for one saved chat, pin to delete (`loadConversationList`).
+function conversationMenuItems(conversation) {
+  const items = [];
+  items.push(
+    makeMenuItem(
+      conversation.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
+      conversation.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
+      async () => {
+        await apiJson(`/conversations/${conversation.id}/pin`, {
+          method: "PUT",
+          body: JSON.stringify({ pinned: !conversation.pinned }),
+        });
+        chatWriteRecord("chatPinUndo", conversation.id, !conversation.pinned);
+        loadConversationList();
+      }
+    )
+  );
+  items.push(
+    makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
+      const next = await promptTitle("Rename this chat", conversation.title);
+      if (!next) return;
+      await apiJson(`/conversations/${conversation.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title: next }),
+      });
+      chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
+      if (chatConv.id === conversation.id) $("chat-title").textContent = next;
+      loadConversationList();
+    })
+  );
+  items.push(
+    makeMenuItem("ph:folder Move to folder", "File this chat in a folder", async () => {
+      if (await lazyScript("/js/chat-order.js")) ChatOrder.move(conversation);
+    })
+  );
+  items.push(
+    makeMenuItem("ph:sparkle Name with Atlas", "Let Atlas name this chat", async () => {
+      //: Asked for, so answered directly: the activity notice below obeys
+      //: "AI activity: panel only", and with that set the click showed
+      //: nothing at all, start or finish (the owner at release).
+      toast("Atlas is naming this chat…");
+      const named = await apiJson(`/conversations/${conversation.id}/retitle`, {
+        method: "POST",
+      }).catch((e) => {
+        toast(e.message, true);
+        return null;
+      });
+      if (!named) return;
+      if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
+      if (named.title === conversation.title) toast(voiceLine("done", "Kept the first question as the title"));
+      else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
+      loadConversationList();
+    })
+  );
+  items.push(appLinkMenuItem("chat", conversation.id));
+  items.push(
+    // Not destructive, so not grouped with Delete below, same "keep it,
+    // but out of the way" action Notes already has for entries (BACKLOG
+    // §30b's named remaining scope: chats and documents). Reachable
+    // again from the Library's Shelved filter.
+    makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
+      await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
+      if (chatConv.id === conversation.id) newChatConversation();
+      //: Awaited, so the row is gone by the time the toast says where it went (AI21).
+      await loadConversationList();
+      chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
+    })
+  );
+  items.push(
+    makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
+      if (!(await confirmDialog("Delete this saved chat?"))) return;
+      const gone = await apiJson(`/conversations/${conversation.id}`, { method: "DELETE" });
+      if (chatConv.id === conversation.id) newChatConversation();
+      loadConversationList();
+      chatDeleteUndo(gone);
+    })
+  );
+  return items;
+}
+
 async function loadConversationList() {
   //: Placeholders while the list is on its way, and no "no saved chats"
   //: until the answer says so (INBOX 435 (6), skeletons.js).
@@ -1822,28 +1925,7 @@ async function loadConversationList() {
   list.replaceChildren();
   const empty = $("conv-empty");
   empty.classList.toggle("hidden", conversations.length > 0);
-  //: The empty-state recipe (icon, title, one sentence, one action), drawn here and not
-  //: shipped in the page (the boot element cap); the grey line it replaces had none of them.
-  if (!conversations.length) {
-    const icon = document.createElement("span");
-    icon.className = "empty-icon";
-    icon.setAttribute("aria-hidden", "true");
-    setLabel(icon, "ph:chats");
-    const title = document.createElement("p");
-    title.className = "empty-title";
-    title.textContent = term ? "No chats match" : "No saved chats yet";
-    const hint = document.createElement("p");
-    hint.textContent = term ? "The search reads titles and what was said." : "Ask something to start one.";
-    empty.replaceChildren(icon, title, hint);
-    if (!term) {
-      const start = document.createElement("button");
-      start.type = "button";
-      start.className = "ghost small";
-      start.dataset.emptyAction = "new-chat";
-      setLabel(start, "ph:plus New chat");
-      empty.appendChild(start);
-    }
-  }
+  if (!conversations.length) chatListEmptyState(empty, term);
 
   let sawUnpinned = !!view && view.group !== "none"; // a heading marks each group, so no divider
   for (const conversation of conversations) {
@@ -1923,81 +2005,7 @@ async function loadConversationList() {
     // taking most of the row, leaving a few characters of the chat's name.
     const actions = document.createElement("span");
     actions.className = "entry-actions";
-    const items = [];
-    items.push(
-      makeMenuItem(
-        conversation.pinned ? "ph:push-pin-slash Unpin" : "ph:push-pin Pin",
-        conversation.pinned ? "Let this chat sort by date again" : "Keep this chat at the top",
-        async () => {
-          await apiJson(`/conversations/${conversation.id}/pin`, {
-            method: "PUT",
-            body: JSON.stringify({ pinned: !conversation.pinned }),
-          });
-          chatWriteRecord("chatPinUndo", conversation.id, !conversation.pinned);
-          loadConversationList();
-        }
-      )
-    );
-    items.push(
-      makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptTitle("Rename this chat", conversation.title);
-        if (!next) return;
-        await apiJson(`/conversations/${conversation.id}`, {
-          method: "PUT",
-          body: JSON.stringify({ title: next }),
-        });
-        chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
-        if (chatConv.id === conversation.id) $("chat-title").textContent = next;
-        loadConversationList();
-      })
-    );
-    items.push(
-      makeMenuItem("ph:folder Move to folder", "File this chat in a folder", async () => {
-        if (await lazyScript("/js/chat-order.js")) ChatOrder.move(conversation);
-      })
-    );
-    items.push(
-      makeMenuItem("ph:sparkle Name with Atlas", "Let Atlas name this chat", async () => {
-        //: Asked for, so answered directly: the activity notice below obeys
-        //: "AI activity: panel only", and with that set the click showed
-        //: nothing at all, start or finish (the owner at release).
-        toast("Atlas is naming this chat…");
-        const named = await apiJson(`/conversations/${conversation.id}/retitle`, {
-          method: "POST",
-        }).catch((e) => {
-          toast(e.message, true);
-          return null;
-        });
-        if (!named) return;
-        if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
-        if (named.title === conversation.title) toast(voiceLine("done", "Kept the first question as the title"));
-        else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
-        loadConversationList();
-      })
-    );
-    items.push(appLinkMenuItem("chat", conversation.id));
-    items.push(
-      // Not destructive, so not grouped with Delete below, same "keep it,
-      // but out of the way" action Notes already has for entries (BACKLOG
-      // §30b's named remaining scope: chats and documents). Reachable
-      // again from the Library's Shelved filter.
-      makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
-        await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
-        if (chatConv.id === conversation.id) newChatConversation();
-        //: Awaited, so the row is gone by the time the toast says where it went (AI21).
-        await loadConversationList();
-        chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
-      })
-    );
-    items.push(
-      makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
-        if (!(await confirmDialog("Delete this saved chat?"))) return;
-        const gone = await apiJson(`/conversations/${conversation.id}`, { method: "DELETE" });
-        if (chatConv.id === conversation.id) newChatConversation();
-        loadConversationList();
-        chatDeleteUndo(gone);
-      })
-    );
+    const items = conversationMenuItems(conversation);
     //: Six rows is past the ceiling (DESIGN.md): what you do to it, its address, and the two that put it away.
     const group = (item) => (/Copy app link/.test(item.label) ? "copy" : /Archive|Delete/.test(item.label) ? "end" : "act");
     actions.appendChild(kebabMenu(items.map((item) => ({ ...item, group: group(item) })), `Actions for ${conversation.title}`, { vertical: true }));
@@ -2014,6 +2022,129 @@ function editedMarker() {
   tag.textContent = "edited by you";
   tag.title = "You changed this answer after the model wrote it";
   return tag;
+}
+
+//: One saved assistant turn drawn back into the pane: its run, badge, sources, chips and actions (`openConversation`).
+function replaySavedAssistantMessage(message, lastQuestionText) {
+  const handles = addAssistantBubble(message.persona || null);
+  // Replay the run in the order it happened when the turn recorded one.
+  // Older turns (saved before steps existed) only have the flattened
+  // thinking/tools/answer, so they're rebuilt in that fixed order, 
+  // everything is still shown, just without the interleaving.
+  if (message.steps?.length) {
+    handles.timeline.replay(message.steps);
+  } else {
+    if (message.thinking) handles.timeline.thinking(message.thinking);
+    // Re-draw the tool-activity chips (Wave G) so they don't vanish on
+    // reload the way they used to (user-reported).
+    for (const t of message.tools || []) {
+      handles.timeline.tool(toolChip(t.label, t.ok !== false, t));
+    }
+    if (message.content) handles.timeline.answer(message.content);
+  }
+  handles.timeline.finalise();
+  //: …and the step group, so a replayed turn does not reopen with
+  //: "Working: 3 steps" over a conversation that finished yesterday.
+  handles.timeline.finish?.();
+  // Rebuild the metadata line. Reported in IDEAS.md as "chat message
+  // metadata disappears on reload": it was only ever built from the live
+  // stream, so reopening a chat showed answers with nothing to say which
+  // model wrote them or what they cost. Turns saved before this stored no
+  // stats and correctly get no line, rather than a row of "?"s.
+  //: Badge and note card as the live answer drew them (INBOX 1693): `by` is saved with the reply.
+  const by = message.by;
+  if (by) finishReply(null, { ...by, bubble: handles.bubble, why: message.why, records: handles.recordsHolder });
+  //: A reopened conversation gets its meter back from the last turn that recorded one.
+  if (message.stats) renderChatContextMeter(message.stats);
+  if (message.wrote) handles.bubble.dataset.wrote = "1";
+  if (message.stats || by) {
+    handles.bubble.appendChild(
+      messageMetaLine({
+        ...message, // stats and stopped, as saved
+        model: (message.stats || by).model,
+        elapsedMs: message.elapsed_ms,
+        toolCount: (message.tools || []).length,
+        rounds: (message.stats || by).round || 0,
+        usedTools: message.used_tools,
+      })
+    );
+  }
+  //: The Sources panel is rebuilt, not the old "N matching notes" disclosure; `touched` comes off the saved tool events.
+  const savedInput = {
+    meta: {
+      raw_results: message.raw_results || [],
+      search_mode: message.search_mode,
+    },
+    toolEvents: message.tools || [],
+    touched: (message.tools || []).flatMap((t) => t.touched || []),
+    sentences: message.sentence_grounding,
+    composed: Boolean(message.by?.composed),
+  };
+  //: The panel's order, built once and handed to the citation pass below
+  //: as the live path does (chat-attach.js, `turnSources`). Reopening
+  //: passed `null` there, so the marks fell back to "order first cited"
+  //: and a note that was 8 in the panel read 1 in the prose while its
+  //: peek showed source 8 (the owner, INBOX 430).
+  const savedOrder = chatSourcesFrom(savedInput);
+  const savedSources = chatSourcesPanel({ ...savedInput, sources: savedOrder });
+  if (savedSources) {
+    handles.recordsHolder.appendChild(savedSources);
+  } else if (message.raw_results) {
+    renderRecordsDetails(handles.recordsHolder, { ...message, match_info: message.match_info || {}, connected_ids: message.connected_ids || [] });
+  }
+  // Same reload-reconstruction fix as raw_results just above, for the
+  // "Grounded in" chips: reported directly as disappearing once the chat
+  // tab was left or the session ended, since nothing rebuilt this on
+  // reopen either.
+  if (message.sentence_grounding) {
+    renderAnswerGrounding(
+      handles.groundingHolder,
+      message.sentence_grounding,
+      message.raw_results || [],
+      handles.bubble?.querySelectorAll(".bubble-answer") || null,
+      "",
+      savedOrder,
+      //: Saved on the turn by the server from the same counter the live
+      //: stream used, so the notice survives reopening the chat.
+      message.support || null,
+      message.picture_alts || null
+    );
+  }
+  placeAnswerFigures(handles.bubble?.querySelectorAll(".bubble-answer"), message, lastQuestionText);
+  // And the same shape again for the "what to ask next" chips, reported
+  // separately: "suggested repsponse continuation prompts in chat doesnt
+  // persist and disappears once I switch chat sessions or quit the app".
+  // Rendered through the same function the live path uses, so a restored
+  // chip is not a slightly different chip.
+  if (message.followups) {
+    renderFollowups(handles.bubble, message.followups);
+  }
+  renderToolConfirm.saved(handles, message);
+  //: And the Resume and Edit-step buttons, which disappeared on reopen for
+  //: the same reason and are rebuilt through the same function the live
+  //: path uses, from the state saved with the turn.
+  if (message.resume) {
+    appendRunResumeControls(handles.bubble, {
+      ...message.resume,
+      timeline: handles.timeline,
+    });
+  }
+  const turnIndex = chatConv.turns.length; // index this pair will occupy
+  if (message.edited) handles.bubble.appendChild(editedMarker());
+  //: The same list the live stream builds, see `assistantMessageActions`.
+  //: These two paths had already drifted (this one had Edit and no fork or
+  //: rewrite; the live one the reverse), which is how a fix lands on half
+  //: the app's messages.
+  assistantMessageActions({
+    bubble: handles.bubble,
+    text: message.content,
+    question: lastQuestionText,
+    message,
+    onEdit: () => editChatAnswer(handles, turnIndex, message.content),
+  });
+  if (lastQuestionText !== null) {
+    chatConv.turns.push({ question: lastQuestionText, answer: message.content, objects: message.objects, frame: message.frame });
+  }
 }
 
 async function openConversation(id, turn = null) {
@@ -2077,125 +2208,7 @@ async function openConversation(id, turn = null) {
       const asked = addBubble("user", message.content, message.attachments);
       if (message.followup_of) markFollowup(asked, message.followup_of);
     } else {
-      const handles = addAssistantBubble(message.persona || null);
-      // Replay the run in the order it happened when the turn recorded one.
-      // Older turns (saved before steps existed) only have the flattened
-      // thinking/tools/answer, so they're rebuilt in that fixed order, 
-      // everything is still shown, just without the interleaving.
-      if (message.steps?.length) {
-        handles.timeline.replay(message.steps);
-      } else {
-        if (message.thinking) handles.timeline.thinking(message.thinking);
-        // Re-draw the tool-activity chips (Wave G) so they don't vanish on
-        // reload the way they used to (user-reported).
-        for (const t of message.tools || []) {
-          handles.timeline.tool(toolChip(t.label, t.ok !== false, t));
-        }
-        if (message.content) handles.timeline.answer(message.content);
-      }
-      handles.timeline.finalise();
-      //: …and the step group, so a replayed turn does not reopen with
-      //: "Working: 3 steps" over a conversation that finished yesterday.
-      handles.timeline.finish?.();
-      // Rebuild the metadata line. Reported in IDEAS.md as "chat message
-      // metadata disappears on reload": it was only ever built from the live
-      // stream, so reopening a chat showed answers with nothing to say which
-      // model wrote them or what they cost. Turns saved before this stored no
-      // stats and correctly get no line, rather than a row of "?"s.
-      //: Badge and note card as the live answer drew them (INBOX 1693): `by` is saved with the reply.
-      const by = message.by;
-      if (by) finishReply(null, { ...by, bubble: handles.bubble, why: message.why, records: handles.recordsHolder });
-      //: A reopened conversation gets its meter back from the last turn that recorded one.
-      if (message.stats) renderChatContextMeter(message.stats);
-      if (message.wrote) handles.bubble.dataset.wrote = "1";
-      if (message.stats || by) {
-        handles.bubble.appendChild(
-          messageMetaLine({
-            ...message, // stats and stopped, as saved
-            model: (message.stats || by).model,
-            elapsedMs: message.elapsed_ms,
-            toolCount: (message.tools || []).length,
-            rounds: (message.stats || by).round || 0,
-            usedTools: message.used_tools,
-          })
-        );
-      }
-      //: The Sources panel is rebuilt, not the old "N matching notes" disclosure; `touched` comes off the saved tool events.
-      const savedInput = {
-        meta: {
-          raw_results: message.raw_results || [],
-          search_mode: message.search_mode,
-        },
-        toolEvents: message.tools || [],
-        touched: (message.tools || []).flatMap((t) => t.touched || []),
-        sentences: message.sentence_grounding,
-        composed: Boolean(message.by?.composed),
-      };
-      //: The panel's order, built once and handed to the citation pass below
-      //: as the live path does (chat-attach.js, `turnSources`). Reopening
-      //: passed `null` there, so the marks fell back to "order first cited"
-      //: and a note that was 8 in the panel read 1 in the prose while its
-      //: peek showed source 8 (the owner, INBOX 430).
-      const savedOrder = chatSourcesFrom(savedInput);
-      const savedSources = chatSourcesPanel({ ...savedInput, sources: savedOrder });
-      if (savedSources) {
-        handles.recordsHolder.appendChild(savedSources);
-      } else if (message.raw_results) {
-        renderRecordsDetails(handles.recordsHolder, { ...message, match_info: message.match_info || {}, connected_ids: message.connected_ids || [] });
-      }
-      // Same reload-reconstruction fix as raw_results just above, for the
-      // "Grounded in" chips: reported directly as disappearing once the chat
-      // tab was left or the session ended, since nothing rebuilt this on
-      // reopen either.
-      if (message.sentence_grounding) {
-        renderAnswerGrounding(
-          handles.groundingHolder,
-          message.sentence_grounding,
-          message.raw_results || [],
-          handles.bubble?.querySelectorAll(".bubble-answer") || null,
-          "",
-          savedOrder,
-          //: Saved on the turn by the server from the same counter the live
-          //: stream used, so the notice survives reopening the chat.
-          message.support || null,
-          message.picture_alts || null
-        );
-      }
-      placeAnswerFigures(handles.bubble?.querySelectorAll(".bubble-answer"), message, lastQuestionText);
-      // And the same shape again for the "what to ask next" chips, reported
-      // separately: "suggested repsponse continuation prompts in chat doesnt
-      // persist and disappears once I switch chat sessions or quit the app".
-      // Rendered through the same function the live path uses, so a restored
-      // chip is not a slightly different chip.
-      if (message.followups) {
-        renderFollowups(handles.bubble, message.followups);
-      }
-      renderToolConfirm.saved(handles, message);
-      //: And the Resume and Edit-step buttons, which disappeared on reopen for
-      //: the same reason and are rebuilt through the same function the live
-      //: path uses, from the state saved with the turn.
-      if (message.resume) {
-        appendRunResumeControls(handles.bubble, {
-          ...message.resume,
-          timeline: handles.timeline,
-        });
-      }
-      const turnIndex = chatConv.turns.length; // index this pair will occupy
-      if (message.edited) handles.bubble.appendChild(editedMarker());
-      //: The same list the live stream builds, see `assistantMessageActions`.
-      //: These two paths had already drifted (this one had Edit and no fork or
-      //: rewrite; the live one the reverse), which is how a fix lands on half
-      //: the app's messages.
-      assistantMessageActions({
-        bubble: handles.bubble,
-        text: message.content,
-        question: lastQuestionText,
-        message,
-        onEdit: () => editChatAnswer(handles, turnIndex, message.content),
-      });
-      if (lastQuestionText !== null) {
-        chatConv.turns.push({ question: lastQuestionText, answer: message.content, objects: message.objects, frame: message.frame });
-      }
+      replaySavedAssistantMessage(message, lastQuestionText);
     }
   }
   // A conversation that is still being answered has not saved that turn yet, 

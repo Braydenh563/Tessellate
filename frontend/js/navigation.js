@@ -379,6 +379,24 @@ function mermaidSoon(block) {
   }, 400);
 }
 
+//: A line of only this app's links is a row of ghost buttons; true when it drew one (`renderMarkdown`).
+function mdAppLinkRow(container, para) {
+  const appLinks = para.length === 1 ? [...para[0].matchAll(/\[([^[\]\n]+)\]\((#\/[^)\s]+)\)/g)] : [];
+  if (appLinks[0] && !para[0].replace(/\[[^[\]\n]*\]\(#[^()\n]*\)|[\s·]/g, "")) {
+    const row = container.appendChild(document.createElement("div"));
+    row.className = "row";
+    row.style.flexWrap = "wrap";
+    for (const [, label, address] of appLinks) {
+      const button = row.appendChild(document.createElement("button"));
+      button.className = "ghost small";
+      button.textContent = label;
+      button.onclick = () => { location.hash = address; };
+    }
+    return true;
+  }
+  return false;
+}
+
 function renderMarkdown(container, text, depth = 0) {
   container.replaceChildren();
   let lines = unlatex(text).replace(/\r\n/g, "\n").split("\n");
@@ -751,19 +769,7 @@ function renderMarkdown(container, text, depth = 0) {
       i++;
     }
     //: A line of only this app's links is a row of ghost buttons.
-    const appLinks = para.length === 1 ? [...para[0].matchAll(/\[([^[\]\n]+)\]\((#\/[^)\s]+)\)/g)] : [];
-    if (appLinks[0] && !para[0].replace(/\[[^[\]\n]*\]\(#[^()\n]*\)|[\s·]/g, "")) {
-      const row = container.appendChild(document.createElement("div"));
-      row.className = "row";
-      row.style.flexWrap = "wrap";
-      for (const [, label, address] of appLinks) {
-        const button = row.appendChild(document.createElement("button"));
-        button.className = "ghost small";
-        button.textContent = label;
-        button.onclick = () => { location.hash = address; };
-      }
-      continue;
-    }
+    if (mdAppLinkRow(container, para)) continue;
     //: **A link on a line of its own is a card** (CHAT_PLAN.md decision 12,
     //: INBOX 172: web links the AI writes, "better and more modern cool").
     //: A link inside a sentence stays inline, because a card in the middle of

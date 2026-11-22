@@ -904,41 +904,41 @@ function editorCodeLanguageRows() {
   }));
 }
 
-function editorBlockRows(context) {
-  //: **Edits with no model** (CHAT_PLAN B26): tighten or summarise the selection, or
-  //: continue the list the caret ends. The route (`POST /read/edit`) only takes from
-  //: the text it is given. A textarea takes the result as typed text, so the browser's
-  //: own Undo puts the original back in one step; CodeMirror gets a transaction.
-  async function editorNoModelEdit(textarea, op) {
-    const from = textarea.selectionStart;
-    const to = textarea.selectionEnd;
-    const value = String(textarea.value || "");
-    const source = op === "continue" ? value.slice(Math.max(0, from - 2000), from) : value.slice(from, to);
-    if (!source.trim()) return toast(op === "continue" ? "Put the caret at the end of a list first." : "Select some text first.", "info");
-    const got = await apiJson("/read/edit", { method: "POST", body: JSON.stringify({ op, text: source }) }).catch((e) => toast(e.message, true));
-    if (!got) return;
-    const nothing = { tighten: "Nothing to tighten in that.", summarise: "There is no sentence there to summarise.", continue: "The caret is not at the end of a list." }[op];
-    if (got.same) return toast(nothing, "info");
-    const text = op === "continue" ? `\n${got.text}` : got.text;
-    const end = op === "continue" ? from : to;
-    const old = value.slice(from, end);
-    const put = (was, now) => {
-      editorSplice(textarea, from, from + was.length, now, null);
-      editorNotifyHost(textarea);
-    };
-    if (textarea.kind === "codemirror" || typeof textarea.setRangeText !== "function") {
-      editorSplice(textarea, from, end, text, null);
-    } else {
-      textarea.focus();
-      textarea.setSelectionRange(from, end);
-      if (!document.execCommand("insertText", false, text)) editorSplice(textarea, from, end, text, null);
-    }
+//: **Edits with no model** (CHAT_PLAN B26): tighten or summarise the selection, or
+//: continue the list the caret ends. The route (`POST /read/edit`) only takes from
+//: the text it is given. A textarea takes the result as typed text, so the browser's
+//: own Undo puts the original back in one step; CodeMirror gets a transaction.
+async function editorNoModelEdit(textarea, op) {
+  const from = textarea.selectionStart;
+  const to = textarea.selectionEnd;
+  const value = String(textarea.value || "");
+  const source = op === "continue" ? value.slice(Math.max(0, from - 2000), from) : value.slice(from, to);
+  if (!source.trim()) return toast(op === "continue" ? "Put the caret at the end of a list first." : "Select some text first.", "info");
+  const got = await apiJson("/read/edit", { method: "POST", body: JSON.stringify({ op, text: source }) }).catch((e) => toast(e.message, true));
+  if (!got) return;
+  const nothing = { tighten: "Nothing to tighten in that.", summarise: "There is no sentence there to summarise.", continue: "The caret is not at the end of a list." }[op];
+  if (got.same) return toast(nothing, "info");
+  const text = op === "continue" ? `\n${got.text}` : got.text;
+  const end = op === "continue" ? from : to;
+  const old = value.slice(from, end);
+  const put = (was, now) => {
+    editorSplice(textarea, from, from + was.length, now, null);
     editorNotifyHost(textarea);
-    //: The app's Undo too (Ctrl+Z works in the box; the toast works from anywhere).
-    const [label, said] = { tighten: ["Tighten", "Tightened the selection."], summarise: ["Summarise", "Summarised the selection."], continue: ["Continue the list", "Added the next line."] }[op];
-    offerUndo(label, said, () => put(text, old), () => put(old, text));
+  };
+  if (textarea.kind === "codemirror" || typeof textarea.setRangeText !== "function") {
+    editorSplice(textarea, from, end, text, null);
+  } else {
+    textarea.focus();
+    textarea.setSelectionRange(from, end);
+    if (!document.execCommand("insertText", false, text)) editorSplice(textarea, from, end, text, null);
   }
+  editorNotifyHost(textarea);
+  //: The app's Undo too (Ctrl+Z works in the box; the toast works from anywhere).
+  const [label, said] = { tighten: ["Tighten", "Tightened the selection."], summarise: ["Summarise", "Summarised the selection."], continue: ["Continue the list", "Added the next line."] }[op];
+  offerUndo(label, said, () => put(text, old), () => put(old, text));
+}
 
+function editorBlockRows(context) {
   const inDocument = context === "document";
   const rows = [];
   const add = (row) => rows.push(row);

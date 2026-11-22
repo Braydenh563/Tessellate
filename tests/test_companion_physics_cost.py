@@ -129,7 +129,7 @@ def test_the_atlas_rig_reads_style_once_before_it_writes_any() -> None:
     # A thrown Atlas ran at 29 fps at 1x CPU and 5 fps at 4x: each arm read its
     # probe and then wrote its transform, so the next arm's read (and the
     # head's) forced another restyle, on top of the flight's own writes.
-    motion = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
+    motion = unwrapped((ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8"))
     # (Since INBOX 1766 the reads are the look's, a task after a drawn frame; the frame reads nothing.)
     start = motion.index("atlasRigWake.look = function atlasRigLook(")
     body = motion[start : motion.index("\n};\n", start)]

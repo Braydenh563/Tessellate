@@ -174,6 +174,54 @@
     }
     return mask;
   }
+  //: Long sentences, measured over the prose only. Code fences and headings
+  //: are skipped: a fenced block has no sentences, and a heading that runs
+  //: long is a heading, not a run-on.
+  //: Headings, list items and table rows are blanked first (same length, so
+  //: every offset holds): "- a, b and c" run together over a pasted list was
+  //: one 90-word sentence, and a list item is not a sentence anyway (K4b).
+  function docLongSentences(text, found) {
+    const sentences = docStructuralBlank(text);
+    const paragraphBreak = /\n[ \t]*\n/g;
+    const chunks = [];
+    let last = 0;
+    let split;
+    while ((split = paragraphBreak.exec(sentences)) !== null) {
+      chunks.push([last, split.index]);
+      last = split.index + split[0].length;
+    }
+    chunks.push([last, sentences.length]);
+    for (const [at, to] of chunks) {
+      const chunk = sentences.slice(at, to);
+      if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
+      //: A sentence ends at . ! ? and a space, or at 。！？ with none (L-chat-259), each piece keeping its own offset.
+      const ends = /(?<=[.!?])\s+|(?<=[。！？])\s*/g;
+      let cursor = 0;
+      const pieces = [];
+      let cut;
+      while ((cut = ends.exec(chunk)) !== null) {
+        if (cut[0] === "") ends.lastIndex += 1;
+        if (cut.index > cursor) pieces.push([cursor, cut.index]);
+        cursor = cut.index + cut[0].length;
+      }
+      if (cursor < chunk.length) pieces.push([cursor, chunk.length]);
+      for (const [from, to] of pieces) {
+        const sentence = chunk.slice(from, to);
+        const words = docProse.words(sentence);
+        if (words > DOC_LONG_SENTENCE_WORDS) {
+          found.push({
+            rule: "long-sentence",
+            message: `${nounCount(words, "word")} in one sentence`,
+            start: at + from,
+            end: at + to,
+            text: text.slice(at + from, at + to),
+            replacement: null,
+          });
+        }
+      }
+    }
+  }
+
   //: Findings, in document order, each with the exact span it is about so the
   //: panel can jump to it and the fix can replace it without searching for the
   //: text again (which would find the wrong occurrence in a document that says
@@ -319,51 +367,8 @@
     //: Another language: its installed spelling pack answers in the worker (documents-spell.js, D30)
     //: and finds nothing until it has, or when no pack is installed.
     if (!english) found.push(...docSpell.packFindings(text, lang, skipped));
-    //: Long sentences, measured over the prose only. Code fences and headings
-    //: are skipped: a fenced block has no sentences, and a heading that runs
-    //: long is a heading, not a run-on.
-    //: Headings, list items and table rows are blanked first (same length, so
-    //: every offset holds): "- a, b and c" run together over a pasted list was
-    //: one 90-word sentence, and a list item is not a sentence anyway (K4b).
-    const sentences = docStructuralBlank(text);
-    const paragraphBreak = /\n[ \t]*\n/g;
-    const chunks = [];
-    let last = 0;
-    let split;
-    while ((split = paragraphBreak.exec(sentences)) !== null) {
-      chunks.push([last, split.index]);
-      last = split.index + split[0].length;
-    }
-    chunks.push([last, sentences.length]);
-    for (const [at, to] of chunks) {
-      const chunk = sentences.slice(at, to);
-      if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
-      //: A sentence ends at . ! ? and a space, or at 。！？ with none (L-chat-259), each piece keeping its own offset.
-      const ends = /(?<=[.!?])\s+|(?<=[。！？])\s*/g;
-      let cursor = 0;
-      const pieces = [];
-      let cut;
-      while ((cut = ends.exec(chunk)) !== null) {
-        if (cut[0] === "") ends.lastIndex += 1;
-        if (cut.index > cursor) pieces.push([cursor, cut.index]);
-        cursor = cut.index + cut[0].length;
-      }
-      if (cursor < chunk.length) pieces.push([cursor, chunk.length]);
-      for (const [from, to] of pieces) {
-        const sentence = chunk.slice(from, to);
-        const words = docProse.words(sentence);
-        if (words > DOC_LONG_SENTENCE_WORDS) {
-          found.push({
-            rule: "long-sentence",
-            message: `${nounCount(words, "word")} in one sentence`,
-            start: at + from,
-            end: at + to,
-            text: text.slice(at + from, at + to),
-            replacement: null,
-          });
-        }
-      }
-    }
+    //: Long sentences, measured over the prose only (`docLongSentences`).
+    docLongSentences(text, found);
     return found
       .filter((finding) => !docProseIgnored.has(docProseKey(finding)))
       .sort((a, b) => a.start - b.start);

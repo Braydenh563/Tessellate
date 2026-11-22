@@ -137,45 +137,45 @@ function markSaidSentences(targets, sentences) {
   }
 }
 
+//: The notes a bulk act names (X14): the first five, then "Show all N" for the rest; null when there are none.
+function actItemList(items) {
+  const ACT_ITEMS_SHOWN = 5;
+  if (!items || !items.length) return null;
+  const list = document.createElement("ul");
+  list.className = "act-items";
+  items.forEach((title, at) => {
+    const row = document.createElement("li");
+    row.textContent = title;
+    if (at >= ACT_ITEMS_SHOWN) row.hidden = true;
+    list.appendChild(row);
+  });
+  if (items.length > ACT_ITEMS_SHOWN) {
+    const more = document.createElement("li");
+    const button = smallButton(`Show all ${items.length}`, "List every note this changes", () => {
+      for (const row of list.children) row.hidden = false;
+      more.remove();
+    });
+    more.appendChild(button);
+    list.appendChild(more);
+  }
+  return list;
+}
+//: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
+//: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
+function applyThemeSteps(steps, result) {
+  const step = (steps || []).find((one) => one.name === "set_theme");
+  if (!step || !result) return result;
+  const before = prefs.get("theme", null) || "system";
+  applyThemeChoice(step.arguments.theme, true);
+  for (const inverse of result.undo || []) if (inverse.name === "set_theme") inverse.arguments = { theme: before };
+  return result;
+}
 //: **An act's card, with no model** (CHAT_PLAN decision 38): the exact change
 //: in one line, the notes it names, and either Confirm and Cancel (a delete,
 //: a rename, a move or a tag waits for them) or, once it ran (a reminder, a
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
 function renderActCard(holder, event) {
-  //: The notes a bulk act names (X14): the first five, then "Show all N" for the rest; null when there are none.
-  function actItemList(items) {
-    const ACT_ITEMS_SHOWN = 5;
-    if (!items || !items.length) return null;
-    const list = document.createElement("ul");
-    list.className = "act-items";
-    items.forEach((title, at) => {
-      const row = document.createElement("li");
-      row.textContent = title;
-      if (at >= ACT_ITEMS_SHOWN) row.hidden = true;
-      list.appendChild(row);
-    });
-    if (items.length > ACT_ITEMS_SHOWN) {
-      const more = document.createElement("li");
-      const button = smallButton(`Show all ${items.length}`, "List every note this changes", () => {
-        for (const row of list.children) row.hidden = false;
-        more.remove();
-      });
-      more.appendChild(button);
-      list.appendChild(more);
-    }
-    return list;
-  }
-  //: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
-  //: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
-  function applyThemeSteps(steps, result) {
-    const step = (steps || []).find((one) => one.name === "set_theme");
-    if (!step || !result) return result;
-    const before = prefs.get("theme", null) || "system";
-    applyThemeChoice(step.arguments.theme, true);
-    for (const inverse of result.undo || []) if (inverse.name === "set_theme") inverse.arguments = { theme: before };
-    return result;
-  }
   //: The card a typed yes or no answered: found by its id, which stays on it after a send marks it not pending.
   const waitingCard = (reply) => [...document.querySelectorAll(".tool-confirm")].filter((card) => (reply.consent_id ? card.consentId === reply.consent_id : !reply.label || card.dataset.askedAct === reply.label)).at(-1);
   //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the
@@ -1026,6 +1026,33 @@ async function fetchComposedPeek(question, history, body) {
   }
 }
 
+//: A counting or trend question's chart, asked in parallel from the records so it lands whether or not the model answers (`askQuestion`).
+function askBeginChart(question) {
+  const chartHost = $("ask-chart");
+  if (chartHost) {
+    chartHost.replaceChildren();
+    chartHost.classList.add("hidden");
+    delete chartHost.dataset.streamed;
+    //: A chart the answer's own stream drew (`onChart` below) is not wiped by
+    //: the parallel fetch coming back empty (L-chat-60).
+    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question && !chartHost.dataset.streamed)).catch(() => {});
+  }
+}
+
+//: The wait on screen: the results grid opens at once with its records column saying it is searching (`askQuestion`).
+function askShowSearching() {
+  const searching = document.createElement("li");
+  searching.className = "muted";
+  setLabel(searching, "ph:spin Searching your notes…");
+  $("raw-results").replaceChildren(searching);
+  digestMore.threads?.(null);
+  document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
+  $("chat-results").classList.remove("hidden");
+  $("ask-idle")?.classList.add("hidden");
+  $("ai-answer-grounding").replaceChildren();
+  $("ai-answer-grounding").classList.add("hidden");
+}
+
 async function askQuestion(preset) {
   const status = $("ask-status");
   const questionBox = $("question");
@@ -1071,15 +1098,7 @@ async function askQuestion(preset) {
   //: A counting or trend question gets its chart beside the answer
   //: (WORLD_CLASS_PLAN section 17 row 4): asked in parallel, from the
   //: records, so it lands whether or not the model answers.
-  const chartHost = $("ask-chart");
-  if (chartHost) {
-    chartHost.replaceChildren();
-    chartHost.classList.add("hidden");
-    delete chartHost.dataset.streamed;
-    //: A chart the answer's own stream drew (`onChart` below) is not wiped by
-    //: the parallel fetch coming back empty (L-chat-60).
-    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question && !chartHost.dataset.streamed)).catch(() => {});
-  }
+  askBeginChart(question);
   //: After the reset, not before it: the progress line lives inside the
   //: answer box now, so creating it first would only have it wiped.
   //: No words of its own: `streamChat` drives the phase line from the events
@@ -1091,16 +1110,7 @@ async function askQuestion(preset) {
   //: still hidden until the first event (measured: 0x0 for the whole wait),
   //: so the grid opens now, the records column saying it is searching until
   //: `onMeta` replaces the row.
-  const searching = document.createElement("li");
-  searching.className = "muted";
-  setLabel(searching, "ph:spin Searching your notes…");
-  $("raw-results").replaceChildren(searching);
-  digestMore.threads?.(null);
-  document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
-  $("chat-results").classList.remove("hidden");
-  $("ask-idle")?.classList.add("hidden");
-  $("ai-answer-grounding").replaceChildren();
-  $("ai-answer-grounding").classList.add("hidden");
+  askShowSearching();
   //: The whole foot goes with it, not only the grounding chips: a sources
   //: disclosure kept open from the previous question is a list of notes that
   //: have nothing to do with the one being asked.

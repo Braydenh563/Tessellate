@@ -471,7 +471,7 @@ EXEMPT: dict[str, str] = {
     "studio.js:start": "job: starts a studio run that saves a new recording the person can delete; changes no existing note",
     "sync-folder.js:build": "send: a sync keeps the older text of any note it replaces in that note's History, and a note it binned is in the recycle bin",
     "answer-kit.js:toolChip": "send: Fetch again refreshes the kept copy of a web page from the web; nothing the person wrote changes",
-    "answer-kit.js:keptPagesRow": "read: asks how old the kept web pages are; its Fetch again refreshes a kept copy, nothing the person wrote changes",
+    "answer-kit.js:chatKeptPagesRow": "read: asks how old the kept web pages are; its Fetch again refreshes a kept copy, nothing the person wrote changes",
     "settings-controls.js:(anonymous /websearch/stored)": "send: clears the cache of fetched web pages; each fetches again when next asked, nothing the person wrote is lost",
     "settings-controls.js:renderLearnedFromYou": "send: forgets the answers marked not right, kept only on this device; nothing the person wrote is lost and the button names it",
     "whiteboard-format.js:(anonymous /media/${meta.id}/library)": "send: files a board picture into the Library on request (K18); deleting it from the Library takes it out again, the board keeps it",
