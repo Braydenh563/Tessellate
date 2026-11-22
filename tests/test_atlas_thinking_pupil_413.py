@@ -6,7 +6,6 @@ in the sweep). The placement is now 0.8px by 0.9px, which the sweep measures as 
 """
 
 import re
-from pathlib import Path
 from tests._css_paths import FORMER_08, sheets
 
 CSS = sheets(*FORMER_08)
