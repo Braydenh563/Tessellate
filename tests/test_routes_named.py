@@ -31,7 +31,11 @@ _LITERAL = re.compile(r"""["'`](/[A-Za-z0-9_\-./{}$%:+]*)""")
 
 
 def route_table(app) -> set[tuple[str, str]]:  # noqa: ANN001
-    """(method, path) for every route; FastAPI keeps included routers as nodes."""
+    """(method, path) for every route; FastAPI keeps included routers as nodes, and a
+    lazy row (`api/lazy_routes.py`) is empty until loaded, so every row is loaded first."""
+    from tessellate.api.lazy_routes import load_all_routes
+
+    load_all_routes(app)
     out: set[tuple[str, str]] = set()
 
     def walk(routes, prefix: str) -> None:  # noqa: ANN001

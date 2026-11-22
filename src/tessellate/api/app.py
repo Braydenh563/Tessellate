@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Callable, NamedTuple
 from urllib.parse import parse_qs
 
-from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -38,104 +38,7 @@ from tessellate import __version__
 from tessellate.ai import autonomous, embeddings
 from tessellate.search import searxng_manager
 from tessellate.api import versioning
-from tessellate.api import (
-    asset_strip,
-    routes_ask_history,
-    routes_capabilities,
-    routes_mcp,
-    routes_mcp_oauth,
-    routes_auth,
-    routes_bookmarks,
-    routes_categories,
-    routes_chat,
-    routes_groups,
-    routes_chat_meta,
-    routes_conversations,
-    routes_debug,
-    routes_documents,
-    run_sandbox,
-    routes_backups,
-    routes_duplicates,
-    routes_tidy,
-    routes_drafts,
-    routes_learned,
-    routes_learned_audit,
-    routes_meetings,
-    routes_mentions,
-    routes_inbox,
-    routes_entities,
-    routes_relations,
-    routes_kept_words,
-    routes_properties,
-    routes_property_table,
-    routes_bench,
-    routes_editor,
-    routes_import,
-    routes_usage,
-    routes_night,
-    routes_questions,
-    routes_read,
-    routes_spelling,
-    routes_statistics,
-    routes_utilities,
-    routes_privacy,
-    routes_vision,
-    routes_resurface,
-    routes_entries,
-    routes_entries_history,
-    routes_entries_links,
-    routes_entries_reevaluate,
-    routes_entries_relations,
-    routes_files,
-    routes_files_ocr,
-    routes_files_readings,
-    routes_reading_bin,
-    routes_graph,
-    routes_help,
-    routes_insights,
-    routes_diag,
-    routes_lag,
-    routes_library,
-    routes_library_meta,
-    routes_maintenance,
-    routes_models,
-    routes_recordings,
-    routes_reminders,
-    routes_settings,
-    routes_settings_extras,
-    routes_settings_logs,
-    routes_settings_transfer,
-    routes_spaces,
-    routes_folder_sync,
-    routes_studio,
-    routes_sync,
-    routes_hello,
-    routes_origin_handoff,
-    routes_private_spaces,
-    routes_tasks,
-    routes_timeline,
-    routes_search,
-    routes_tags,
-    routes_translate,
-    routes_update,
-    routes_captions,
-    routes_voice,
-    routes_webclip,
-    routes_websearch,
-    routes_whiteboard,
-    routes_board_library,
-    routes_board_convert,
-    routes_code_snippets,
-    routes_code_assist,
-    routes_board_history,
-    routes_board_affinity,
-    routes_document_claims,
-    routes_document_story,
-    routes_map_suggest,
-    routes_map_from_notes,
-    routes_graph_projection,
-    routes_documents_from_notes,
-)
+from tessellate.api import asset_strip, lazy_routes, routes_auth, routes_models, routes_update
 from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
 from tessellate.api.this_computer import is_another_device
@@ -1541,150 +1444,180 @@ def _add_middleware(app: FastAPI) -> None:
 #: token header). `tests/test_middleware_table_1031.py` holds the table to every router.
 OPEN, LOCKED, MEDIA = "open", "locked", "media"
 
-ROUTERS: tuple[tuple[APIRouter, str], ...] = (
-    (routes_auth.router, OPEN),
-    (routes_hello.router, OPEN),
-    (routes_origin_handoff.router, OPEN),
+ROUTER_ROWS: tuple[tuple[str, str], ...] = (
+    ("routes_auth.router", OPEN),
+    ("routes_hello.router", OPEN),
+    ("routes_origin_handoff.router", OPEN),
     # Before routes_entries: its static paths (`/tensions`, `/link-suggestions`) must be tried ahead
     # of `GET /{entry_id}`, which they used to precede inside that one router (K24).
-    (routes_entries_relations.router, LOCKED),
-    (routes_entries_links.router, LOCKED),
-    (routes_entries_history.router, LOCKED),
-    (routes_entries_reevaluate.router, LOCKED),
-    (routes_entries.router, LOCKED),
-    (routes_mentions.router, LOCKED),
-    (routes_meetings.router, LOCKED),
-    (routes_inbox.router, LOCKED),
-    (routes_entities.router, LOCKED),
-    (routes_relations.router, LOCKED),
-    (routes_kept_words.router, LOCKED),
-    (routes_properties.router, LOCKED),
-    (routes_property_table.router, LOCKED),
-    (routes_chat.router, LOCKED),
-    (routes_chat_meta.router, LOCKED),  # its side routes (L624)
-    (routes_ask_history.router, LOCKED),
-    (routes_models.router, LOCKED),
-    (routes_settings.router, LOCKED),
-    (routes_settings_transfer.router, LOCKED),  # export and import routes (K24)
-    (routes_settings_extras.router, LOCKED),  # optional extras and embedding models (K24)
-    (routes_settings_logs.router, LOCKED),  # the log viewer (K24)
-    (routes_maintenance.router, LOCKED),
-    (routes_lag.router, LOCKED),
-    (routes_diag.router, LOCKED),
+    ("routes_entries_relations.router", LOCKED),
+    ("routes_entries_links.router", LOCKED),
+    ("routes_entries_history.router", LOCKED),
+    ("routes_entries_reevaluate.router", LOCKED),
+    ("routes_entries.router", LOCKED),
+    ("routes_mentions.router", LOCKED),
+    ("routes_meetings.router", LOCKED),
+    ("routes_inbox.router", LOCKED),
+    ("routes_entities.router", LOCKED),
+    ("routes_relations.router", LOCKED),
+    ("routes_kept_words.router", LOCKED),
+    ("routes_properties.router", LOCKED),
+    ("routes_property_table.router", LOCKED),
+    ("routes_chat.router", LOCKED),
+    ("routes_chat_meta.router", LOCKED),  # its side routes (L624)
+    ("routes_ask_history.router", LOCKED),
+    ("routes_models.router", LOCKED),
+    ("routes_settings.router", LOCKED),
+    ("routes_settings_transfer.router", LOCKED),  # export and import routes (K24)
+    ("routes_settings_extras.router", LOCKED),  # optional extras and embedding models (K24)
+    ("routes_settings_logs.router", LOCKED),  # the log viewer (K24)
+    ("routes_maintenance.router", LOCKED),
+    ("routes_lag.router", LOCKED),
+    ("routes_diag.router", LOCKED),
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings_logs.open_router`'s own comment says why it is separate.
-    (routes_settings_logs.open_router, OPEN),
+    ("routes_settings_logs.open_router", OPEN),
     # The Run button's sandbox page: no data, its own sandboxing policy, and
     # registered before the documents router so `/documents/{id}` does not
     # claim the path (`api/run_sandbox.py`).
-    (run_sandbox.router, OPEN),
+    ("run_sandbox.router", OPEN),
     # A long run's row in Activity (DOCUMENTS_PLAN 25 row 9): locked.
-    (run_sandbox.jobs_router, LOCKED),
+    ("run_sandbox.jobs_router", LOCKED),
     # The offline translator (WORLD_CLASS_PLAN 28.5 row 10): what is
     # installed is behind the unlock; the engine and model files are open,
     # like the Python runtime's, because a Worker's fetch carries no token.
-    (routes_translate.router, LOCKED),
-    (routes_translate.files_router, OPEN),
-    (routes_update.router, LOCKED),
-    (routes_websearch.router, LOCKED),
-    (routes_webclip.router, LOCKED),
-    (routes_backups.router, LOCKED),
-    (routes_spaces.router, LOCKED),
-    (routes_private_spaces.router, LOCKED),
-    (routes_files.router, LOCKED),
-    (routes_files_ocr.router, LOCKED),  # the OCR routes of files and media (K24)
-    (routes_files_readings.router, LOCKED),  # the reading-side routes of files and media (K24)
-    (routes_reading_bin.router, LOCKED),  # bin, restore and purge a reading (split from the readings routes)
+    ("routes_translate.router", LOCKED),
+    ("routes_translate.files_router", OPEN),
+    ("routes_update.router", LOCKED),
+    ("routes_websearch.router", LOCKED),
+    ("routes_webclip.router", LOCKED),
+    ("routes_backups.router", LOCKED),
+    ("routes_spaces.router", LOCKED),
+    ("routes_private_spaces.router", LOCKED),
+    ("routes_files.router", LOCKED),
+    ("routes_files_ocr.router", LOCKED),  # the OCR routes of files and media (K24)
+    ("routes_files_readings.router", LOCKED),  # the reading-side routes of files and media (K24)
+    ("routes_reading_bin.router", LOCKED),  # bin, restore and purge a reading (split from the readings routes)
     # A plain `<img src>` (or a note's own inline `![]()` markdown) never
     # attaches the X-Auth-Token header, so only these routes also accept the
     # media cookie, on their own gate rather than widening `locked` for every
     # route. See require_unlock_media's docstring.
-    (routes_files.media_router, MEDIA),
-    (routes_search.router, LOCKED),
-    (routes_tags.router, LOCKED),
-    (routes_categories.router, LOCKED),
-    (routes_groups.router, LOCKED),
-    (routes_conversations.router, LOCKED),
-    (routes_documents.router, LOCKED),
-    (routes_duplicates.router, LOCKED),
-    (routes_tidy.router, LOCKED),
-    (routes_drafts.router, LOCKED),
-    (routes_learned.router, LOCKED),
-    (routes_learned_audit.router, LOCKED),
-    (routes_night.router, LOCKED),
-    (routes_bench.router, LOCKED),
-    (routes_editor.router, LOCKED),
-    (routes_import.router, LOCKED),
-    (routes_usage.router, LOCKED),
-    (routes_usage.capture_router, LOCKED),
-    (routes_questions.router, LOCKED),
-    (routes_resurface.router, LOCKED),
-    (routes_insights.router, LOCKED),
-    (routes_graph.router, LOCKED),
-    (routes_graph_projection.router, LOCKED),
-    (routes_help.router, LOCKED),
-    (routes_reminders.router, LOCKED),
+    ("routes_files.media_router", MEDIA),
+    ("routes_search.router", LOCKED),
+    ("routes_tags.router", LOCKED),
+    ("routes_categories.router", LOCKED),
+    ("routes_groups.router", LOCKED),
+    ("routes_conversations.router", LOCKED),
+    ("routes_documents.router", LOCKED),
+    ("routes_duplicates.router", LOCKED),
+    ("routes_tidy.router", LOCKED),
+    ("routes_drafts.router", LOCKED),
+    ("routes_learned.router", LOCKED),
+    ("routes_learned_audit.router", LOCKED),
+    ("routes_night.router", LOCKED),
+    ("routes_bench.router", LOCKED),
+    ("routes_editor.router", LOCKED),
+    ("routes_import.router", LOCKED),
+    ("routes_usage.router", LOCKED),
+    ("routes_usage.capture_router", LOCKED),
+    ("routes_questions.router", LOCKED),
+    ("routes_resurface.router", LOCKED),
+    ("routes_insights.router", LOCKED),
+    ("routes_graph.router", LOCKED),
+    ("routes_graph_projection.router", LOCKED),
+    ("routes_help.router", LOCKED),
+    ("routes_reminders.router", LOCKED),
     # A notification's Done and Snooze, pressed by the service worker with a
     # token scoped to one reminder and those two actions (core/reminder_token.py)
     # instead of a session: the one route here outside the gate, and why is in
     # `routes_reminders.act_from_notification` and tests/test_every_route_is_locked.py.
-    (routes_reminders.open_router, OPEN),
-    (routes_bookmarks.router, LOCKED),
-    (routes_voice.router, LOCKED),
-    (routes_studio.router, LOCKED),
-    (routes_folder_sync.router, LOCKED),
-    (routes_recordings.router, LOCKED),
-    (routes_recordings.media_router, MEDIA),
-    (routes_captions.router, LOCKED),
-    (routes_tasks.router, LOCKED),
-    (routes_timeline.router, LOCKED),
-    (routes_library.router, LOCKED),
-    (routes_library_meta.router, LOCKED),
-    (routes_whiteboard.router, LOCKED),
-    (routes_whiteboard.media_router, MEDIA),
-    (routes_board_library.router, LOCKED),
-    (routes_board_convert.router, LOCKED),
-    (routes_code_snippets.router, LOCKED),
-    (routes_code_assist.router, LOCKED),
-    (routes_board_history.router, LOCKED),
-    (routes_map_suggest.router, LOCKED),
-    (routes_board_affinity.router, LOCKED),
-    (routes_document_claims.router, LOCKED),
-    (routes_document_story.router, LOCKED),
-    (routes_map_from_notes.router, LOCKED),
-    (routes_documents_from_notes.router, LOCKED),
-    (routes_debug.router, LOCKED),
-    (routes_privacy.router, LOCKED),
-    (routes_capabilities.router, LOCKED),
+    ("routes_reminders.open_router", OPEN),
+    ("routes_bookmarks.router", LOCKED),
+    ("routes_voice.router", LOCKED),
+    ("routes_studio.router", LOCKED),
+    ("routes_folder_sync.router", LOCKED),
+    ("routes_recordings.router", LOCKED),
+    ("routes_recordings.media_router", MEDIA),
+    ("routes_captions.router", LOCKED),
+    ("routes_tasks.router", LOCKED),
+    ("routes_timeline.router", LOCKED),
+    ("routes_library.router", LOCKED),
+    ("routes_library_meta.router", LOCKED),
+    ("routes_whiteboard.router", LOCKED),
+    ("routes_whiteboard.media_router", MEDIA),
+    ("routes_board_library.router", LOCKED),
+    ("routes_board_convert.router", LOCKED),
+    ("routes_code_snippets.router", LOCKED),
+    ("routes_code_assist.router", LOCKED),
+    ("routes_board_history.router", LOCKED),
+    ("routes_map_suggest.router", LOCKED),
+    ("routes_board_affinity.router", LOCKED),
+    ("routes_document_claims.router", LOCKED),
+    ("routes_document_story.router", LOCKED),
+    ("routes_map_from_notes.router", LOCKED),
+    ("routes_documents_from_notes.router", LOCKED),
+    ("routes_debug.router", LOCKED),
+    ("routes_privacy.router", LOCKED),
+    ("routes_capabilities.router", LOCKED),
     #: INBOX 1860: making and revoking the tool server's tokens is a Settings act,
     #: behind the lock; `/mcp` itself checks its own bearer token instead.
-    (routes_mcp.router, LOCKED),
-    (routes_mcp.open_router, OPEN),
-    (routes_mcp_oauth.router, LOCKED),
-    (routes_mcp_oauth.open_router, OPEN),
-    (routes_read.router, LOCKED),
-    (routes_spelling.router, LOCKED),
-    (routes_statistics.router, LOCKED),
-    (routes_utilities.router, LOCKED),
+    ("routes_mcp.router", LOCKED),
+    ("routes_mcp.open_router", OPEN),
+    ("routes_mcp_oauth.router", LOCKED),
+    ("routes_mcp_oauth.open_router", OPEN),
+    ("routes_read.router", LOCKED),
+    ("routes_spelling.router", LOCKED),
+    ("routes_statistics.router", LOCKED),
+    ("routes_utilities.router", LOCKED),
     #: WORLD_CLASS_PLAN B6: the segment the other computer reads, and Sync now.
-    (routes_sync.router, LOCKED),
+    ("routes_sync.router", LOCKED),
     #: Open in the table only: its one route's own gate takes a session or the paired
     #: computer's sync pass (decision 11), and refuses anything else with 401.
-    (routes_sync.open_router, OPEN),
+    ("routes_sync.open_router", OPEN),
     #: WORLD_CLASS_PLAN section 17: the review queue, most opened, tidy proposals, charts.
-    (routes_vision.router, LOCKED),
+    ("routes_vision.router", LOCKED),
 )
 
 
-def _include_routers(app: FastAPI, locked: list) -> None:
-    """Every API router in `ROUTERS` order (a path one claims first wins), each behind the
-    gate its row names. ARCH-22."""
-    gates = {OPEN: [], LOCKED: locked, MEDIA: [Depends(routes_auth.require_unlock_media)]}
-    for router, gate in ROUTERS:
-        app.include_router(router, dependencies=gates[gate])
+def __getattr__(name: str):  # noqa: ANN202  (PEP 562)
+    """`ROUTERS`, the rows as (router, gate): resolving it imports every route module,
+    so the app itself reads `ROUTER_ROWS` and only tests and tools read this."""
+    if name == "ROUTERS":
+        return tuple((lazy_routes.resolve(spec), gate) for spec, gate in ROUTER_ROWS)
+    raise AttributeError(name)
+
+
+def _stamp_build() -> None:
+    from tessellate.api import routes_diag
 
     routes_diag.BUILD["hash"] = lambda: asset_hash(FRONTEND_DIR / "js" / "app.js")
+
+
+def _include_routers(app: FastAPI, locked: list) -> None:
+    """Every API router in `ROUTER_ROWS` order (a path one claims first wins), each behind
+    the gate its row names. ARCH-22. A row outside `lazy_routes.BOOT_MODULES` is a
+    `LazyRouter` at the same place and gate, which imports its module on the first
+    request it matches (L-world-class-230)."""
+    from tessellate.api.route_table import PATHS
+
+    gates = {OPEN: [], LOCKED: locked, MEDIA: [Depends(routes_auth.require_unlock_media)]}
+    for spec, gate in ROUTER_ROWS:
+        if lazy_routes.is_lazy(spec):
+            hook = _stamp_build if spec.startswith("routes_diag.") else None
+            router = lazy_routes.LazyRouter(spec, PATHS[spec], on_load=hook)
+        else:
+            router = lazy_routes.resolve(spec)
+        app.include_router(router, dependencies=gates[gate])
+
+    # The schema lists every route, so it loads every row first.
+    build_schema = app.openapi
+
+    def openapi() -> dict:
+        lazy_routes.load_all_routes(app)
+        return build_schema()
+
+    app.openapi = openapi
 
 
 def _add_instance_routes(app: FastAPI) -> None:
