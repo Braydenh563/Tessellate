@@ -2383,6 +2383,11 @@ function renderEntries(appendOnly = false) {
     });
     return renderEntries.waiting;
   }
+  //: A row's open menu would be drawn away under the pointer (its ⋯ is in the row), so the draw
+  //: waits for it to close: a save landing a moment after Make private took the menu that was
+  //: being read (deepflows private and link, 2 of 14 runs at 1440).
+  const heldMenu = document.querySelector('#entry-list > li [aria-haspopup="menu"][aria-expanded="true"]');
+  if (heldMenu) return renderEntries.afterMenu(heldMenu, appendOnly);
   const list = $("entry-list");
   rememberNoteFilter(noteSearch);
   // Drafts stay out of All/category views entirely, user-reported: they
@@ -3049,6 +3054,28 @@ function paintEntriesProgress(list = true) {
 //: The repaint a background change asks for (a page arriving, the spaces or
 //: the map index answering): drawn now if the tab is up, once on reveal if not.
 //: The debt is `data-stale` on the list itself, so it is no module state.
+//: One draw owed after a row's menu closes (or its row goes), whichever draws were asked meanwhile.
+renderEntries.afterMenu = function (opener, appendOnly) {
+  const owed = renderEntries.afterMenu.owed;
+  if (owed) {
+    owed.appendOnly &&= appendOnly;
+    return owed.done;
+  }
+  const state = { appendOnly };
+  state.done = new Promise((resolve) => {
+    const watch = new MutationObserver(() => {
+      if (opener.isConnected && opener.getAttribute("aria-expanded") === "true") return;
+      watch.disconnect();
+      renderEntries.afterMenu.owed = null;
+      resolve(renderEntries(state.appendOnly));
+    });
+    watch.observe(opener, { attributes: true, attributeFilter: ["aria-expanded"] });
+    watch.observe($("entry-list"), { childList: true, subtree: true });
+  });
+  renderEntries.afterMenu.owed = state;
+  return state.done;
+};
+
 function renderEntriesWhenShown(appendOnly = false) {
   if ($("tab-notes").classList.contains("hidden")) {
     const list = document.getElementById("entry-list");
