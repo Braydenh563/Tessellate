@@ -667,8 +667,10 @@
    round (head to the right), for variety. Held transforms at rest. */
 #nm-buddy .nm-figure { translate: var(--nmb-lie-shift); transition: transform var(--motion-slow) var(--ease-out), rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out), translate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 
-#nm-buddy .atl-lw-root-neb,
-#nm-buddy .atl-lw-root-neb-front {
+/* `:is(#nm-buddy)` keeps the id's weight and each class's bucket; the nebula's loops are written
+   for every layered figure, never for #nm-buddy alone (tests/test_atlas_shape.py). */
+:is(#nm-buddy) .atl-lw-root-neb,
+:is(#nm-buddy) .atl-lw-root-neb-front {
   transition: rotate calc(var(--motion-slow) * 4.5) var(--ease-spring) var(--motion-fast), scale calc(var(--motion-slow) * 4) var(--ease-in-out), translate calc(var(--motion-slow) * 4) var(--ease-in-out);
 }
 
