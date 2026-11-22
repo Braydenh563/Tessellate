@@ -194,7 +194,6 @@
       }
       }
     }
-      }
 
     //: The picture, and the node shape that goes with it (§12.1 item 2's
     //: fourth). `data-body` rather than a class for the same reason `shape` and
