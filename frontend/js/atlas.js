@@ -2481,8 +2481,7 @@ function atlasBody(parent, id, props, look, route = null) {
   const legAt = route && route.legs ? { l: pair(route.legs.l), r: pair(route.legs.r) } : null;
   const frontAt = route ? { fill: route.front } : layers;
   const arms = {};
-  //: The companion's glint layers (INBOX 550), each built as the wisps'
-  //: layer is, so the glints hold the same pose: [the dress's group, the top].
+  //: The companion's glint layers (INBOX 550), built as the wisps' layer is, so they hold its pose: [the dress's group, the top].
   const glintRoots = route && route.glints ? route.glints.map((rig) => {
     const top = atlasGroup(rig, "atl-astral");
     return [atlasGroup(atlasGroup(top, "atl-astral-hips", [31, 57]), "atl-lower", spec.lowerPivot), top];
@@ -3205,33 +3204,13 @@ function atlasDrawFigure(mood) {
       tip.appendChild(svg);
       frag.querySelector(".atl-lw-pose-tail").appendChild(tip);
     } else if (name === "hair") {
-      hairBox = document.createElement("span");
-      hairBox.className = "atl-lw atl-lw-hair";
-      hairBox.dataset.atlasLook = look;
       //: The hair's pose for what it is doing (INBOX 575, the rig).
-      const pose = document.createElement("span");
-      pose.className = "atl-lw-pose atl-lw-pose-hair";
+      const pose = atlasDrawFigure.box("atl-lw-pose atl-lw-pose-hair", look, svg);
       pose.style.transformOrigin = "32px 15px";
-      pose.appendChild(svg);
-      hairBox.appendChild(pose);
-    } else if (name === "torso") {
-      //: **The chest's swell is a box of its own** (L-ui-modernisation-201): the torso's skin, drawn under the body's
-      //: arms and light, in its own layer inside the breath box, so its swell (`atlasBreathFrame`) is a `transform` on
-      //: an HTML box the compositor runs, not on an SVG group the main thread lays out and repaints every frame.
-      torsoBox = document.createElement("span");
-      torsoBox.className = "atl-lw-torso";
-      torsoBox.dataset.atlasLook = look;
-      torsoBox.appendChild(svg);
-    } else if (name === "head" && frag.querySelector(".atl-lw-breathe")) {
-      //: **The head is a box of its own** (L-ui-modernisation-201): drawn over the body as it was, with the lids in it,
-      //: so the micro habits' tilt and hum (atlas-micro.js) are a `transform` on an HTML box the compositor runs, not
-      //: a Web Animation on an SVG group the main thread lays out and repaints every frame (about 80 ms/s while one ran).
-      const headBox = document.createElement("span");
-      headBox.className = "atl-lw-head";
-      headBox.dataset.atlasLook = look;
-      headBox.appendChild(svg);
-      frag.querySelector(".atl-lw-breathe").appendChild(headBox);
-    } else if (name.startsWith("lid") && frag.querySelector(".atl-lw-head")) frag.querySelector(".atl-lw-head").appendChild(svg);
+      hairBox = atlasDrawFigure.box("atl-lw atl-lw-hair", look, pose);
+    } else if (name === "torso") torsoBox = atlasDrawFigure.box("atl-lw-torso", look, svg);
+    else if (name === "head" && frag.querySelector(".atl-lw-breathe")) frag.querySelector(".atl-lw-breathe").appendChild(atlasDrawFigure.box("atl-lw-head", look, svg));
+    else if (name.startsWith("lid") && frag.querySelector(".atl-lw-head")) frag.querySelector(".atl-lw-head").appendChild(svg);
     else if (ATLAS_ROOT_BOXES.includes(name)) {
       const box = document.createElement("span");
       box.className = `atl-lw atl-lw-${name}`;
@@ -3319,6 +3298,17 @@ function atlasDrawFigure(mood) {
   frag.appendChild(atlasOrbits());
   return frag;
 }
+//: A layer's HTML box holding `child`. The torso's (`atl-lw-torso`) and the head's (`atl-lw-head`, with the lids in it) are
+//: boxes of their own inside the breath box (L-ui-modernisation-201), so the chest's swell (`atlasBreathFrame`) and the
+//: micro habits' tilt and hum (atlas-micro.js) are a `transform` on an HTML box the compositor runs, not a change on an
+//: SVG group the main thread lays out and repaints every frame (about 80 ms/s while a tilt ran).
+atlasDrawFigure.box = (className, look, child) => {
+  const box = document.createElement("span");
+  box.className = className;
+  box.dataset.atlasLook = look;
+  box.appendChild(child);
+  return box;
+};
 
 //: **The planets go round their rings** (round 7, INBOX 430, the owner:
 //: "the bodies on them slowly orbit, cheaply"). A planet drawn in a layer's

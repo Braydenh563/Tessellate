@@ -1194,7 +1194,7 @@ def test_the_hair_and_her_tail_move_on_the_compositor():
     # a layer of its own whose box trails the body's sway; her tail is drawn
     # as a root half and a tip half whose box sways a quarter behind (the
     # wave runs tipward); none of it under reduced motion.
-    assert '"hair", "torso", "body", "head", "lidf-1", "lidf-2", "lids",' in ATLAS and 'hairBox.className = "atl-lw atl-lw-hair";' in ATLAS
+    assert '"hair", "torso", "body", "head", "lidf-1", "lidf-2", "lids",' in ATLAS and 'hairBox = atlasDrawFigure.box("atl-lw atl-lw-hair", look, pose);' in ATLAS
     assert 'tip.className = "atl-lw atl-lw-tip";' in ATLAS and "tailWave: { t: 0.5, zone: [0.42, 0.58] }," in _look("feminine")
     assert "& .atl-lw-tip { animation: atl-tail-wave 8.3s ease-in-out -2.05s infinite alternate; }" in CSS
     assert "& .atl-lw-tail { animation-delay: -4.15s; }" in CSS
