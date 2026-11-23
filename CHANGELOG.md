@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+CI, eff20f566: the templates help names Settings, Templates as a path the Settings-path lint can read.
 CI, bc82e811c: documents-surface.js and help_topics_more.py back to their size caps (one line each over after the merge).
 CI, 12dc7752f: the ordinary-space import test exports from an ordinary space (an export from Vault now goes back to Vault, L979), and the L531 boot sweep moves to tests-e2e/boot-warm-measure.js beside the measure it reads (scratchpad cap 766).
 Lag, L-world-class-355: a third attempt on the Appearance first show: the Settings scroller is found once on the panes' shared parent (Data into Appearance 175-191 to 120 ms at 4x); deferring the selects did nothing and was reverted; the row stays in BACKLOG with the numbers.

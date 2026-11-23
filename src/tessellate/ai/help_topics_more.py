@@ -1612,7 +1612,7 @@ MORE_TOPICS: list[dict] = [
             "you choose where your cursor was, in any editor, with {{date}}, {{time}}, {{weekday}}, "
             "{{title}}, {{space}} and {{clipboard}} filled in, and {{cursor}} where the caret lands. "
             "A ${Label} is a field, asked for once and put everywhere that label stands. With no editor "
-            "open it goes into Capture; the templates are in Settings, Templates, to write, edit and reset."
+            "open it goes into Capture. Write, edit and reset the templates in Settings, Templates."
         ),
         "badge": {"label": "Templates", "section": "templates"},
     },
