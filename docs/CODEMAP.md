@@ -1,6 +1,6 @@
 # Code map
 
-Generated 2026-11-22 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-23 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
 Counts: frontend functions 9121, frontend ids 2858, CSS sections 531, backend routes 754, backend modules 11684, test files 3082, tests 24130, plan headings 692, app scripts 30, boot scripts 39, script files 421.
 
@@ -5178,30 +5178,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docAfterFirstPaint` | frontend/js/documents-surface.js:822 |
 | `docBoxEl` | frontend/js/documents-surface.js:179 |
 | `docEventFromCm` | frontend/js/documents-surface.js:469 |
-| `docKeptDrafts` | frontend/js/documents-surface.js:1021 |
+| `docKeptDrafts` | frontend/js/documents-surface.js:1020 |
 | `docListen` | frontend/js/documents-surface.js:485 |
 | `docMirrorPoint` | frontend/js/documents-surface.js:86 |
 | `docPlaceholderFor` | frontend/js/documents-surface.js:197 |
-| `docPositionsRead` | frontend/js/documents-surface.js:946 |
-| `docPositionsWrite` | frontend/js/documents-surface.js:955 |
+| `docPositionsRead` | frontend/js/documents-surface.js:945 |
+| `docPositionsWrite` | frontend/js/documents-surface.js:954 |
 | `docPreviewShowing` | frontend/js/documents-surface.js:41 |
-| `docRememberPosition` | frontend/js/documents-surface.js:996 |
-| `docRememberPositionNow` | frontend/js/documents-surface.js:977 |
-| `docRestorePosition` | frontend/js/documents-surface.js:1132 |
+| `docRememberPosition` | frontend/js/documents-surface.js:995 |
+| `docRememberPositionNow` | frontend/js/documents-surface.js:976 |
+| `docRestorePosition` | frontend/js/documents-surface.js:1131 |
 | `docSetPlaceholder` | frontend/js/documents-surface.js:184 |
 | `docStr` | frontend/js/documents-surface.js:416 |
 | `docSurface` | frontend/js/documents-surface.js:404 |
 | `docSurfaceById` | frontend/js/documents-surface.js:454 |
 | `docSurfaceChanged` | frontend/js/documents-surface.js:397 |
 | `docText` | frontend/js/documents-surface.js:446 |
-| `docTopOffset` | frontend/js/documents-surface.js:970 |
-| `forgetDocEditLocally` | frontend/js/documents-surface.js:1061 |
-| `keepDocEditLocally` | frontend/js/documents-surface.js:1040 |
+| `docTopOffset` | frontend/js/documents-surface.js:969 |
+| `forgetDocEditLocally` | frontend/js/documents-surface.js:1060 |
+| `keepDocEditLocally` | frontend/js/documents-surface.js:1039 |
 | `loadDocuments` | frontend/js/documents-surface.js:636 |
 | `loadDocumentsNow` | frontend/js/documents-surface.js:649 |
 | `noteSurfaceFor` | frontend/js/documents-surface.js:16 |
 | `noteSurfaceMeta` | frontend/js/documents-surface.js:30 |
-| `offerKeptDocEdit` | frontend/js/documents-surface.js:1083 |
+| `offerKeptDocEdit` | frontend/js/documents-surface.js:1082 |
 | `openDocument` | frontend/js/documents-surface.js:833 |
 | `renderDocList` | frontend/js/documents-surface.js:694 |
 | `setDocView` | frontend/js/documents-surface.js:529 |
@@ -19470,8 +19470,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2753 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2905 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2752 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2904 |
 
 ### src/tessellate/ai/help_words.py (3)
 

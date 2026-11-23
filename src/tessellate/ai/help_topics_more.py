@@ -1611,9 +1611,8 @@ MORE_TOPICS: list[dict] = [
             "command palette (Ctrl+K) to list your templates; Enter puts the one "
             "you choose where your cursor was, in any editor, with {{date}}, {{time}}, {{weekday}}, "
             "{{title}}, {{space}} and {{clipboard}} filled in, and {{cursor}} where the caret lands. "
-            "A ${Label} is a field: it is asked for once and put everywhere that label stands. "
-            "With no editor open it goes into the Capture box. The templates, yours and the "
-            "built-in ones, are in Settings, Templates, where you write, edit and reset them."
+            "A ${Label} is a field, asked for once and put everywhere that label stands. With no editor "
+            "open it goes into Capture; the templates are in Settings, Templates, to write, edit and reset."
         ),
         "badge": {"label": "Templates", "section": "templates"},
     },
