@@ -5,9 +5,9 @@ is a scrolling flex column, so a long list shrank its rows below their content; 
 from __future__ import annotations
 
 import re
-from pathlib import Path
+from tests._css_paths import FORMER_10, sheets
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_10)
 
 
 def test_a_sheet_lists_rows_never_shrink_below_their_content() -> None:

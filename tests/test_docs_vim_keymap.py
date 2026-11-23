@@ -1,4 +1,6 @@
-"""The opt-in Vim keymap (L-documents-41): off by default, its own lazy file, shown in the dock.
+"""Source text: the lazy keymap's packaging (build script, bundle, loader) is about files, so they are read as text.
+
+The opt-in Vim keymap (L-documents-41): off by default, its own lazy file, shown in the dock.
 
 `@replit/codemirror-vim` lives in `frontend/vendor/codemirror/vim.min.js`, a second file built against the
 editor bundle's own `CM6` global (one copy of state and view), fetched only when the preference is on. The

@@ -317,9 +317,9 @@ def test_the_named_site_reader_is_linear_on_a_long_dotted_question():
     starts only where a host can, not inside one."""
     import time
 
-    started = time.perf_counter()
+    started = time.process_time()
     agent._hosts_named("a." * 32000)
-    assert time.perf_counter() - started < 0.5
+    assert time.process_time() - started < 0.5
     assert agent._hosts_named("check https://www.Example.org/a and docs.python.org, x@mail.example.com") == {
         "example.org",
         "docs.python.org",

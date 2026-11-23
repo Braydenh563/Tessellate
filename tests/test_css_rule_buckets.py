@@ -1,4 +1,6 @@
-"""Rules that Blink tries on every element stay few (L342, L-documents-26).
+"""Source text: the rule is about how stylesheets are written (which Blink bucket a selector lands in), so the CSS is read as text.
+
+Rules that Blink tries on every element stay few (L342, L-documents-26).
 
 A key in a 20,000 word document at 4x CPU spent 5.1 ms in style, 1.7 ms of
 it in the universal bucket: rules whose rightmost compound has no id, class,

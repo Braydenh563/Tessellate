@@ -1,4 +1,6 @@
-"""L-documents-26 / L342: what one typed key costs in a long document.
+"""Source text: per-key cost is measured by a sweep in a browser; this keeps the code shape that measurement relied on, read as text.
+
+L-documents-26 / L342: what one typed key costs in a long document.
 
 Measured before (doctype-style sweep, 20k-word document, 4x CPU, invalidation
 tracking): every key read the whole 130,000-character text five times over in

@@ -24,7 +24,7 @@ def _rules(css: str, selector: str) -> list[str]:
 
 
 def _consistency() -> str:
-    return (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8")
+    return (CSS_DIR / "07-whiteboard-misc.css").read_text(encoding="utf-8")
 
 
 def test_1435_notes_column_does_not_overflow_its_grid() -> None:

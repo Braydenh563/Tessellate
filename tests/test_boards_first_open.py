@@ -1,4 +1,6 @@
-"""The Boards & maps sub-tab paints its cards without waiting for the board code (INBOX 1772).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+The Boards & maps sub-tab paints its cards without waiting for the board code (INBOX 1772).
 
 The press used to start the `boards` bundle (the documents' editors, d3 and nine
 whiteboard files, all parsed and run in document order) and only the gallery's own first line, in whiteboard.js, running after
@@ -104,3 +106,4 @@ def test_the_gallery_file_is_in_both_bundles_that_call_it() -> None:
     app = _text("app.js")
     library = re.search(r"\n  library: \[(.*?)\],\n", app, re.S).group(1)
     assert '"/js/boards-gallery.js"' in library, "the board code calls the gallery, so every bundle that carries it carries the gallery"
+

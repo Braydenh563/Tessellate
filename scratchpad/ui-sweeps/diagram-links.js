@@ -3,7 +3,7 @@
 process.env.BASE ||= "http://127.0.0.1:8861";
 const { boot } = require("./lib.js");
 const SRC = "flowchart TD\n  A[Bug reported] --> B{Can you reproduce it?}\n  B -->|No| C[Ask for details]\n  B -->|Yes| D[Fix it]\n  C -.-> B\n";
-const ALL = [[1440, 900, false], [1100, 800, false], [820, 900, false], [390, 844, true]];
+const ALL = [[1440, 900, false], [1100, 800, false], [820, 900, false], [390, 844, true], [844, 390, true]];
 const SIZES = process.env.W ? ALL.filter((s) => String(s[0]) === process.env.W) : ALL;
 (async () => {
   const out = [];

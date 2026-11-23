@@ -136,7 +136,7 @@ class RoamMixin:
 
     def _low(self) -> bool:
         """Lying, sitting, napping or at a prop: a body that does not stand ready for the window to move."""
-        return self.state in ("sit", "sleep") or (self.state == "act" and self.act in (*extras.props.PROP_ACTS, *extras.props.SPELL_ACTS, "lie_down"))
+        return self.state in ("sit", "sleep") or (self.state == "act" and (self.act == "lie_down" or extras.props.spec_of(self.act) is not None))
 
     def _moved_fast(self, cur: Perch, now: float) -> tuple[float, float, float] | None:
         """The window's velocity (px/s) and its speed in logical px/s since the last scan, when that is a move fast enough
@@ -224,8 +224,8 @@ class RoamMixin:
         return p.top + (TITLE_BAR * self._scale() if p.kind == "top" else 0.0)
 
     def _lift(self) -> float:
-        """How far the frame's top is above the hands that hold an edge."""
-        return self.hang_top * self.size[1]
+        """The frame's top above the hands holding an edge: the hang's drawn top row (its share put the feminine's 1 px high, L-ui-modernisation-152)."""
+        return float(min((self.metrics[k][1] for k in (("hang", False), ("hang", True)) if k in self.metrics), default=self.hang_top * self.size[1]))
 
     def _hold_of(self, p: Perch) -> Perch | None:
         """The window `p` as the runner last read it, when its title bar is still where it

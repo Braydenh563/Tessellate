@@ -1,4 +1,6 @@
-"""LanguageTool as an optional download (INBOX 1731 (f)).
+"""Source text: the download routes are driven; the browser's prose check has no runner here, so it is read as text.
+
+LanguageTool as an optional download (INBOX 1731 (f)).
 
 The owner, 2026-11-10: "can we like incorporate all of it or whatever you
 suggest??". Every test runs against a fake file server and a fake local
@@ -338,7 +340,8 @@ def test_the_note_editor_and_whiteboard_draw_harper_first_too():
     )
     assert "docGrammarAsk(text).then" not in note
     board = (ROOT / "frontend/js/whiteboard-map-more.js").read_text()
-    assert "docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); })" in board
+    # The first answer repaints only the labels it answered (mapcpu 500); still drawn first.
+    assert "docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(new Set([text])); })" in board
     assert "docGrammarAsk(text).catch" not in board
 
 

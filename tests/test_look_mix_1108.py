@@ -81,7 +81,8 @@ def test_reading_choices_are_part_of_a_look_and_a_mix_leaves_them():
 
 
 def test_the_live_editor_follows_line_spacing():
-    editor = (ROOT / "frontend/css/09-editor.css").read_text(encoding="utf-8")
+    # 09-editor.css, or library-lazy.css for a rule only the Library bundle draws (UI plan 13b, L459).
+    editor = "\n".join((ROOT / "frontend/css" / n).read_text(encoding="utf-8") for n in ("09-editor.css", "library-lazy.css"))
     for tag, value in (("tight", "1.44"), ("roomy", "1.84")):
         sel = f':root[data-read-leading="{tag}"] .doc-editor .cm-editor:not(.doc-content-code) .cm-scroller'
         at = editor.index(sel + " {")

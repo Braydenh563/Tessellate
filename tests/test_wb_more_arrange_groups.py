@@ -1,4 +1,6 @@
-"""The phone's More sheet groups the Arrange rows like the desktop menu (L-whiteboard-30).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+The phone's More sheet groups the Arrange rows like the desktop menu (L-whiteboard-30).
 
 `WB_MORE_ARRANGE_GROUPS` (whiteboard-commands.js) names the submenus; this holds it to
 the desktop Arrange menu's own `data-wb-submenu` sections, so the two cannot drift.

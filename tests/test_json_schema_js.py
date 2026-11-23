@@ -1,4 +1,6 @@
-"""JSON Schema lint and key completion for a .json document (L-documents-42), run in node.
+"""Source text: the lint runs in node with no browser, so its wiring into the editor bundle is read as text.
+
+JSON Schema lint and key completion for a .json document (L-documents-42), run in node.
 
 `documents-json-schema.js` is the browser's text, over the vendored CodeMirror's own JSON parser: here the
 library list and the API are a fake, so every keyword of the validator, the pointer-to-range mapping and the

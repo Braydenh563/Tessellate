@@ -11,11 +11,13 @@ from __future__ import annotations
 from tests._app_js import frontend_text
 from tests._help_text import help_more_text
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
+from tests._css_unwrap import unwrap_all
 
 ROOT = Path(__file__).resolve().parents[1]
 MAP_JS = ROOT / "frontend" / "js" / "whiteboard-map.js"
@@ -100,10 +102,11 @@ def test_the_study_bar_and_the_guide_know_the_note_answer():
     assert show.index("wbPresentCaption(at, steps)") < show.index("const foot")
     #: The own line moved from an inline style to the picker's is-wide class
     #: when the caption became a page picker (INBOX 1425).
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
-    wide = css[css.index(".wb-present-count.wb-present-pick-slot.is-wide {") :]
+    css = unwrap_all("".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css")))
+    #: The rule was split into guarded pieces when it moved (L-ui-modernisation-51): read every body.
+    wide = "}".join(re.findall(r"\.wb-present-count\.wb-present-pick-slot\.is-wide \{([^}]*)\}", css)) + "}"
     assert "function wbPresentCaption(at, steps)" in board and '"is-wide"' in board
-    assert "flex: 1 0 100%;" in wide[: wide.index("}")]
+    assert "flex: 1 0 100%;" in wide
 
 
 #: A fixed clock for the spaced order: day 100 in milliseconds.

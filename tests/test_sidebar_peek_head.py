@@ -36,7 +36,7 @@ def test_the_peeked_toggle_sits_where_the_pinned_one_does():
 def test_skill_logs_peeked_head_is_not_shifted():
     """The peek is a variable the aside sets (07-whiteboard-misc.css says why), so the id rule's
     own `--sb-peek-transform` must be reset by an id selector of the same rank, hover and focus."""
-    css = _css("08-consistency.css")
+    css = _css("07-whiteboard-misc.css")
     for state in (":hover", ":is(:focus-visible, :has(:focus-visible))"):
         at = css.find(".layout-sidebar-collapsed > #skills-sidebar[data-resizable].sidebar-collapsed" + state)
         assert at >= 0, "the id-specific fold transform on #skills-sidebar needs its own peek reset: " + state

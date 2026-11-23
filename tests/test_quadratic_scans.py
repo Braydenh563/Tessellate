@@ -23,9 +23,9 @@ BUDGET = 0.2  # seconds; the quadratic forms took 0.3 to 15 s
 
 
 def _timed(fn):
-    started = time.perf_counter()
+    started = time.process_time()
     fn()
-    return time.perf_counter() - started
+    return time.process_time() - started
 
 
 def _random_strings(alphabet: list[str], count: int = 400, length: int = 40):

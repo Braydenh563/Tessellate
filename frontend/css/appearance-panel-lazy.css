@@ -150,6 +150,14 @@
   margin-top: calc(var(--space-2) * -1);
   margin-bottom: var(--space-4);
 }
+#appearance-panel details.settings-group[data-fold-key] > summary h3,
+#appearance-panel details.settings-group[data-fold-key] > summary > .help-head {
+  flex: 1 1 auto;
+  margin: 0;
+}
+#appearance-panel details.settings-group[data-fold-key][open] {
+  padding-bottom: var(--space-6);
+}
 #appearance-panel :is(.sampling-controls, .setting-control, #backup-list .entry-actions) > button:is(.icon-only, .icon-button) {
   width: var(--settings-control-h);
   height: var(--settings-control-h);
@@ -202,84 +210,25 @@
 #appearance-panel .settings-section:not(.hidden) {
   animation: ui-fade var(--ui-base) var(--ease-out);
 }
-#appearance-panel .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
-  flex: 1 1 16rem;
-  min-width: 0;
-}
-@media (max-width: 819.98px) {
-  #appearance-panel .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
-    flex: 1 1 100%;
-  }
-}
-#appearance-panel .settings-section .settings-fold summary {
-  white-space: normal;
-}
-#appearance-panel .check-row:has(input[type="checkbox"])
-  + .check-row:has(input[type="checkbox"]),
-#appearance-panel .setting-check + .setting-check {
-  margin-top: 0;
-  border-top-color: var(--divider);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-#appearance-panel .settings-section > h3,
-#appearance-panel .settings-section > .row > h3 {
-  padding-left: calc(1rem + 1px);
-}
-#appearance-panel .modal-content .row {
-  flex-wrap: wrap;
-  min-width: 0;
-}
-#appearance-panel .modal-content .row > :is(input, select, textarea) {
-  max-width: 100%;
-  min-width: 0;
-}
-#appearance-panel .settings-group > summary {
-  padding-inline-end: 0;
-}
-#appearance-panel details.settings-group[data-fold-key] {
-  padding-block: var(--space-2);
-}
 #appearance-panel details.settings-group[data-fold-key] > summary {
   min-height: var(--control-h-lg);
   margin-block: 0;
   padding-block: var(--space-2);
 }
-#appearance-panel details.settings-group[data-fold-key] > summary h3,
-#appearance-panel details.settings-group[data-fold-key] > summary > .help-head {
-  flex: 1 1 auto;
-  margin: 0;
-}
-#appearance-panel details.settings-group[data-fold-key][open] {
-  padding-bottom: var(--space-6);
-}
 #appearance-panel details.settings-group[data-fold-key][open] > summary {
   margin-bottom: var(--space-4);
-}
-@media (max-width: 819.98px), (pointer: coarse) {
-  #appearance-panel .settings-section details[data-fold-key] > summary,
-  #appearance-panel .settings-section .settings-fold > summary {
-    min-height: var(--target-min);
-  }
 }
 #appearance-panel .settings-section > details.settings-fold > summary {
   padding-inline-end: var(--space-6);
 }
-#appearance-panel .setting-check .setting-hint-toggle {
-  margin-inline-end: calc(-1 * var(--space-3));
-}
-#appearance-panel .settings-section > h3 {
-  padding-inline-start: 0;
+#appearance-panel details.settings-group[data-fold-key] {
+  padding-block: var(--space-2);
 }
 #appearance-panel .settings-group > p.muted {
   font-size: var(--text-md);
 }
 #appearance-panel .settings-group .row > input + span.muted {
   font-size: var(--text-lg);
-}
-#appearance-panel :is(.settings-group, .settings-fold)
-  label:is(.check-row, .setting-check):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {
-  margin-inline: calc(-1 * var(--space-3) - 1px);
 }
 #appearance-panel :is(.settings-group, .settings-fold)
   .row.help-head > label:is(.check-row, .setting-check):first-child:has(> input[type="checkbox"]) {
@@ -296,8 +245,74 @@
   background-repeat: no-repeat;
   background-size: calc(100% - 2 * var(--space-3) - 2px) 1px;
 }
+#appearance-panel .settings-section > h3,
+#appearance-panel .settings-section > .row > h3 {
+  padding-left: calc(1rem + 1px);
+}
+#appearance-panel .settings-group > summary {
+  padding-inline-end: 0;
+}
+#appearance-panel .settings-section > h3 {
+  padding-inline-start: 0;
+}
+#appearance-panel .setting-check .setting-hint-toggle {
+  margin-inline-end: calc(-1 * var(--space-3));
+}
+#appearance-panel .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+@media (max-width: 819.98px) {
+  #appearance-panel .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
+    flex: 1 1 100%;
+  }
+}
+#appearance-panel .settings-section .settings-fold summary {
+  white-space: normal;
+}
+#appearance-panel .modal-content .row > :is(input, select, textarea) {
+  max-width: 100%;
+  min-width: 0;
+}
+@media (max-width: 819.98px), (pointer: coarse) {
+  #appearance-panel .settings-section details[data-fold-key] > summary,
+  #appearance-panel .settings-section .settings-fold > summary {
+    min-height: var(--target-min);
+  }
+}
+#appearance-panel .check-row:has(input[type="checkbox"])
+  + .check-row:has(input[type="checkbox"]),
+#appearance-panel .setting-check + .setting-check {
+  margin-top: 0;
+  border-top-color: var(--divider);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+#appearance-panel :is(.settings-group, .settings-fold)
+  label:is(.check-row, .setting-check):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {
+  margin-inline: calc(-1 * var(--space-3) - 1px);
+}
+#appearance-panel .modal-content .row {
+  flex-wrap: wrap;
+  min-width: 0;
+}
 #appearance-panel :is(.select-shell > .setting-reset, .select-shell + .setting-reset) {
   margin-inline-start: var(--space-2);
+}
+@media (min-width: 820px) {
+  #appearance-panel .settings-section .row:has(> label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label)) {
+    position: relative;
+    padding-inline-end: calc(var(--control-h-dense) + var(--space-2));
+  }
+  #appearance-panel .settings-section .row:has(> label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label)) > .setting-reset {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 50%;
+    translate: 0 -50%;
+  }
+  #appearance-panel .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
+    flex-basis: calc(16rem - var(--control-h-dense) - var(--space-2));
+  }
 }
 #appearance-panel .help-head > .check-row {
   flex: 1 1 0;

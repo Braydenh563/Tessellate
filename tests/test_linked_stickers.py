@@ -1,4 +1,6 @@
-"""Linked stickers (MINDMAP_PLAN 14.4): one placed icon or emoji edited, every copy follows."""
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Linked stickers (MINDMAP_PLAN 14.4): one placed icon or emoji edited, every copy follows."""
 
 import json
 import shutil

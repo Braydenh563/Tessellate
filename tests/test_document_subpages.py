@@ -1,4 +1,6 @@
-"""Sub-pages (DOCUMENTS_PLAN D14, L-documents-44): a document may have one
+"""Source text: the cycle rule is driven through the route; the browser's sub-page panel has no runner here, so it is read as text.
+
+Sub-pages (DOCUMENTS_PLAN D14, L-documents-44): a document may have one
 parent, never a cycle, checked here on the server. Binning a parent bins its
 subtree and restore brings that subtree back; purging a parent lifts its
 children to the top level. The frontend half is read at the bottom."""

@@ -1,4 +1,4 @@
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const OUT = (process.env.SCRATCH||'.') + '/shots';
 require('fs').mkdirSync(OUT,{recursive:true});
 const PW = 'testpassword123';
@@ -159,7 +159,15 @@ async function boot(opts={}) {
     await page.fill('#lock-password', PW);
     await page.click('#lock-submit');
   }
-  await page.waitForTimeout(3000);
+  //: Was a fixed 3 s on every boot; the app is ready when the lock is down, the splash is gone and the
+  //: preferences have arrived (what the waits below and every sweep's first step read).
+  await page.waitForFunction(() => {
+    const overlay = document.getElementById('lock-overlay');
+    const splash = document.getElementById('boot-splash');
+    return (!overlay || overlay.classList.contains('hidden')) && (!splash || splash.classList.contains('hidden'))
+      && typeof prefsCache !== 'undefined' && !!prefsCache;
+  }, null, { timeout: Number(process.env.BOOT_MS || (process.env.SLOW ? 90000 : 20000)), polling: 100 }).catch(() => {});
+  await page.waitForTimeout(300);
   //: **The opening curtain** (INBOX 577): after a good password the lock
   //: screen stays up, its button saying "Opening…", while the first tab
   //: draws (`curtainShell`), and fades once it has. Waited out here, or a
@@ -202,6 +210,13 @@ async function boot(opts={}) {
   //: touches the network either way); UPDATE_ASK=1 leaves it for a sweep
   //: that measures the dialog itself.
   if (!process.env.UPDATE_ASK) {
+    //: Answered through the API first: the dialog waits its turn behind the first-run
+    //: queue and could open after the wait below had already returned (L-general-20).
+    await page.waitForFunction(() => typeof prefsCache !== 'undefined' && prefsCache, null, {timeout: 8000}).catch(() => {});
+    await page.evaluate(async () => {
+      if (typeof prefsCache === 'undefined' || prefsCache?.update_choice_made !== false) return;
+      Object.assign(prefsCache, await apiJson('/update/choice', { method: 'POST', body: JSON.stringify({ check: false }) }));
+    }).catch(() => {});
     await page.waitForFunction(() => {
       const card = [...document.querySelectorAll('.confirm-overlay')]
         .find((o) => /Check for updates automatically/.test(o.textContent));
@@ -212,6 +227,17 @@ async function boot(opts={}) {
       if (no) no.click();
       return true;
     }, null, {timeout: 4000, polling: 200}).catch(() => {});
+  }
+  //: **The semantic question is asked once** (semantic-notice.js): on a fresh data dir the first
+  //: save makes a toast, "No thanks", kept up until answered, and it landed over the tour's Next
+  //: button (tour.js timed out clicking through it). Answered "no" through the API, which is what
+  //: pressing No thanks writes; SEMANTIC_ASK=1 leaves it for a sweep that measures the notice.
+  if (!process.env.SEMANTIC_ASK) {
+    await page.evaluate(async () => {
+      if (typeof prefsCache === 'undefined' || !prefsCache || prefsCache.semantic_choice_made === true) return;
+      Object.assign(prefsCache, await apiJson('/preferences', { method: 'PUT', body: JSON.stringify({ semantic_auto_install: false }) }));
+      document.querySelectorAll('#toast-box .toast-action').forEach((b) => { if (/No thanks/.test(b.textContent)) b.click(); });
+    }).catch(() => {});
   }
   //: A fresh data dir shows the recovery-key dialog after the first password;
   //: closed here so it cannot intercept a sweep's clicks. RECOVERY_ASK=1 keeps it.
@@ -287,6 +313,36 @@ async function routeBefore(ctx, page, dir = process.env.BEFORE_DIR) {
   return true;
 }
 
+// Main-thread CPU in ms, read from the kernel's per-thread on-CPU time for the renderers'
+// main threads (/proc/<pid>/task/<tid>/schedstat, first field, ns). Unlike
+// Performance.getMetrics TaskDuration (wall time inside tasks) it does not count the time a
+// busy shared machine keeps the thread off a core, so a budget set on it holds on a loaded
+// runner. Pass the browser from `boot`; take a before and an after and subtract.
+async function mainCpuMs(browser) {
+  const fs = require('fs');
+  const s = await browser.newBrowserCDPSession();
+  const { processInfo } = await s.send('SystemInfo.getProcessInfo');
+  await s.detach();
+  let ns = 0;
+  // A renderer's main thread is the one whose tid is the process id.
+  for (const p of processInfo.filter((x) => x.type === 'renderer')) {
+    try { ns += Number(fs.readFileSync(`/proc/${p.id}/task/${p.id}/schedstat`, 'utf8').split(' ')[0]); } catch (e) { /* process ended */ }
+  }
+  return ns / 1e6;
+}
+
+// The full figure, on every machine (L-ui-modernisation-201): the frame budget's lite set
+// (`data-atlas-lite`, atlas-life.js) engages when frames run slow, so a loaded runner would
+// measure half a figure and a quiet one the whole. Refusing the attribute pins the measure to
+// the figure the owner sees on a mains-powered desktop.
+async function pinFullFigure(page) {
+  await page.evaluate(() => {
+    const root = document.documentElement, set = root.setAttribute.bind(root);
+    root.removeAttribute("data-atlas-lite");
+    root.setAttribute = (k, v) => (k === "data-atlas-lite" ? undefined : set(k, v));
+  });
+}
+
 // A new board or map by name, the way the app makes one (wbCreateBlankBoard): "New" makes an
 // untitled board at once now, and the template dialog the sweeps once filled
 // (#wb-template-name, #wb-template-create) is the split menu's, so they fill it no longer.
@@ -297,4 +353,4 @@ async function newBoard(page, name, kind = 'board', timeout = 30000) {
   await waitForBoardOpen(page, 0, timeout);
 }
 
-module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, newBoard};
+module.exports = {boot, OUT, PW, BASE, openBoardsTab, waitForBoardOpen, routeBefore, newBoard, mainCpuMs, pinFullFigure};

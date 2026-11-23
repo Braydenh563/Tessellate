@@ -1,4 +1,6 @@
-"""A status item that paints the same words again leaves its button alone (L323).
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+A status item that paints the same words again leaves its button alone (L323).
 
 Every document keystroke asks the status bar to repaint Undo and Redo; the buttons
 were rebuilt each time (children replaced, title and aria-label rewritten), which

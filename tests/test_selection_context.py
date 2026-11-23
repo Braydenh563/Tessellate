@@ -1,4 +1,6 @@
-"""Selecting text and asking about it: what must stay true.
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Selecting text and asking about it: what must stay true.
 
 REDESIGN.md §R7.1 item 1, quoted from the request behind it: *"able to
 highlight text and say something in the chat and the agent gets the context of

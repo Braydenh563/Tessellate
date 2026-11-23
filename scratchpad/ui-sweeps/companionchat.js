@@ -92,7 +92,7 @@ async function sample(page, label) {
   const { browser, page } = await boot({ viewport: { width: W, height: phone ? 844 : 900 }, ...(phone ? { hasTouch: true, isMobile: true } : {}) });
   const fake = process.env.FAKE || "8774";
   await page.evaluate(async (port) => apiJson("/models/provider", { method: "POST", body: JSON.stringify({ provider: "openai", base_url: `http://127.0.0.1:${port}/v1` }) }).catch((e) => ({ error: String(e) })), fake);
-  await page.evaluate((k) => {
+  await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
     const b = $("avatar-buddy");
     b.value = k;

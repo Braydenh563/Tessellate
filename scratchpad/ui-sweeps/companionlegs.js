@@ -11,7 +11,7 @@ const { boot } = require('./lib.js');
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
   const metric = async () => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     localStorage.setItem('atlas-look', 'masculine'); localStorage.removeItem('nm-buddy-spots');
     const spec = ATLAS_LOOKS.masculine; spec.legs = true; delete spec.legPaths;
     const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));

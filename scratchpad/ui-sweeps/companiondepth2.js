@@ -16,7 +16,7 @@ async function companionmoods() {
   const KIND = process.env.KIND || 'atlas';
   const MS = Number(process.env.MS || 180000);
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-    await page.evaluate((k) => {
+    await page.evaluate(async (k) => {
       localStorage.removeItem('nm-buddy-spots');
       const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
       revealTab('dashboard');
@@ -68,7 +68,7 @@ async function companioncost() {
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Performance.enable');
     const metric = async () => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
-    await page.evaluate(([k, look]) => {
+    await page.evaluate(async ([k, look]) => {
       localStorage.setItem('atlas-look', look); localStorage.removeItem('nm-buddy-spots');
       const b = $('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, [KIND, process.env.LOOK || 'masculine']);
@@ -110,7 +110,7 @@ async function companioncost() {
 async function companionrecalcorder() {
   const { boot } = require('./lib.js');
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
-    await page.evaluate((look) => {
+    await page.evaluate(async (look) => {
       localStorage.setItem('atlas-look', look); localStorage.removeItem('nm-buddy-spots');
       const b = $('avatar-buddy'); b.value = 'atlas'; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, process.env.LOOK || 'masculine');

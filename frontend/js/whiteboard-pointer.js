@@ -470,7 +470,12 @@
     function wbEdgePanTick() {
       wbEdgePan.frame = 0;
       if (!wbEdgePanWanted() || !document.body.contains(boardEl())) return;
-      const r = boardEl().getBoundingClientRect();
+      //: The per-gesture box, not a fresh one: this frame runs after the drag
+      //: has written transforms and link paths, so a fresh read laid the whole
+      //: board out again every frame (1,569ms of a 200-topic linked branch
+      //: drag, L-ui-modernisation-61). A button is down while it runs, which
+      //: is when the cache holds.
+      const r = wbCanvasOriginRect();
       const band = Math.min(wbEdgePan.band, r.width / 5, r.height / 5);
       const vx = wbEdgePanSpeed(r.left + band - wbEdgePan.x, wbEdgePan.x - (r.right - band), band);
       const vy = wbEdgePanSpeed(r.top + band - wbEdgePan.y, wbEdgePan.y - (r.bottom - band), band);
@@ -590,16 +595,10 @@
           folded ? "This map has folded branches" : "Nothing is folded on this map",
           () => wbMapExpandAll()
         ),
-        makeMenuItem(
-          `ph:arrows-in-line-vertical Fold every branch${open ? ` (${open})` : ""}`,
-          open ? "Show the trunks only (Alt+1)" : "Every branch is already folded",
-          () => wbMapFoldToLevel(1)
-        ),
+        makeMenuItem(`ph:arrows-in-line-vertical Fold every branch${open ? ` (${open})` : ""}`, open ? "Show the trunks only (Alt+1)" : "Every branch is already folded", () => wbMapFoldToLevel(1)),
         moreLevel,
         lessLevel,
-        makeMenuItem("ph:frame-corners Fit everything", "Show the whole map (Shift+1)", () =>
-          document.getElementById("wb-zoom-fit")?.click()
-        ),
+        makeMenuItem("ph:frame-corners Fit everything", "Show the whole map (Shift+1)", () => document.getElementById("wb-zoom-fit")?.click()),
       ];
       openMenuAtPoint(items, "This map", clientX, clientY);
     };
@@ -634,17 +633,11 @@
       //: Right-click on the locked item itself unlocks that one, first.
       const lockedHere = wbLockedItemAt(x, y);
       if (lockedHere) {
-        items.unshift(makeMenuItem(
-          "ph:lock-simple-open Unlock this item", "It is locked, so the pointer passes through it",
-          () => wbSetLocked([[lockedHere.kind, lockedHere.item]], false)
-        ));
+        items.unshift(makeMenuItem("ph:lock-simple-open Unlock this item", "It is locked, so the pointer passes through it", () => wbSetLocked([[lockedHere.kind, lockedHere.item]], false)));
       }
       const locked = wbLockedItems().length;
       if (locked) {
-        items.push(makeMenuItem(
-          `ph:lock-simple-open Unlock ${locked} locked item${locked === 1 ? "" : "s"}`,
-          "Ctrl+Shift+L with nothing selected", () => wbUnlockAll()
-        ));
+        items.push(makeMenuItem(`ph:lock-simple-open Unlock ${locked} locked item${locked === 1 ? "" : "s"}`, "Ctrl+Shift+L with nothing selected", () => wbUnlockAll()));
       }
       openMenuAtPoint(items, "This board", clientX, clientY);
     };

@@ -1,4 +1,6 @@
-"""A box too small on screen to hold its grips drags instead (L-whiteboard-15).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+A box too small on screen to hold its grips drags instead (L-whiteboard-15).
 
 Measured, wb500perf.js: on a 500-box board at the fit zoom (0.23) a text box
 is 42 by 16 px on screen and its ten-pixel resize grips, which keep their
@@ -27,7 +29,8 @@ def test_the_cull_pass_marks_items_too_small_for_their_grips():
 
 
 def test_a_tiny_item_has_no_resize_grips():
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    #: The board's item rules moved from 07-whiteboard-misc.css to library-lazy.css (ui-modernisation), this one with them.
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     rule = re.search(r"(?:(?<=[{}])|\A)([^{}]*\.wb-tiny[^{}]*\.wb-resize-handle[^{}]*)\{([^}]*)\}", css)
     assert rule, "no rule hides a tiny item's grips"
     assert "display: none" in rule.group(2)

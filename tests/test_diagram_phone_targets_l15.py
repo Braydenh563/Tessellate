@@ -1,4 +1,6 @@
-"""L-documents-15: the diagram builder at 390 (R11 blind test).
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+L-documents-15: the diagram builder at 390 (R11 blind test).
 
 Re-measured 2026-11-12 on the served app (390 x 844 touch, a four-block flowchart in a document):
 the dialog's dock is there 152 to 257 ms after the tap and the picture 233 to 261 ms (the R11 report said

@@ -11,9 +11,10 @@ The browser half is `scratchpad/ui-sweeps/switchdepth2.js switchdivider`'s overh
 """
 import re
 from pathlib import Path
+from tests._css_paths import FORMER_08, sheets
 
 CSS = Path(__file__).resolve().parents[1] / "frontend" / "css"
-CONSISTENCY = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+CONSISTENCY = sheets(*FORMER_08)
 WIDGETS = (CSS / "03-dashboard-widgets.css").read_text(encoding="utf-8")
 
 

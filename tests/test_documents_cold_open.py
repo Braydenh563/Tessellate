@@ -1,4 +1,6 @@
-"""L-documents-47: the cold open of Documents (DOCUMENTS_PLAN section 24 row 5).
+"""Source text: the cold open is measured by a sweep in a browser; this keeps the load order it relied on, read as text.
+
+L-documents-47: the cold open of Documents (DOCUMENTS_PLAN section 24 row 5).
 
 Measured with scratchpad/ui-sweeps/docscold47.js. The three changes that cut
 the path are guarded here by shape, because the numbers need a browser.

@@ -403,13 +403,16 @@ def test_a_share_query_becomes_one_capture(tmp_path, query, expected):
 def test_the_share_query_survives_the_worker_and_lands_in_capture():
     """`/?share_text=` is a navigation to `/`: the worker's network-first path
     passes it through untouched (asserted above), and app.js switches to the
-    Capture box before filling it. The installed app's share action is the
-    manifest's `/`, inside the worker's scope."""
+    Capture box before filling it. The installed app's share action (the
+    POST form since L-ui-modernisation-7, so files come too) is inside the
+    worker's scope, and the worker answers it with a 303 to `/?share_...`."""
     app = (FRONTEND / "js" / "shared-intake.js").read_text(encoding="utf-8")
-    intake = app[app.index("function takeSharedIntake()") :][:1800]
+    intake = app[app.index("function takeSharedIntake()") :][:2400]
     assert 'showNotesSection("capture")' in intake and 'box = $("entry-content")' in intake
     manifest = json.loads((FRONTEND / "manifest.webmanifest").read_text(encoding="utf-8"))
-    assert manifest["share_target"]["action"] == "/" and manifest["start_url"] == "/"
+    assert manifest["share_target"]["action"].startswith("/") and manifest["start_url"] == "/"
+    worker = (FRONTEND / "sw.js").read_text(encoding="utf-8")
+    assert "Response.redirect(`/?${query.toString()}`, 303)" in worker
 
 
 # --- the install row --------------------------------------------------------

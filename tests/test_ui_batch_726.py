@@ -44,7 +44,7 @@ def test_graph_options_sections_pad_both_sides_equally():
 
 
 def test_boards_filter_gap_is_set_after_the_ring_room_rule():
-    text = _css("08-consistency.css")
+    text = "\n".join(_css(n) for n in ("02-chat-graph.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css", "characters-lazy.css"))
     # One selector per row, each filed under its class or id (L342).
     ring = text.index(":where(.launch-row):is(.launch-row, #chat-suggest),\n:where(.library-filters):is(.library-filters, #chat-suggest),\n#chat-suggest {")
     gap = text.index("#library-boards-filter,\n#reminder-filter {")
@@ -53,12 +53,14 @@ def test_boards_filter_gap_is_set_after_the_ring_room_rule():
     assert "margin-bottom: calc(var(--space-6) - var(--ring-room))" in body
     # The earlier lone-id rules never applied; they must not come back.
     assert not re.search(r"(?m)^#library-boards-filter\s*\{", _css("00-tokens-shell.css"))
-    assert not re.search(r"(?m)^#reminder-filter\s*\{", _css("07-whiteboard-misc.css"))
+    # A lone rule, not the second line of the split group above (now in 07 since 08 dissolved).
+    assert not re.search(r"(?m)(?<!,\n)^#reminder-filter\s*\{", _css("07-whiteboard-misc.css"))
 
 
 def test_autonomous_pass_jobs_have_no_rule_above_the_second_switch():
     text = _css("library-lazy.css")
-    body = _rule(text, ".skills-worker-toggles")
+    # The later of its two rules is the one that wins (UI plan 13b, L459, moved the first here too).
+    body = re.findall(r"(?m)^\.skills-worker-toggles\s*\{([^}]*)\}", text)[-1]
     assert "flex-direction: column" in body and "flex-wrap" not in body
     rule = _rule(text, ".skills-worker-toggles > .setting-check")
     assert "border-top-color: transparent" in rule
@@ -82,7 +84,7 @@ def _js(name: str) -> str:
 
 
 def test_companion_container_fades_on_the_root_flag():
-    text = _css("08-consistency.css")
+    text = "\n".join(_css(n) for n in ("02-chat-graph.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css", "characters-lazy.css"))
     body = _rule(text, ":root[data-fullscreen] #nm-buddy-band")
     assert "opacity: 0" in body and "visibility: hidden" in body
     assert "pointer-events: none" in body
@@ -143,7 +145,7 @@ def test_a_link_row_underlines_its_words_not_its_icon():
     assert ".question-group-link:hover .ph-text" in questions
     hover = questions[questions.index(".question-group-link:hover,"):].split("}", 1)[0]
     assert "text-decoration" not in hover
-    consistency = _css("08-consistency.css")
+    consistency = "\n".join(_css(n) for n in ("02-chat-graph.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css", "characters-lazy.css", "library-lazy.css"))
     assert ".library-read-open:hover .ph-text" in consistency
     #: The hover rule shares its block with the focus twin (the uisweep pass), so it ends in a comma.
     plain = consistency[consistency.index(".library-read-open:hover,"):].split("}", 1)[0]

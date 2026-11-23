@@ -118,9 +118,9 @@ def _import(data: bytes):
 
 def test_the_500_note_notebook_comes_back_equal_on_every_field(exported):
     before, data = exported
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     session, result, written = _import(data)
-    took = time.perf_counter() - t0
+    took = time.process_time() - t0
     after = export_folder.snapshot(session, deps.get_config().uploads_dir)
     session.close()
     print(f"\nimport of {len(result.notes)} notes and boards: {took:.2f} s; skipped {len(result.skipped)}")

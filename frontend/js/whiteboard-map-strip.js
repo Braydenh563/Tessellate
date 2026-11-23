@@ -590,14 +590,17 @@
     const data = wbMapThemedData(node);
     wbMapStripSyncing = true;
     try {
-      for (const [id, on] of [
+      for (const [id, on, ...glyphs] of [
         ["wb-map-bold", data.bold], ["wb-map-italic", data.italic],
-        ["wb-map-core", data.core],
+        ["wb-map-core", data.core, "ph ph-crown", "ph ph-crown-simple"],
       ]) {
         const button = document.getElementById(id);
         if (!button) continue;
         button.classList.toggle("active", Boolean(on));
         button.setAttribute("aria-pressed", on ? "true" : "false");
+        //: An icon toggle swaps its glyph as well as its fill (L457, owner B58).
+        const glyph = glyphs.length && button.querySelector("i");
+        if (glyph) glyph.className = on ? glyphs[0] : glyphs[1];
       }
       //: **The blank option says what it does on a themed map** (§13e). Every
       //: select here stores the app's own default as no value at all, so the
@@ -739,6 +742,8 @@
           const on = Boolean(data.edge_dashed);
           dash.classList.toggle("active", on);
           dash.setAttribute("aria-pressed", on ? "true" : "false");
+          const glyph = dash.querySelector("i");
+          if (glyph) glyph.className = on ? "ph ph-rectangle-dashed" : "ph ph-line-segment";
           dash.title = on ? "Draw the line into this topic solid again" : "Dash the line into this topic";
         }
         //: The label's look rows, on the line menu; they read the stored look.
@@ -758,33 +763,40 @@
           const on = wbMapEdgeHasArrow(node);
           arrow.classList.toggle("active", on);
           arrow.setAttribute("aria-pressed", on ? "true" : "false");
+          const glyph = arrow.querySelector("i");
+          if (glyph) glyph.className = on ? "ph ph-arrow-right" : "ph ph-minus";
           arrow.title = on
             ? "Take the arrowhead off the line into this topic"
             : "Put an arrowhead on the line into this topic";
         }
       }
-      const colour = document.getElementById("wb-map-strip-color");
-      if (colour) {
-        //: **A node carries its colour on its own card, so a trunk can set one
-        //: too** (MINDMAP_PLAN.md §12.0). A colour paints the line coming *into*
-        //: a node, which a root has none of, and it also paints the card, which
-        //: every node has: `wbPaintMapNode` writes `--wb-branch` on all of them
-        //: and `.wb-map-node` draws it as the bar down the leading edge. What is
-        //: true is that it does not *cascade* from a trunk: the roots' children
-        //: start the palette over by design (`wbMapColors`), which is Coggle's
-        //: rule. The title says which of the two this press will do. It reads
-        //: the colour the node is *actually drawn in*, inherited or its own: a
-        //: picker that opens on white over a blue branch is a picker that lies.
-        const index = wbMapIndex();
-        const isRoot = !(node.parent_id != null && index.byId.has(node.parent_id));
-        colour.title = isRoot
-          ? "Topic colour: a trunk colours its own card, each branch under it keeps its own"
-          : "Branch colour: it carries down to everything under this topic";
-        const effective = wbMapColors(index).get(node.id);
-        if (effective && /^#[0-9a-f]{6}$/i.test(effective)) colour.value = effective;
-      }
+      wbSyncMapStripColour(node);
     } finally {
       wbMapStripSyncing = false;
+    }
+  }
+
+  //: The colour swatch's title and value for the node (split from `wbSyncMapStrip` for its size cap).
+  function wbSyncMapStripColour(node) {
+    const colour = document.getElementById("wb-map-strip-color");
+    if (colour) {
+      //: **A node carries its colour on its own card, so a trunk can set one
+      //: too** (MINDMAP_PLAN.md §12.0). A colour paints the line coming *into*
+      //: a node, which a root has none of, and it also paints the card, which
+      //: every node has: `wbPaintMapNode` writes `--wb-branch` on all of them
+      //: and `.wb-map-node` draws it as the bar down the leading edge. What is
+      //: true is that it does not *cascade* from a trunk: the roots' children
+      //: start the palette over by design (`wbMapColors`), which is Coggle's
+      //: rule. The title says which of the two this press will do. It reads
+      //: the colour the node is *actually drawn in*, inherited or its own: a
+      //: picker that opens on white over a blue branch is a picker that lies.
+      const index = wbMapIndex();
+      const isRoot = !(node.parent_id != null && index.byId.has(node.parent_id));
+      colour.title = isRoot
+        ? "Topic colour: a trunk colours its own card, each branch under it keeps its own"
+        : "Branch colour: it carries down to everything under this topic";
+      const effective = wbMapColors(index).get(node.id);
+      if (effective && /^#[0-9a-f]{6}$/i.test(effective)) colour.value = effective;
     }
   }
 

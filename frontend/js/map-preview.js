@@ -354,26 +354,29 @@
   //: Built with SVG attributes and never an inline `style` string: this app's
   //: CSP drops those outright, and thirty-five of them once shipped as silently
   //: dead markup (CLAUDE.md, "a policy silently refusing the work").
-  function mapPreviewDraw(svg, board, size) {
+  function mapPreviewDraw(svg, board, size, opts = {}) {
     const geo = MAP_PREVIEW_SIZES[size] || MAP_PREVIEW_SIZES.card;
     const items = Array.isArray(board?.preview_items) ? board.preview_items : [];
     const NS = "http://www.w3.org/2000/svg";
 
     //: **The board's own shape, letterboxed into the card's box.** The viewBox
-    //: is drawn at `preview_aspect` (the board's width/height, which
-    //: normalising the positions into 0..1 threw away) and `meet` fits it
-    //: inside the element rather than stretching it to fill: a map that runs
-    //: down the page used to come back as the same wide rectangle as one that
-    //: runs across, and every board in the Library was the same shape as every
-    //: other, which is a picture of the card, not of the board.
+    //: is drawn at `preview_aspect` (the board's width/height) and `meet` fits
+    //: it inside the element rather than stretching it: stretched, every board
+    //: in the Library was the same shape, a picture of the card, not the board.
     const aspect = Number(board?.preview_aspect) > 0 ? Number(board.preview_aspect) : 1;
     const vw = aspect >= 1 ? MAP_PREVIEW_BASE : MAP_PREVIEW_BASE * aspect;
     const vh = aspect >= 1 ? MAP_PREVIEW_BASE / aspect : MAP_PREVIEW_BASE;
-    svg.setAttribute("viewBox", `0 0 ${round2(vw)} ${round2(vh)}`);
+    //: **A tall map in the dashboard's short box is cropped around its centre**
+    //: (L778): letterboxed, a 25-topic tree drew a thin strip with no labels.
+    //: `crop` shows a window of the box's own shape out of the middle.
+    const crop = Boolean(opts.crop) && vh / vw > geo.h / geo.w;
+    const cropH = vw * (geo.h / geo.w);
+    svg.setAttribute("viewBox", crop ? `0 ${round2((vh - cropH) / 2)} ${round2(vw)} ${round2(cropH)}` : `0 0 ${round2(vw)} ${round2(vh)}`);
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    if (crop) svg.dataset.crop = "centre";
     // The scale `meet` is about to apply, so every fixed size below can be
     // expressed in the box's units and divided back out: see MAP_PREVIEW_SIZES.
-    const scale = Math.min(geo.w / vw, geo.h / vh);
+    const scale = crop ? geo.w / vw : Math.min(geo.w / vw, geo.h / vh);
     const unit = 1 / scale;
     const pad = geo.pad * unit;
     const blockW = geo.blockW * unit;
@@ -385,12 +388,9 @@
     const spanX = Math.max(0, vw - pad * 2 - blockW);
     const spanY = Math.max(0, vh - pad * 2 - blockH);
     //: **Labels need width, and a letterboxed tall board has not got it.**
-    //: Measured on the first run of the redesigned card: a board half as wide as
-    //: it is tall draws its paper 82px across inside a 293px card, and the
-    //: sixteen-character labels that read as a texture at 293px overlapped each
-    //: other and the nodes they belonged to ("First branchRoot"). Below
-    //: `MAP_PREVIEW_LABEL_FLOOR` of the box's width the labels come off and the
-    //: shape carries the card, which is what the row size already does.
+    //: Measured: a board half as wide as tall drew its paper 82px across in a 293px
+    //: card, and sixteen-character labels overlapped their nodes ("First branchRoot").
+    //: Below `MAP_PREVIEW_LABEL_FLOOR` of the box's width the labels come off.
     const labels = geo.labels && vw * scale >= geo.w * MAP_PREVIEW_LABEL_FLOOR;
     const px = (x) => pad + (Number(x) || 0) * spanX;
     const py = (y) => pad + (Number(y) || 0) * spanY;

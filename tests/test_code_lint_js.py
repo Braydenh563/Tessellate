@@ -1,4 +1,6 @@
-"""Lint for .js, .ts and .py documents (L-documents-50), run in node.
+"""Source text: the lint runs in node with no browser, so its wiring into the editor bundle is read as text.
+
+Lint for .js, .ts and .py documents (L-documents-50), run in node.
 
 `documents-code-lint.js` is the browser's text over the vendored CodeMirror's JavaScript parser. The Ruff half is
 checked with a stand-in workspace (the real wasm is 10 MB and an optional download), so the mapping from Ruff's

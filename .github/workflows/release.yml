@@ -2,8 +2,8 @@
 # Linux package whenever a version tag (v*) is pushed — or when run manually
 # from the Actions tab, for an environment that can't push a tag directly
 # (a fine-grained credential without tag-ref permission, a tag protection
-# rule, etc.): softprops/action-gh-release creates the tag itself as part of
-# creating the release when given an explicit tag_name, so a git push of the
+# rule, etc.): `gh release create --target` creates the tag itself as part
+# of creating the release, so a git push of the
 # tag was never actually required, only convenient.
 #
 # Not on PyPI, deliberately: this app ships as an installed Windows app via
@@ -34,8 +34,10 @@ on:
         description: "Version to release, e.g. 0.1.0 (no leading v)"
         required: true
 
+# Read only by default; the three jobs that create or upload to the release
+# ask for write themselves (zizmor excessive-permissions).
 permissions:
-  contents: write   # needed to create the GitHub Release
+  contents: read
 
 jobs:
   resolve-version:
@@ -46,7 +48,9 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
       version: ${{ steps.resolve.outputs.version }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
       - name: Resolve from the tag push or the manual input
         id: resolve
@@ -85,12 +89,15 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
       - name: Extract changelog entry for this version
         id: changelog
+        env:
+          VERSION: ${{ needs.resolve-version.outputs.version }}
         run: |
-          VERSION="${{ needs.resolve-version.outputs.version }}"
           # The section under this version's header, up to the next one. Not
           # an awk range (`/^## x/,/^## /`): its end pattern matches the
           # start line itself, so the range was that one line and the notes
@@ -106,30 +113,34 @@ jobs:
 
           The full list is in [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/v${VERSION}/CHANGELOG.md)."
           fi
-          DELIM="notes_$(date +%s%N)"
-          echo "notes<<$DELIM" >> "$GITHUB_OUTPUT"
-          echo "$NOTES" >> "$GITHUB_OUTPUT"
-          echo "$DELIM" >> "$GITHUB_OUTPUT"
+          # A file, not a step output: the release step reads it with
+          # --notes-file, so no notes text is expanded into a script.
+          printf '%s\n' "$NOTES" > "$RUNNER_TEMP/notes.md"
 
+      # The runner's own gh, not a third-party action (zizmor
+      # superfluous-actions). On the manual-dispatch route the tag is not a
+      # ref yet, so it is cut from this run's commit (--target); on the
+      # tag-push route --target is a no-op. A rerun finds the release made
+      # and leaves it.
       - name: Create release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ needs.resolve-version.outputs.tag }}
-          # Only meaningful on the manual-dispatch route — the tag doesn't
-          # exist as a ref yet, so it's cut from whatever commit this run
-          # itself is on. Ignored (a no-op) when the tag already exists,
-          # i.e. the normal tag-push route.
-          target_commitish: ${{ github.sha }}
-          body: ${{ steps.changelog.outputs.notes }}
-          generate_release_notes: ${{ steps.changelog.outputs.notes == '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.resolve-version.outputs.tag }}
+          SHA: ${{ github.sha }}
+        run: |
+          gh release view "$TAG" > /dev/null 2>&1 && exit 0
+          if [ -s "$RUNNER_TEMP/notes.md" ] && grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            gh release create "$TAG" --target "$SHA" --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+          else
+            gh release create "$TAG" --target "$SHA" --title "$TAG" --generate-notes
+          fi
 
   build-windows-installer:
     name: Build Windows installer
     # After github-release, not in parallel with it: this job uploads an
-    # asset to the release that job creates, via the same action run again
-    # with the same tag — softprops/action-gh-release adds to an existing
-    # release under that tag rather than making a second one, but only if
-    # the release already exists by the time this runs.
+    # asset to the release that job creates (`gh release upload`), which
+    # needs the release to exist by the time this runs.
     needs: [resolve-version, github-release]
     runs-on: windows-latest
     timeout-minutes: 30
@@ -137,9 +148,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7
         with:
           python-version: "3.13"
 
@@ -242,15 +255,14 @@ jobs:
             -o "dist\installer\Tessellate-$env:TESSELLATE_VERSION-windows-x86_64.msi"
 
       - name: Upload installers to the release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ needs.resolve-version.outputs.tag }}
-          # The .msi line is out with the steps above: a glob with nothing to
-          # match fails this action outright, and the .exe alone is a
-          # complete, working release either way.
-          files: |
-            dist/installer/Tessellate-Setup-*.exe
-            dist/installer/Tessellate-Setup-*.exe.sig
+        # The .msi line is out with the steps above; the .exe alone is a
+        # complete, working release either way. --clobber: a rerun replaces.
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.resolve-version.outputs.tag }}
+        run: gh release upload "$TAG" dist/installer/Tessellate-Setup-*.exe dist/installer/Tessellate-Setup-*.exe.sig --clobber
 
   build-linux-package:
     name: Build Linux package
@@ -259,11 +271,15 @@ jobs:
     needs: [resolve-version, github-release]
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7
         with:
           python-version: "3.13"
 
@@ -338,9 +354,8 @@ jobs:
           zip -qr "../Tessellate-${VERSION}-linux-x86_64.zip" "Tessellate"
 
       - name: Upload package to the release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ needs.resolve-version.outputs.tag }}
-          files: |
-            Tessellate-*-linux-x86_64.tar.gz
-            Tessellate-*-linux-x86_64.zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.resolve-version.outputs.tag }}
+        run: gh release upload "$TAG" Tessellate-*-linux-x86_64.tar.gz Tessellate-*-linux-x86_64.zip --clobber

@@ -20,6 +20,10 @@
    its own here: Chromium still drew the popup with this app's own
    (light, inherited-from-`select`) text colour, so `option`/`optgroup`
    get their background/text set directly below too, belt and suspenders. */
+/* The tokens are a cascade layer (L-ui-modernisation-1): an unlayered rule
+   that sets one wins by being unlayered, not by specificity. Custom
+   properties and `color-scheme` only (`tests/test_css_token_layer_ui1.py`). */
+@layer tokens;
 /* **The board's grid tokens do not inherit** (INBOX 392 and 312: "really
    slow to pan and move around", on maps and plain boards alike). They are
    rewritten on `#whiteboard-container` on every pan and zoom frame, and an
@@ -46,6 +50,7 @@
   inherits: false;
   initial-value: 0px;
 }
+@layer tokens {
 :root {
   color-scheme: light;
 }
@@ -88,11 +93,13 @@
     --accent-text: oklch(from var(--accent) max(l, 0.8) min(c, 0.12) h);
   }
 }
+}
 select option,
 select optgroup {
   background-color: var(--modal-bg);
   color: var(--ink);
 }
+@layer tokens {
 :root {
   /* --- the spacing scale (§35L) --------------------------------------------
      Extracted, not invented. This file had 667 margin/padding/gap
@@ -223,6 +230,8 @@ select optgroup {
   --space-7: calc(1.25rem * var(--density));
   --space-8: calc(1.5rem * var(--density));
   --space-9: calc(2rem * var(--density));
+  /* Panel inset (UI plan Phase 12 decision 1): 12px, between --space-5 and --space-6. */
+  --panel-pad: calc(0.75rem * var(--density));
   /* A changed Settings row's bar, from the row's text edge (INBOX 1696 c):
      inside the group, never on its edge (two gutters put it on the border). */
   --setting-bar-inset: var(--space-3);
@@ -541,7 +550,7 @@ select optgroup {
      container that clips (`overflow` other than visible, `contain: paint`)
      and holds a control flush to its edge must leave this much room, by
      padding or `overflow-clip-margin`, or draw the ring inside the control.
-     08-consistency.css "Ring room" lists the containers;
+     07-whiteboard-misc.css "Ring room" lists the containers;
      `tests/test_ring_room.py` holds the list. A fixed length, not a spacing
      token: the ring does not grow with density (INBOX 685). */
   --ring-room: 4px;
@@ -852,6 +861,7 @@ select optgroup {
   --ui-exit: 0s;
   --ui-step: 0s;
 }
+}
 /* Base application of Appearance settings.
    **`file` and `hidden` are excluded, and this rule is why a borderless
    control can grow a 3px border out of nowhere.** `border: none`, whether
@@ -885,6 +895,7 @@ select,
 .sidebar {
   border-style: var(--border-style) !important;
 }
+@layer tokens {
 /* Dark palette. CSS has no variables-for-variables, so the block
    appears twice: once for the manual toggle, once for the OS default. */
 :root[data-mode="dark"] {
@@ -1039,6 +1050,7 @@ select,
     --surface-3: rgba(255, 255, 255, 0.09);
     --divider: rgba(255, 255, 255, 0.08);
   }
+}
 }
 * {
   box-sizing: border-box;
@@ -1339,8 +1351,12 @@ header#top-bar h1 {
   }
 }
 @media (max-width: 940px) {
+  /* **A sideways phone keeps one row** (L-ui-modernisation-37): the band
+     below 820 already spaces the bar at `--space-2`. At `--space-4` a phone
+     at 844x390 needed 824.2px of 820, so the tabs wrapped and the header was
+     108 of 390 tall; at `--space-2` it is 56. */
   header#top-bar {
-    gap: var(--space-4);
+    gap: var(--space-2);
   }
   #tab-bar button {
     padding-inline: var(--space-3);
@@ -1508,6 +1524,11 @@ button.scroll-row-arrow {
 }
 button.scroll-row-arrow[data-side="end"] {
   transform: translate(-100%, -50%);
+}
+/* The end arrow sits on its scroller's edge, which clipped 3.6px of an
+   outside ring at 390 (DESIGN.md: the ring goes inside). */
+button.scroll-row-arrow:focus-visible {
+  outline-offset: -2px;
 }
 button.scroll-row-arrow[hidden] {
   display: none;
@@ -1783,10 +1804,8 @@ button.scroll-row-arrow[hidden] {
   min-height: var(--control-h-lg);
 }
 .extras-row .entry-actions {
-  flex: 0 0 auto;
-  margin-left: auto;
   align-items: center;
-  /* INBOX 273: `flex: 0 0 auto` above never shrinks this column, and a row
+  /* INBOX 273: `flex: 0 0 auto` (07-whiteboard-misc.css) never shrinks this column, and a row
      whose title has shrunk to its own minimum (a long name plus the
      "Installed" chip) can still leave a two-button Reinstall/Remove pair
      with nowhere to go but past the frame's right edge -- measured on the
@@ -1920,11 +1939,7 @@ button.scroll-row-arrow[hidden] {
   gap: var(--space-3);
   margin-bottom: var(--space-5);
 }
-.library-overview-note {
-  flex-basis: 100%;
-  margin: 0;
-  font-size: var(--text-sm);
-}
+
 /* --- the strips that appear only when they apply ---------------------------- */
 .library-contextbar {
   display: flex;
@@ -2103,27 +2118,6 @@ button.scroll-row-arrow[hidden] {
 .library-chip.active .library-chip-count {
   color: inherit;
 }
-/* Activity answers "what did I do", not "what kind of thing is this", the
-   other ten chips all filter by kind, so it sat among them looking like an
-   eleventh kind rather than the different question it actually is. Set
-   apart with a divider ahead of it, the way the reminder view-toggle
-   already sits apart from the reminder filter beside it, rather than moved
-   to a second surface (a second place to remember is not a better one, 
-   reported live: "can the activity button be moved somewhere better").
-   It's still last in DOM order (renderLibraryFilters appends it after every
-   kind chip), so the divider alone reads as "separate from the row before
-   it" without needing to be pushed anywhere.
-   **No `margin-left: auto`.** `.library-filters` wraps (flex-wrap), and an
-   auto-margin item in a wrapping flex row gets shoved onto a lonely row of
-   its own the moment the chips before it don't all fit on one line, a
-   full-width row with one small pill on it, which is the exact "ugly,
-   taking up a whole row" reported live. Auto-margins and wrapping don't mix
-   in flexbox; dropping the margin is what lets it wrap in-line like every
-   chip beside it, divider and all. */
-.library-chip-activity {
-  padding-left: calc(var(--space-5) + var(--space-2));
-  border-left: 1px solid var(--border);
-}
 .library-grid {
   /* How wide a card's spine is. One value, so the seven kind-colours below
      cannot drift apart: see the note on the spine. */
@@ -2156,12 +2150,6 @@ button.scroll-row-arrow[hidden] {
 }
 .library-card {
   position: relative;
-}
-.library-card-thumb {
-  margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) 0;
-  max-height: 240px;
-  border-bottom: 1px solid var(--border);
-  display: block;
 }
 /* The ⋯, top-right, revealed on hover or focus the way the note cards' actions
    are: a permanent one on every card in a grid is a column of dots down the
@@ -2207,19 +2195,7 @@ button.scroll-row-arrow[hidden] {
     opacity: 1;
   }
 }
-/* Room for it, always, reserved rather than taken, or every title reflows the
-   moment the pointer arrives. */
-.library-card-top {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  min-width: 0;
-  padding-right: var(--space-8);
-}
-.library-card-icon {
-  flex: 0 0 auto;
-  font-size: var(--text-lg);
-}
+
 .library-card-title {
   /* Two lines, then ellipsis. One line loses too many document titles; three
      makes the cards ragged, and a grid whose rows are different heights is the
@@ -2235,48 +2211,6 @@ button.scroll-row-arrow[hidden] {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-}
-.library-card-preview {
-  margin: 0;
-  color: var(--muted);
-  font-size: var(--text-md);
-  line-height: 1.45;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-/* A note has no title and no filename, its own words are the only way to
-   recognise it, so three lines was showing a third of what the card had room
-   for. Reported as "I can't see a lot of the response in the cards". Eight,
-   with the server sending 420 characters rather than 160 to fill them. The
-   other kinds keep three: a document has a title, a file has a name, and their
-   preview is a reminder rather than the thing itself. */
-.library-note .library-card-preview {
-  -webkit-line-clamp: 8;
-  line-clamp: 8;
-}
-/* Markdown rendered inline inside a preview must not change the line height, 
-   a clamp counts lines, and a card whose emphasis made it taller would break
-   the row it sits in. */
-.library-card-preview code {
-  font-size: 0.92em;
-  padding: 0 0.2em;
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
-}
-.library-card-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  /* Pinned to the bottom of the card, so the metadata line agrees across a row
-     whose previews are different lengths. */
-  margin-top: auto;
-  padding-top: var(--space-2);
-  color: var(--muted);
-  font-size: var(--text-sm);
 }
 /* --- the spine ---------------------------------------------------------------
    Asked for directly: *"I want the library to have a library bookshelf kinda
@@ -2309,140 +2243,46 @@ button.scroll-row-arrow[hidden] {
 .library-archived .library-card-title {
   text-decoration: line-through;
 }
-/* A private note shows that it is one and nothing else. */
-.library-card.library-private .library-card-title {
-  color: var(--muted);
-  font-style: italic;
+
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-note,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-document,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-chat,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-file,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-tag,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-archived {
+  box-shadow: none;
 }
-/* The image a file actually is. Fixed height so a shelf of photos keeps its
-   rows level: a grid whose rows are different heights is the thing that reads
-   as unconsidered, and it is worse here than anywhere because these cards are
-   deliberately uniform. */
-.library-card-thumb {
-  width: 100%;
-  height: 6.5rem;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  background: var(--chip-bg);
+
+.library-grid:not(.library-list) .library-board-card > .library-card-title {
+  padding-right: var(--space-8);
+  /* One line that ends in an ellipsis, so a long name never pushes the grid. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .library-card-tick {
   align-self: center;
 }
-/* --- rows instead of cards ---------------------------------------------------
-   Cards to browse, rows to manage: a list shows forty things at once with
-   their metadata lined up in columns, which is what you want when the job is
-   tidying rather than finding. One class on the container, every card is
-   already a flex column, so this turns it on its side rather than re-styling
-   it. */
-/* `.library-grid`'s own layout moved from CSS Grid to a multi-column
-   masonry (`column-width`, above) at some point, but this override was
-   left targeting the old `grid-template-columns` - a property that does
-   nothing on a multi-column container, so Rows view kept the ~17rem
-   masonry columns instead of becoming single-width rows. Cards ended up
-   squeezed to column-width and their text wrapped to one character per
-   line. `columns: unset` undoes the multi-column layout entirely. */
-.library-grid.library-list {
-  columns: unset;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+/* Rows instead of cards (`.library-list`): library-lazy.css (L767, room under the boot cap). */
+
+/* And the card keeps those layers to itself, so an overlay at 1 and a tick
+   at 2 can never rise over a sticky bar the grid scrolls under. */
+.library-card,
+.doc-list-item {
+  isolation: isolate;
 }
-.library-list .library-card {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-3) var(--space-5);
+
+.library-card:has(.card-open:focus-visible),
+.doc-list-item:has(.card-open:focus-visible) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
-/* **A fixed track, not a percentage.** Reported with a screenshot: "the
-   middle content in the library lines view isnt aligned." `flex: 1 1 40%`
-   on both halves makes each row's split depend on *its own* content, so the
-   preview column started at a different x on every single row, the
-   alignment failure DESIGN.md's CARP section is about, repeated once per
-   item down the whole list.
-   A fixed basis means every title occupies the same width and every preview
-   therefore begins on the same edge, which is the entire point of a list
-   view. `min-width: 0` so a long title ellipsises inside its track instead
-   of pushing it wider and taking the alignment with it. */
-.library-list .library-card-top {
-  flex: 0 0 22rem;
-  min-width: 0;
-  padding-right: 0;
-}
-.library-list .library-card-preview {
-  flex: 1 1 auto;
-  min-width: 0;
-  /* -webkit-line-clamp, not just the unprefixed property: a note's own
-     preview (.library-note .library-card-preview, same specificity, tied
-     on source order for the property this rule forgot) clamps to 8 lines
-     for grid view, and Chromium honours the -webkit- prefixed property,
-     not the unprefixed one this rule set alone. Left unset, a note's
-     preview kept trying to grow to 8 lines' worth of content in list
-     view too, which is what threw its row out of alignment with every
-     other kind's single-line row. */
-  line-clamp: 1;
-  -webkit-line-clamp: 1;
-  margin: 0;
-}
-/* An audit-log entry's own preview can run to the full 400-char budget
-   (routes_library.py's ACTIVITY_DETAIL_CHARS) and, unlike every other kind
-   here, has nowhere else to read the rest, the grid view already shows it
-   in full (.library-activity .library-card-preview above); list view's
-   generic one-line clamp just above was clipping every activity row down
-   to a fragment with no way to see more, reported directly. A few lines,
-   not unclamped: list view's row-alignment is still worth keeping for
-   every *other* kind sharing this list, so this stays a real (generous)
-   cap rather than "as tall as the text wants to be". */
-/* **Fixed, like the two tracks above it, and for the same reason.** Reported
-   again: "the line view in the library all subtab is broken and elements
-   arent aligned or consistent in position." The title and preview columns
-   were pinned by the rule above; the meta column was not, so its width
-   followed whichever category name a row happened to carry, and the ⋯ after
-   it therefore started at a different x on every row. Half a list view is not
-   a list view.
-   Right-aligned inside its own track so the dates line up on their right
-   edge, which is how a column of dates is read. */
-.library-list .library-card-meta {
-  flex: 0 0 14rem;
-  justify-content: flex-end;
-  /* **Pushed to the right edge, not merely sized.** Not every kind of row has
-     a preview, an activity entry does, a board does not, and on the rows
-     without one the meta simply slid left into the gap. Measured across eight
-     rows: the ⋯ started at 1369px on rows with a preview and 681px on rows
-     without, which is the "not aligned or consistent in position" report
-     exactly. `margin-left: auto` makes the last two columns hug the right
-     edge whatever came before them, so the fixed track above then puts the ⋯
-     at one x for the whole list. */
-  margin-left: auto;
-  margin-top: 0;
-  padding-top: 0;
-  gap: var(--space-5);
-}
-/* **A Rows line starts with its kind icon, whatever else the list holds**
-   (INBOX 722: "theres a wierd gap at the start of the library all tab lines
-   view"). This used to reserve a 3rem `::before` slot on every row without a
-   picture (and `.has-thumbs` made it conditional) so the thumbnails would line
-   up; with one picture in the list that pushed every other row's icon 63px
-   in (measured at 1440: icon at x 75 against a 14px row padding). A leading
-   column is the wrong shape for something only some rows have. The thumbnail
-   now sits after the title and the preview, before the date, in a slot only
-   the row that has one pays for, so the icon is at the row's own padding on
-   every row and the date and the ⋯ still end at one x. `order` puts it there
-   without touching the DOM order the grid view's picture-on-top relies on. */
-.library-list .library-card-meta {
-  order: 2;
-}
-.library-list .library-card-menu {
-  order: 3;
-}
-.library-list .library-card-thumb {
-  width: 3rem;
-  height: 2.2rem;
-  flex: 0 0 auto;
-  order: 1;
-}
-.library-list .library-card-menu {
-  position: static;
-  opacity: 1;
+
+#library-boards-grid:not(.library-list) > .library-card {
+  margin-bottom: 0;
 }
 .library-empty {
   margin: var(--space-6) 0 0;
@@ -2479,58 +2319,6 @@ button.scroll-row-arrow[hidden] {
   backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
 }
-/* Had no styling at all before, a plain inline button between the image
-   and caption, not the corner overlay a delete control on a tile usually
-   is anywhere else in this app. Hover/focus-revealed so a grid of images
-   doesn't carry a permanent row of trash-can icons; the buttons themselves
-   stay in the DOM (not display:none) so they're still keyboard-reachable
-   without hovering.
-   Edit and delete are laid out as a flex pair sharing one absolutely-
-   positioned wrapper, rather than each button computing its own `right`
-   offset independently. Two buttons each doing their own math (delete at
-   `right: var(--space-2)`, edit at `right: calc(var(--space-2) + 2.2rem)`)
-   silently assumed a button was exactly 2.2rem wide, it wasn't quite,
-   at every density/zoom this app's own settings allow, so edit's right
-   edge sat a few pixels *under* delete. Delete, later in paint order,
-   covered it: edit's own border was there the whole time, just hidden
-   under the button next to it. Reported as "the border only goes around
-   the delete button". `gap` can't get this wrong: it measures the real
-   rendered width of whatever's actually in the row. */
-.library-image-actions {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  /* Above `.library-file-page`, which is `position: absolute; inset: 0;
-     z-index: 1` and therefore covered this row completely on any file with a
-     rendered first page: measured on the Files sub-tab: four of nine tiles
-     had a kebab in the DOM at opacity 0.6 with a PDF page painted on top of
-     it, which is a control that exists and cannot be clicked. */
-  z-index: 2;
-  /* `left` as well as `right`, and wrapping: reported live as *"the popup
-     buttons for uploaded images sometimes get cut off in different window
-     resolutions and sizes"*, with a screenshot showing the row running off the
-     tile's left edge.
-     The row holds up to FIVE buttons (edit, delete, caption, OCR, vision-OCR)
-     and the grid above it is `minmax(11rem, 1fr)`, so a tile is 11rem wide at
-     the narrow end while the row needs roughly 14. Anchored only by `right`, a
-     flex row that cannot fit grows leftwards past the tile's own edge, and
-     `.library-image-tile` sets `overflow: hidden`, so the overflow is not
-     merely ugly: the leftmost button is clipped away and cannot be clicked at
-     all. Which button that is depends on how many the image has, which is why
-     it looked intermittent.
-     Setting both edges gives the row the tile's real width to work in, and
-     `flex-wrap` spends it downwards: a second row of buttons over the image,
-     which is always reachable, instead of sideways into the clip. */
-  left: var(--space-2);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  /* See the visibility rule further down: this used to be 0, so the kebab did
-     not exist until the pointer found it. */
-  opacity: 0.6;
-  transition: opacity var(--ui-base) var(--ease-out);
-}
 .library-image-menu-list {
   /* **Fixed, not absolute**: see the long note above `placeMenu` in
      library.js. Two ancestors of this menu clip horizontally
@@ -2552,63 +2340,6 @@ button.scroll-row-arrow[hidden] {
   backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   box-shadow: var(--glass-shadow);
-}
-/* (`.menu-flip-left`/`.menu-flip-up` lived here. They flipped this menu
-   between two *fixed anchors* on its offset parent, which was the best a
-   clipped absolute element could do; `placeMenu` positions the fixed menu
-   freely against the viewport now and both classes had no remaining
-   setter.) */
-.library-image-menu-item {
-  text-align: left;
-  width: 100%;
-  white-space: nowrap;
-}
-/* **Visible before you hover it.** Reported: "there is no elipse button on
-   files in the files library subtab", there is, on every tile, and it was at
-   `opacity: 0` until the pointer happened to land on the tile. A control
-   nobody can see is a control nobody has: the whole point of a kebab is that
-   it *says* there is more here. Faded rather than full strength so a wall of
-   thumbnails is still thumbnails, and full on hover/focus as before.
-   (`:has(...[open])` went with the `<details>` menu it was written for, the
-   gallery uses the app's own `kebabMenu` now, whose open state lives on a
-   `.action-menu` sibling, and the row no longer fades at all.) The 0.6 is
-   set in the row's main rule above. */
-/* **The row is a container, so only its buttons may take a click.** Reported:
-   "I cant click the select radio buttons in any of the images in the library
-   images subtab." Measured with `elementFromPoint` at the centre of each
-   tick: every one returned `DIV.library-image-actions`, not the checkbox.
-   The cause is the `left` that was added to this row (see its main rule
-   above) so the buttons could wrap instead of running off the tile's edge on
-   a narrow window. `left` *and* `right` stretch the box across the full width
-   of the tile, and the tick sits at the tile's top-left: under a transparent
-   part of a box at `z-index: 2` that still takes every pointer event landing
-   on it.
-   Raising the tick's own z-index would fix this one control and leave the
-   rest of that strip of thumbnail dead to clicks. `pointer-events` fixes the
-   class: the row itself stops being a target, each control inside it goes
-   back to being one, and the thumbnail underneath is clickable again along
-   its whole top edge. */
-.library-image-actions {
-  pointer-events: none;
-}
-.library-image-actions > * {
-  pointer-events: auto;
-}
-.library-image-tile:hover .library-image-actions,
-.library-image-tile:focus-within .library-image-actions,
-.library-image-actions:focus-within {
-  opacity: 1;
-}
-/* A device with no hover has no way to trigger the reveal above at all, 
-   touch is binary (tap = click), it never sends the hover a mouse would.
-   Left at opacity:0 there, rename/delete were unreachable except by
-   tabbing to them with a keyboard, which is exactly what got reported as
-   "broken" rather than "hidden". Always visible where hovering isn't a
-   thing; unchanged, hover-revealed behaviour everywhere a mouse is. */
-@media (hover: none) {
-  .library-image-actions {
-    opacity: 1;
-  }
 }
 .library-image-tile img {
   display: block;
@@ -2649,20 +2380,6 @@ button.scroll-row-arrow[hidden] {
   color: var(--muted);
   background: var(--inner);
 }
-/* The caption becomes the rename field in place, so the field has to occupy
-   exactly the caption's box: a full-width input that changed the tile's
-   height would make the whole grid reflow while you type in one cell of it. */
-.library-image-rename-input {
-  width: 100%;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--accent);
-  border-radius: 0;
-  background: none;
-  font: inherit;
-  color: var(--ink);
-}
 .library-image-tile figcaption {
   padding: var(--space-3);
   font-size: var(--text-md);
@@ -2675,16 +2392,6 @@ button.scroll-row-arrow[hidden] {
 .library-image-tile figcaption:hover,
 .library-image-tile figcaption:is(:focus-visible, :has(:focus-visible)) {
   color: var(--accent-text);
-}
-/* **The picture and its name are one object** (INBOX 56). The name under the
-   thumbnail was the second of six blocks stacked at one weight; on the
-   picture it is a caption, which is what it has always been. The frame is
-   the positioning context, and it is the only child of the tile that reaches
-   the tile's own top corners. */
-.library-image-frame {
-  position: relative;
-  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
-  overflow: hidden;
 }
 /* **A card with nothing in it is short, not padded** (INBOX 115: "the bottom
    of the image cards in the library images subsaection needs a desperate
@@ -2723,57 +2430,6 @@ button.scroll-row-arrow[hidden] {
   display: flex;
   flex-direction: column;
 }
-.library-image-tile > .library-image-frame {
-  /* **The picture does not grow with the row** (INBOX 174, the owner: "when
-     I extend the text in image cards, the images of other ones extend").
-     The earlier rule let the frame take a row-mate's extra height up to
-     16rem, so opening one card's caption stretched every picture beside it
-     (measured 144px to 229px). A thumbnail is one size; the room a taller
-     neighbour leaves goes under the card's own text, which is what a grid
-     of cards has always done. */
-  flex: 0 0 auto;
-  height: 9rem;
-  min-height: 9rem;
-  /* **A ceiling, because one open card must not inflate the row.** Measured:
-     with every fold open the row stood 660px and the two cards whose folds
-     held nothing grew 583px pictures, which is a portrait poster of a
-     thumbnail. The cap is about one and a quarter tile widths, above the
-     67px the full-to-empty variance actually needs (144px against 211.2px on
-     the seeded gallery) and well under a row driven by an open neighbour.
-     Past it the leftover is a gap under the card's last line, which is
-     exactly what every card carried before this change; the difference is
-     that it now takes one opened card in the row to produce it instead of
-     nothing at all. */
-  max-height: 9rem;
-}
-/* Filling a frame whose height its siblings decide. `inset: 0` against the
-   frame's own positioning context resolves at whatever height flex ends up
-   giving it; `height: 100%` would need that height to be definite before
-   layout, which a growing flex item's is not. */
-.library-image-frame > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-/* **The focus ring on the card's own action** (INBOX 164). The thumbnail is the
-   control that opens the picture, and it is the control a keyboard now reaches
-   (`role="button"`, `tabindex="0"`, set in library.js, where the reasons are):
-   a control that takes focus and shows nothing is reachable and still unusable.
-   Drawn *inside* the picture with a negative offset rather than around it. The
-   frame clips (`overflow: hidden`, for the rounded top corners), so a ring on
-   the outside of an element that fills the frame at `inset: 0` is clipped away
-   entirely, which is the same class of bug as a value that is invalid where it
-   is used: the declaration applies, and nothing appears. The second, white ring
-   is the one that survives a dark photograph, the same pairing the selection
-   tick on these cards already uses for the same reason. */
-.library-image-frame > img:focus-visible,
-.library-image-frame > .library-file-thumb:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -4px;
-  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.65);
-}
 /* A scrim, not a bar: a solid strip would be a second surface on the card,
    and the picture behind the name is worth keeping. Built from --scrim, the
    token the command palette's dim already uses, mixed towards black so it
@@ -2790,41 +2446,6 @@ button.scroll-row-arrow[hidden] {
    3.6:1 against white and under AA for text this size. Held at full strength
    for the bottom two thirds (which is the whole padded text band) it
    measures dark enough to clear it, and the fade still hides the edge. */
-/* **And the fade is gone, because a scrim that fades is a different band on
-   every picture.** Reported on 2026-09-13, the third report on these cards:
-   "the filename band sits on a grey strip across the bottom of the picture on
-   some cards and over open sky on others, depending on the image". Both of
-   those were this one rule. Over a dark photograph the ramp disappears into
-   the picture and the name looks like it is floating on the sky; over a light
-   one the same ramp reads as a grey strip someone has laid across the bottom.
-   The band is doing its job in both cases and looking like two different
-   components while it does it, which on a wall of twenty thumbnails is the
-   thing the eye actually picks up.
-   One flat, near-opaque ground instead, so the band is the same shape, the
-   same tone and the same height on every card whatever is behind it. It is
-   still built from `--scrim` mixed towards black for the contrast reason
-   below, just held at one value from top edge to bottom instead of ramping
-   through the text. */
-.library-image-frame figcaption {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: var(--space-2) var(--space-3);
-  color: #fff;
-  background: color-mix(in srgb, var(--scrim) 45%, #000 55%);
-}
-.library-image-frame figcaption:hover,
-.library-image-frame figcaption:is(:focus-visible, :has(:focus-visible)) {
-  color: #fff;
-  text-decoration: underline;
-}
-/* Renaming in place: the input is over the scrim, so it carries its own
-   legible ground rather than white-on-photograph. */
-.library-image-frame .library-image-rename-input {
-  color: #fff;
-  border-bottom-color: #fff;
-}
 /* A vision model's own description of the image, below the filename, 
    deliberately not <figcaption> (that already names the filename above;
    this is metadata about what's IN the picture, not what it's called).
@@ -2837,374 +2458,46 @@ button.scroll-row-arrow[hidden] {
    `.library-image-caption-clamped` is present, and whiteboard.js toggles it
    off/on with a "Show more"/"Show less" button for a caption long enough to
    need one. */
-/* One block per claim about the picture: a label, the value, the byline.
-   Before this the tile stacked three unlabelled paragraphs, a description,
-   an offline transcription and an AI transcription, and a reader could not
-   tell which empty-state belonged to which value. Reported as text that
-   "is below that selectable box and not editable". */
-.library-image-fields {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: 0 var(--space-4) var(--space-4);
+
+/* --- a card that opens does not inflate the six beside it -----------------
+   UI_MODERNISATION_PLAN.md Phase 11 (the INBOX 164 block's leftover), measured
+   at 1440 on a row of seven seeded picture cards: at rest every card is 240.7px
+   with a 144px picture and 42.6px of tail. Open one card's fold and every card
+   in the row becomes 411.1px, and six of them are carrying 213px of empty card
+   under their last line.
+   The recorded decision this does *not* remake is about the row at rest: the
+   cards are equalised there, and the leftover goes under the shortest one,
+   because the alternatives (a bigger picture, unequal cards) were measured and
+   rejected. What is being fixed is a different moment. The stretch is what
+   equalises at rest; it is also what copies one card's disclosure onto its six
+   neighbours, and that second effect was never chosen. Measured: the pictures
+   do *not* grow when the row does (144px open and shut), so the 213px is
+   entirely empty card, which also corrects the note in
+   `archive/agent-remaining/ui-phase-11.md` that said the pictures grow to their
+   `max-height` ceiling.
+   `align-self` on the tile rather than `align-items` on the grid, and only
+   while a fold in the grid is open: at rest the grid stretches exactly as it
+   did, and `.library-image-grid:has(details[open])` is the state where the
+   stretch stops paying for itself. One selector, no JS, and it reverts the
+   moment the fold shuts. */
+.library-image-grid:has(.library-image-card-fold[open]) .library-image-tile {
+  align-self: start;
 }
-/* With every field in it hidden (an image with no description asked for),
-   the box was its bottom padding alone: a 10px blank band under each
-   picture's caption (INBOX 437 (4)). */
-.library-image-fields:not(:has(> :not(.hidden))) {
-  display: none;
+
+/* The rows' hover transitions stand down while a page scrolls (app.js sets
+   `data-scrolling` on <html> for the length of a scroll gesture; the trace
+   is written there). The rows themselves only: a descendant selector here
+   would restyle every node of every list twice per gesture. */
+:root[data-scrolling] :is(#entry-list > li),
+:root[data-scrolling] :where(.library-card):is(.library-card, #entry-list > li),
+:root[data-scrolling] :where(.doc-list-item):is(.doc-list-item, #entry-list > li),
+:root[data-scrolling] :where(.bookmark-row):is(.bookmark-row, #entry-list > li),
+:root[data-scrolling] :where(.library-image-tile):is(.library-image-tile, #entry-list > li),
+:root[data-scrolling] :where(.timeline-row):is(.timeline-row, #entry-list > li),
+:root[data-scrolling] :where(.skill-card):is(.skill-card, #entry-list > li) {
+  transition: none;
 }
-/* **One disclosure, on the app's own <details> recipe** (details.tool-chip,
-   02-chat-graph.css): the marker is replaced by a caret that turns, and the
-   body is hidden by an author rule when closed rather than by trusting the
-   user-agent one (the bug that comment records). Two clamped transcriptions,
-   each with a label and a Show more, were four of the card's six ranks of
-   information; folded away they are one row. */
-.library-image-reading > summary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer;
-  list-style: none;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  /* The resting tonal fill and hairline come from the app's own
-     `summary:not(.icon-only):not(.icon-button)` rule (07-whiteboard-misc.css)
-     and are deliberately left alone: that rule exists because a disclosure
-     that looks like a line of text is a control nobody finds, and this is the
-     same object in a different place. Overriding it here would need a
-     two-class selector to beat that one, which is the shape of a decision
-     being quietly remade. */
-}
-.library-image-reading > summary:hover,
-.library-image-reading > summary:is(:focus-visible, :has(:focus-visible)) {
-  color: var(--ink);
-}
-/* **The count is a line you read, not a control you press** (INBOX 118: the
-   fold "sets two unrelated facts in one control"). Where a picture is used
-   and whether anything has read it were one summary line for one revision,
-   `.library-image-facts`, whose rules stood here; the two facts have two
-   shapes now, and this is the first of them. Nothing opens, nothing toggles,
-   so there is no ground, no border and no caret.
-   Measured before this rule existed, at 1440 dark on the seeded row: the
-   paragraph rendered at 16px with 16px of user-agent margin above and below
-   it, against 12px for the description it sits under and 12px for the fold
-   under that. The least important line on the card was its largest type and
-   cost 56px of the card's height. The utilities on the element
-   (`muted text-xs`) set the type and the colour; this kills the margin and
-   holds it to one line, so a card used in nine places is the same height as
-   one used in two. */
-.library-image-uses {
-  margin: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-/* The two blocks that moved inside the fold were written as sections of the
-   card's outside: a rule above the usage chips, an inset on the byline. In
-   here the fold's own padding and gap already separate them, and a hairline
-   across a disclosure body reads as a second panel. */
-.library-image-reading-body > .library-image-usage {
-  margin: 0;
-  padding: 0;
-  border-top: 0;
-}
-.library-image-reading-body > .library-image-provenance {
-  padding: 0;
-}
-/* A transcription has no length limit and a grid row is as tall as its
-   tallest card, so one opened reading of a dense page would otherwise set the
-   height of every card beside it. It scrolls at about a card's worth instead.
-   Images only: a Files row is full width and stands on its own. */
-/* **18rem was still enough to double the row.** Reported on 2026-09-13:
-   "opening 'Text' on one card grows it well past its neighbours, so the row's
-   cards are 260px and 620px side by side". 18rem is 288px of transcription on
-   top of a 260px card, and the grid gives every card in the row the tallest
-   one's height. 11rem keeps enough of the reading visible to tell whether it
-   is the page you wanted (about six lines) and scrolls the rest, which is what
-   the fold is for; the whole transcription is one click away in the reader. */
-.library-image-card-fold > .library-image-reading-body {
-  max-height: 11rem;
-  overflow-y: auto;
-}
-.library-image-reading > summary::-webkit-details-marker {
-  display: none;
-}
-/* **The caret leads the label, it does not trail the row.** Reported on
-   2026-09-09: "the text extracted from this file dropdown doesnt even have a
-   dropdown arrow and make sure it is aligned with the text". It had one, as
-   `::after` with `margin-left: auto`: on an image tile that put it a few
-   pixels past a short label, but a Files row's summary is the full width of
-   the row, so the caret sat about 300px away from the words it belongs to,
-   with nothing between them. A marker that far from its label is not a marker.
-   Leading, which is also what every other disclosure in this app does (the
-   chat's `.agent-step` and `details.tool-chip` both draw theirs before the
-   text) and therefore what DESIGN.md's <details> recipe means. */
-.library-image-reading > summary::before {
-  content: "\e13a"; /* ph-caret-right */
-  font-family: Phosphor, sans-serif;
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
-  flex: 0 0 auto;
-  opacity: 0.7;
-  transition: transform var(--ui-base) var(--ease-out);
-}
-.library-image-reading:not([open]) > .library-image-reading-body {
-  display: none;
-}
-.library-image-reading[open] > .library-image-reading-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding-top: var(--space-3);
-}
-.library-image-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-/* **A field label, not a heading shouting at you.** Reported with a
-   screenshot: "the ui and tags in the image captions and ocr need a
-   redesign." Uppercase + letter-spaced + semibold is the loudest type in the
-   app, and it was being spent on the word DESCRIPTION above every tile in a
-   grid of twenty: so the labels read as the content and the actual caption
-   read as the fine print. Sentence case, one step down, with a small marker
-   dot doing the work the shouting was doing: it separates the fields at a
-   glance without competing with them. */
-.library-image-field-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--muted);
-}
-.library-image-field-label::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 0.3rem;
-  height: 0.3rem;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--accent) 70%, transparent);
-}
-/* **Provenance is a byline, not two pills** (INBOX 56). The three model
-   badges that used to live here (`.library-image-caption-badge`,
-   `.library-image-vision-ocr-badge`, `.library-image-ocr-badge`) were
-   bordered, filled pills sitting in the middle of the card beside the "Used
-   in" chips, which are buttons: the same shape for a thing you press and a
-   thing you read. One muted line at the foot says both, in the smallest type
-   on the card, and the pills and their rules are gone rather than restyled. */
-.library-image-provenance {
-  margin: 0;
-  padding: 0 var(--space-4) var(--space-4);
-  font-size: var(--text-xs);
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-.library-image-provenance.hidden {
-  display: none;
-}
-/* **Two type sizes on a picture card, not three.** Measured at 1440 on the
-   seeded gallery: the filename on the photograph was 13.6px, the description
-   12px (from a `text-sm` utility on the element) and the count and the fold
-   11.2px, which is three of the scale's adjacent steps inside 2.4px. DESIGN.md
-   names that exact failure ("two things that are almost the same size, next to
-   each other, is what reads as unconsidered"). The name of a picture and the
-   sentence about it are the card's prose and share one size; the facts line
-   under them is `--text-xs` and is the only other size on the card. */
-.library-image-caption {
-  margin: 0;
-  font-size: var(--text-md);
-  padding: 0 0 var(--space-3);
-  cursor: text;
-  /* A pasted URL or a long slash-run ("make/manage/delete/access") has no
-     break opportunity, so it ran straight through the tile's edge: 
-     reported with a screenshot. This also repairs the clamp beside it: a
-     line that cannot wrap cannot be line-clamped either, so the same
-     unbreakable string defeated "Show more" as well as the card boundary. */
-  overflow-wrap: anywhere;
-}
-/* **An opened caption grows the card by a bounded amount** (INBOX 174, with
-   the fixed picture above): "Show more" used to let a long caption take the
-   row to 411px and every card beside it with it. Up to about six lines
-   show; a longer caption scrolls inside its own box, so a row-mate is
-   never more than that much taller than its own text needs. */
-.library-image-caption:not(.library-image-caption-clamped) {
-  max-height: 9.6rem;
-  overflow-y: auto;
-}
-/* **A clamp must cut between lines, never through them.** Reported: "the text
-   in image captions and ocr text in the images and files subtabs gets cut off
-   half way through the letters horizontally if collapsed".
-   `-webkit-line-clamp` clips at the line box, and the line box here is
-   fractional -- 1.5 x 11.2px = 16.8px -- so the clip lands mid-pixel and the
-   descenders of the last line (g, j, p, q, y) sit in the part that is thrown
-   away. `overflow: hidden` then slices them horizontally, which is exactly the
-   shape CLAUDE.md records for the nav-history popup: a box a fraction shorter
-   than its own content.
-   A taller line box fixes it at any font size: 1.6 puts the descender well
-   inside the line rather than at its edge, and the fraction that is lost is
-   then leading, not ink.
-   **Not reproduced in this sandbox** -- there is no OCR'd content in it, so
-   this is the identified cause removed, not an observed repair. If it
-   persists, measure `clientHeight` against `2 * line-height` on the clamped
-   element with real text in it; the remainder is what is being sliced. */
-.library-image-caption.library-image-caption-clamped,
-.library-image-ocr.library-image-ocr-clamped {
-  line-height: 1.6;
-}
-/* **Two lines, and the same two on every card** (INBOX 118: "no two cards are
-   the same height and their bottoms do not align"). It was three for one
-   revision, on the reading that the paragraph is the card's one piece of
-   prose; three is what a card *can* hold rather than what a gallery wants,
-   and the cost is paid by the card beside it. Measured at 1440 on the six
-   seeded cards, the descriptions ran 3, 3, 3, 2, 1 and 0 lines: the tallest
-   foot stood 176.1px against 9.6px on the emptiest, and the grid pays that
-   difference out as a hole under the short cards (54.5px on the emptiest,
-   because the picture that absorbs the slack has a ceiling). Two lines is a
-   caption, the shape the rest of this card is built as, and the whole
-   description is one hover away in the element's own title, one click away
-   in the editor it opens, and in the lightbox.
-   **And no bottom padding while it is clamped.** `overflow: hidden` clips at
-   the *padding* box, not the content box, so the paragraph's own 8px of
-   bottom padding showed 8px of the next line under the ellipsis: a sliced
-   strip of letters, which is the "cut off half way through the letters"
-   report this rule's neighbour already records, arriving by a second route.
-   Measured when the clamp was three lines: box 65.6px against 3 x 19.2 =
-   57.6px of text, and the same 8px sits under two. The gap below is
-   the More button's own margin when there is one, and there always is one
-   when this class is present. */
-/* **Two lines, reserved, not just capped.** The clamp stops a long
-   description at two lines; a one-line description still left the card an
-   21.8px line shorter inside than the card beside it, and the grid pays that
-   out as a taller photograph on one of the two, which is the unevenness the
-   owner has now reported twice. Measured at 1440 on the seeded gallery: the
-   six feet ran 10.6, 54.1, 54.1, 73.9, 95.7 and 95.7px before this line and
-   the pictures 144 to 229.1px; with the second line held open, every card
-   carrying a description and a facts line is the same height inside and its
-   picture is the same size.
-   `lh` is the line box of this element, so it tracks the clamped line-height
-   above rather than restating it: two lines of whatever the description is set
-   in. Where the unit is not supported the declaration is dropped and the card
-   behaves as it did, capped but not reserved.
-   Picture cards only (`:has(> .library-image-frame)`, the same test the tile's
-   own layout uses): a Files row is full width, stands on its own, and has no
-   neighbour whose height it has to agree with, so reserving a line there would
-   buy nothing and cost every row 21.8px. */
-.library-image-caption.library-image-caption-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  padding-bottom: 0;
-}
-.library-image-tile:has(> .library-image-frame) .library-image-caption.library-image-caption-clamped {
-  min-height: 2lh;
-}
-/* The same clip, the same cause, on the two readings inside the fold. */
-.library-image-ocr.library-image-ocr-clamped,
-.library-image-vision-ocr.library-image-vision-ocr-clamped {
-  padding-bottom: 0;
-}
-.library-image-caption-empty {
-  font-style: italic;
-}
-/* The description's More/Less toggle is a real tonal button now, not
-   `.entry-more`'s accent-coloured link (INBOX 56: three accent links stacked
-   down a card read as its three actions). It sits at the paragraph's own
-   left edge, so it lines up with the text it belongs to rather than with the
-   card. */
-.library-image-ocr-more,
-.library-image-vision-ocr-more {
-  align-self: flex-start;
-  margin: 0 0 var(--space-3);
-}
-.library-image-caption-input {
-  width: 100%;
-  min-width: 0;
-  min-height: 3rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--accent);
-  border-radius: 0;
-  background: none;
-  font: inherit;
-  color: var(--ink);
-  resize: none;
-}
-/* Tesseract's own reading of text in the image (core/ocr.py): same
-   always-visible, click-to-edit shape as .library-image-caption, asked for
-   directly ("allow the user to access, view, and edit OCR extracted
-   text"). */
-/* **Expanded means readable, not endless.** Reported of the Files sub-tab:
-   the card is the wrong shape for long OCR text. A photo's reading is a line
-   or two; a *document*'s is the whole document, and "Show more" on that turns
-   one tile into a page of unformatted text with every other file pushed off
-   screen. Past a screenful it scrolls inside itself instead, the same answer
-   `.tool-chip-result` already gives the same problem one tab over. The clamped
-   state is unaffected: `max-height` only bites once the text is longer than
-   the box, which is exactly the case being fixed. */
-.library-image-ocr {
-  margin: 0;
-  padding: 0 0 var(--space-3);
-  white-space: pre-wrap;
-  cursor: text;
-  overflow-wrap: anywhere;
-  max-height: 18rem;
-  overflow-y: auto;
-}
-.library-image-ocr-empty {
-  font-style: italic;
-}
-/* Same clamp/toggle shape as .library-image-caption above, asked for
-   directly ("make the ocr extracted text in the image gallery collapsible
-   and expandable like the image captions as well"), since a long
-   transcription previously grew the tile with no way to collapse it back. */
-.library-image-ocr.library-image-ocr-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.library-image-vision-ocr.library-image-vision-ocr-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.library-image-ocr-input {
-  width: 100%;
-  min-width: 0;
-  min-height: 3rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--accent);
-  border-radius: 0;
-  background: none;
-  font: inherit;
-  color: var(--ink);
-  resize: none;
-}
-/* A vision model's verbatim transcription of text found in the image
-   ("extractor mode"), same box shape as .library-image-caption, but never
-   click-to-edit (there is nothing to type by hand here) and hidden
-   entirely until a read has actually happened, unlike the caption's
-   always-visible "Add a caption…" placeholder. */
-.library-image-vision-ocr {
-  margin: 0;
-  padding: 0 0 var(--space-3);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.library-image-vision-ocr.hidden {
-  display: none;
-}
+
 @media (max-width: 599.98px) {
   .library-grid {
     gap: var(--space-4);
@@ -3504,6 +2797,15 @@ button.scroll-row-arrow[hidden] {
     white-space: nowrap;
   }
 }
+
+/* The status bar's Ctrl K chip against the words beside it (INBOX 494).
+   Its glyphs were dropped here too, 0.1em onto the x-height in DejaVu; they
+   follow the label recipe now (INBOX 592, `.ph-lead` beside `.ph`). */
+@media (min-width: 1024px) {
+  #status-bar .status-key {
+    translate: 0 0.07em;
+  }
+}
 @media (max-width: 599.98px) {
   /* A phone's scarce dimension is height, and two of these five are the two a
      phone can least use: the keyboard hint needs a keyboard, and the notebook
@@ -3545,6 +2847,27 @@ button.scroll-row-arrow[hidden] {
   #status-bar::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* The status bar is the top bar's twin at the other edge, and with glass on
+   it was the one opaque strip of chrome (96% ground, no blur) under a glass
+   top bar: the same recipe now, keyed on glass being on, so glass off and
+   Performance mode keep the solid bar. */
+:root:not([data-glass="off"]) #status-bar {
+  background: var(--card);
+  backdrop-filter: var(--glass-filter);
+  -webkit-backdrop-filter: var(--glass-filter);
+}
+
+/* **A bar's popup stands above the companion** (INBOX 435, the owner's
+   screenshot: Atlas, perched on the status bar, drawn over the AI status
+   popup). A popup inside the status bar (z 30) or the header (z 40) can
+   rise no higher than its bar, and the companion's band is z 50. While one
+   is open, the bar it belongs to steps above the band; closed, everything
+   is as it was, so a perch on the bar still stands in front of it. */
+#status-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-popup.pinned, [aria-expanded="true"]),
+header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-popup.pinned, [aria-expanded="true"], .space-menu:not(.hidden)) {
+  z-index: 51;
 }
 /* --- tab navigation (Wave A; pill style inside the top bar in Wave L) ------- */
 #tab-bar {
@@ -3635,6 +2958,15 @@ button.scroll-row-arrow[hidden] {
 }
 :root[data-mode="dark"] #tab-bar button.active {
   color: #0e1017;
+}
+
+#tab-bar {
+  --glide-radius: var(--radius-md);
+}
+
+/* The phone's bottom dock marks its tab by colour alone, as before. */
+#phone-tab-dock > #tab-bar::before {
+  content: none;
 }
 /* --- the page shell (§35L) --------------------------------------------------
    Every tab used to draw its own outer gutter, and no two agreed. The side
@@ -3762,8 +3094,9 @@ button.scroll-row-arrow[hidden] {
      from the window to a card, 12px under the top bar, 10px between the
      sidebar and the content -- three shell gaps, three sizes. One token,
      one gap, which is what makes a shell read as designed rather than
-     assembled. */
-  gap: var(--page-gutter);
+     assembled. The column gap is the 8px step since UI plan Phase 12
+     decision 1 (2026-10-10, L450): "the sidebar gutter 8px". */
+  gap: var(--space-3);
   /* The gutter belongs to .tab-page now; this is only the column gap. */
   padding: 0;
   /* stretch, not start: with `start` the sidebar shrank to its content and sat
@@ -3884,8 +3217,10 @@ button.scroll-row-arrow[hidden] {
   /* 16/20, was 20/24 (INBOX 446 (5)): a panel's inset is the frame, not the
      content, and the bigger pair cost every tab 8px of height and 8px a side
      for nothing a reader could name. */
-  --card-pad-y: var(--space-6);
-  --card-pad-x: var(--space-7);
+  /* 12 both ways since UI plan Phase 12 decision 1 (2026-10-10, L450):
+     "panel padding 12px", one inset for a panel and a widget alike. */
+  --card-pad-y: var(--panel-pad);
+  --card-pad-x: var(--panel-pad);
   padding: var(--card-pad-y) var(--card-pad-x);
   margin-bottom: var(--space-6);
   /* Cards are flex/grid items nearly everywhere they appear, and a flex item's
@@ -3900,8 +3235,8 @@ button.scroll-row-arrow[hidden] {
 .card.compact,
 .sidebar-panel,
 .dash-widget {
-  --card-pad-y: var(--space-6);
-  --card-pad-x: var(--space-6);
+  --card-pad-y: var(--panel-pad);
+  --card-pad-x: var(--panel-pad);
 }
 /* **A card inside a card is a tone, never a second bordered pane.** The
    border budget (DESIGN.md → Surface tiers): one hairline on the outermost
@@ -4115,17 +3450,6 @@ summary.small.icon-only,
 summary.small.icon-button {
   padding-inline: 0.3em;
 }
-/* The incremental renderer's chunk marker. Zero height, no list marker, no
-   part in layout: it exists only to be watched by an IntersectionObserver,
-   and `aria-hidden` plus no `data-id` keeps it out of the keyboard walk and
-   the accessibility tree. */
-.list-window-sentinel {
-  height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  list-style: none;
-}
 /* --- back / forward through pages --------------------------------------------
    In the status bar, immediately before undo/redo. Asked for specifically to
    be distinguishable from that pair, so as well as a different icon shape
@@ -4312,7 +3636,7 @@ summary.small.icon-button {
    shadow, a faint ring on a card, a dark one in dark: the owner's "meatball
    buttons have a visible outline, is that consistent with the rest of the
    app??". Every `kebabMenu` opener is a plain ghost icon now, styled once in
-   08-consistency.css under `.kebab-opener`; nothing here dresses it. */
+   07-whiteboard-misc.css under `.kebab-opener`; nothing here dresses it. */
 /* **The content column scrolls down, never sideways.**
    Reported: "there's a horizontal scrollbar on the notes tab capture
    subtab". Measured at 1440, 1280 and 1100px: `main` reported scrollWidth
@@ -4333,5 +3657,5 @@ summary.small.icon-button {
   overflow-x: clip;
 }
 /* The kind chips above the boards grid: their gap to the first row of cards
-   is set in 08-consistency.css, beside the ring-room rule that was
+   is set in 07-whiteboard-misc.css, beside the ring-room rule that was
    overriding it from here (INBOX 726). */

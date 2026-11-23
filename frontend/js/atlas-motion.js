@@ -8,15 +8,36 @@
 //: later frame lies over an earlier one and its skin covers the earlier
 //: lid's edge, so the frames stack as the lid comes down. Strokes never
 //: change width.
-function atlasBlink(box, slow = false) {
+function atlasBlink(box, slow = false, waited = 0) {
   const roots = box.querySelectorAll(".atl-layer-lids");
   if (!roots.length) return;
+  //: Unseen, the lids take each new place at once (their transitions off, the CSS, L-ui-modernisation-201), so a blink
+  //: first waits out the face's own move under them (a turn of the head, under 300ms), at most three times.
+  const wait = waited < 3 ? atlasBlink.settling(box) : 0;
+  if (wait) {
+    setTimeout(() => atlasBlinkMay(box) && atlasBlink(box, slow, waited + 1), wait);
+    return;
+  }
   const cls = slow ? "atl-blinking-slow" : "atl-blinking";
   for (const el of roots) el.classList.add(cls);
   setTimeout(() => {
     for (const el of roots) el.classList.remove(cls);
   }, slow ? 1460 : 360);
 }
+//: The ms until no transition moves the face's eyes and not its lids (a box round both moves the two alike), and a frame.
+atlasBlink.settling = (box) => {
+  const eye = box.querySelector(".atl-layer-head .atl-eye");
+  const lids = box.querySelector(".atl-layer-lids");
+  if (!eye || !lids || typeof CSSTransition !== "function") return 0;
+  let left = 0;
+  for (const a of box.getAnimations({ subtree: true })) {
+    const t = a.effect?.target;
+    if (!(a instanceof CSSTransition) || a.playState !== "running" || !t?.contains(eye) || t.contains(lids)) continue;
+    const c = a.effect.getComputedTiming();
+    left = Math.max(left, c.endTime - c.localTime);
+  }
+  return left > 0 ? Math.ceil(left) + 16 : 0;
+};
 
 //: **When the figures blink.** One clock for every layered figure on the
 //: page: every 3.4 to 7.6 seconds each one that is on screen, has its eyes
@@ -35,6 +56,8 @@ function atlasBlinkMay(box) {
   const lids = box.querySelector(".atl-layer-lids:not(.atl-layer-lidf)");
   const buddy = box.closest("#nm-buddy");
   if (!lids || box.querySelector(".atl-blinking, .atl-blinking-slow") || box.hasAttribute("data-atl-moving") || buddy?.classList.contains("nmb-act-hide")) return false;
+  //: Not while the page scrolls under the companion (`atlasRigFrame.held`): the lids are SVG layers, a blink is main-thread frames.
+  if (buddy && globalThis.atlasRigFrame?.held) return false;
   //: Not behind a modal (INBOX 1587): unseen, and the read below settled the
   //: open overlay (237ms at 4x CPU with Settings open).
   if (buddy && nameMarkBuddyBehindCover()) return false;
@@ -99,14 +122,56 @@ atlasBlink.saccade.step = (r = [Math.random(), Math.random()]) => {
   //: And not at rest: the held look is kept, the irises stop stepping until the next input (`atlasTailCalm.rest`).
   if (globalThis.atlasTailCalm?.rest.on) return false;
   const box = buddy.querySelector(".atl-figure-box");
-  if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging")) return true;
+  //: Held while the page scrolls (`atlasRigFrame.held`): the gaze keeps its look, the next step comes after.
+  if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging") || globalThis.atlasRigFrame?.held) return true;
   const ex = (nmb.ex || 0) + (r[0] - 0.5) * 0.5;
   const ey = (nmb.ey || 0) + (r[1] - 0.5) * 0.36;
-  for (const iris of buddy.querySelectorAll(".nm-atlas .atl-iris")) {
+  const irises = buddy.querySelectorAll(".nm-atlas .atl-iris");
+  for (const iris of irises) {
     iris.style.setProperty("--nmb-ex", ex.toFixed(2));
     iris.style.setProperty("--nmb-ey", ey.toFixed(2));
   }
+  atlasBlink.saccade.hold(irises);
   return true;
+};
+//: **On the companion the step is eased with the dress's tick** (L-ui-modernisation-201): the iris is an SVG group, so
+//: its 180 ms `translate` transition ran on the main thread at 60 fps, about 11 frames a second of a held gaze (traced).
+//: While the morph ticks (`atlasRigLower.morph.run`, 100 ms, a frame of its own anyway: `pace(true)`) the step's
+//: transition is held as it starts and set to its own time on each tick, so it lands on time and adds one frame, not
+//: eleven; when the morph stops (`pace(false)`) a held one runs on from its own start. The step is under a pixel on screen.
+atlasBlink.saccade.held = [];
+atlasBlink.saccade.paced = false;
+atlasBlink.saccade.hold = (irises) => {
+  const s = atlasBlink.saccade;
+  if (!s.paced) return;
+  const t0 = document.timeline.currentTime;
+  for (const iris of irises) {
+    for (const a of iris.getAnimations()) {
+      if (a.transitionProperty !== "translate" || a.playState !== "running") continue;
+      a.pause();
+      s.held.push([a, t0]);
+    }
+  }
+};
+atlasBlink.saccade.pace = (on) => {
+  const s = atlasBlink.saccade;
+  s.paced = on;
+  if (!s.held.length) return;
+  const now = document.timeline.currentTime;
+  //: One replaced by a newer look is idle and dropped; a finished one has ended (its `transitionend` fires).
+  s.held = s.held.filter(([a, t0]) => {
+    if (a.playState !== "paused") return false;
+    if (!on) {
+      a.startTime = t0;
+      return false;
+    }
+    if (now - t0 >= a.effect.getComputedTiming().endTime) {
+      a.finish();
+      return false;
+    }
+    a.currentTime = now - t0;
+    return true;
+  });
 };
 function atlasBlinkStart() {
   if (!atlasState.blinkTimer) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 1800);
@@ -151,7 +216,10 @@ function atlasLowerState(buddy, box) {
   if (has("nmb-act-startle") || mood === "surprised") return "startle";
   if (/^(lie|curl)/.test(pose) || has("nmb-sleep") || has("nmb-act-nap") || has("nmb-act-lie") || has("nmb-act-blanket")) return "lie";
   if (has("nmb-falling")) return "fall";
-  if (has("nmb-walking") || has("nm-buddy-dragging") || buddy?.dataset.travel) return "walk";
+  //: Held up by a hand it hangs from the grip, not a walk's lean into its travel (L-ui-modernisation-170: the walk's rows
+  //: shear the lower body 6 degrees off the torso, past the join's 4, and the desk's held frame baked it).
+  if (has("nm-buddy-dragging")) return "hang";
+  if (has("nmb-walking") || buddy?.dataset.travel) return "walk";
   const posed = atlasLowerState.acts.find((act) => has(`nmb-act-${act}`)) || (pose === "hang" ? "hang" : "");
   if (posed) return posed;
   if (pose === "lean") return "lean";
@@ -550,6 +618,12 @@ function atlasRigFrame(rig, now) {
     rig.dirty = true;
     return;
   }
+  //: Nor while the page scrolls under the companion (`atlasTailCalm.scroll`, atlas-life.js, sets `held` and its end wakes it).
+  if (atlasRigFrame.held && rig.host?.id === "nm-buddy") {
+    rig.at = 0;
+    rig.dirty = true;
+    return;
+  }
   const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !rig.fresh;
   rig.fresh = false;
   const buddy = rig.host && rig.host.id === "nm-buddy" ? rig.host : null;
@@ -657,23 +731,7 @@ function atlasRigFrame(rig, now) {
     }
     if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, arm.side, +j.sh.x.toFixed(2), +j.el.x.toFixed(2), +j.wr.x.toFixed(2)]);
   }
-  //: The head steadies itself: the body's turn (its pose group's), lagged
-  //: by a spring, less the turn itself, is how far the head is left behind.
-  if (rig.pose && rig.heads.length) {
-    const m = turnMatrix;
-    const turn = m ? (Math.atan2(+m[1].split(",")[1], +m[1].split(",")[0]) * 180) / Math.PI : 0;
-    if (live) atlasRigSpring(rig.lag, turn, dt, 0.9);
-    else Object.assign(rig.lag, { x: turn, v: 0, t: turn });
-    const off = Math.max(-10, Math.min(10, rig.lag.x - turn));
-    //: The hair's layer swings a third further, its follow-through.
-    for (const el of rig.heads) {
-      const k = el.closest(".atl-layer-hair") ? 1.3 : 1;
-      const rot = Math.abs(off) > 0.05 ? `${atlasFix(off * k)}deg` : "";
-      if (el.style.rotate !== rot) el.style.rotate = rot;
-    }
-    if (Math.abs(off) > 0.05 || Math.abs(rig.lag.v) > 1) busy = true;
-    if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, "head", +off.toFixed(2), +turn.toFixed(2), 0]);
-  }
+  if (rig.pose && rig.heads.length && atlasRigFrame.head(rig, turnMatrix, live, dt, now)) busy = true;
   //: The lower body's pose for the state, once atlas-life.js has given the
   //: rig its lower body (`atlasRigLowerAttach`).
   if (rig.lower) atlasRigLower(rig, now, live, buddy);
@@ -688,6 +746,23 @@ function atlasRigFrame(rig, now) {
   if (live && rig.still < 6) rig.raf = requestAnimationFrame((t) => atlasRigFrame(rig, t));
   else rig.at = 0;
 }
+atlasRigFrame.held = false;
+//: The head steadies itself: the body's turn (its pose group's), lagged by a spring, less the turn itself, is how far
+//: the head is left behind (a property, not a global: `tests/test_global_scope_ratchet.py`). True while it is still moving.
+atlasRigFrame.head = (rig, m, live, dt, now) => {
+  const turn = m ? (Math.atan2(+m[1].split(",")[1], +m[1].split(",")[0]) * 180) / Math.PI : 0;
+  if (live) atlasRigSpring(rig.lag, turn, dt, 0.9);
+  else Object.assign(rig.lag, { x: turn, v: 0, t: turn });
+  const off = Math.max(-10, Math.min(10, rig.lag.x - turn));
+  //: The hair's layer swings a third further, its follow-through.
+  for (const el of rig.heads) {
+    const k = el.closest(".atl-layer-hair") ? 1.3 : 1;
+    const rot = Math.abs(off) > 0.05 ? `${atlasFix(off * k)}deg` : "";
+    if (el.style.rotate !== rot) el.style.rotate = rot;
+  }
+  if (atlasState.rigTrace) atlasState.rigTrace.push([now, rig.look, "head", +off.toFixed(2), +turn.toFixed(2), 0]);
+  return Math.abs(off) > 0.05 || Math.abs(rig.lag.v) > 1;
+};
 //: The shortest gap between two drawn frames of the corner companion's rig (a property, not a global: `tests/test_global_scope_ratchet.py`).
 atlasRigFrame.gapMs = 24;
 //: The same loop's next frame, for a frame skipped under the gap (the frame's end asks for the next one itself).

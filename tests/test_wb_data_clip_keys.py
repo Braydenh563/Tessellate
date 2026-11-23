@@ -1,4 +1,6 @@
-"""Copy data and Paste data carry the item's tooltip and link as well as its custom properties
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Copy data and Paste data carry the item's tooltip and link as well as its custom properties
 (WHITEBOARD_PLAN section 2, "Edit data, edit tooltip, note, link": draw.io's Alt+Shift+B and E copy the whole
 attribute set). The block runs in node here against stubs for the board."""
 

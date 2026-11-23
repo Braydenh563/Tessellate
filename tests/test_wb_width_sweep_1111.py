@@ -71,7 +71,7 @@ def test_a_short_window_lays_the_sidebar_tabs_in_a_row_and_scrolls_the_panel():
 
 
 def test_the_boards_filter_row_has_a_phone_gap_that_fits_three_chips():
-    text = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    text = (CSS / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     match = re.search(
         r"@media \(max-width: 599\.98px\) \{\s*#library-boards-filter \{\s*gap: var\(--space-1\);", text
     )

@@ -27,7 +27,8 @@ function sample() {
   return {
     title: openTour.sweep.run?.step?.title,
     cover: t ? Math.round(inter(c, t) / Math.max(1, t.width * t.height) * 100) : 0,
-    ringOff: t && s ? Math.round(Math.max(Math.abs(s.left + 8 - t.left), Math.abs(s.top + 8 - t.top))) : null,
+    //: The ring pads 6px and is clamped at the window's top edge (a tab bar control sits at 4).
+    ringOff: t && s ? Math.round(Math.max(Math.abs(s.left - (t.left - 6)), Math.abs(s.top - Math.max(0, t.top - 6)))) : null,
     card: [Math.round(c.left), Math.round(c.top)],
     target: t ? [Math.round(t.left), Math.round(t.top), Math.round(t.width), Math.round(t.height)] : null,
   };

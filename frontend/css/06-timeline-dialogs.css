@@ -46,11 +46,20 @@
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--ink);
-  /* Bare until it sticks (INBOX 1489); the stuck ground is in 08-consistency.css. */
+  /* Bare until it sticks (INBOX 1489); the stuck ground is in 07-whiteboard-misc.css. */
   /* An accent underline rather than a grey rule: the headers are a scale, and
      a 2px grey border under each one reads as a spreadsheet. */
   border-bottom: 2px solid var(--accent-soft);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+/* Today's note button sits at the day head's end, like the other days' counts. */
+.timeline-bucket-head > .timeline-today-action {
+  margin-inline-start: auto;
+  /* Into the head's own padding, so today's head is as tall as every other
+     day's (INBOX 437 (4): 47px against 35, the one head in the list a row
+     taller because a 32px button sat inside 8px of padding each side). */
+  margin-block: calc(-1 * var(--space-2));
 }
 /* Today, with nothing in it yet (TIMELINE_PLAN.md Phase 4). The section is
    drawn so the journal always has a today to write into; the line says which
@@ -223,6 +232,21 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* --- the timeline, de-vibecoded ---------------------------------------------
+   A day of the timeline is a list of a hundred rows, and every title was
+   600 with a bold accent "Uncategorised" pill at its end: a column of
+   identical badges down the right edge, each as loud as the title it
+   describes. Titles step to 500 (a list reads by its rows, not by shouting
+   every one); the category is the same quiet fact the notes' meta line
+   makes it, muted text with no fill. */
+.timeline-row-title {
+  font-weight: 500;
+}
+
+.timeline-feed .timeline-row-title {
+  line-height: 1.25;
+}
 .timeline-row-snippet {
   font-size: var(--text-sm);
   color: var(--muted);
@@ -320,6 +344,17 @@
     flex-wrap: wrap;
   }
 }
+
+/* --- Timeline rows with a snippet: mark and time on the title's line --- */
+/* A row with a second line (a file's first line of code, a note's snippet)
+   centred its kind mark and its time against both lines, so each sat 10px
+   below the title it labels, between the two lines and against neither.
+   They belong to the title: start aligned, centred on its line box. A one
+   line row is unchanged, since there the title's line is the row. */
+.timeline-feed .timeline-row {
+  --timeline-title-line: calc(var(--text-md) * 1.25);
+  align-content: center;
+}
 /* --- Timeline: the density strip (TIMELINE_PLAN.md Phase 3) -----------------
    The feed and the strip share the card's remaining height; the feed takes the
    width, the strip takes 40px of it. */
@@ -328,6 +363,18 @@
   flex: 1 1 auto;
   min-height: 0;
   gap: var(--space-2);
+}
+
+/* --- empty states that sit where they should ------------------------------------
+   1. Timeline: the empty state came after `.timeline-body`, which grows to
+      fill the card even with nothing in it, so "Nothing to plot yet" sat at
+      the card's foot under 421px of blank. With the empty state showing, the
+      body takes no room and the empty state centres in what is left.
+   2. Graph: the empty state's action stretched across the whole map (790px
+      of button for "Capture a note"); it is its own width, like every other
+      empty state's action. */
+.card:has(> #timeline-empty:not(.hidden)) > .timeline-body {
+  flex: 0 0 auto;
 }
 .timeline-scrubber {
   flex: 0 0 auto;
@@ -444,14 +491,10 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  /* Opaque base, then the card's own wash over it: `--card` is glass, and a
-     sticky head painted in it alone has the rows sliding through the labels.
-     Same composite the feed's bucket headers use. */
-  /* One shorthand: `--bg` is a gradient in most themes, which
-     `background-color` cannot hold, so the old pair left the base
-     transparent and the rows showed through (INBOX 655). As the shorthand's
-     final layer it is valid whether a theme makes it a gradient or a colour. */
-  background: linear-gradient(var(--card), var(--card)), var(--bg);
+  /* Bare at rest: the card's own wash shows through. The opaque ground
+     while rows pass under it is the stuck-ground recipe in
+     07-whiteboard-misc.css (INBOX 1489, L-ui-modernisation-28). */
+  background: none;
   border-bottom: 2px solid var(--accent-soft);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -623,33 +666,8 @@
     display: none;
   }
 }
-/* A tree label sits *beside* its node rather than under it, so it needs a
-   thinner halo: a 3px stroke on text that starts 7px from the circle eats
-   into the node itself. The anchor is set in JS as an inline style, because
-   `.graph-node text` sets `text-anchor: middle` and a stylesheet rule beats
-   the presentation attribute it would otherwise be. */
-.graph-node text.graph-label-tree {
-  font-size: var(--text-sm);
-  /* A tree label lies *along* the edge running to its children, so the halo
-     is doing real work here: it has to be wide enough to cover the line in
-     the gaps between glyphs, and opaque. `--card` is 55% white: the dashes
-     of a thread edge showed straight through it and the label came out
-     looking struck through. */
-  stroke: var(--modal-bg);
-  stroke-width: 5px;
-}
-/* Category headings label the branch they open, so they carry the weight, 
-   and now a colour of their own, so they read as a different kind of label
-   at a glance rather than just a bigger/bolder note preview (user request:
-   bold alone wasn't enough to tell a category from a note in the arc view). */
-.graph-node text.graph-label-group {
-  font-size: var(--text-base);
-  font-weight: 600;
-  fill: var(--accent);
-}
-:root[data-mode="dark"] .graph-node text.graph-label-group {
-  fill: var(--accent);
-}
+/* The notes a document draws on, beside its outline. The row is the note plus
+   a detach button, so the two can't run into each other on a long preview. */
 /* The chat box grows with the question (capped by AUTOGROW_MAX_PX in JS).
    It replaced an <input>, so it has to keep an input's shape: one line to
    start with, and no manual resize handle fighting the auto-grow. */
@@ -706,6 +724,16 @@
 #pref-bin-days {
   width: 5rem;
 }
+
+/* 4. A number is a short field. The Preferences pane drew four number
+      inputs at 253, 100, 300 and 300px, so a two-digit day count and a
+      0.25 threshold each got a field wide enough for a sentence, and no
+      two of them lined up. One width for a number, the one that already
+      fitted "0" plus its unit beside it. */
+#settings-modal :is(#pref-bin-days, #pref-chat-retention, #pref-search-min-sim, #pref-search-z-margin) {
+  width: 7rem;
+  flex: 0 0 auto;
+}
 #log-source {
   max-width: 11rem;
 }
@@ -718,6 +746,10 @@
    row"), and the intention has no opinion about the level. */
 .row :is(h2, h3, h4).flush {
   margin: 0;
+}
+
+.heat-legend > span:not(.heat-cell) {
+  margin-inline: var(--space-1);
 }
 /* The "N earlier records dropped" line above the log list. Styled as a
    caution rather than an error: the log is working, it is just not the whole
@@ -762,7 +794,7 @@
 }
 /* --- the log console (§1) ------------------------------------------------ */
 /* **The one dock that lives in a 578px column.** Every other dock spans a tab,
-   so `.dock .dock-find`'s 14rem basis (08-consistency.css) is a floor it never
+   so `.dock .dock-find`'s 14rem basis (07-whiteboard-misc.css) is a floor it never
    has to argue with; a settings screen is 599.6px wide whatever the window is,
    578.4px inside the dock's own padding, and 470.4px at an 820px window. The
    zones around find need 94px of identity, 77px of view segment, 221px of
@@ -1087,6 +1119,12 @@
   background: color-mix(in srgb, var(--card) 88%, transparent);
   border-radius: var(--radius-md);
 }
+
+#settings-modal > .modal-card {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--modal-bg-opaque);
+}
 /* A saved look: its name applies it, the ✕ deletes it. One chip rather than a
    row per theme, because the list is meant to stay glanceable, twenty saved
    looks should still fit above the fold. */
@@ -1224,17 +1262,7 @@
 .edit-conflict-compare .diff-viewer {
   max-height: 40vh;
 }
-/* showDetailDialog (app.js): confirmDialog's card shape, read-only. A
-   heading names what is being shown (an activity card's title) since there
-   is no yes/no question here for the message alone to frame. */
-.detail-dialog-card h3 {
-  margin: 0;
-}
-.detail-dialog-text {
-  max-height: 60vh;
-  overflow-y: auto;
-  white-space: pre-wrap;
-}
+
 .confirm-actions button {
   display: inline-flex;
   align-items: center;
@@ -1270,23 +1298,7 @@
 .library-create-picker {
   width: min(30rem, 96vw);
 }
-/* The sentence under the head, at the secondary size: it was the body's
-   16px under a 13px title. */
-.library-create-sub {
-  margin: var(--space-2) 0 0;
-  font-size: var(--text-sm);
-}
-/* The kinds, as rich picker rows (rich-picker.js): the list's own inset is
-   the card's padding already, so the rows sit flush with the title. */
-.library-create-list {
-  margin: var(--space-3) calc(var(--space-2) * -1) 0;
-  padding: 0;
-}
-/* A choice is read in full: at 390 five of the seven descriptions ended in
-   an ellipsis (dog3-1026 row 22), so here they wrap to a second line. */
-.library-create-list .rich-picker-about {
-  white-space: normal;
-}
+
 /* --- the Ask box explaining itself (§35A) ----------------------------------
    Shown when someone types a greeting into a box that searches notes. It is
    styled as a prompt, NOT as an answer or an error: the first version put a
@@ -1522,7 +1534,38 @@
   overflow: visible;
   text-overflow: clip;
 }
-.settings-nav-groups:not(.is-open) .settings-nav-group:not([aria-current="location"]) {
+
+/* 8. **Settings' "On this page" head stays on one line.** The label (72px) and
+      "Show all 8 sections" (116px) need 194px and the rail's head had 180 after
+      its link indent, so the toggle dropped under the label at 125 to 175 %.
+      The head's indent closes up a step and its gap and right edge give way. */
+.settings-nav-groups-head {
+  gap: var(--space-1);
+  padding-inline: var(--space-5) 0;
+}
+/* The id's weight: `#settings-nav .settings-nav-group` sets `display: block` for its
+   one-line ellipsis (01-forms-settings.css), which outranked a class-only hide, so
+   neither the short list nor the fold below hid a link. */
+#settings-nav .settings-nav-groups:not(.is-open) .settings-nav-group:not([aria-current="location"]) {
+  display: none;
+}
+/* The head is a disclosure that folds the whole list (settings-find.js): it keeps the
+   head's own small muted words, so only the caret is new. */
+.settings-nav-groups-head button.ghost.settings-nav-fold {
+  width: auto;
+  gap: var(--space-1);
+  padding: 0;
+  /* The caret hangs in the head's gutter, so the words and Show all keep the one
+     line they had (at 1440: 90 + 4 + 110px wanted 199 and wrapped the head to 72px). */
+  margin-inline-start: calc(-1 * var(--space-4));
+  color: inherit;
+  font: inherit;
+}
+.settings-nav-fold[aria-expanded="false"] .contents-caret {
+  transform: rotate(-90deg);
+}
+#settings-nav .settings-nav-groups.is-folded .settings-nav-group,
+#settings-nav .settings-nav-groups.is-folded .settings-nav-groups-head .linklike {
   display: none;
 }
 /* --- the chat toolbar, grouped (§36B) ---------------------------------------
@@ -1604,6 +1647,7 @@
 .entry-meta .chip.review {
   font-weight: 600;
 }
+
 /* Chips sit on one optical line. Padding alone does not do it, a chip with a
    descender and one without were a pixel out, which is the kind of thing that
    reads as "nothing quite lines up" without ever being noticeable on its own. */
@@ -1620,6 +1664,13 @@
   min-height: 1.5rem;
   line-height: 1.2;
 }
+
+/* The map chip's height was its words' line box (`line-height: 24px`), not a
+   floor: the same 24px, as a floor. (The 11px labels do the same in their own
+   rule below.) */
+.chip.map-chip {
+  min-height: 1.5rem;
+}
 /* The timestamp is metadata, not a column: it was right-aligned with a
    min-width, which pushed it onto its own line whenever the chips wrapped and
    left a gap the width of "23 September" on every card that didn't. */
@@ -1627,6 +1678,19 @@
   min-width: 0;
   text-align: left;
   font-size: var(--text-sm);
+}
+
+@media (hover: hover) and (min-width: 600px) {
+  /* **On hover the strip takes the time's place, not a slice of it**
+     (wrapzoom, every width: the strip is 222px and the time 250, so the
+     first 29px of "Wed," showed beside "+1h"; with a short time the strip
+     ran over the words instead). The time leaves the row and the strip
+     joins it, so the words end where the strip starts and ellipsise there.
+     The negative block margin keeps the row's height: the worded snoozes
+     are 4px taller than the line they sit in. */
+  #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-date {
+    display: none;
+  }
 }
 /* Links to other notes are the least important thing on the card and were the
    widest: full sentences of the linked note's text. Capped, so a card is a
@@ -2148,6 +2212,8 @@
   }
   #top-bar .header-cluster > .privacy-chip {
     width: var(--header-control-h);
+    min-width: var(--target-min);
+    min-height: var(--target-min);
     padding-inline: 0;
     justify-content: center;
   }
@@ -2370,6 +2436,32 @@
 .wb-snap-label input[type="checkbox"]:checked::after {
   transform: translateY(-50%) translateX(0.85rem);
   background: #fff;
+}
+
+/*    A switch that leads a help head (its '?' beside it) hangs on the start
+      side only, so it stands on the same edge and its changed bar on the
+      same x as the rows around it (INBOX 1696 c: 9px further in). */
+#settings-modal :is(.settings-group, .settings-fold)
+  .row.help-head > label:is(.check-row, .setting-check):first-child:has(> input[type="checkbox"]) {
+  margin-inline-start: calc(-1 * var(--space-3) - 1px);
+}
+
+/* 3. The hairline between two hung switch rows stops where the head's does
+      (INBOX 464 (13)). Hanging the row (2) took its top border with it, 9px
+      past the head's underline on each side: measured (divider.js, 1440) on
+      67 rows. The line is drawn inset, at the padding, as a background
+      image, so the row's hover and checked fills (`background-color`) keep
+      working under it. After: 0px. */
+#settings-modal :is(.settings-group, .settings-fold)
+  :is(.check-row + .check-row, .setting-check + .setting-check,
+    li:has(> .setting-check) + li > .setting-check, li:has(> .check-row) + li > .check-row,
+    #tool-list > li > .setting-check):is(label):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {
+  border-top-color: transparent;
+  background-image: linear-gradient(var(--divider), var(--divider));
+  background-origin: border-box;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: calc(100% - 2 * var(--space-3) - 2px) 1px;
 }
 .checkbox-label>input[type="checkbox"]:not(.sr-only):disabled,
 .wb-snap-label input[type="checkbox"]:disabled {
@@ -2853,7 +2945,7 @@
 .whiteboard-floating-panel button,
 .whiteboard-floating-panel select,
 .whiteboard-floating-panel .wb-snap-label {
-  height: 2.25rem;
+  height: var(--control-h-body);
   /* The base `select` rule (01-forms-settings.css) carries a stacked-form
      margin-bottom meant for a column of fields, not a toolbar row, left in
      place here it pulled #wb-board-select a few pixels above its own
@@ -3007,8 +3099,8 @@
    own groups are in 07-whiteboard-misc.css under `.wb-context`. Their reasons
    are in HISTORY.md with the INBOX items that asked for them (52, 64, 65). */
 .wb-tool-group button {
-  width: 36px;
-  height: 36px;
+  width: var(--control-h-body);
+  height: var(--control-h-body);
   padding: 0;
   display: flex;
   align-items: center;
@@ -3059,7 +3151,7 @@
   cursor: pointer;
   overflow: hidden;
   flex-shrink: 0;
-  margin: 0 4px;
+  margin: 0 var(--space-1);
 }
 #wb-color-picker:hover,
 #wb-bg-color-picker:hover,
@@ -3088,83 +3180,6 @@
   min-height: 0;
   /* Fix flex overflow */
 }
-.wb-library-item {
-  padding: var(--space-3) var(--space-4);
-  background: var(--inner);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  cursor: grab;
-  font-size: var(--text-md);
-  user-select: none;
-  /* The note's name over one quiet line, each ellipsised at the row's edge
-     (the owner, 2026-10-10: "text gets cut off on the note sidebar"); never
-     squeezed by the list's column. A line clamp on this padded row painted
-     a third line, sliced, into its bottom padding. */
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-/* A row you can pick up says so under the pointer (INBOX 463: "no hover
-   state"), the same lift every other list row in the app gives. */
-.wb-library-item:hover,
-.wb-library-item:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg-hover);
-  border-color: var(--border);
-}
-.wb-library-item:active {
-  cursor: grabbing;
-}
-.wb-card {
-  position: absolute;
-  width: 250px;
-  min-height: 100px;
-  padding: 1rem;
-  /* **An opaque base under the card tint, and measured before it was
-     changed.** Every other card in this app sits on the app's own page
-     background, so `--card`'s translucency (the Appearance → transparency
-     slider, 0.55 alpha at its default) only ever mixes with a colour the
-     theme controls. A board card does not: it floats over whatever the
-     person picked in the board's own background-colour picker, over a board
-     background *image*, and over other cards.
-     Measured, not eyeballed. With the board set to a light cream
-     (#fff8d0 through the shipped picker) a card's interior sampled
-     (112, 111, 99) out of the raw screenshot, against `--ink`
-     rgb(240, 242, 245) that is a 4.51:1 contrast ratio, and against a plain
-     white board it computes to (112, 114, 117) = **4.29:1, which fails
-     WCAG AA for normal text**. The card's own text became unreadable
-     because of a colour set somewhere else entirely, CLAUDE.md's "a value
-     that is invalid where it is used, not where it is set".
-     Card-over-card was measured too and is *not* a problem: two translucent
-     dark cards overlapping sampled (57, 59, 57) against (112, 111, 99)
-     solo, and over the default dark board the difference between overlap
-     and no overlap was 2 units, invisible. So this is not "translucency is
-     bad", it is "a board card must occlude what is under it".
-     The fix keeps the person's transparency preference as a *tint* and puts
-     it over an opaque base, rather than dropping the preference: the first
-     background layer is `--card` painted as a solid-colour gradient (a
-     colour cannot be a non-final background layer), composited over
-     `--modal-bg-opaque`, the token this codebase already added for exactly
-     this failure ("an opaque chip with a real border, so what is behind it
-     cannot change whether it can be seen"). Dark theme composites to about
-     rgb(27, 30, 42), which is 14:1 against `--ink`. */
-  background: linear-gradient(var(--card), var(--card)), var(--modal-bg-opaque);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--glass-shadow);
-  cursor: grab;
-  user-select: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  /* Disable pointer events on children so drag events fire on the card itself */
-}
-.wb-card:active {
-  cursor: grabbing;
-  z-index: 100;
-  box-shadow: var(--shadow-lg);
-}
 /* A sketch, or a note with an attached/pasted image, used to render as an
    empty-looking card: the whiteboard card never read entry.thumb_attachment_id
    /entry.thumb_url/entry.attachments at all: libraryCard() (library.js) and
@@ -3173,20 +3188,13 @@
    sibling, inheriting .wb-card's own padding rather than bleeding to the
    card's edge: simplest fix, and consistent with how the card's text
    content is already inset the same way. */
-/* **It scales with the card, whole** (INBOX 825 item 3): the card's width,
-   its own ratio, never cropped; at most 60% of a card that has a height, so
-   the note's words keep the rest. */
-.wb-card-thumb {
-  width: 100%;
-  height: auto;
-  max-height: 60%;
-  min-height: 0;
-  flex-shrink: 0;
-  object-fit: contain;
-  object-position: left top;
-  border-radius: var(--radius-sm);
-  display: block;
-}
+/* Reported: an attached note showed "a cut-off version" with no way to see
+   the rest. The card now renders the whole note (see renderWhiteboard in
+   app.js) and only clamps past a height cap, with a Show more/less toggle
+   below to get past it, this rule used to apply unconditionally at 3 lines
+   with nothing pointing at what was missing. Line-count rather than a pixel
+   max-height for the same reason `.entry-clamped` uses it: it scales with
+   the reading-size setting instead of pinning a font-independent height. */
 aside[data-resizable="1"] {
   position: relative;
 }
@@ -3388,6 +3396,17 @@ aside[data-resizable="1"] {
 .notif-row.notif-unread .notif-read-toggle {
   color: var(--accent-text);
 }
+
+/* Every row is inset from the panel's edges on both sides (INBOX 451, the
+   owner: the unread dot and the read toggle "arent properly padded from
+   the edges"). Measured: the dot at 0px from the row's left and the toggle
+   at 0px from its right, inside a hover fill that reaches both edges. The
+   padding itself is the row recipe's (06-timeline-dialogs.css, INBOX 585);
+   the unread dot is its own column in every look now, not a flat-look
+   `::before` with its own padding. */
+.notif-row {
+  border-radius: var(--radius-md);
+}
 /* The question a confirm asks, as its title (confirmDialog): a step up from
    the consequence under it, with the gap a heading has. */
 .confirm-text > .confirm-title {
@@ -3396,6 +3415,13 @@ aside[data-resizable="1"] {
   font-size: var(--text-h3);
   font-weight: 600;
   color: var(--ink);
+}
+
+.confirm-card .confirm-title {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 /* --- A notification's two controls are a column of their own (INBOX 874) ---
    They were hidden until the row was pointed at and then drawn on the meta
@@ -3560,6 +3586,16 @@ aside[data-resizable="1"] {
     font-size: var(--text-xs);
   }
 }
+
+/* 5. **The day strip's well asks for less under 1100.** `flex: 1 1 26rem` is
+      the row break: at 720 the arrows, the month (a fixed 9.5rem) and the year
+      select take 330px, so 416px more sent the seven days under them. Seven
+      44px days need 308px (they stack weekday over number below 34rem). */
+@media (max-width: 1099.98px) {
+  .timeline-days {
+    flex-basis: 19rem;
+  }
+}
 /* On a phone the arrows take the row's two ends and the month the middle. And
    the strip's own spacing steps down a token (the head to the days, the strip
    to the list): the list began at y=340 of 844, 2.4px past the first-screen
@@ -3578,6 +3614,30 @@ aside[data-resizable="1"] {
      the run instead of wrapping to a row of its own. */
   .timeline-daystrip-label.ghost.small {
     min-width: 7.5rem;
+  }
+}
+/* Below 380, Peek keeps its eye and gives up its word (the word stays the
+   button's name), so Appearance's head is one row at 360 and 320 too. */
+@media (max-width: 379.98px) {
+  #settings-peek {
+    width: var(--target-min);
+    padding: 0;
+    font-size: 0;
+  }
+  #settings-peek > .ph {
+    margin: 0;
+    font-size: var(--text-body);
+  }
+  /* The timeline's day strip (INBOX 1314, measured at 360x740): the head's
+     fixed-width month and the year menu made it 322px in a 300px card, and
+     seven days in 300px were 41.8px targets. The year menu wraps under the
+     month, and the well takes the card's inner padding, so each day is
+     44.5px. At 390 both fit as they are (330px of card). */
+  .timeline-daystrip-head {
+    flex-wrap: wrap;
+  }
+  .timeline-days {
+    margin-inline: calc(-1 * var(--space-4));
   }
 }
 /* A daily note's head: the day before and the day after, under its title
@@ -3653,7 +3713,6 @@ aside[data-resizable="1"] {
 .timeline-monthday:disabled {
   opacity: 0.35;
 }
-
 
 /* The journal streak (L495): quiet text at the end of the strip's head. */
 .timeline-streak {

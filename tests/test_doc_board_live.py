@@ -1,4 +1,6 @@
-"""A board in a document shown live, one window per card (DOCUMENTS_PLAN 26, decision 83, L-documents-11). Each card's Show live
+"""Source text: the live board is browser code and lazy CSS with no runner here, so they are read as text.
+
+A board in a document shown live, one window per card (DOCUMENTS_PLAN 26, decision 83, L-documents-11). Each card's Show live
 mounts a read-only window of its own: it reads the board, draws it, and zooms through the diagram view's recipe; it never touches
 the one whiteboard's state, so two windows and the Library's board cannot cross. Static checks; the behaviour was measured in the
 browser (two windows and the main board, state numbers before and after an edit, HISTORY)."""

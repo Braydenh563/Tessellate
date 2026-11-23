@@ -121,6 +121,56 @@
     return out.join(" ");
   }
 
+  //: **A path compiled once for a rigid move** (L-ui-modernisation-61): a
+  //: function of `(dx, dy)` giving the same path that far away, or null for a
+  //: path that is not a list of absolute points (a relative command, an arc or
+  //: a one-axis `H`/`V` would need the pen tracked, which is
+  //: `wbTransformPathD`'s job). A branch drag offsets every link inside the
+  //: branch on every frame; tokenising each one per frame, or drawing its
+  //: ribbon again from its two ends, was most of the frame.
+  wbTransformPathD.translator = function (d) {
+    const tokens = typeof d === "string" ? d.match(/-?\d*\.?\d+(?:[eE][-+]?\d+)?|[A-Za-z]/g) : null;
+    if (!tokens) return null;
+    const heads = [];
+    const nums = [];
+    const ys = [];
+    let text = "";
+    let y = false;
+    for (const tok of tokens) {
+      if (/[A-Za-z]/.test(tok)) {
+        if (!"MLCQSTZ".includes(tok)) return null;
+        text = (text === " " ? "" : text) + tok;
+        y = false;
+        continue;
+      }
+      heads.push(text);
+      nums.push(Math.round(parseFloat(tok) * 100));
+      ys.push(y);
+      y = !y;
+      text = " ";
+    }
+    const tail = text === " " ? "" : text;
+    //: In hundredths, written as whole numbers and a looked-up fraction: a
+    //: fractional number's text is the slow part of the frame, and integers
+    //: and table reads came out four times faster for the same string (87ms
+    //: against 362ms for 60,000 paths of 32 numbers, about one 200-topic drag).
+    const write = wbTransformPathD.translator.write;
+    return (dx, dy) => {
+      const x = Math.round(dx * 100);
+      const yy = Math.round(dy * 100);
+      let out = "";
+      for (let i = 0; i < nums.length; i++) out += heads[i] + write(nums[i] + (ys[i] ? yy : x));
+      return out + tail;
+    };
+  };
+  //: A whole number of hundredths as the text of the number: "-0.05" for -5,
+  //: "12.5" for 1250. ".05" for 5, ".5" for 50, nothing for 0 is how one ends.
+  wbTransformPathD.translator.fractions = Array.from({ length: 100 }, (_, r) => (r === 0 ? "" : r % 10 === 0 ? `.${r / 10}` : `.${String(r).padStart(2, "0")}`));
+  wbTransformPathD.translator.write = (v) => {
+    const a = v < 0 ? -v : v;
+    return (v < 0 ? "-" : "") + Math.floor(a / 100) + wbTransformPathD.translator.fractions[a % 100];
+  };
+
   //: The bounding box of a path this app drew, walked the same way a real SVG
   //: renderer would (tracking the pen's current point through relative
   //: commands) rather than just min/maxing every raw number, `h`/`v`/`a`'s

@@ -68,7 +68,7 @@ function outline(n) {
   await page.evaluate(async () => {
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
-    await initWhiteboard();
+    await ensureModule('boards'); await initWhiteboard();
   });
   await page.waitForTimeout(500);
   //: `__rafOn`, never `__on`: d3 keeps its own listener list on a node in a

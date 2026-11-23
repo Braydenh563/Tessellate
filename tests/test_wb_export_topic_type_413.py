@@ -1,4 +1,6 @@
-"""A map topic in an exported picture (L-world-class-413, exportcolours.js).
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+A map topic in an exported picture (L-world-class-413, exportcolours.js).
 
 Two faults, both seen in the PNG: the label was wrapped at a fixed 7.5px a letter, so a 22px
 root title ("Export colours light", box 200 wide) ran on one line past its box and came out

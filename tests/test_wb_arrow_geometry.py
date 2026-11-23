@@ -1,4 +1,6 @@
-"""Arrow shape geometry (WHITEBOARD_PLAN section 2, draw.io's `addArrowGeometry`): a block or flex arrow connector takes its
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Arrow shape geometry (WHITEBOARD_PLAN section 2, draw.io's `addArrowGeometry`): a block or flex arrow connector takes its
 own body width (`arrowBody`) and head width (`arrowHead`). `connectorOutline` is pure and run in node."""
 
 from __future__ import annotations

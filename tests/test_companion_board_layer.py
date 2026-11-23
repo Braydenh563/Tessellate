@@ -29,7 +29,7 @@ from tests._js_scope import unwrapped
 ROOT = Path(__file__).resolve().parents[1]
 AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 WB = frontend_text("whiteboard.js")
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
 
 
 def _fn(src: str, name: str) -> str:

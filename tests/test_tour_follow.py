@@ -59,7 +59,7 @@ def test_atlas_in_the_guide_head_is_a_disc_sized_to_the_title() -> None:
     and 390)."""
     import re
 
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     rule = re.search(r"\.sheet-card-corner \.sheet-title > \.atlas-mark\s*\{([^}]*)\}", css)
     assert rule, "the guide head's mark has no rule of its own"

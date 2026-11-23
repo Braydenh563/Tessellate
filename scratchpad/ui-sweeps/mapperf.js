@@ -47,7 +47,7 @@
 //
 //   BASE=http://127.0.0.1:8804 SCRATCH=/tmp/mm-mapread \
 //   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/mapperf.js
-const { boot } = require("./lib.js");
+const { boot, openBoardsTab } = require("./lib.js");
 
 const VIEWPORT = (() => {
   const raw = process.env.VIEWPORT;
@@ -99,10 +99,9 @@ const r1 = (x) => Math.round(x * 10) / 10;
   const { browser, page } = await boot({ viewport: VIEWPORT });
 
   // Get to the whiteboard view once; every board below opens inside it.
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(700);
-  await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
-  await page.waitForTimeout(1200);
+  // Wait for the lazy board bundle rather than sleeping for it: on a loaded
+  // runner a fixed 1.2s left `initWhiteboard` undefined (2026-11-14).
+  await openBoardsTab(page);
   await page.evaluate(async () => {
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);

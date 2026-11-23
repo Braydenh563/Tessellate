@@ -38,6 +38,7 @@ NO_BUTTON = {
     "recordMeeting": "a palette and Settings row that prints its chord (`chord:` in settings-panes.js)",
     "toggleCompanion": "a palette and Settings row that prints its chord (`chord:` in settings-panes.js)",
     "whiteboard": "boards are a view inside the Library; no button opens the tab by itself",
+    "renameRow": "acts on the list item that has focus (its Rename item); a row's menu already shows Rename",
     "selectionActions": "the selection's own menu opens on the same key; it has no fixed button",
     "editorMenu": "typing / opens the same menu; the placeholder on every editor says so",
     "inlineAi": "a row of the editor's / menu, which prints its own key",

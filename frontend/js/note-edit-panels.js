@@ -589,11 +589,11 @@ ${textarea.value}`));
   chipsHost.setAttribute("role", "group");
   chipsHost.setAttribute("aria-label", "Files in this note");
   //: **One writing surface** (INBOX 606): the title, the properties line, the
-  //: strip and the text in the capture box's own `.note-composer`, which
+  //: text and the strip under it (L-ui-modernisation-39) in the capture box's own `.note-composer`, which
   //: carries the edge, the ground and the focus ring for all of them.
   const surface = document.createElement("div");
   surface.className = "note-composer note-edit-surface";
-  surface.append(titleInput, meta, toolbarEl, textarea);
+  surface.append(titleInput, meta, textarea, toolbarEl);
   li.append(surface, marginHost, chipsHost, foot);
   //: The editor's offers (quickadd.js `noteOffersAttach`): a form
   //: opened before the bundle loads has none rather than an error.
@@ -612,8 +612,8 @@ ${textarea.value}`));
   //: drawn: the owner's "the first time I try editing a note after a restart,
   //: the notes page goes blank". The mount is awaited so the strip exists
   //: when the pressed state is set.
-  //: The same wait mounts the margin reader (the bundle holds it; margin-reader.js).
-  Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => { applyDocGutter(); document.dispatchEvent(new CustomEvent("note-margin-mount", { detail: { textarea, host: marginHost, button: marginBtn, entryId: entry.id } })); }));
+  //: The same wait mounts the margin reader (the bundle holds it; margin-reader.js). Mid-load it waits for the whole bundle, not just mountGutterFor's file.
+  (ensureModule.ready.has("library") ? Promise.resolve(mountGutterFor(textarea)) : ensureModule("library").then(() => mountGutterFor(textarea))).then(() => requestAnimationFrame(() => { applyDocGutter(); document.dispatchEvent(new CustomEvent("note-margin-mount", { detail: { textarea, host: marginHost, button: marginBtn, entryId: entry.id } })); }));
   renderEntryAttachmentChips(textarea, chipsHost);
   textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost, { paced: true }));
   renderRelatedWhileEditing(li, entry);

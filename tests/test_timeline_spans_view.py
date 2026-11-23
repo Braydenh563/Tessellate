@@ -1,4 +1,6 @@
-"""A written range draws as a span (TIMELINE_PLAN decision 13, L-timeline-4).
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+A written range draws as a span (TIMELINE_PLAN decision 13, L-timeline-4).
 
 The server serves `until` on a ranged note's row (test_timeline_spans.py);
 the feed and the table label it "3 Mar to 7 Mar", and the calendar draws a

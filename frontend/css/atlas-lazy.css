@@ -81,13 +81,13 @@
    5 s at 4x CPU became 2.2 s). Away (`nmb-away`: faded out and hidden, as on
    every tab but its own, see `atlasMotionOK`): not drawn, so nothing of it
    runs. Carried or thrown, as above. */
-:root[data-atlas-lite] .atl-figure-box :is(.atl-orbit-arm, .atl-orbiter, .atl-lw-neb, .atl-lw-neb-front, .atl-lw-tail, .atl-lw-hair, .atl-lw-lower, .atl-layer-neb, .atl-layer-neb-front, .atl-layer-lower, .atl-layer-front, .atl-ring-spin),
-#nm-buddy.nmb-away :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-figure-box, .atl-orbits *),
+:root[data-atlas-lite] .atl-figure-box :is(.atl-orbit-arm, .atl-orbiter, .atl-lw-neb, .atl-lw-neb-front, .atl-lw-tail, .atl-lw-hair, .atl-lw-lower, .atl-lw-root, .atl-ring-spin),
+#nm-buddy.nmb-away :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-lw-root, .atl-figure-box, .atl-orbits *),
 #nm-buddy.nm-buddy-dragging :is(.atl-lw, .atl-lw-breathe, .atl-orbit-arm, .atl-orbiter) { animation-play-state: paused !important; }
 :root[data-atlas-lite] .atl-orbiter :is(.atl-orbiter-glow, .atl-orbiter-swirl) { display: none; }
 /* Atlas's acts (INBOX 1589), here with the faces so boot CSS stays under its
    budget: drawn only once Atlas is, and this sheet comes after
-   08-consistency.css. */
+   characters-lazy.css. */
 /* **The eyes and the head go to what it holds** (INBOX 1589, the owner: "it
    doesnt even look at the map"): down to the map or the book, up to the
    stars it juggles, out to the bell or the lantern in its right hand. The
@@ -129,64 +129,9 @@
    of the drawing. The list of readers is the one the lint
    (tests/test_atlas_face_inherit_1591.py) keeps: a rule that reads one of these and is not
    named here would read the initial value. The rule has no weight (`:where`), so a rule that
-   writes the property on a part itself (a pupil's look) still wins. */
-@property --atl-al0 { syntax: "*"; inherits: false; }
-@property --atl-al1 { syntax: "*"; inherits: false; }
-@property --atl-al2 { syntax: "*"; inherits: false; }
-@property --atl-ar0 { syntax: "*"; inherits: false; }
-@property --atl-ar1 { syntax: "*"; inherits: false; }
-@property --atl-ar2 { syntax: "*"; inherits: false; }
-@property --atl-bl-r { syntax: "*"; inherits: false; }
-@property --atl-bl-y { syntax: "*"; inherits: false; }
-@property --atl-br-r { syntax: "*"; inherits: false; }
-@property --atl-br-y { syntax: "*"; inherits: false; }
-@property --atl-brow-y { syntax: "*"; inherits: false; }
-@property --atl-cheek { syntax: "*"; inherits: false; }
-@property --atl-chin0 { syntax: "*"; inherits: false; }
-@property --atl-chin1 { syntax: "*"; inherits: false; }
-@property --atl-chin2 { syntax: "*"; inherits: false; }
-@property --atl-crest { syntax: "*"; inherits: false; }
-@property --atl-doze { syntax: "*"; inherits: false; }
-@property --atl-eye-s { syntax: "*"; inherits: false; }
-@property --atl-fx-bang { syntax: "*"; inherits: false; }
-@property --atl-fx-dots { syntax: "*"; inherits: false; }
-@property --atl-fx-hearts { syntax: "*"; inherits: false; }
-@property --atl-fx-q { syntax: "*"; inherits: false; }
-@property --atl-fx-sparkle { syntax: "*"; inherits: false; }
-@property --atl-fx-sweat { syntax: "*"; inherits: false; }
-@property --atl-fx-tear { syntax: "*"; inherits: false; }
-@property --atl-fx-zz { syntax: "*"; inherits: false; }
-@property --atl-glow { syntax: "*"; inherits: false; }
-@property --atl-halo-o { syntax: "*"; inherits: false; }
-@property --atl-happy { syntax: "*"; inherits: false; }
-@property --atl-head-y { syntax: "*"; inherits: false; }
-@property --atl-hearteye { syntax: "*"; inherits: false; }
-@property --atl-knit { syntax: "*"; inherits: false; }
-@property --atl-lid { syntax: "*"; inherits: false; }
-@property --atl-lid-r { syntax: "*"; inherits: false; }
-@property --atl-low { syntax: "*"; inherits: false; }
-@property --atl-m-big { syntax: "*"; inherits: false; }
-@property --atl-m-cat { syntax: "*"; inherits: false; }
-@property --atl-m-frown { syntax: "*"; inherits: false; }
-@property --atl-m-grin { syntax: "*"; inherits: false; }
-@property --atl-m-hmm { syntax: "*"; inherits: false; }
-@property --atl-m-laugh { syntax: "*"; inherits: false; }
-@property --atl-m-o { syntax: "*"; inherits: false; }
-@property --atl-m-rest { syntax: "*"; inherits: false; }
-@property --atl-m-set { syntax: "*"; inherits: false; }
-@property --atl-m-smile { syntax: "*"; inherits: false; }
-@property --atl-m-smug { syntax: "*"; inherits: false; }
-@property --atl-m-tinyo { syntax: "*"; inherits: false; }
-@property --atl-m-wavy { syntax: "*"; inherits: false; }
-@property --atl-nightcap { syntax: "*"; inherits: false; }
-@property --atl-open { syntax: "*"; inherits: false; }
-@property --atl-ps { syntax: "*"; inherits: false; }
-@property --atl-px { syntax: "*"; inherits: false; }
-@property --atl-py { syntax: "*"; inherits: false; }
-@property --atl-shut { syntax: "*"; inherits: false; }
-@property --atl-squeeze { syntax: "*"; inherits: false; }
-@property --atl-star { syntax: "*"; inherits: false; }
-@property --atl-tilt { syntax: "*"; inherits: false; }
+   writes the property on a part itself (a pupil's look) still wins.
+   The 57 registrations are in 07-whiteboard-misc.css (L-whiteboard-79): registered here, the
+   sheet landing mid-session restyled the whole document (572 to 737ms at 4x over a 500-topic map). */
 :where(.nm-atlas :not(:empty),
   .nm-atlas.atl-layer-lids,
   .nm-atlas :where(.nmb-arm-r, .atl-chin-hand),
@@ -354,7 +299,7 @@
 /* **Every strand has its own clock** (INBOX 1683 c, the owner: "I still dont see much organic or natural
    subtle movement with the lower body whisps and the nebular streams"). The loops above are one pair per
    group, so her four wisps and his stream's two halves moved in step, and the stream had no sway of its
-   own. Her wisps' and glints' drawings (`.atl-lw-pose > svg`, which nothing else animates) and his stream's two pose boxes (`.atl-lw-pose-neb`, `-front`: their own drawings run the stream's drift) now carry three more
+   own. Her wisps' and glints' drawings (each in its `.atl-lw-drift` box, which nothing else animates: on the `<svg>` itself a `translate` or `rotate` loop is never composited, L-ui-modernisation-95) and his stream's two pose boxes (`.atl-lw-pose-neb`, `-front`: their own drawings run the stream's drift) now carry three more
    loops on the compositor, none shared: a drift (`translate`), a curl (`rotate`) and a shimmer (`opacity`,
    the nebula's light rising and falling along it), each part on its own periods and phases (4.3 to 6.7 s a
    way, 8.6 to 13.4 s a cycle, never two alike), so the whole drifts in and out of step and does not repeat
@@ -363,37 +308,39 @@
 @keyframes atl-lw-drift { from { translate: -1px -0.6px; } to { translate: 1px 0.6px; } }
 @keyframes atl-lw-curl { from { rotate: -1deg; } to { rotate: 1deg; } }
 @keyframes atl-lw-shimmer { from { opacity: 0.86; } to { opacity: 1; } }
-.atl-lw-pose-wisps > svg { transform-origin: 31px 55.5px; }
-.atl-lw-pose-wisps-back > svg { transform-origin: 31px 55.5px; }
-.atl-lw-pose-glint-a > svg { transform-origin: 31px 55.5px; }
-.atl-lw-pose-glint-b > svg { transform-origin: 31px 55.5px; }
+.atl-lw-pose-wisps > .atl-lw-drift { transform-origin: 31px 55.5px; }
+.atl-lw-pose-wisps-back > .atl-lw-drift { transform-origin: 31px 55.5px; }
+.atl-lw-pose-glint-a > .atl-lw-drift { transform-origin: 31px 55.5px; }
+.atl-lw-pose-glint-b > .atl-lw-drift { transform-origin: 31px 55.5px; }
 .atl-lw-pose-neb { transform-origin: 31px 52px; }
 .atl-lw-pose-neb-front { transform-origin: 31px 52px; }
 @media all {
-  :where(:root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live):is(:root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live, :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live),
-  :is(:root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live) {
-    & .atl-lw-pose-wisps > svg { animation: atl-lw-drift 4.9s ease-in-out -2.1s infinite alternate, atl-lw-curl 6.1s ease-in-out -4.2s infinite alternate, atl-lw-shimmer 3.5s ease-in-out -1.9s infinite alternate; }
-    & .atl-lw-pose-wisps-back > svg { animation: atl-lw-drift 4.5s ease-in-out -3.4s infinite alternate, atl-lw-curl 5.7s ease-in-out -0.6s infinite alternate, atl-lw-shimmer 4.1s ease-in-out -2.7s infinite alternate; }
-    & .atl-lw-pose-glint-a > svg { animation: atl-lw-drift 5.3s ease-in-out -0.7s infinite alternate, atl-lw-curl 4.7s ease-in-out -2.9s infinite alternate, atl-lw-shimmer 3.3s ease-in-out -1.1s infinite alternate; }
-    & .atl-lw-pose-glint-b > svg { animation: atl-lw-drift 4.4s ease-in-out -3.9s infinite alternate, atl-lw-curl 6.7s ease-in-out -5.4s infinite alternate, atl-lw-shimmer 4.7s ease-in-out -3.2s infinite alternate; }
+  :is(
+    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live,
+    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live
+  ) {
+    & .atl-lw-pose-wisps > .atl-lw-drift { animation: atl-lw-drift 4.9s ease-in-out -2.1s infinite alternate, atl-lw-curl 6.1s ease-in-out -4.2s infinite alternate, atl-lw-shimmer 3.5s ease-in-out -1.9s infinite alternate; }
+    & .atl-lw-pose-wisps-back > .atl-lw-drift { animation: atl-lw-drift 4.5s ease-in-out -3.4s infinite alternate, atl-lw-curl 5.7s ease-in-out -0.6s infinite alternate, atl-lw-shimmer 4.1s ease-in-out -2.7s infinite alternate; }
+    & .atl-lw-pose-glint-a > .atl-lw-drift { animation: atl-lw-drift 5.3s ease-in-out -0.7s infinite alternate, atl-lw-curl 4.7s ease-in-out -2.9s infinite alternate, atl-lw-shimmer 3.3s ease-in-out -1.1s infinite alternate; }
+    & .atl-lw-pose-glint-b > .atl-lw-drift { animation: atl-lw-drift 4.4s ease-in-out -3.9s infinite alternate, atl-lw-curl 6.7s ease-in-out -5.4s infinite alternate, atl-lw-shimmer 4.7s ease-in-out -3.2s infinite alternate; }
     & .atl-lw-pose-neb { animation: atl-lw-curl 6.3s ease-in-out -2.4s infinite alternate, atl-lw-shimmer 5.1s ease-in-out -4.1s infinite alternate; }
     & .atl-lw-pose-neb-front { animation: atl-lw-curl 5.3s ease-in-out -1.8s infinite alternate, atl-lw-shimmer 4.3s ease-in-out -0.4s infinite alternate; }
   }
   /* Reduced motion: a slow drift only, two and a half times the periods. */
   :root[data-motion="reduced"]:not([data-avatar-motion="off"]):not([data-buddy-motion="full"]) .nm-live {
-    & .atl-lw-pose-wisps > svg { animation: atl-lw-drift 12.7s ease-in-out -2.1s infinite alternate; }
-    & .atl-lw-pose-wisps-back > svg { animation: atl-lw-drift 11.7s ease-in-out -3.4s infinite alternate; }
-    & .atl-lw-pose-glint-a > svg { animation: atl-lw-drift 13.8s ease-in-out -0.7s infinite alternate; }
-    & .atl-lw-pose-glint-b > svg { animation: atl-lw-drift 11.4s ease-in-out -3.9s infinite alternate; }
+    & .atl-lw-pose-wisps > .atl-lw-drift { animation: atl-lw-drift 12.7s ease-in-out -2.1s infinite alternate; }
+    & .atl-lw-pose-wisps-back > .atl-lw-drift { animation: atl-lw-drift 11.7s ease-in-out -3.4s infinite alternate; }
+    & .atl-lw-pose-glint-a > .atl-lw-drift { animation: atl-lw-drift 13.8s ease-in-out -0.7s infinite alternate; }
+    & .atl-lw-pose-glint-b > .atl-lw-drift { animation: atl-lw-drift 11.4s ease-in-out -3.9s infinite alternate; }
     & .atl-lw-pose-neb { animation: atl-lw-drift 12.2s ease-in-out -0.9s infinite alternate; }
     & .atl-lw-pose-neb-front { animation: atl-lw-drift 15.3s ease-in-out -3.1s infinite alternate; }
   }
 }
-:root[data-atlas-lite] .atl-figure-box .atl-lw-pose > svg,
-#nm-buddy.nmb-away .atl-lw-pose > svg,
-#nm-buddy.nm-buddy-dragging .atl-lw-pose > svg,
-.atl-figure-box.atl-off .atl-lw-pose > svg,
-:root[data-atlas-hidden] .atl-lw-pose > svg { animation-play-state: paused !important; }
+:root[data-atlas-lite] .atl-figure-box .atl-lw-drift,
+#nm-buddy.nmb-away .atl-lw-drift,
+#nm-buddy.nm-buddy-dragging .atl-lw-drift,
+.atl-figure-box.atl-off .atl-lw-drift,
+:root[data-atlas-hidden] .atl-lw-drift { animation-play-state: paused !important; }
 /* Her pass (INBOX 1696 r, ff), measured at 64 and 128 px on a light page
    (atlasm1108.js): her forehead stood 1.13:1 off the page, her chest 1.21:1
    and the weakest tenth of her head's outline 1.31:1 (his 1.21, 1.41 and

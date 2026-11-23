@@ -78,10 +78,10 @@ def test_a_weekday_window_tail_is_linear():
     import time
 
     for run in ("is the plumber" + " on" * 3000, "is the plumber" + " " * 9000 + "on Thursday", "is the " + "this " * 2000):
-        t0 = time.perf_counter()
+        t0 = time.process_time()
         recognise_questions.event_window_asked(run)
         recognise_questions.without_event_window_tail(run)
-        assert time.perf_counter() - t0 < 0.5, run[:30]
+        assert time.process_time() - t0 < 0.5, run[:30]
 
 
 # --- 2. a holiday asked by pointer names the year it read -----------------------------------------------

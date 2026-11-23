@@ -14,7 +14,7 @@ const { boot } = require('./lib.js');
   let worst = 0;
   const moods = (process.env.MOODS || 'calm,thinking,happy,curious').split(',');
   for (const look of ['masculine', 'feminine']) {
-    await page.evaluate(([look]) => {
+    await page.evaluate(async ([look]) => {
       localStorage.setItem('atlas-look', look);
       const b = $('avatar-buddy'); b.value = 'me'; b.dispatchEvent(new Event('change', { bubbles: true }));
     }, [look]);

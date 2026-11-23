@@ -1,4 +1,6 @@
-"""PHP highlighting as a lazy file (L-documents-63): the grammar is 28 KB gzipped, so it is not in the editor bundle.
+"""Source text: the lazy grammar's packaging (build script, bundle, loader) is about files, so they are read as text.
+
+PHP highlighting as a lazy file (L-documents-63): the grammar is 28 KB gzipped, so it is not in the editor bundle.
 
 `@codemirror/lang-php` lives in `frontend/vendor/codemirror/php.min.js`, built by `build.sh` against the main
 bundle's own `CM6` (lang-html, the Lezer runtime, language, state and highlight are all mapped onto it, so

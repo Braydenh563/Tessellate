@@ -40,6 +40,7 @@ def _clip(perch: str, *, top=None, bottom=None, ride=False, on=True) -> str:
         f"const nmb = {{ perch: {json.dumps(perch)}, ride: {json.dumps(ride)} }};\n"
         "const band = { style: { clipPath: 'stale' } };\n"
         "globalThis.document = { getElementById: () => band };\n"
+        "globalThis.innerWidth = 1280;\nglobalThis.innerHeight = 800;\n"
         f"const nameMarkBuddyLedges = () => ({{ top: {json.dumps(top)}, bottom: {json.dumps(bottom)} }});\n"
         + REST
         + f"\nnameMarkBuddyAloft.rest({'true' if on else 'false'});\nprocess.stdout.write(JSON.stringify(band.style.clipPath));"

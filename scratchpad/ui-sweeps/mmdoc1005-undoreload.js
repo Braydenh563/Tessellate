@@ -36,7 +36,7 @@ const { boot } = require("./lib.js");
   await page.keyboard.type("Kept two");
   await page.keyboard.press("Enter");
   await page.waitForTimeout(1600);
-  const before = await page.evaluate(() => ({ topics: wbState.objects.length, undo: wbUndoStack.length }));
+  const before = await page.evaluate(() => ({ topics: wbState.objects.length, undo: wbStacks.undo.length }));
 
   // A document with two edits.
   const docId = await page.evaluate(async () => {
@@ -71,7 +71,7 @@ const { boot } = require("./lib.js");
   const after = await page.evaluate(async (id) => {
     await openWhiteboardBoard(id);
     await new Promise((r) => setTimeout(r, 1200));
-    return { topics: wbState.objects.length, undo: wbUndoStack.length };
+    return { topics: wbState.objects.length, undo: wbStacks.undo.length };
   }, boardId);
   check("the map's steps are back after a reload", after.undo === before.undo && after.undo >= 2, `${before.undo} -> ${after.undo}`);
   await page.evaluate(() => document.getElementById("whiteboard-container").focus());

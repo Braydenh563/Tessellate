@@ -1,4 +1,6 @@
-"""Review 6008801452 (2): the worker sends a lint of a `DOC_GRAMMAR_SKIP_KINDS` kind as its span and kind only (L342,
+"""Source text: the worker message shape is browser code with no runner here, so it is read as text.
+
+Review 6008801452 (2): the worker sends a lint of a `DOC_GRAMMAR_SKIP_KINDS` kind as its span and kind only (L342,
 `bare`), so nothing may read its message or suggestions. Every reader of `docGrammarAsk`'s lints goes through
 `docGrammarFindings`, which drops those kinds before reading anything else, or through LanguageTool's merge, which
 reads spans only. Run under node: a bare lint that throws on any other field is skipped without a throw."""

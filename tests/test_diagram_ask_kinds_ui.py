@@ -1,4 +1,6 @@
-"""The Ask box for a mind map, timeline and sequence diagram (L-documents-35).
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+The Ask box for a mind map, timeline and sequence diagram (L-documents-35).
 
 diagram-ai-kinds.js flattens the kind's model, and plays the backend's ops (`diagram_ask_kinds`) on a copy with the
 kind's own functions. The backend's ops are produced here by the backend itself, so both halves are held to one format.

@@ -14,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import recognise_reminders
-from tessellate.core.database import Reminder, utcnow
+from tessellate.core.database import Entry, Reminder, utcnow
 from tessellate.entry.manager import log_action
 from tessellate.repo import Conflict, NotFound
 
@@ -27,6 +27,12 @@ ORDER = (Reminder.due_at, Reminder.id)
 
 def find(session: Session, reminder_id: int) -> Reminder | None:
     return session.get(Reminder, reminder_id)
+
+
+def its_note(session: Session, reminder: Reminder) -> Entry | None:
+    """The note a reminder is about, or None (no note, or a missing id).
+    Deleted and private notes come back as they are: callers decide."""
+    return session.get(Entry, reminder.entry_id) if reminder.entry_id is not None else None
 
 
 def get(session: Session, reminder_id: int) -> Reminder:

@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._css_paths import FORMER_10, sheets
+
 CSS = Path(__file__).resolve().parents[1] / "frontend" / "css"
 
 
@@ -32,7 +34,7 @@ def test_focus_mode_thumb_bar_sits_on_the_bottom_edge():
 
 def test_note_row_end_cluster_is_in_the_flow_under_600():
     """The note's menu button stood on its time and hung below the card (measured at 560)."""
-    text = _css("10-responsive.css")
+    text = sheets(*FORMER_10)
     block = text.split("#entry-list > li :is(.entry-actions, .entry-meta-end) {", 1)[1].split("}", 1)[0]
     assert "position: static" in block
     assert "#entry-list > li .menu-wrap > button" in text
@@ -45,15 +47,15 @@ def test_answer_folds_are_flat_not_boxed_buttons():
 
 
 def test_chat_suggestions_wrap_under_600_instead_of_fading():
-    text = _css("08-consistency.css")
+    text = "\n".join(_css(n) for n in ("02-chat-graph.css", "03-dashboard-widgets.css", "07-whiteboard-misc.css"))
     block = text.split("  .chat-empty #chat-suggest > .chip {", 1)[1].split("}", 1)[0]
     assert "white-space: normal" in block
     assert "overflow-x: auto;\n    scrollbar-width: none;\n    mask-image" not in text.split("choice controls, the owner", 1)[0]
 
 
 def test_ask_box_hides_the_lone_sparkle_and_the_model_picker_takes_the_row():
-    assert ".ask-composer-icon {\n    display: none;" in _css("08-consistency.css")
-    assert "max-width: none;" in _css("10-responsive.css").split("#ask .ask-header-actions > .select-shell:has(#ask-feature-model)", 1)[1].split("}", 1)[0]
+    assert ".ask-composer-icon {\n    display: none;" in "\n".join(_css(n) for n in ("02-chat-graph.css", "03-dashboard-widgets.css", "07-whiteboard-misc.css"))
+    assert "max-width: none;" in sheets(*FORMER_10).split("#ask .ask-header-actions > .select-shell:has(#ask-feature-model)", 1)[1].split("}", 1)[0]
 
 
 def test_documents_dock_closes_up_so_the_more_menu_stays_on_the_row():
@@ -64,7 +66,7 @@ def test_documents_dock_closes_up_so_the_more_menu_stays_on_the_row():
 
 
 def test_companion_blocks_browser_touch_scroll_so_a_drag_is_not_cancelled():
-    text = _css("08-consistency.css")
+    text = "\n".join(_css(n) for n in ("02-chat-graph.css", "03-dashboard-widgets.css", "07-whiteboard-misc.css"))
     assert "#nm-buddy { transition: opacity var(--motion-base) var(--ease-out); touch-action: none; }" in text
 
 

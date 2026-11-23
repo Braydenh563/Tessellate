@@ -1,7 +1,7 @@
 /* nav-history-lazy.css: the rows of the back/forward list (INBOX 654), loaded
    with nav-history.js (app.js `LAZY_MODULES.navHistory`) rather than at boot,
    for the gzip budget (tests/test_boot_budget.py). The shared `.nav-history-item`
-   shell stays in 02-chat-graph.css and the flat-menu recipe in 08-consistency.css
+   shell stays in 02-chat-graph.css and the flat-menu recipe in a component file (08-consistency.css until UI plan 13b)
    (the undo list uses both: the row's gap, padding and 2rem floor are its);
    this is only the two-line row: a kind icon, an optional thumbnail, a title
    over a muted tab line, and the pin on the current row. */

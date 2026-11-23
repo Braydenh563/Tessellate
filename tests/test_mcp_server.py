@@ -364,3 +364,35 @@ def test_the_writes_switch_round_trips_through_the_settings_api(client):
     client.put("/preferences", json={"mcp_writes_enabled": True})
     assert client.get("/preferences").json()["mcp_writes_enabled"] is True
     assert writes_allowed() is True
+
+
+def test_the_skill_snippet_routes_intents_to_the_tool_command(client):
+    """L-general-34: Settings' MCP row also offers a SKILL.md an agent can drop in
+    its skills folder; it names every offered tool and the `tool NAME --json`
+    command, and never carries the server token (the shell is its own boundary)."""
+    from tessellate import mcp_server
+
+    mcp = client.get("/capabilities").json()["features"]["mcp"]
+    skill = mcp["skill"]
+    assert skill.startswith("---\nname: tessellate\ndescription: ")
+    assert " tool " in skill and "--json" in skill and "TESSELLATE_DATA_DIR" in skill
+    for spec in offered_tools():
+        assert f"`{spec.name}`" in skill
+    assert mcp_server.token() not in skill
+
+
+def test_the_skill_snippet_quotes_a_hostile_path_for_the_shell(app_state):  # noqa: ARG001
+    """Source text: review (mcp_server skill_md): the data folder and command went
+    into the shell line inside double quotes, so a `"`, `$` or backtick in a path
+    broke out of them; both are shlex-quoted now."""
+    import shlex
+
+    from tessellate import mcp_server
+
+    folder = '/home/a "b" $HOME `id`/data'
+    exe = "/opt/py $x/bin/python"
+    skill = mcp_server.skill_md([exe, "-m", "tessellate"], folder)
+    line = next(ln for ln in skill.splitlines() if ln.startswith("Run with "))
+    assert shlex.split(line.removeprefix("Run with ").removesuffix(" set:")) == [f"TESSELLATE_DATA_DIR={folder}"]
+    run = next(ln.strip() for ln in skill.splitlines() if " tool NAME " in ln)
+    assert shlex.split(run)[:5] == [exe, "-m", "tessellate", "tool", "NAME"]

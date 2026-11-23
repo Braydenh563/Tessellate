@@ -1,4 +1,6 @@
-"""L321: the diagram Versions sheet has a Named only switch, shown when it lists both named versions and plain saves."""
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+L321: the diagram Versions sheet has a Named only switch, shown when it lists both named versions and plain saves."""
 
 from __future__ import annotations
 

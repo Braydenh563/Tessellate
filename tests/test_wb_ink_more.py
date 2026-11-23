@@ -1,4 +1,6 @@
-"""Ink beyond the plain pen (WHITEBOARD_PLAN section 3). `whiteboard-ink-more.js` is run in node for its pure parts;
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Ink beyond the plain pen (WHITEBOARD_PLAN section 3). `whiteboard-ink-more.js` is run in node for its pure parts;
 the browser half is `scratchpad/ui-sweeps/wbink3.js`."""
 
 from __future__ import annotations

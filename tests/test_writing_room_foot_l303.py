@@ -1,4 +1,6 @@
-"""L303 and L326: the Writing Room's two boxes end on one line.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+L303 and L326: the Writing Room's two boxes end on one line.
 
 Measured at 1440x900 with both boxes mounted: the thoughts box was 326.8px and the draft box 294.8px
 (32px apart). The draft side's footer is two `.ask-composer` rows and the actions row; the thoughts side
@@ -39,7 +41,9 @@ def test_the_earlier_drafts_row_is_one_fixed_line_and_the_thoughts_footer_makes_
     # breakpoint failed test_the_breakpoints_only_shrink).
     grown = re.search(r"\n\.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", css)
     assert grown and "+ var(--control-h));" in grown.group(1)
-    one = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    # 08-consistency.css was dissolved into the component files (UI plan 13b, decision 18);
+    # the 72rem one-column query and its reset now live in 07-whiteboard-misc.css.
+    one = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     block = one[one.index("@media (max-width: 72rem) {") :]
     reset = re.search(r"\.draft-columns:has\(#draft-versions:not\(\.hidden\)\) \.draft-foot \{([^}]*)\}", block)
     assert reset and "+ 2 * 0.4rem);" in reset.group(1) and "--control-h));" not in reset.group(1)

@@ -1,4 +1,6 @@
-"""Menu keys found by scratchpad/ui-sweeps/menus.js at 1440 (the hub's order on PR 223).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+Menu keys found by scratchpad/ui-sweeps/menus.js at 1440 (the hub's order on PR 223).
 
 Escape in Logs' More, with its "Which log" list open inside it, closed the dock menu and left
 the list on screen; the next Escape closed Settings. ArrowDown on the dashboard Customise's
@@ -11,10 +13,11 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = app_js_text()
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 
 
 def _body(head: str, length: int = 3000) -> str:

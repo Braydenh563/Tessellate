@@ -21,7 +21,7 @@ ANCHOR = r"(?:(?<=[{}])|\A)"
 RULE = re.compile(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}")
 PROP = re.compile(r"(--atl-[\w-]+)\s*:")
 READ = re.compile(r"var\(\s*(--atl-[\w-]+)")
-#: Registered before this change, each with its own `inherit` path (08-consistency.css, "The
+#: Registered before this change, each with its own `inherit` path (07-whiteboard-misc.css, "The
 #: pose's four numbers"); the arms' two numbers are written on the arm itself.
 OWN_PATH = {"--atl-lean", "--atl-sx", "--atl-sy", "--atl-tail", "--atl-lean-dir", "--atl-v1", "--atl-v2", "--atl-chin"}
 #: Theme, not state: written once per theme, read by the drawing's fills, so it stays inherited.
@@ -29,7 +29,7 @@ THEME = {"--atl-aura-a"}
 
 
 def _css() -> str:
-    text = "\n".join(re.sub(r"/\*.*?\*/", "", (CSS_DIR / name).read_text(encoding="utf-8"), flags=re.S) for name in ("08-consistency.css", "atlas-lazy.css"))
+    text = "\n".join(re.sub(r"/\*.*?\*/", "", (CSS_DIR / name).read_text(encoding="utf-8"), flags=re.S) for name in ("07-whiteboard-misc.css", "atlas-lazy.css"))
     return text
 
 
@@ -99,3 +99,13 @@ def test_the_readers_rule_has_no_weight():
         if selector.strip().startswith(":where(.nm-atlas :not(:empty),"):
             return
     raise AssertionError("the face's inherit rule is missing")
+
+
+def test_the_face_numbers_are_registered_at_boot_not_in_the_lazy_sheet():
+    """L-whiteboard-79: registered in atlas-lazy.css, the sheet landing mid-session
+    invalidated every element's style (572 to 737ms at 4x over a 500-topic map,
+    a first-zoom jank); at boot the registration happens before there is a document."""
+    lazy = re.sub(r"/\*.*?\*/", "", (CSS_DIR / "atlas-lazy.css").read_text(encoding="utf-8"), flags=re.S)
+    boot = re.sub(r"/\*.*?\*/", "", (CSS_DIR / "07-whiteboard-misc.css").read_text(encoding="utf-8"), flags=re.S)
+    assert "@property" not in lazy
+    assert len(re.findall(r"@property\s+--atl-[\w-]+\s*\{\s*syntax:\s*\"\*\";\s*inherits:\s*false;\s*\}", boot)) == 57

@@ -1,4 +1,6 @@
-"""L-whiteboard-12: a frame can be bound to a note property
+"""Source text: the routes run through the test client; the page half runs only in a browser (no DOM here), so it is checked as source text.
+
+L-whiteboard-12: a frame can be bound to a note property
 (`binds: {property, value}`). A card dropped inside it writes that value to
 its note ("a kanban that edits your notebook"), and the board's bind sync
 moves a card whose note now holds another bound frame's value into that frame.

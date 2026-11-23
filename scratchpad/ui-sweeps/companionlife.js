@@ -28,7 +28,7 @@ const { boot } = require('./lib.js');
   const cue = async (c, from, wait) => { await page.evaluate(([cc, ff]) => { nmb.loudAt = 0; nameMarkBuddyCue(cc, ff); }, [c, from]); await page.waitForTimeout(wait); return expr(); };
   const cheer = await cue('cheer', '', 1700);
   if (cheer !== 'excited') fails.push(`cheer: ${cheer}`);
-  await page.waitForTimeout(2600);
+  await settle();
   const err = await cue('startle', 'error', 1700);
   if (err !== 'surprised') fails.push(`error: ${err}`);
   // A held face (think, sleepy) waits for the one in progress (`nameMarkBuddyHold`: no express while nmb.exprTimer runs).
@@ -89,9 +89,11 @@ const { boot } = require('./lib.js');
     nameMarkBuddyMoveTo(buddy, { kind: 'bar', pose: 'stand', x: 700, y: Math.round((bar ? bar.top : innerHeight) - NMB_FEET + 1) }, true);
     clearTimeout(nmb.timer);
   });
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(1500);
   const rect = () => page.evaluate(() => { const r = document.querySelector('#nm-buddy .nm-buddy-face').getBoundingClientRect(); return { h: +r.height.toFixed(1), bottom: +r.bottom.toFixed(1), top: +r.top.toFixed(1), right: +r.right.toFixed(1), left: +r.left.toFixed(1) }; });
   size.medium = await rect();
+  // The figure scales about the line it touches its perch (the face's transform-origin: its soles standing, its seat sitting, its hands hanging, by pose), not its box's bottom, so that line is what must stay put.
+  size.edge = await page.evaluate(() => Number.parseFloat(getComputedStyle(document.querySelector('#nm-buddy .nm-buddy-face')).transformOrigin.split(' ')[1]));
   // The handle: hidden at rest (the pointer away), shown on hover and on
   // the keyboard's focus.
   const gripState = () => page.evaluate(() => { const cs = getComputedStyle(document.querySelector('#nm-buddy .nmb-size-grip')); return `${cs.visibility}/${cs.opacity}`; });
@@ -111,15 +113,15 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(250);
   size.large = await rect();
   size.largeSaved = await page.evaluate(() => localStorage.getItem('avatar-buddy-size'));
-  if (Math.abs(size.large.h / size.medium.h - 1.3) > 0.02 || Math.abs(size.large.bottom - size.medium.bottom) > 3.5) fails.push(`size large: ${JSON.stringify(size)}`);
-  // The handle, dragged out from its corner.
+  if (Math.abs(size.large.h / size.medium.h - 1.3) > 0.02 || Math.abs((size.large.top + size.edge * 1.3) - (size.medium.top + size.edge)) > 3.5) fails.push(`size large: ${JSON.stringify(size)}`);
+  // The handle, dragged out from its corner: straight away from the line it stands, sits or hangs on (which side that is depends on the pose it happens to be in).
   await page.mouse.move(size.large.left + 30, size.large.top + 40);
   await page.waitForTimeout(200);
-  const grip = await page.evaluate(() => { const g = document.querySelector('#nm-buddy .nmb-size-grip').getBoundingClientRect(); return { x: g.left + g.width / 2, y: g.top + g.height / 2, shown: getComputedStyle(document.querySelector('#nm-buddy .nmb-size-grip')).opacity }; });
+  const grip = await page.evaluate(() => { const g = document.querySelector('#nm-buddy .nmb-size-grip').getBoundingClientRect(); const f = document.querySelector('#nm-buddy .nm-buddy-face'); const fr = f.getBoundingClientRect(); const oy = fr.top + Number.parseFloat(getComputedStyle(f).transformOrigin.split(' ')[1]) * (nmb.scale || 1); const gx = g.left + g.width / 2; const gy = g.top + g.height / 2; const len = Math.hypot(gx - (fr.left + fr.width / 2), gy - oy) || 1; return { x: gx, y: gy, ux: (gx - (fr.left + fr.width / 2)) / len, uy: (gy - oy) / len, shown: getComputedStyle(document.querySelector('#nm-buddy .nmb-size-grip')).opacity }; });
   if (process.env.SCRATCH) await page.screenshot({ path: `${process.env.SCRATCH}/companion-size-grip.png`, clip: { x: size.large.left - 40, y: size.large.top - 30, width: 180, height: 180 } });
   await page.mouse.move(grip.x, grip.y);
   await page.mouse.down();
-  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(grip.x + i * 5, grip.y - i * 5); await page.waitForTimeout(16); }
+  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(grip.x + grip.ux * i * 7, grip.y + grip.uy * i * 7); await page.waitForTimeout(16); }
   await page.mouse.up();
   await page.waitForTimeout(200);
   size.dragged = await rect();

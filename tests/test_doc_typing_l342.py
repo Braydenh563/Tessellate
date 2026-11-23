@@ -1,4 +1,6 @@
-"""L342: per-key main-thread time in a 20k-word document at 4x CPU.
+"""Source text: per-key time is measured by the typing gate in a browser; this keeps the code shape it relied on, read as text.
+
+L342: per-key main-thread time in a 20k-word document at 4x CPU.
 
 The gate (scratchpad/ui-sweeps/typegate.js) asks for a per-key ThreadTime
 p95 under 50 ms in both views. Each cut here keeps what the person sees

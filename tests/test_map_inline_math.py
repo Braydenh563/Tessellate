@@ -1,4 +1,6 @@
-"""Equations and inline code in a map topic (L-mindmap-2). `$formula$` is cut
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Equations and inline code in a map topic (L-mindmap-2). `$formula$` is cut
 out of the topic's text before the bold, code and link grammar, by the notes'
 own `INLINE_MATH_RE` and drawn by `mdInlineMathElement` (TeX to MathML, the
 notes' renderer; no KaTeX is vendored). Inline code was already drawn by

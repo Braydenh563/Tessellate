@@ -1,4 +1,6 @@
-"""Two-finger zoom on the viewers (DOCUMENTS_PLAN owner bug, "I cant two finger
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Two-finger zoom on the viewers (DOCUMENTS_PLAN owner bug, "I cant two finger
 trackpad zoom in or out on documents or images on the ocr workspace?").
 
 Measured in the running app 2026-11-12: a Ctrl wheel of -10 x5 took the OCR page

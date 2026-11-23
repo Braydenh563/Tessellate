@@ -833,17 +833,17 @@ function wbMapThemeDialog() {
 
 //: The whole map's rows: decision 8's ten fields and the map's own two.
 function wbMapThemeMapRows() {
-  const out = [];
-  for (const group of WB_MAP_THEME_GROUPS) {
+  //: One block per group, so a wide window can set them in two columns
+  //: (L-ui-modernisation-61: one column was 1002px in a 900px window and scrolled).
+  return WB_MAP_THEME_GROUPS.map((group) => {
+    const block = document.createElement("div");
+    block.className = "wb-map-theme-group";
     const head = document.createElement("h4");
     head.className = "setting-subhead";
     head.textContent = group.label;
-    out.push(head);
-    for (const field of group.fields) {
-      out.push(field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field));
-    }
-  }
-  return out;
+    block.append(head, ...group.fields.map((field) => (field.kind === "check" ? wbMapThemeCheck(field) : wbMapThemeSelect(field))));
+    return block;
+  });
 }
 
 //: **One level's own look** (decision 40): the seven fields a level can set,
@@ -1712,12 +1712,18 @@ function wbRelativeLuminance(channels) {
 //: 390). The accent comes from the root's own attributes (the theme, the
 //: palette, Settings' custom colour on its style) and the system scheme, so
 //: those, read without a style pass, say when to read it again.
-function wbMapAccentInk(node) {
+//:
+//: **Read before the render writes, off the root** (L-ui-modernisation-61):
+//: read from the first topic's paint, with every topic just inserted, it
+//: restyled the whole board (13,022 elements, 180ms opening 500 topics)
+//: and the size pass restyled it all again. `renderWbObjects` asks first,
+//: while the page is clean; every `--accent` is set on the root.
+function wbMapAccentInk() {
   const root = document.documentElement;
   let sig = window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "d" : "l";
   for (const attr of root.attributes) sig += `|${attr.name}=${attr.value}`;
   if (wbMapCache.accentInk == null || wbMapCache.accentFor !== sig) {
-    wbMapCache.accentInk = wbCoreInkFor(getComputedStyle(node).getPropertyValue("--accent").trim()) || "";
+    wbMapCache.accentInk = wbCoreInkFor(getComputedStyle(root).getPropertyValue("--accent").trim()) || "";
     wbMapCache.accentFor = sig;
   }
   return wbMapCache.accentInk || null;
@@ -1770,7 +1776,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
   //: otherwise take the previous node's ink until the next render.
   //: A topic with no branch colour (the centre) is filled in the accent, so
   //: its ink is worked out from that (§14: the centre is solid by default).
-  const ink = colour ? wbCoreInkFor(colour) : wbMapAccentInk(node);
+  const ink = colour ? wbCoreInkFor(colour) : wbMapAccentInk();
   if (ink) node.style.setProperty("--wb-core-ink", ink);
   else node.style.removeProperty("--wb-core-ink");
 
@@ -2654,16 +2660,18 @@ function wbMapEdgeApply(wrap, geom) {
   else path.style.removeProperty("--wb-map-edge-colour");
   const hit = wrap.querySelector(".wb-map-edge-hit");
   hit.setAttribute("d", geom.line);
+  //: The grips only once built (`wbRenderMapEdges.grips`), which places them
+  //: itself from the topics as they are then.
   const handle = wrap.querySelector(".wb-map-edge-handle");
-  handle.setAttribute("cx", String(geom.grip.x));
-  handle.setAttribute("cy", String(geom.grip.y));
-  wbMapPlaceEdgeEnds(path, geom.ends);
-  for (const grip of path._wbEnds || []) {
-    if (geom.colour) grip.style.setProperty("--wb-map-edge-colour", geom.colour);
-    else grip.style.removeProperty("--wb-map-edge-colour");
+  if (handle) {
+    handle.setAttribute("cx", String(geom.grip.x));
+    handle.setAttribute("cy", String(geom.grip.y));
+    wbMapPlaceEdgeEnds(path, geom.ends);
+    for (const grip of [handle, ...(path._wbEnds || [])]) {
+      if (geom.colour) grip.style.setProperty("--wb-map-edge-colour", geom.colour);
+      else grip.style.removeProperty("--wb-map-edge-colour");
+    }
   }
-  if (geom.colour) handle.style.setProperty("--wb-map-edge-colour", geom.colour);
-  else handle.style.removeProperty("--wb-map-edge-colour");
   let text = wrap.querySelector(".wb-map-edge-label");
   if (!geom.label) {
     text?.remove();
@@ -2680,7 +2688,6 @@ function wbMapEdgeApply(wrap, geom) {
     text.setAttribute("dominant-baseline", "central");
     // bounding-box creates a solid hit area matching the text's box, preventing mis-clicks
     text.style.pointerEvents = "bounding-box";
-    text.style.cursor = "move";
     text.addEventListener("dblclick", (e) => {
       e.stopPropagation();
       const childId = Number(wrap.querySelector(".wb-map-edge").dataset.child);
@@ -3261,7 +3268,7 @@ function mapPaletteCommands() {
   for (const [value, name] of WB_MAP_LAYOUT_NAMES) {
     if (value !== wbMapLayout()) row("Map layout", `ph:tree-structure Layout: ${name}`, () => wbMapSetLayout(value));
   }
-  row("This map", "ph:file-text Write this map as a document", () => wbMapWriteDocument());
+  row("This map", "ph:file-text Write as a document", () => wbMapWriteDocument());
   for (const [format, name] of [["markdown", "Markdown outline"], ["opml", "OPML"], ["freemind", "FreeMind (.mm)"], ["xmind", "XMind (.xmind)"], ["text", "plain text"]]) {
     row("Export the map", `ph:export Export as ${name}`, () => wbExportMapText(format));
   }
@@ -3955,16 +3962,18 @@ function wbMapColumnPositions(index, layout) {
   };
   //: Rows from `y` down, or up from `y` (each row's bottom at the cursor),
   //: nearest first either way, so a branch reads away from its topic.
-  const stack = (rows, x, y, up) => {
+  //: `edge` set, rows hang from a right edge instead: each indents in from it.
+  const stack = (rows, x, y, up, edge) => {
     let cursor = y;
+    const at = (r, s) => (edge == null ? x + r.depth * WB_MAP_INDENT : edge - r.depth * WB_MAP_INDENT - s.w);
     for (const r of rows) {
       const s = size(r.o);
       if (up) {
         cursor -= s.h;
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at(r, s), y: cursor });
         cursor -= gapB;
       } else {
-        positions.set(r.o.id, { x: x + r.depth * WB_MAP_INDENT, y: cursor });
+        positions.set(r.o.id, { x: at(r, s), y: cursor });
         cursor += s.h + gapB;
       }
     }
@@ -4016,15 +4025,21 @@ function wbMapColumnPositions(index, layout) {
       });
       const w = Math.max(...pair.map((b) => Math.max(b.ks.w, b.ext.w)));
       const x = right - w;
+      //: The column hangs from its right edge, so the rib's foot at the main
+      //: topic's spine-side corner stands clear of the causes, which indent
+      //: in from it; hung from the left, a tall stack's right edge reached
+      //: past that corner and a shallow rib clipped it (L-ui-modernisation-105).
       pair.forEach((b, side) => {
         const tall = b.ks.h + (b.rows.length ? gapB + b.ext.h : 0);
+        const edge = x + w;
+        const topX = edge - b.ks.w;
         if (side === 0) {
           const y = spine - gapD - tall;
-          positions.set(b.kid.id, { x, y });
-          stack(b.rows, x, y + b.ks.h + gapB, false);
+          positions.set(b.kid.id, { x: topX, y });
+          stack(b.rows, x, y + b.ks.h + gapB, false, edge);
         } else {
-          stack(b.rows, x, spine + gapD, false);
-          positions.set(b.kid.id, { x, y: spine + gapD + tall - b.ks.h });
+          stack(b.rows, x, spine + gapD, false, edge);
+          positions.set(b.kid.id, { x: topX, y: spine + gapD + tall - b.ks.h });
           bottom = Math.max(bottom, spine + gapD + tall);
         }
       });
@@ -5059,7 +5074,7 @@ function wbSyncMapEdgeHandles() {
     for (const [key, held] of cache) {
       const cut = key.indexOf(":");
       if (key.slice(0, cut) !== id && key.slice(cut + 1) !== id) continue;
-      const handle = held.wrap.querySelector(".wb-map-edge-handle");
+      const handle = held.wrap.querySelector(".wb-map-edge-handle") || wbRenderMapEdges.grips(held.wrap);
       if (handle) want.add(handle);
     }
   }

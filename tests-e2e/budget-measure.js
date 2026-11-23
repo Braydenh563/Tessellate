@@ -137,4 +137,109 @@ async function documentOpen(page, documentId, runs = 5) {
   return p50(times);
 }
 
-module.exports = { p50, boot, listPaint, search, boardOpen, documentOpen };
+// L-ui-modernisation-54, in CPU time. Wall-clock input delay and frame length
+// double on a busy runner and say nothing about the code; the CPU a task burns
+// (`tdur` in the trace, thread time) does not. Per repeat visit to `tab`: the
+// longest main-thread task, in CPU ms, in the 300 ms after the click (later
+// tasks are the companion's own idle). p50 over `runs`.
+async function tabTaskCpu(page, tab, runs = 5) {
+  const cdp = await page.context().newCDPSession(page);
+  const times = [];
+  try {
+    for (let i = 0; i < runs; i++) {
+      // Leave the tab first: a click on the open tab does nothing, and the
+      // budget is the visit that comes back to it.
+      await page.click(`#tab-bar [data-tab="${tab === "reminders" ? "timeline" : "reminders"}"]`);
+      await page.waitForTimeout(900);
+      const events = [];
+      const onData = (d) => events.push(...d.value);
+      cdp.on("Tracing.dataCollected", onData);
+      const done = new Promise((resolve) => cdp.once("Tracing.tracingComplete", resolve));
+      await cdp.send("Tracing.start", { categories: "devtools.timeline,disabled-by-default-devtools.timeline", transferMode: "ReportEvents" });
+      await page.click(`#tab-bar [data-tab="${tab}"]`);
+      await page.waitForTimeout(700);
+      await cdp.send("Tracing.end");
+      await done;
+      cdp.off("Tracing.dataCollected", onData);
+      const main = events.find((e) => e.name === "thread_name" && e.args.name === "CrRendererMain" && events.some((x) => x.tid === e.tid && x.name === "RunTask"));
+      const own = events.filter((e) => main && e.pid === main.pid && e.tid === main.tid && e.ph === "X");
+      const click = own.find((e) => e.name === "EventDispatch" && e.args && e.args.data && e.args.data.type === "click");
+      const t0 = click ? click.ts : Infinity;
+      const tasks = own.filter((e) => e.name === "RunTask" && e.ts >= t0 - 1000 && e.ts < t0 + 300000);
+      times.push(Math.round(Math.max(0, ...tasks.map((x) => (x.tdur || x.dur) / 1000))));
+    }
+  } finally { await cdp.detach(); }
+  return p50(times);
+}
+
+// L-ui-modernisation-95, in CPU time: the on-CPU ms the renderers' main
+// threads have burned, from /proc (Linux, where CI runs). The thread whose id
+// is the process id is the main thread.
+async function mainCpuMs(browser) {
+  const fs = require("fs");
+  const session = await browser.newBrowserCDPSession();
+  const { processInfo } = await session.send("SystemInfo.getProcessInfo");
+  await session.detach();
+  let ns = 0;
+  for (const proc of processInfo.filter((x) => x.type === "renderer")) {
+    try { ns += Number(fs.readFileSync(`/proc/${proc.id}/task/${proc.id}/schedstat`, "utf8").split(" ")[0]); } catch (e) { /* ended */ }
+  }
+  return ns / 1e6;
+}
+
+// Main-thread CPU ms per second over `ms` of idle on `page`.
+async function idleCpuPerSecond(browser, page, ms = 4000) {
+  const before = await mainCpuMs(browser);
+  await page.waitForTimeout(ms);
+  return (await mainCpuMs(browser) - before) / (ms / 1000);
+}
+
+// The full figure, on every machine (L-ui-modernisation-201): the frame budget's lite set
+// (`data-atlas-lite`, atlas-life.js) engages when frames run slow, so a loaded runner would
+// measure half a figure and a quiet one the whole. Refusing the attribute pins the measure to
+// the figure the owner sees on a mains-powered desktop.
+async function pinFullFigure(page) {
+  await page.evaluate(() => {
+    const root = document.documentElement, set = root.setAttribute.bind(root);
+    root.removeAttribute("data-atlas-lite");
+    root.setAttribute = (k, v) => (k === "data-atlas-lite" ? undefined : set(k, v));
+  });
+}
+
+// The companion's looks and hand-overs (`nameMarkBuddyAfterCleanTask`, avatars.js), in CPU
+// time at 4x: per call, the forced style recalc plus layout inside it (what the app's lag log
+// calls "forced layout"). Tab switches drive the looks. Returns the worst call's forced ms, its
+// whole ms and the most elements one of its recalcs touched.
+async function companionForcedCpu(page, tabs = ["notes", "documents", "library", "dashboard"], rounds = 2) {
+  const cdp = await page.context().newCDPSession(page);
+  const events = [];
+  const onData = (d) => events.push(...d.value);
+  try {
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    cdp.on("Tracing.dataCollected", onData);
+    const done = new Promise((resolve) => cdp.once("Tracing.tracingComplete", resolve));
+    await cdp.send("Tracing.start", { categories: "devtools.timeline,disabled-by-default-devtools.timeline", transferMode: "ReportEvents" });
+    for (let r = 0; r < rounds; r++) for (const tab of tabs) {
+      await page.evaluate((t) => switchTab(t), tab);
+      await page.waitForTimeout(1800);
+    }
+    await cdp.send("Tracing.end");
+    await done;
+  } finally {
+    cdp.off("Tracing.dataCollected", onData);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 }).catch(() => {});
+    await cdp.detach();
+  }
+  const X = events.filter((e) => e.ph === "X");
+  const ms = (e) => (e.tdur || e.dur || 0) / 1000;
+  let worst = { forced: 0, whole: 0, elements: 0, calls: 0 };
+  for (const call of X.filter((e) => e.name === "FunctionCall" && e.args?.data?.functionName === "nameMarkBuddyAfterCleanTask")) {
+    const inner = X.filter((e) => e.pid === call.pid && e.tid === call.tid && e.ts >= call.ts && e.ts < call.ts + call.dur && (e.name === "UpdateLayoutTree" || e.name === "Layout"));
+    const forced = inner.reduce((a, e) => a + ms(e), 0);
+    worst.calls += 1;
+    if (forced > worst.forced) worst = { ...worst, forced: Math.round(forced), whole: Math.round(ms(call)), elements: Math.max(0, ...inner.map((e) => e.args?.elementCount || 0)) };
+  }
+  return worst;
+}
+
+module.exports = { p50, boot, companionForcedCpu, listPaint, search, boardOpen, documentOpen, tabTaskCpu, mainCpuMs, idleCpuPerSecond, pinFullFigure };

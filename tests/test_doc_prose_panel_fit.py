@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_unwrap import unwrap
 from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ def _rules():
     for path in CSS:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
-            yield path.name, match.group(1).strip(), match.group(2)
+            yield path.name, unwrap(match.group(1).strip()), match.group(2)
 
 
 def _props(body: str) -> dict[str, str]:
@@ -64,7 +65,9 @@ def test_the_suggestions_panel_fits_its_own_width() -> None:
     # line): the head is one row at every width, and what gives way is the
     # name, never the buttons (which once ran off the panel) or the count.
     heads = [_props(body) for _, sel, body in rules if sel == ".doc-prose-head"]
-    assert heads and all(h.get("flex-wrap") == "nowrap" for h in heads), "the suggestions head wraps"
+    # Split into several guarded rules when it moved (L-ui-modernisation-51): no piece may say anything else.
+    wraps = [h["flex-wrap"] for h in heads if "flex-wrap" in h]
+    assert wraps and all(w == "nowrap" for w in wraps), "the suggestions head wraps"
     name = [_props(body) for _, sel, body in rules if sel == ".doc-prose-name"]
     assert name and name[0].get("min-width") == "0" and name[0].get("text-overflow") == "ellipsis", (
         "the head's name cannot give way, so the buttons would"
@@ -99,7 +102,7 @@ def test_a_narrow_panels_head_buttons_are_one_icon_group() -> None:
     tools are icon squares at every width (the Dictionary and the side in
     the ⋯); below 26rem Fix N's words are visually hidden too (never
     dropped: its title and label say the number), so the row stays one."""
-    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     block = css[css.index("@container doc-prose (max-width: 26rem)"):]
     block = block[: block.index("\n}\n")]

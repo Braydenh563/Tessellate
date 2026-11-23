@@ -6,9 +6,9 @@ in the sweep). The placement is now 0.8px by 0.9px, which the sweep measures as 
 """
 
 import re
-from pathlib import Path
+from tests._css_paths import FORMER_08, sheets
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 
 
 def test_thinking_pupil_placement_is_within_the_eye():

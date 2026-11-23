@@ -95,10 +95,10 @@ def test_each_phrase_reads_inside_its_budget():
     rec.recognise("warm up", now=NOW, locale="en-GB")
     best = None
     for _ in range(5):
-        start = clock.perf_counter()
+        start = clock.process_time()
         for row in FIXTURE["rows"]:
             rec.recognise(row["text"], now=NOW, locale=row["locale"])
-        took = (clock.perf_counter() - start) / len(FIXTURE["rows"])
+        took = (clock.process_time() - start) / len(FIXTURE["rows"])
         best = took if best is None else min(best, took)
     assert best < 0.005, f"{best * 1000:.2f} ms a phrase"
 

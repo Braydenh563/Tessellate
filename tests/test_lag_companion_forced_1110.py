@@ -58,6 +58,7 @@ def test_the_large_view_is_fitted_and_focused_in_the_frame_not_the_double_click(
 
 
 def test_the_pacer_reads_play_states_before_it_pauses_the_held_hands() -> None:
-    body = _body(AVATARS, "function nameMarkBuddyTempo(")
+    # The hands block moved into `nameMarkBuddyTempoHands` (the size cap), so read it too.
+    body = _body(AVATARS, "function nameMarkBuddyTempo(") + _body(AVATARS, "function nameMarkBuddyTempoHands(")
     assert body.index('a.playState === "running"') < body.index("for (const a of running) a.pause()")
     assert 'if (a.playState === "running") a.pause();' not in body

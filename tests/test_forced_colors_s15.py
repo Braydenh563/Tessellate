@@ -30,3 +30,19 @@ def test_the_sheet_is_only_a_forced_colors_block_in_system_colours():
 def test_it_is_loaded_lazily_and_only_when_the_media_query_matches():
     assert 'matchMedia("(forced-colors: active)").matches) lazyScript("/css/forced-colors-lazy.css")' in APP
     assert "forced-colors-lazy" not in INDEX, "not a boot stylesheet: it would count against the boot CSS budget"
+
+
+def test_a_focused_field_keeps_a_ring_the_mode_does_not_drop():
+    """Source text: L-ui-modernisation-49, forcedzoom.js in Chromium's forced-colours
+    emulation: the search fields, the chat input and the Library card titles drew
+    their focus ring with box-shadow, which the mode drops, so focus showed nothing.
+    A focused thing is outlined in Highlight."""
+    rule = SHEET[SHEET.index(":focus-visible") :]
+    rule = rule[: rule.index("}")]
+    assert "outline: 2px solid Highlight" in rule
+
+
+def test_a_field_boxed_by_its_wrapper_rings_the_wrapper():
+    """Source text: the chat composer and the chat search draw their box on a wrapper
+    (`.chat-composer`, `.search-field`) and turn the field's own outline off."""
+    assert ":is(.search-field, .chat-composer):focus-within {\n    outline: 2px solid Highlight;" in SHEET

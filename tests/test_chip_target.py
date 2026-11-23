@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import sheets
 
 CSS = Path(__file__).resolve().parents[1] / "frontend" / "css"
 
@@ -24,7 +25,7 @@ def test_an_interactive_chip_overhangs_to_the_floor():
 
 
 def test_a_shrinking_chip_is_not_clipped_above_and_below():
-    text = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    text = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
     at = text.index(".entry-meta.note-meta:not(.is-measuring) > :is(.when, .refs")
     rule = text[at : text.index("}", at)]
     assert "overflow: clip visible" in rule

@@ -2207,7 +2207,7 @@ onSurface("notes", () => {
 setTimeout(() => navigator.connection?.saveData || ensureModule("captureCard"), 4000);
 //: **One bar, two places** (INBOX 1592): the Notes tab's bar is in index.html and is wired below; the
 //: dashboard's Quick capture card wires a copy of its row (made in the lazy dashboard.js, off the boot budget). Either way the bar opens the one
-//: composer (capture-card.js) and saves the one way. A card left open by a redraw is handed to the new bar.
+//: composer (capture-card.js) and saves the one way. A card kept open by a redraw is handed to the new bar.
 function captureBar(bar) {
   for (const type of ["focusin", "click", "input", "keydown"]) {
     bar.querySelector(".capture-bar-row").addEventListener(type, (event) => {
@@ -2391,6 +2391,16 @@ function renderEntries(appendOnly = false) {
   if (!noteSearch && noteSearchWhy.size) noteSearchWhy.clear();
   const empty = $("empty-message");
   const noMatch = $("no-match-message");
+  //: A redraw rebuilds the open edit form, and the caret in it went with the old one: filing's refresh
+  //: just after a capture left the form with nothing focused and its editor never mounted (notes.spec.js:61
+  //: on CI, note-edit-rerender.js). The new form's body takes the caret back. Only the body: the tag
+  //: field and the buttons are put back by `restoreNoteControl`, and a late re-focus of the tag field
+  //: reopened its list (notes.spec.js:132).
+  const held = document.activeElement;
+  if (!grown && editingId !== null && held?.closest?.(`#entry-list > li[data-id="${editingId}"]`)
+      && (held.matches(".note-edit-box") || held.closest(".note-surface"))) {
+    focusBodyAfterRender = editingId;
+  }
   const keep = grown ? null : resetNoteList(list);
   // Re-applied on every render, not just on a click: `replaceChildren`
   // above leaves the class alone, but a later render that rebuilt the <ul>
@@ -2999,7 +3009,7 @@ function clearSkeletons(container) {
   //: rows' layout inside the press: 96ms style and 55 layout at 4x on opening Logs, 677 elements (INBOX 1111).
   if (held.length && container.id) setTimeout(skeletonRemember, 80, container);
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
-  //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
+  //: first rows fade up a step, staggered (`.ui-settle`, 07-whiteboard-misc.css),
   //: instead of popping in where the skeletons were. Only on this first
   //: swap: the class is gone before any later redraw.
   if (held.length) {

@@ -1,4 +1,6 @@
-"""L-world-class-127: find and replace inside a note.
+"""Source text: the editor's search binding is read from the script text, as the unit suite has no browser to drive.
+
+L-world-class-127: find and replace inside a note.
 
 The note edit box (and the graph's note popup) carries the same CodeMirror
 search panel the document editor has: Ctrl+F opens it, Ctrl+H opens it on the

@@ -174,16 +174,9 @@ wireLongPress(
 //: here because a double-click cannot: a single click on every one of these
 //: rows opens it, so the first half of a double-click would already have
 //: left the list. Runs the row's own Rename item, so there is one rename.
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "F2" || event.defaultPrevented) return;
-  const host = event.target instanceof Element ? event.target.closest(ROW_MENU_HOSTS) : null;
-  if (!host) return;
-  const wrap = host.querySelector(".menu-wrap");
-  const item = wrap?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""));
-  if (!item) return;
-  event.preventDefault();
-  item.run();
-});
+//: The key is the `renameRow` row of the shortcut table (settings-wiring.js).
+//: The function itself lives on the table's `renameRow` row (settings-wiring.js),
+//: not as a global name (the scope ratchet).
 
 //: **Arrow keys between cards and rows, Home and End to the ends.** Chosen by
 //: where the items are drawn rather than by their order in the DOM: the
@@ -934,10 +927,15 @@ async function openNavHistoryMenu(anchorEl) {
   // status bar): only `left` needs computing, and only after the menu is
   // visible and populated, so its real width is known.
   const margin = 8;
+  //: **On a phone the opener can be a row in a sheet** (L410): Recent places
+  //: in the bar's sheet clicks a button with no box at 390, which put the menu
+  //: flush on the left edge. It anchors to Back, as the header's long press
+  //: does, so nav-history-lazy.css's phone shift lands it under the header.
+  if (!anchorEl?.getClientRects().length) anchorEl = $("status-back") || anchorEl;
   const anchor = anchorEl.getBoundingClientRect();
   menu.style.left = "0px";
   const box = menu.getBoundingClientRect();
-  let left = anchor.left;
+  let left = Math.max(margin, anchor.left);
   if (left + box.width > window.innerWidth - margin) {
     left = Math.max(margin, window.innerWidth - margin - box.width);
   }
@@ -2065,7 +2063,7 @@ async function switchTab(name) {
 //: 1440) four frames with nothing of the page under any of nine points,
 //: 488 to 550ms before it was whole. Now the page's own controls wait
 //: hidden under one skeleton the size of the page, which fades as they
-//: fade in (`.tab-loading`, `.tab-revealing`, 08-consistency.css).
+//: fade in (`.tab-loading`, `.tab-revealing`, 07-whiteboard-misc.css).
 //:
 //: **The page's shape, and its name when it is slow** (INBOX 598, the owner:
 //: "the loading screen on features like the graph tab and library is a blank
@@ -2292,7 +2290,7 @@ function resetNavigationToDefaults() {
   if (allTab && !allTab.classList.contains("active")) allTab.click();
   // If the Notes strip is already built, put it back on its front page now;
   // on a cold load it has not been built yet and will read the cleared key.
-  //: `getElementById`, not `$`: `$` would build the unbuilt Notes pane on every unlock (audit 1030 Y5).
+  //: `getElementById`, not `$`: `$` would build the Notes pane before it exists on every unlock (audit 1030 Y5).
   if (document.getElementById("notes-subtabs")?.dataset.ready) {
     showNotesSection("browse");
   }
@@ -2335,6 +2333,13 @@ function showNotesSection(name, { focus = false } = {}) {
   // runs, so by the time a real arrival calls this, it reads "notes".
   if ((prefs.get("activeTab", null) || "dashboard") === "notes") {
     recordTabVisit("notes", wanted);
+  }
+  //: A switch inside Notes cross-fades the panel (L414): marked on the page for the frame that
+  //: shows it, since `@starting-style` cannot tell this from the page arriving (05-sidebars-themes.css).
+  const page = $("tab-notes");
+  if (page && !page.classList.contains("hidden") && $(wanted)?.classList.contains("hidden")) {
+    page.classList.add("section-switch");
+    setTimeout(() => page.classList.remove("section-switch"), 400);
   }
   for (const id of NOTES_SECTIONS) {
     const card = $(id);

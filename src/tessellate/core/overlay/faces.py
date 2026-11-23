@@ -108,7 +108,7 @@ MICRO_EVERY = (6.0, 16.0)
 ACT_FACES = {
     "yawn": "sleepy", "stretch": "content", "little_dance": "joy", "sway": "content", "wiggle": "smile", "bounce": "smile",
     "look_around": "curious", "ponder": "curious", "scan_horizon": "curious", "glance_pointer": "curious",
-    "peek_down": "curious", "pose_proud": "proud", "shake_off": "surprised", "wave_idle": "smile", "float_loop": "joy",
+    "peek_down": "curious", "pose_proud": "proud", "shake_off": "surprised", "wave_idle": "smile", "float_loop": "joy", "back_float": "content",
     "nod": "smile", "shrug": "smirk", "doze": "sleepy", "crouch_watch": "focus", "sit_down": "content",
     "groom": "content", "scratch": "smile", "snack": "content", "peer_at_cursor": "curious", "pace": "focus",
     "invent_game": "joy", "tinker": "focus", "dust_off": "surprised",

@@ -1,4 +1,6 @@
-"""L-documents-58: an arrow's id and animation (`e1@-->`, `e1@{ animate: true }`) are the model's own; the menu entry is in the lazy style file."""
+"""Source text: the arrow menu lives in browser files with no runner here, so their wiring is read as text.
+
+L-documents-58: an arrow's id and animation (`e1@-->`, `e1@{ animate: true }`) are the model's own; the menu entry is in the lazy style file."""
 
 from __future__ import annotations
 

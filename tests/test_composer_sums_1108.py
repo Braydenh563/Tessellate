@@ -64,6 +64,6 @@ def test_the_answer_ignores_the_model_voice_and_notes():
 
 @pytest.mark.parametrize("text", ["half of" + " " * 20000 + "9", "what is " * 3000, "factorial of " + "9" * 20000, "sqrt " + " " * 20000 + "4", "double" + " 1" * 9000])
 def test_a_20k_text_is_linear(text):
-    start = time.perf_counter()
+    start = time.process_time()
     composer_sums.answer(ctx(text))
-    assert time.perf_counter() - start < 0.5
+    assert time.process_time() - start < 0.5

@@ -128,11 +128,18 @@
   //: the question being asked. Never mind "last write wins" with a sequence
   //: number: the board id *is* the identity here, and comparing it means a
   //: re-fetch of the same board still applies normally.
-  async function fetchWhiteboardState() {
+  //: `state`: the same request, already asked by a caller that had time to
+  //: spare (the open's 60ms settle). `list`: a caller that draws first takes
+  //: the picker's own round trip as `list.wait` (mapperf phase probe, 500
+  //: topics: 30 to 100ms nothing on the canvas reads).
+  async function fetchWhiteboardState({ state = null, stateFor = null, list = null } = {}) {
     const requestedBoardId = window.currentBoardId ?? null;
+    //: A prefetched answer is used only for the board it was asked for: a
+    //: second open during the first one's settle asks again (PR 224 review).
+    if (state && stateFor !== requestedBoardId) state = null;
     try {
       const url = requestedBoardId ? `/whiteboard/?board_id=${requestedBoardId}` : "/whiteboard/";
-      const res = await apiJson(url);
+      const res = await (state || apiJson(url));
       if ((window.currentBoardId ?? null) !== requestedBoardId) return;
       wbState = res;
       // Before the board list, and awaited: everything that draws a map node
@@ -147,7 +154,8 @@
       //: New board kept the board's rail (Notes, Layers, Pages), whose tabs a
       //: map sends back to Library, so only Library answered (INBOX 657).
       wbSyncSidebarKind();
-      await refreshBoardList();
+      if (list) list.wait = refreshBoardList().catch(() => {});
+      else await refreshBoardList();
     } catch (err) {
       toast(voiceLine("failed", { what: "open that board", why: err.message }), true);
     }
@@ -265,6 +273,9 @@
   function wbSyncBoardCount() {
     const opt = document.getElementById("wb-board-select")?.selectedOptions?.[0];
     if (!opt || !window.currentBoardId || !opt.dataset.title) return;
+    //: The picker is rebuilt after an open's first render, so until then its
+    //: selected row is the last board's.
+    if (opt.value !== String(window.currentBoardId)) return;
     const sketches = wbState.sketches || [];
     let links = 0;
     for (const sk of sketches) if (String(sk.data).includes('"type":"link-')) links++;

@@ -714,12 +714,12 @@
         const hits = docGrammarFindings(lints, text).filter((f) => f.harperKind === "Agreement" && f.alternatives.length);
         wbGrammar.found.set(text, hits[0] || null);
       };
-      const lints = await docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(); }).catch(() => null);
+      const lints = await docGrammarAsk(text, (first) => { keep(first); wbGrammarRepaint(new Set([text])); }).catch(() => null);
       //: No answer (the worker is off or failed): leave the text unasked so the next check asks again.
       if (lints === null) continue;
       keep(lints);
     }
-    wbGrammarRepaint();
+    wbGrammarRepaint(new Set(texts));
     if (wbGrammar.queue.size) wbGrammarSoon();
   }
 
@@ -746,10 +746,15 @@
     }
   }
 
-  function wbGrammarRepaint() {
+  //: `texts`: the labels just answered, so one answer repaints the topics that
+  //: wear it, not all 500 (mapcpu: a 60ms zoom task at 4x). The objects are
+  //: indexed once a pass; a `find` per label was 250,000 compares at 500.
+  function wbGrammarRepaint(texts) {
+    const byId = new Map((wbState.objects || []).map((o) => [String(o.id), o]));
     for (const el of wbInstances.queryAll(".wb-map-node")) {
-      const datum = (wbState.objects || []).find((o) => String(o.id) === el.dataset.id);
-      if (datum) wbGrammarPaint(el, datum);
+      const datum = byId.get(el.dataset.id);
+      if (!datum || (texts && !texts.has(String(datum.data?.content || "").trim()))) continue;
+      wbGrammarPaint(el, datum);
     }
   }
 

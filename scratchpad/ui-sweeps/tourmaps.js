@@ -6,6 +6,8 @@
 const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
+  //: openTour is a stand-in until tour.js loads (lazy); load it before reading inspect.
+  await page.evaluate(() => ensureModule("tour"));
   const hasMap = await page.evaluate(async () => (await openTour.sweep.context()).map != null);
   await page.evaluate(() => openTour('maps'));
   await page.waitForTimeout(2500);

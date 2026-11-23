@@ -1,4 +1,6 @@
-"""A saved view and Reset carry the link-kind chips (audit 1029 L12 re-run, 2026-11-12).
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+A saved view and Reset carry the link-kind chips (audit 1029 L12 re-run, 2026-11-12).
 
 Live: a view saved with Contradicts off came back with the chip on and 240
 links drawn instead of 200 (scratchpad sweep a3.js, port 8803).

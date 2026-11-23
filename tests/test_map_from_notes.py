@@ -145,6 +145,6 @@ def test_topic_text_is_linear_on_bracket_runs():
 
     assert _topic_text("see [the plan](http://x) and ![img](a.png)") == "see the plan and img"
     for bait in ("[\\" * 20000, "[](" * 20000):
-        started = time.perf_counter()
+        started = time.process_time()
         _topic_text(bait)
-        assert time.perf_counter() - started < 0.5
+        assert time.process_time() - started < 0.5

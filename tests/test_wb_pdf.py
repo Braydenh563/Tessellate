@@ -1,4 +1,6 @@
-"""A PDF on a board (L-whiteboard-2): placed as one picture per page, or kept as one object that opens the file.
+"""Source text: the routes run through the test client; the page half runs only in a browser (no DOM here), so it is checked as source text.
+
+A PDF on a board (L-whiteboard-2): placed as one picture per page, or kept as one object that opens the file.
 
 The browser half is `scratchpad/ui-sweeps/wbpdf.js` (13 checks on a real PDF); this holds the wiring and the server's rules.
 """

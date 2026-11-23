@@ -1,4 +1,6 @@
-"""Harper on map topic labels (MINDMAP_PLAN VC12): a label with an agreement
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+Harper on map topic labels (MINDMAP_PLAN VC12): a label with an agreement
 error wears a mark, its suggestion is a topic-menu row applied as one Undo
 step, and a drag (pointer down) makes no lint call. Measured live in
 Chromium (`He have a plan` flagged, "Use “He has a plan”" one Undo step, 0
@@ -42,3 +44,16 @@ def test_the_fix_is_a_topic_menu_row_and_one_undo_step() -> None:
 def test_a_flagged_label_wears_the_documents_double_line() -> None:
     assert ".wb-map-text[data-grammar]" in CSS
     assert "underline double var(--warn)" in CSS
+
+
+def test_a_repaint_is_one_pass_over_the_labels_it_answered() -> None:
+    """mapcpu at 500 topics: the repaint found each label's datum with a
+    `find` over every object (250,000 compares a pass) and ran once per
+    Harper answer, up to 24 a pass, over every label: a 60ms zoom task at 4x.
+    It indexes the objects once and repaints only the labels just answered."""
+    repaint = MORE[MORE.index("function wbGrammarRepaint") : MORE.index("function wbGrammarFixes")]
+    assert ".find(" not in repaint
+    assert "new Map(" in repaint
+    run = MORE[MORE.index("async function wbGrammarRun") : MORE.index("function wbGrammarSoon")]
+    assert "wbGrammarRepaint(new Set([text]))" in run
+    assert "wbGrammarRepaint(new Set(texts))" in run

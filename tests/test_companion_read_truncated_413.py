@@ -1,4 +1,6 @@
-"""The companion reads along with a long note even when the list sent it cut short (L-world-class-413, companionreact.js).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+The companion reads along with a long note even when the list sent it cut short (L-world-class-413, companionreact.js).
 
 The notes list carries a long note's first 297 characters with `content_truncated` set, so the
 "longer than 1200 characters" test never held for any real long note and the reading glasses

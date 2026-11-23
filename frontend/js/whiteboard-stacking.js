@@ -363,6 +363,62 @@
     //: per-frame edge work on any branch drag, and changes nothing about what
     //: is drawn: both ends move by the same delta.
     const claimed = new Set();
+    //: **A link is redrawn once a move, and a link inside the move only
+    //: travels** (L-ui-modernisation-61). A link is listed under both its ends,
+    //: so inside a branch it was drawn twice a frame; and one whose two ends
+    //: both move keeps its shape, so its drawn `d` is compiled once here and
+    //: offset per frame (`origin.rigidLinks`) rather than drawn again from its
+    //: topics. Traced on a 200-topic branch with 300 links: 49ms of each move.
+    //: `linked` stays whole for the callers that are not a translation (a
+    //: frame's turn); `movedLinks` is what a move redraws.
+    const moving = new Set(keys);
+    const claimedLinks = new Set();
+    const rigidLinks = [];
+    const rigidLink = (pair) => {
+      const p = pair.parsed;
+      const ends = [`${p.sourceKind || "node"}:${p.sourceId}`, `${p.targetKind || "node"}:${p.targetId}`];
+      if (!ends.every((end) => moving.has(end))) return false;
+      //: The groups are indexed by id once for the capture: a document query
+      //: per link was 17ms of the pick-up of 300.
+      linkGroups ||= new Map([...document.querySelectorAll(".sketch-group")].map((g) => [g.dataset.id, g]));
+      const el = linkGroups.get(String(pair.sketch.id));
+      const path = el?.querySelector(".sketch-path");
+      const hit = el?.querySelector(".sketch-hitbox");
+      if (!path || el.querySelector(":scope > .wb-link-label")) return false;
+      //: Only a path of absolute points is rigid; the check is a text test, and
+      //: the path is compiled on the moves after the pick-up (`compileRigid`),
+      //: because tokenising 300 of them was 58ms of the pick-up frame.
+      if (!pointsOnly.test(path.getAttribute("d")) || (hit && !pointsOnly.test(hit.getAttribute("d")))) return false;
+      rigidLinks.push({ pair, path, hit, group: el, state: "" });
+      return true;
+    };
+    let linkGroups = null;
+    const pointsOnly = /^[MLCQSTZ\d\s.,eE+-]+$/;
+    //: A link the translator cannot compile is drawn from its two topics, as a
+    //: link that was never rigid is (`state` "bad").
+    origin.compileRigid = (rigid) => {
+      rigid.at = wbTransformPathD.translator(rigid.path.getAttribute("d"));
+      rigid.hitAt = rigid.hit ? wbTransformPathD.translator(rigid.hit.getAttribute("d")) : null;
+      rigid.state = rigid.at && (!rigid.hit || rigid.hitAt) ? "ok" : "bad";
+    };
+    //: The same for a tree line with both topics moving: its two paths are
+    //: compiled like a link's, and its end dots, handle and label are points
+    //: read off the element as drawn, which already holds a label's own nudge.
+    const rigidEdges = [];
+    const rigidEdge = (edge) => {
+      const el = edge.el;
+      if (!el?.isConnected || !moving.has(`object:${edge.parent.id}`) || !moving.has(`object:${edge.child.id}`)) return false;
+      const at = wbTransformPathD.translator(el.getAttribute("d"));
+      const hitAt = el._wbHitTwin ? wbTransformPathD.translator(el._wbHitTwin.getAttribute("d")) : null;
+      if (!at || (el._wbHitTwin && !hitAt)) return false;
+      const points = [];
+      for (const [dot, x, y] of [...(el._wbEnds || []).map((dot) => [dot, "cx", "cy"]), [el._wbHandle, "cx", "cy"], [el._wbLabel, "x", "y"]]) {
+        const x0 = Number(dot?.getAttribute(x)), y0 = Number(dot?.getAttribute(y));
+        if (dot && Number.isFinite(x0) && Number.isFinite(y0)) points.push({ dot, x, y, x0: Math.round(x0 * 100), y0: Math.round(y0 * 100) });
+      }
+      rigidEdges.push({ edge, el, at, hitAt, points });
+      return true;
+    };
     for (const key of keys) {
       if (key === excludeKey) continue; // the dragged item's own handler already moves it
       const sep = key.indexOf(":");
@@ -391,12 +447,20 @@
             const edgeKey = `${edge.parent.id}:${edge.child.id}`;
             if (claimed.has(edgeKey)) continue;
             claimed.add(edgeKey);
-            mapEdges.push(edge);
+            if (!rigidEdge(edge)) mapEdges.push(edge);
           }
+        }
+        const linked = wbLinkedSketchesFor(id, kind, linkIndex);
+        const movedLinks = [];
+        for (const pair of linked) {
+          if (claimedLinks.has(pair.sketch.id)) continue;
+          claimedLinks.add(pair.sketch.id);
+          if (!rigidLink(pair)) movedLinks.push(pair);
         }
         origin.set(key, {
           kind, id, item, x: item.x, y: item.y,
-          linked: wbLinkedSketchesFor(id, kind, linkIndex),
+          linked,
+          movedLinks,
           mapEdges,
           //: Resolved here when the board is a map (one pass for the whole
           //: capture, above) and on the first frame that needs it otherwise;
@@ -409,6 +473,8 @@
     //: The selection's box as the gesture found it, for the bar above it to
     //: ride along on (`wbBulkBarBounds`).
     if (keys === wbMultiSelection && wbMultiSelection.size > 1) origin.boundsAtStart = wbSelectionBounds();
+    origin.rigidLinks = rigidLinks;
+    origin.rigidEdges = rigidEdges;
     return origin;
   }
 
@@ -518,10 +584,50 @@
       // See this entry's own comment in `wbCaptureBulkMoveOrigin`: without
       // this, only the card the pointer is actually on kept its edges live
       // during a multi-select drag.
-      wbUpdateLinkedSketches(entry.id, entry.linked);
+      const moved = entry.movedLinks || entry.linked;
+      if (moved?.length) wbUpdateLinkedSketches(entry.id, moved);
       // Same for a map's tree edges, which are not sketches at all: a marquee
       // drag of half a branch left every one of its curves behind.
       if (entry.mapEdges?.length) wbUpdateMapEdges(entry.mapEdges);
+    }
+    //: The links that travel with the move (`wbCaptureBulkMoveOrigin`). One a
+    //: render replaced mid-gesture is drawn from its ends instead.
+    //: Compiled a slice a move after the first (`compileRigid`), the rest at the drop.
+    let compiling = origin.rigidAt ? 15 : 0;
+    for (const rigid of origin.rigidLinks || []) {
+      if (!rigid.state && compiling-- > 0) origin.compileRigid(rigid);
+      if (!rigid.path.isConnected || rigid.state === "bad") {
+        rigid.group.removeAttribute("transform");
+        wbUpdateLinkedSketches(null, [rigid.pair]);
+        continue;
+      }
+      //: One `transform` on the link's group a move, not two `d` rewrites (a
+      //: bare page: 300 transforms 0.5ms, 600 paths 1.7ms; on the map the
+      //: paths were a 1143-element style recalc each move). The `d` is written
+      //: where the drag lands, `wbSaveBulkMove`, or put back here at 0, 0.
+      if (dx || dy) {
+        rigid.group.setAttribute("transform", `translate(${dx} ${dy})`);
+      } else {
+        rigid.group.removeAttribute("transform");
+        if (!rigid.state) origin.compileRigid(rigid);
+        rigid.path.setAttribute("d", rigid.at(0, 0));
+        rigid.hit?.setAttribute("d", rigid.hitAt(0, 0));
+      }
+    }
+    origin.rigidAt = dx || dy ? [dx, dy] : null;
+    const write = wbTransformPathD.translator.write;
+    const x100 = Math.round(dx * 100), y100 = Math.round(dy * 100);
+    for (const rigid of origin.rigidEdges || []) {
+      if (!rigid.el.isConnected) { wbUpdateMapEdges([rigid.edge]); continue; }
+      //: Drawn by hand, as `wbUpdateMapEdges` marks it: the render's cache no
+      //: longer holds what is on screen.
+      rigid.el._wbMoved = true;
+      rigid.el.setAttribute("d", rigid.at(dx, dy));
+      rigid.el._wbHitTwin?.setAttribute("d", rigid.hitAt(dx, dy));
+      for (const point of rigid.points) {
+        point.dot.setAttribute(point.x, write(point.x0 + x100));
+        point.dot.setAttribute(point.y, write(point.y0 + y100));
+      }
     }
   }
 

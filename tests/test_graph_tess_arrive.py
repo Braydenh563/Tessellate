@@ -1,4 +1,6 @@
-"""L-graph-10: a new note's cell in the Tessellation view settles like the logo's third cell.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+L-graph-10: a new note's cell in the Tessellation view settles like the logo's third cell.
 
 The emblem's `emblem-arrive` keyframes (css/03-dashboard-widgets.css): from
 translate(7%, -7%) rotate(-10deg) at 0, through (-0.8%, 0.8%) 1.5deg at 72%,

@@ -1,4 +1,6 @@
-"""L-graph-17: leaving focus puts the whole map back where it was.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+L-graph-17: leaving focus puts the whole map back where it was.
 
 Measured with a 2,000-note map (focus on one note, then back to every note,
 Playwright, 9 s settles): before, notes moved up to 755 px (mean 215); after,

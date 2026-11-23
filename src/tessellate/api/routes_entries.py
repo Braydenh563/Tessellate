@@ -576,7 +576,12 @@ def _settle_filed_entry(session, entry, entry_id: int, late, category, confidenc
 
 def _embed_and_tidy(session, entry, entry_id: int, filed_by, run) -> None:
     """Embed the settled note, look for a near duplicate and run Tidy's
-    automatic reviews (its tag suggestions are kept before it settles)."""
+    automatic reviews (its tag suggestions are kept before it settles).
+
+    Off the request path only: Tidy's reviews run inline here, so the one
+    caller is the filing job's worker (`_file_entry_in_background`, jobstore
+    "file-entry"); a route calling this would hold its request for them
+    (`tests/test_kept_suggestions.py`)."""
     deps.store_quietly(session, entry)
     duplicate = _find_near_duplicate(session, entry)
     if duplicate is not None:
@@ -942,6 +947,26 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # content may already be encrypted at rest, and this is the plaintext
     # that was actually just submitted, before that happens.
     _process_committed_media(session, body.content)
+    # Filed on the request: Tidy's switched-on reviews run after it, as the
+    # background pass runs them for a deferred note (L392: only that pass
+    # called them, so a note filed with no model never did). Off the request
+    # and in their own session (review 5899359161): inline, a failing review
+    # rolled back the request's session and the save waited on every review.
+    if not defer:
+        jobs.future("tidy", _tidy_in_background, session.info.get("workspace_id") or "default")
+
+
+def _tidy_in_background(workspace_id: str) -> None:
+    """Tidy's switched-on reviews for a note filed on its request, in the note's space."""
+    from tessellate.core.database import impersonate_workspace
+    from tessellate.entry import tidy
+
+    try:
+        with deps.get_db().session() as session:
+            with impersonate_workspace(session, workspace_id):
+                tidy.run_automatic(session)
+    except Exception:
+        logger.warning("automatic tidy after a save failed", exc_info=True)
 
 
 def _starts_sealed(session: Session, body: EntryCreate) -> tuple[bool, bool]:

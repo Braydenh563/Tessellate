@@ -1,4 +1,6 @@
-"""L263: the converted draw.io stencils draw their lines as wide as draw.io does. A stencil's `strokewidth="inherit"`
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+L263: the converted draw.io stencils draw their lines as wide as draw.io does. A stencil's `strokewidth="inherit"`
 takes the cell's strokeWidth, 1 by default; the .drawio import makes a board width of twice draw.io's
 (`whiteboard-interchange.js`, `strokeWidth * 2`), so an inherit stencil carries width 2 and the library's shape and the same
 shape read from a .drawio file match. A stencil with a fixed strokewidth keeps its own (twice it, at least 2)."""

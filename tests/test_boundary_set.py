@@ -1,4 +1,6 @@
-"""A boundary round a lasso'd set of topics (MINDMAP_PLAN 12.2 item 1, decision 19 extended)."""
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+A boundary round a lasso'd set of topics (MINDMAP_PLAN 12.2 item 1, decision 19 extended)."""
 
 from tests._app_js import frontend_text
 import json

@@ -58,7 +58,7 @@ def test_the_ledger_is_never_sent_anywhere():
 
 
 def test_simple_mode_hides_three_tabs_and_keeps_four():
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
     rule = css.split(':root[data-simple="on"] #tab-bar button[role="tab"]', 1)[1].split("}", 1)[0]
     hidden = set(re.findall(r'\[data-tab="(\w+)"\]', rule))
     assert hidden == {"graph", "timeline", "reminders"}

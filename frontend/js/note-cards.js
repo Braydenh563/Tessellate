@@ -35,13 +35,19 @@ function answerTags(entry, body) {
 //: gzip ratchet). The svg comes back empty at once, so every caller can class and
 //: place it, and the drawing lands in it when the file is in (a microtask later
 //: once it is). An empty board draws the empty state there, not nothing.
-function mapPreview(board, { size = "card" } = {}) {
+//: `crop`: a tall map fills the box from its centre (the dashboard, L778).
+function mapPreview(board, { size = "card", crop = false } = {}) {
   //: The stored thumbnail (board-raster.js, lazy) when this board has a current one.
-  if (board?.thumb_v && window.mapRaster) return mapRaster(board, size);
+  if (board?.thumb_v && window.mapRaster) {
+    const img = mapRaster(board, size);
+    //: Through the CSSOM: the boot stylesheets are at their cap, and CSP refuses a style attribute.
+    if (crop) img.style.objectFit = "cover";
+    return img;
+  }
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", `board-minimap board-minimap-${size}`);
   svg.setAttribute("aria-hidden", "true");
-  ensureModule("mapPreview").then((ok) => ok && mapPreviewDraw(svg, board, size));
+  ensureModule("mapPreview").then((ok) => ok && mapPreviewDraw(svg, board, size, { crop }));
   return svg;
 }
 
@@ -340,7 +346,16 @@ async function binNoteWithUndo(entry) {
   const rows = list ? entryListItems(list) : [];
   const at = rows.findIndex((row) => row.dataset.id === String(entry.id));
   const heirId = (rows[at + 1] || rows[at - 1])?.dataset.id;
+  //: **A row that goes fades out first** (L462, the removal half of ledger
+  //: 1538): the list redraws whole, so the row it is leaving fades while the
+  //: delete is sent, and the redraw takes it away. `--ui-slow` is 0s under
+  //: reduced motion, so there nothing plays. Script, not a class: the boot
+  //: sheet is at its cap.
+  const leaving = rows[at];
+  const leaveMs = leaving ? parseFloat(getComputedStyle(leaving).getPropertyValue("--ui-slow")) * 1000 || 0 : 0;
+  const faded = leaveMs ? leaving.animate([{ opacity: 1 }, { opacity: 0 }], { duration: leaveMs, easing: "ease-in", fill: "forwards" }).finished.catch(() => {}) : null;
   await api(`/entries/${entry.id}`, { method: "DELETE" });
+  await faded;
   await refreshEntries([entry.id]);
   const held = document.activeElement;
   if (at >= 0 && (!held || held === document.body || !held.isConnected)) {
@@ -371,7 +386,7 @@ let notesSpanMemo = { list: null, many: false };
 //: six of ten seeded cards wrapped, and the time sat on a line of its own on
 //: some and beside the facts on others. The line is `nowrap`; what does not
 //: fit folds, from the end, into one "+N" chip: suggestions first, then tags.
-//: The other facts ellipsise if it is still too long (08-consistency.css).
+//: The other facts ellipsise if it is still too long (a component file (08-consistency.css until UI plan 13b)).
 //: Every line on a resize is reset in one pass, read in one layout and folded
 //: in a third, so a list of a hundred cards costs two layouts, not a hundred.
 const noteMetaFit = new ResizeObserver((seen) => fitNoteMetas(seen.map((s) => s.target)));

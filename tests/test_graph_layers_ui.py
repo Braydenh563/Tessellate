@@ -1,4 +1,6 @@
-"""The Graph UI asks for the document and entity layers in the map and the trace (L-graph-14)."""
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+The Graph UI asks for the document and entity layers in the map and the trace (L-graph-14)."""
 
 from __future__ import annotations
 

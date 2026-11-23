@@ -1,4 +1,6 @@
-"""Inline `[text](url)` links in a map topic's text (L375): drawn by
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Inline `[text](url)` links in a map topic's text (L375): drawn by
 `wbMapInlineText` as real anchors for http, https and mailto addresses only,
 so a `javascript:` or `data:` address stays the words typed. A plain click
 selects the topic as on any other; Ctrl/Cmd or a topic already selected opens

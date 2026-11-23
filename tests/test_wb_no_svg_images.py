@@ -1,4 +1,6 @@
-"""No SVG reaches a board as an image object (L-whiteboard-39 closed as moot by fact).
+"""Source text: the routes run through the test client; the page half runs only in a browser (no DOM here), so it is checked as source text.
+
+No SVG reaches a board as an image object (L-whiteboard-39 closed as moot by fact).
 
 An SVG is markup that can run script, and `/media/` serves from the app's own origin, so it never
 takes one. Each way a picture gets onto a board is checked here, so "there is no SVG image to

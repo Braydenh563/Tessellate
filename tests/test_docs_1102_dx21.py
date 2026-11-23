@@ -33,7 +33,7 @@ def test_a_read_task_box_is_the_live_views_box_with_its_press_strip():
     assert "box.click()" in wire, "a press on the strip is forwarded to its box"
     assert 'querySelectorAll("li.md-task input[type=checkbox]")' in wire
     # The strip is never under 24px tall, and the struck-through rule finds a boxed input.
-    editor = _css("09-editor.css")
+    editor = _css("09-editor.css") + _css("library-lazy.css")  # L-ui-modernisation-31: moved rules
     assert "height: max(1.6em, 24px);" in editor
     assert "#doc-preview .md-task:has(input:checked) {" in editor
     # One box: the old Read-only native-box rule is gone.

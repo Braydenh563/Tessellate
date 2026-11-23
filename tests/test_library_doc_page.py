@@ -1,4 +1,6 @@
-"""L-documents-54: the Library Documents row's page (heading and opening lines), from the list's own summary."""
+"""Source text: the row's page is drawn by browser code with no runner here, so it and its CSS are read as text.
+
+L-documents-54: the Library Documents row's page (heading and opening lines), from the list's own summary."""
 
 from __future__ import annotations
 

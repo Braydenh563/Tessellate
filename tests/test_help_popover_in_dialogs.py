@@ -12,6 +12,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import app_js_text, frontend_text
+from tests._css_paths import FORMER_10, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -55,7 +56,7 @@ def test_1419_a_help_popover_fades_out_before_it_goes_home():
     body = _fn(frontend_text("menus.js"), "wireHelpPopover")
     assert "afterMenuExit(panel, () => {" in body
     assert "clearTimeout(panel._exitTimer);" in body
-    assert re.search(r"\.help-popover\.hidden,\s*\.action-menu\.hidden \{", (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8"))
+    assert re.search(r"\.help-popover\.hidden,\s*\.action-menu\.hidden \{", sheets(*FORMER_10))
 
 
 # Escape closes the popover and nothing else (dashcls-1031).

@@ -15,7 +15,7 @@
 //   is told nothing. A tab that says why, or shows its other parts, passes.
 // ONLY=/entries,/tags narrows the routes; LIMIT caps them (default 60).
 // Exit 1 when anything is found.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const PW = 'testpassword123';

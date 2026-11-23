@@ -1,4 +1,6 @@
-"""W34 "Incremental crossing count per turned category": at 2,000 notes the
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+W34 "Incremental crossing count per turned category": at 2,000 notes the
 crossing count was 96% of the untangle pass and the pass gained nothing.
 Measured with the shipped worker under node (`scratchpad/hub/size.py`, gain as a
 share of the crossings, 1.9 links a note, seven categories):

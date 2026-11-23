@@ -1,4 +1,6 @@
-"""INBOX 827 L2: the Recordings empty state records and imports (sweep `l12.js`: two buttons, an icon, two lines)."""
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+INBOX 827 L2: the Recordings empty state records and imports (sweep `l12.js`: two buttons, an icon, two lines)."""
 
 from __future__ import annotations
 

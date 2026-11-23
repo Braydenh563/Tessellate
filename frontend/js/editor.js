@@ -240,6 +240,8 @@ if (document.readyState === "loading") {
   editorHintAllPlaceholders();
 }
 document.addEventListener("focusin", (event) => editorHintPlaceholder(event.target), true);
+//: And as each lazy surface is built, so a box in it says so before it is focused (the Documents box did not).
+for (const surface of ["notes", "documents", "chat", "quickNote"]) onSurface(surface, editorHintAllPlaceholders);
 
 //: And warmed on focus, so the bundle is usually already there by the time
 //: anything is typed. Focusing an editing surface is the earliest honest
@@ -2131,6 +2133,16 @@ function selectionBarHide() {
 }
 
 function selectionBarShow(textarea) {
+  //: **A note box with its own bar gets no second one** (UI_MODERNISATION 13.2,
+  //: L-ui-modernisation-39: the bar, the selection bar, the inline AI and the
+  //: slash menu were four surfaces for one task). Capture's strip and the edit
+  //: form's clone carry every action this bar had (Turn into holds Heading and
+  //: Quote, Ask is the strip's own button); a note box with no strip (the quick
+  //: note, the capture card) keeps this one. False tells a caller it stood down.
+  if (editorSurfaceKind(textarea) === "note" && document.querySelector(`[data-md-target="${textarea.id}"]`)?.getClientRects().length) {
+    selectionBarHide();
+    return false;
+  }
   const bar = selectionBarElement();
   selectionBarState.textarea = textarea;
   //: Shown only where it can run. A control that is present and refuses is

@@ -19,26 +19,29 @@ from tessellate.core import jobs, model_gate
 def test_background_waits_for_an_interactive_call_and_then_goes():
     released = threading.Event()
 
+    entered, hold = threading.Event(), threading.Event()
+
     def chat() -> None:
         with model_gate.interactive():
-            time.sleep(0.4)
+            entered.set()
+            hold.wait(10)
         released.set()
 
     thread = threading.Thread(target=chat)
     thread.start()
-    time.sleep(0.05)
-    started = time.monotonic()
+    assert entered.wait(10)
+    threading.Timer(0.2, hold.set).start()
+    # Ordered, not timed (L-general-70): the way was clear only once the chat had left.
     assert model_gate.yield_to_interactive(timeout=5)
-    waited = time.monotonic() - started
+    assert released.is_set() or not model_gate.interactive_in_flight()
     thread.join()
-    assert released.is_set() and waited >= 0.2
 
 
 def test_background_gives_up_waiting_rather_than_starving():
     with model_gate.interactive():
-        started = time.monotonic()
+        # The False is the proof (L-general-70): a wait that ignored its timeout
+        # would still be blocked on the call this block holds open.
         assert model_gate.yield_to_interactive(timeout=0.2) is False
-        assert time.monotonic() - started < 2
 
 
 def test_a_model_lane_job_waits_for_the_chat_turn():

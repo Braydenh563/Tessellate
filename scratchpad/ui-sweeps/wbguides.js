@@ -46,8 +46,8 @@ const { check, summary } = checker();
       if (i === steps) {
         await page.waitForTimeout(60);
         seen = await page.evaluate(() => ({
-          spacing: document.querySelectorAll("#wb-align-guides .wb-align-guide-spacing").length,
-          edge: document.querySelectorAll("#wb-align-guides .wb-align-guide-edge").length,
+          spacing: document.querySelectorAll(".wb-align-guides .wb-align-guide-spacing").length,
+          edge: document.querySelectorAll(".wb-align-guides .wb-align-guide-edge").length,
         }));
       }
     }
@@ -61,7 +61,7 @@ const { check, summary } = checker();
   const box = await boxOf(ids[2]);
   check("while dragging, a spacing mark pair and an edge line show", seen.spacing === 2 && seen.edge >= 1, seen);
   check("the shape lands on the row's spacing and top edge", Math.abs(box.minX - 280) < 0.6 && Math.abs(box.minY - 0) < 0.6, box);
-  const gone = await page.evaluate(() => document.querySelectorAll("#wb-align-guides line").length);
+  const gone = await page.evaluate(() => document.querySelectorAll(".wb-align-guides line").length);
   check("the guides go when it lands", gone === 0, gone);
 
   // Put it back and drag with Alt: no snap.

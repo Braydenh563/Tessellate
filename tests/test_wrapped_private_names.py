@@ -1,4 +1,6 @@
-"""A wrapped board file's own names stay its own: a name declared inside a file's
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+A wrapped board file's own names stay its own: a name declared inside a file's
 `(() => { ... })()` wrapper and read by another file has to be on that file's
 `Object.assign(window, {...})` list, or the other file throws when it runs.
 

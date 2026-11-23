@@ -68,16 +68,60 @@
       wasFull: host.classList.contains("wb-fullscreen"),
       camera: d3.zoomTransform(container),
       focus: document.activeElement,
+      //: The tool's cursor is inline (`updateWbCursor`), which no sheet rule passes; lifted
+      //: while presenting so the slide's own cursor rules apply, and put back after.
+      cursor: container.style.cursor,
     };
+    container.style.cursor = "";
     toggleWhiteboardFullscreen(true);
     wbPresentLaserButton();
     host.classList.add("wb-presenting");
-    document.getElementById("wb-present-bar")?.classList.remove("hidden");
+    const folded = wbPresentFolded();
+    wbPresentApplyFold(folded);
+    host.addEventListener("pointermove", wbPresentCursorWake);
+    wbPresentCursorWake();
     //: After the chrome has gone, so the frame is fitted to the room it has.
     requestAnimationFrame(() => {
       wbPresentShow(0);
-      document.getElementById("wb-present-next")?.focus({ preventScroll: true });
+      document.getElementById(folded ? "wb-present-handle" : "wb-present-next")?.focus({ preventScroll: true });
     });
+  }
+
+  //: **The cursor and the bar while presenting** (the owner, 2026-11-22). Over the slide the cursor is
+  //: the plain arrow, never an item's hover cursor, and it hides once the mouse rests, back on the next
+  //: move, the way a slideshow does; over the bar it is always the normal cursor (the bar is outside the
+  //: canvas, so the rule never reaches it). H or the bar's caret folds the bar to a small handle that
+  //: brings it back; the choice is kept in this browser.
+  const WB_PRESENT_FOLD_KEY = "wb-present-bar-folded";
+  const WB_PRESENT_CURSOR_REST_MS = 1500;
+
+  function wbPresentCursorWake() {
+    const host = document.getElementById("library-view-whiteboard");
+    if (!host) return;
+    host.classList.remove("wb-cursor-rest");
+    clearTimeout(wbPresentCursorWake.timer);
+    if (!wbPresent) return;
+    wbPresentCursorWake.timer = setTimeout(() => {
+      if (wbPresent) host.classList.add("wb-cursor-rest");
+    }, WB_PRESENT_CURSOR_REST_MS);
+  }
+
+  function wbPresentFolded() {
+    return prefs.get(WB_PRESENT_FOLD_KEY, "0") === "1";
+  }
+
+  function wbPresentApplyFold(folded) {
+    document.getElementById("wb-present-bar")?.classList.toggle("hidden", folded);
+    document.getElementById("wb-present-handle")?.classList.toggle("hidden", !folded);
+  }
+
+  function wbPresentFold(folded = !wbPresentFolded()) {
+    prefs.set(WB_PRESENT_FOLD_KEY, folded ? "1" : "0");
+    wbPresentApplyFold(folded);
+    //: The frame takes the room the bar gave back, or gives it up again.
+    if (wbPresent) wbPresentShow(wbPresent.at);
+    const moveFocus = document.activeElement?.closest?.("#wb-present-bar, #wb-present-handle");
+    if (moveFocus) document.getElementById(folded ? "wb-present-handle" : "wb-present-fold")?.focus({ preventScroll: true });
   }
 
   function wbPresentShow(index) {
@@ -290,7 +334,7 @@
     const button = smallButton("ph:cursor-click", "Laser pointer (L)", () => {});
     button.id = "wb-present-laser";
     button.setAttribute("aria-pressed", "false");
-    document.getElementById("wb-present-end")?.before(button);
+    (document.getElementById("wb-present-fold") || document.getElementById("wb-present-end"))?.before(button);
     wbLaser.menu();
   }
 
@@ -362,15 +406,21 @@
 
   function wbStopPresenting() {
     if (!wbPresent) return;
-    const { wasFull, camera, focus } = wbPresent;
+    const { wasFull, camera, focus, cursor } = wbPresent;
     wbPresent = null;
     wbPresentLaser(false);
+    const board = wbInstances.container();
+    if (board) board.style.cursor = cursor || "";
     wbMapEndStudy();
     wbMapBuild.end();
     closeActionMenus();
     document.getElementById("wb-present-count")?.replaceChildren();
     document.querySelector(".wb-present-page")?.remove();
-    document.getElementById("library-view-whiteboard")?.classList.remove("wb-presenting");
+    const host = document.getElementById("library-view-whiteboard");
+    host?.classList.remove("wb-presenting");
+    host?.removeEventListener("pointermove", wbPresentCursorWake);
+    wbPresentCursorWake();
+    wbPresentApplyFold(false);
     document.getElementById("wb-present-bar")?.classList.add("hidden");
     if (!wasFull) toggleWhiteboardFullscreen(false);
     //: Back to where the board was looked at from before.
@@ -411,7 +461,7 @@
     event.stopImmediatePropagation();
     //: Enter and Space on a focused bar button press that button, here rather
     //: than by the browser: the board's own Space (pan) would cancel it.
-    const button = (event.key === "Enter" || event.key === " ") && event.target.closest?.("#wb-present-bar button");
+    const button = (event.key === "Enter" || event.key === " ") && event.target.closest?.("#wb-present-bar button, #wb-present-handle");
     if (button) {
       if (!button.disabled) button.click();
       return;
@@ -424,6 +474,7 @@
     }
     if (event.key === "Escape") wbStopPresenting();
     else if (event.key === "l" || event.key === "L") wbPresentLaser();
+    else if (event.key === "h" || event.key === "H") wbPresentFold();
     else if (event.key === "Home") wbPresentShow(0);
     else if (event.key === "End") wbPresentShow(wbPresent.steps.length - 1);
     else if (step) wbPresentShow(wbPresent.at + step);
@@ -431,8 +482,12 @@
 
   //: The bar's three, by delegation: the script can run before the bar is parsed.
   document.addEventListener("click", (event) => {
-    const button = event.target.closest?.("#wb-present-bar button");
+    const button = event.target.closest?.("#wb-present-bar button, #wb-present-handle");
     if (!button || !wbPresent) return;
+    if (button.id === "wb-present-fold" || button.id === "wb-present-handle") {
+      wbPresentFold(button.id === "wb-present-fold");
+      return;
+    }
     if (button.id === "wb-present-prev") wbPresentShow(wbPresent.at - 1);
     else if (button.id === "wb-present-next") wbPresentShow(wbPresent.at + 1);
     else if (button.id === "wb-present-end") wbStopPresenting();

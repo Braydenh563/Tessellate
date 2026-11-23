@@ -1,4 +1,6 @@
-"""Pie charts for the dashboard (L-world-class-179). The chart recipe
+"""Source text: the chart code is lifted from the script text and run in node, as the unit suite has no browser to drive.
+
+Pie charts for the dashboard (L-world-class-179). The chart recipe
 (DESIGN.md "A chart answering a question", ask-chart.js) gains kind "pie", and
 the dashboard's Category mix widget draws the category counts with it.
 Measured in the app (scratchpad sweep pie.js, a 340 px widget, eight

@@ -113,6 +113,12 @@ PROP_ACTS: dict[str, tuple[Spec, bh.Activity, int]] = {
         _act("sit", (30.0, 60.0), ((0, 1, 1, 0), (0.1, 1, 0.97, 0.05), (0.9, 1, 0.97, 0.05), (1, 1, 1, 0)), (("rest", -0.15), ("curiosity", -0.1)), "content"),
         2,
     ),
+    #: L-ui-modernisation-41: the app's `chair` (a chair pulled up and sat on), drawn under the seated figure. Weight and length are the catalogue's (`act.chair`).
+    "sit_chair": (
+        Spec("chair", 0.3, 2, "content", (0.0, 0.84), under=True),
+        _act("sit", (20.0, 40.0), ((0, 1, 1, 0), (0.1, 1, 0.98, 0.02), (0.9, 1, 0.98, 0.02), (1, 1, 1, 0)), (("rest", -0.15), ("comfort", -0.2)), "sleepy"),
+        1,
+    ),
 }
 #: Acts with no prop that the app has and the desk had not.
 #: What a presence spell (INBOX 1692) uses that the short acts do not: a sky, a blanket, a plant. Weight 0: the mind never
@@ -127,7 +133,8 @@ SPELL_ACTS: dict[str, tuple[Spec, bh.Activity]] = {
         _act("sit", (60.0, 120.0), ((0, 1, 1, 0), (0.1, 1, 0.96, 0.02), (0.9, 1, 0.96, 0.02), (1, 1, 1, 0)), (("rest", -0.5),), "sleepy"),
     ),
     "water_plant": (
-        Spec("plant", 1.0, 4, "content", (0.34, 0.74)),
+        #: L-ui-modernisation-42: under the figure, so its tail curl lies over the pot's lower edge and holds it (the app's pot in the tail curl).
+        Spec("plant", 1.0, 4, "content", (0.30, 0.70), under=True),
         _act("stand", (60.0, 120.0), ((0, 1, 1, 0), (0.1, 1.01, 0.99, 0.04), (0.9, 1.01, 0.99, 0.04), (1, 1, 1, 0)), (("play", -0.15),), "curious"),
     ),
 }
@@ -138,6 +145,19 @@ WIND_SPECS: dict[str, Spec] = {
     "gust": Spec("gust", 6.0, 4, "", (0.0, 0.5)),
     "spiral": Spec("spiral", 8.0, 4, "", (0.0, 0.5)),
     "eddy": Spec("eddy", 6.0, 4, "", (0.0, 0.92)),
+}
+#: What the notebook's reactions wear (L-ui-modernisation-11, the app's `nmp-glasses`, the `hide` hands and the speech bubble): reading
+#: glasses on a long note, both hands over the eyes for a private one, a bubble of dots for a remark (the feed carries no
+#: words, so the desk's is wordless). Reaction acts, not prop acts: `view` and `draw` look here, the mind never picks them.
+#: `at` is the eyes' height, about a third of the figure from its top, and a little left of its middle.
+REACT_PROPS: dict[str, Spec] = {
+    "read_glasses": Spec("glasses", 1.0, 2, "", (-0.035, 0.33)),
+    "cover_eyes": Spec("hands", 2.0, 2, "", (-0.035, 0.33)),
+    "remark_say": Spec("bubble", 2.5, 3, "", (0.3, 0.04)),
+}
+#: Acts the mind has already that gain a prop (L-ui-modernisation-42): the nap curled on a note card, drawn under the sleeper.
+ACT_PROPS: dict[str, Spec] = {
+    "card_nap": Spec("notecard", 0.3, 2, "", (0.0, 0.86), under=True),
 }
 PLAIN_ACTS: dict[str, tuple[bh.Activity, int, str]] = {
     "hum": (_act("stand", (4.0, 7.0), ((0, 1, 1, 0), (0.25, 1, 1.01, 0.04), (0.75, 1, 1.01, -0.04), (1, 1, 1, 0)), (("play", -0.15),), "happy"), 3, "content"),
@@ -153,7 +173,7 @@ DOING = {
     "read_map": "reading a map", "hold_lantern": "holding a lantern", "lift_weights": "lifting weights", "sip_tea": "sipping tea",
     "write_journal": "writing in a journal", "watch_stars": "watching the stars", "blanket_nap": "napping under a blanket",
     "water_plant": "watering a plant", "stargaze": "stargazing", "daydream": "daydreaming", "puzzle": "working on a puzzle",
-    "eat_dinner": "eating dinner", "blow_bubbles": "blowing bubbles", "knit_starlight": "knitting a strand of starlight",
+    "eat_dinner": "eating dinner", "sit_chair": "sitting on a chair", "card_nap": "napping on a note card", "blow_bubbles": "blowing bubbles", "knit_starlight": "knitting a strand of starlight",
 }
 #: Act name -> the face it wears for its length (the props' and the plain ones'), added to `faces.ACT_FACES`.
 _REGISTERED: set[str] = set()
@@ -185,7 +205,7 @@ def _add(name: str, act: bh.Activity, weight: int, face: str) -> None:
 def spec_of(act: str | None) -> Spec | None:
     if act in PROP_ACTS:
         return PROP_ACTS[act][0]
-    return SPELL_ACTS[act][0] if act in SPELL_ACTS else None
+    return SPELL_ACTS[act][0] if act in SPELL_ACTS else ACT_PROPS.get(act or "")
 
 
 def _fetch(length: float) -> float:
@@ -194,7 +214,7 @@ def _fetch(length: float) -> float:
 
 def view(act: str | None, u: float, now_in: float, length: float = 0.0) -> tuple[str, int, int] | None:
     """The prop to draw for `act` at `u` (0 to 1 through it) and `now_in` seconds into it: `(name, phase, size)`."""
-    spec = spec_of(act)
+    spec = spec_of(act) or REACT_PROPS.get(act or "")
     if spec is None or not 0.0 <= u < 1.0:
         return None
     edge = min(u, 1.0 - u) / _fetch(length)
@@ -232,7 +252,7 @@ def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
     from PIL import Image, ImageDraw
 
     name, phase, size = prop
-    spec = next((sp_ for sp_, _a, _w in PROP_ACTS.values() if sp_.prop == name), None) or next((sp_ for sp_, _a in SPELL_ACTS.values() if sp_.prop == name), None) or WIND_SPECS.get(name)
+    spec = next((sp_ for sp_, _a, _w in PROP_ACTS.values() if sp_.prop == name), None) or next((sp_ for sp_, _a in SPELL_ACTS.values() if sp_.prop == name), None) or WIND_SPECS.get(name) or next((r for r in (*REACT_PROPS.values(), *ACT_PROPS.values()) if r.prop == name), None)
     if spec is None or frame.box[2] <= frame.box[0]:
         return frame
     lx, t, r, b = frame.box
@@ -250,6 +270,7 @@ def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
         "book": _book, "beanbag": _beanbag, "rod": _rod, "mat": _mat, "map": _map, "lantern": _lantern,
         "dumbbell": _dumbbell, "cup": _cup, "journal": _journal, "stars": _stars, "blanket": _blanket, "plant": _plant,
         "bowl": _bowl, "wand": _wand, "knit": _knit, "gust": _gust, "spiral": _spiral, "eddy": _eddy,
+        "glasses": _glasses, "hands": _hands, "bubble": _bubble, "chair": _chair, "notecard": _notecard,
     }[name](g, ax, ay, u, d, phase)
     whole = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     whole.paste(Image.frombytes("RGBA", (frame.width, frame.height), frame.bgra, "raw", "BGRa"), (m, m))
@@ -277,11 +298,75 @@ def _book(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
         g.polygon([(x, y - 3 * u), (x + w * 0.8, y - lift * u), (x + w * 0.8, y + h - lift * u), (x, y + h - 3 * u)], fill=(*CREAM, 235), outline=(*INDIGO, 255))
 
 
+def _glasses(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """Round lenses about the eyes with a bridge between them and a glint that shifts as the page does."""
+    gap, r = 4.6 * u, 4.3 * u
+    for sx in (-1, 1):
+        g.ellipse((x + sx * gap - r, y - r, x + sx * gap + r, y + r), fill=(*TEAL, 60), outline=(*INDIGO, 255), width=max(1, int(u * 0.9)))
+        gx = x + sx * gap - r * (0.45 - 0.2 * (phase % 2))
+        g.ellipse((gx - 0.7 * u, y - 0.6 * r - 0.7 * u, gx + 0.7 * u, y - 0.6 * r + 0.7 * u), fill=(*CREAM, 255))
+    g.line((x - gap + r, y - 0.3 * u, x + gap - r, y - 0.3 * u), fill=(*INDIGO, 255), width=max(1, int(u * 0.9)))
+
+
+def _hands(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """Both hands flat over the eyes, the fingers showing; the second phase lets one pair of fingers part (a peek)."""
+    gap, w, h = 4.6 * u, 4.6 * u, 4.0 * u
+    for sx in (-1, 1):
+        cx = x + sx * gap
+        g.ellipse((cx - w, y - h, cx + w, y + h), fill=(*LILAC, 255), outline=(*INDIGO, 255), width=max(1, int(u * 0.8)))
+        for k in (-1, 0, 1):
+            g.line((cx + k * 1.8 * u, y - h * 0.9, cx + k * 1.8 * u, y - h * 0.1), fill=(*INDIGO, 200), width=max(1, int(u * 0.5)))
+    if phase % 2:
+        g.line((x + gap - 1.8 * u, y - h * 0.9, x + gap - 1.8 * u, y + h * 0.4), fill=(*CREAM, 255), width=max(1, int(u * 0.9)))
+
+
+def _bubble(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A speech bubble by the head with three dots that fill in one after another (no words: the feed carries none)."""
+    w, h = 12 * u, 7 * u
+    g.rounded_rectangle((x - w, y - h, x + w, y + h), radius=4 * u, fill=(*CREAM, 255), outline=(*INDIGO, 255), width=max(1, int(u * 0.9)))
+    g.polygon([(x - d * 6 * u, y + h - 0.5 * u), (x - d * 10 * u, y + h + 5 * u), (x - d * 2 * u, y + h - 0.5 * u)], fill=(*CREAM, 255), outline=(*INDIGO, 255))
+    g.line((x - d * 5.4 * u, y + h - 0.2 * u, x - d * 2.6 * u, y + h - 0.2 * u), fill=(*CREAM, 255), width=max(1, int(u * 1.2)))
+    for i in range(3):
+        cx = x + (i - 1) * 6 * u
+        on = i <= phase % 3
+        g.ellipse((cx - 1.5 * u, y - 1.5 * u, cx + 1.5 * u, y + 1.5 * u), fill=(*(INDIGO if on else LILAC), 255))
+
+
 def _beanbag(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
     sag = 0.8 * (phase % 2)
     g.ellipse((x - 40 * u, y - 20 * u + sag * u, x + 40 * u, y + 12 * u), fill=(*TEAL, 255), outline=(*INDIGO, 255), width=max(1, int(u * 0.8)))
     g.arc((x - 30 * u, y - 15 * u, x + 30 * u, y + 6 * u), 200, 340, fill=(*CREAM, 200), width=max(1, int(u * 0.8)))
     g.line((x, y - 20 * u, x, y - 6 * u), fill=(*INDIGO, 160), width=max(1, int(u * 0.7)))
+
+
+WOOD = (176, 128, 92)
+
+
+def _chair(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A wooden chair seen from the side, its back behind the figure, its cushion giving a little each second beat."""
+    w = max(1, int(u * 0.8))
+    bx = x - d * 17 * u
+    g.rounded_rectangle((bx - 3 * u, y - 36 * u, bx + 3 * u, y + 3 * u), radius=1.5 * u, fill=(*WOOD, 255), outline=(*INDIGO, 255), width=w)
+    g.rounded_rectangle((bx - 4 * u, y - 38 * u, bx + 4 * u, y - 33 * u), radius=1.5 * u, fill=(*WOOD, 255), outline=(*INDIGO, 255), width=w)
+    for lx in (x - 17 * u, x + 15 * u):
+        g.rectangle((lx, y + 4 * u, lx + 2.6 * u, y + 17 * u), fill=(138, 96, 66, 255), outline=(*INDIGO, 255), width=w)
+    g.line((x - 15 * u, y + 12 * u, x + 15 * u, y + 12 * u), fill=(*INDIGO, 200), width=w)
+    g.rounded_rectangle((x - 21 * u, y, x + 21 * u, y + 5 * u), radius=1.8 * u, fill=(*WOOD, 255), outline=(*INDIGO, 255), width=w)
+    sag = 0.7 * (phase % 2)
+    g.rounded_rectangle((x - 17 * u, y - 3 * u + sag * u, x + 17 * u, y + 0.6 * u), radius=1.6 * u, fill=(*LILAC, 255), outline=(*INDIGO, 220), width=w)
+
+
+def _notecard(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A note card lying flat under the sleeper, a ruled line or two on it and a folded corner; its near edge lifts a hair on the second beat."""
+    w = max(1, int(u * 0.8))
+    lift = 0.8 * (phase % 2)
+    pts = [(x - 38 * u, y), (x + 34 * u, y - 3 * u), (x + 40 * u, y + 11 * u - lift * u), (x - 32 * u, y + 14 * u - lift * u)]
+    g.polygon([(px, py + 2.2 * u) for px, py in pts], fill=(*INDIGO, 90))
+    g.polygon(pts, fill=(*CREAM, 255), outline=(*INDIGO, 255))
+    for k, frac in enumerate((0.38, 0.66)):
+        ax, ay = x - 32 * u + 6 * u * frac, y + (3 + 8 * frac) * u
+        g.line((ax - 4 * u, ay - 1.2 * u, ax + (48 - 14 * k) * u, ay - 3.2 * u - lift * 0.3 * u), fill=(*TEAL, 230), width=w)
+    g.polygon([(x + 34 * u, y - 3 * u), (x + 28 * u, y - 2.6 * u), (x + 33 * u, y + 3 * u)], fill=(*LILAC, 255), outline=(*INDIGO, 255))
 
 
 def _rod(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:

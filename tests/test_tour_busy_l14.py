@@ -1,4 +1,6 @@
-"""A tour step that waits on a tab shows as a wait (L-general-14).
+"""Source text: the tour card's wait state is read from the script text, as the unit suite has no browser to drive; it was measured with toursteps.js.
+
+A tour step that waits on a tab shows as a wait (L-general-14).
 
 Measured with `scratchpad/ui-sweeps/toursteps.js` at 1440: Next on the chat
 section's last card loads the Graph tab (2.8 s), and for all of it the card

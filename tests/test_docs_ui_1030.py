@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from tests._css_unwrap import unwrap_all
 from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parent.parent / "frontend"
@@ -22,7 +23,7 @@ def test_download_is_the_first_row_of_the_more_menu_u32():
 
 def test_crumbs_and_counts_are_at_least_the_target_floor_u35():
     """WCAG 2.5.8: 22.8px crumbs and a 16.8px counts button measured before."""
-    crumb = _rule((ROOT / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8"), ".doc-crumb")
+    crumb = _rule(unwrap_all((ROOT / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8") + (ROOT / "css" / "library-lazy.css").read_text(encoding="utf-8")), ".doc-crumb")
     link = _rule((ROOT / "css" / "library-lazy.css").read_text(encoding="utf-8"), ".doc-statusbar-link")
     for rule in (crumb, link):
         assert re.search(r"min-height:\s*var\(--target-min\)", rule)

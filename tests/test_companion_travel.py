@@ -27,6 +27,7 @@ from pathlib import Path
 
 import pytest
 from tests._js_scope import unwrapped
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -149,7 +150,7 @@ def test_the_drag_moves_it_by_translate_only() -> None:
     drag_follow = AV[AV.index("const follow = () => {") : AV.index('face.addEventListener("pointerdown"')]
     assert "style.translate" in drag_follow
     assert not re.search(r"style\.(top|left)\b", drag_follow)
-    assert "will-change: translate" in (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert "will-change: translate" in sheets("07-whiteboard-misc.css", "characters-lazy.css")
 
 
 def test_travel_is_a_lazy_module_with_its_own_sheet() -> None:

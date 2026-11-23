@@ -383,4 +383,5 @@ echo "passed:  ${passed[*]:-none}"
 echo "failed:  ${failed[*]:-none}"
 echo "skipped: ${skipped[*]:-none}"
 echo "logs:    $LOG/<step>.log"
+echo "info:    $("$PY" scripts/source_text_tests.py 2>/dev/null || echo "source-text count unavailable")"
 [ "${#failed[@]}" = 0 ]

@@ -76,7 +76,7 @@ def test_the_lower_pose_boxes_hint_translate_and_the_stream_has_one_translate_lo
     # Animation of `translate` on a box that says `will-change: transform` is refused (bit 19);
     # two `translate` animations on one box (the stream's CSS drift and its flow path) are refused
     # (bit 6). Each refusal puts the whole figure's animations back on the main thread.
-    core = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    core = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
     rule = re.search(r"\.atl-lw > \.atl-lw-pose \{[^}]*\}", core)
     assert rule and "will-change: translate" in rule.group(0)
     for box in ("atl-lw-pose-neb", "atl-lw-pose-neb-front"):

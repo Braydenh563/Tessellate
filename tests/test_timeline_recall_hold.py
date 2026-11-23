@@ -1,4 +1,6 @@
-"""LEDGER L479: the On this day row no longer pushes the phone's list down 44px.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+LEDGER L479: the On this day row no longer pushes the phone's list down 44px.
 
 The chips are asked for a second after the rows, so on a phone they arrived
 into a hidden row and moved everything under it. The day's answer is

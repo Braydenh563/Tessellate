@@ -1,4 +1,6 @@
-"""Many notes become one draft document (L-graph-1): structure from the
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+Many notes become one draft document (L-graph-1): structure from the
 notes alone, no model."""
 
 from __future__ import annotations

@@ -25,6 +25,8 @@ from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
+from tests._css_unwrap import split_top
+
 ROOT = Path(__file__).resolve().parents[1]
 WB_JS = frontend_text("whiteboard.js")
 
@@ -113,7 +115,7 @@ def test_the_inverse_zoom_is_written_onto_the_grips_that_read_it() -> None:
     readers: set[str] = set()
     for selectors, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css_text):
         if "var(--wb-inv-zoom)" in body:
-            readers.update(s.strip() for s in selectors.split(","))
+            readers.update(split_top(selectors))
     listed = re.search(r"const WB_INV_ZOOM_GRIPS = \[(.*?)\];", WB_JS, re.S)
     assert listed
     grips = set(re.findall(r'"([^"]+)"', listed.group(1)))
@@ -122,3 +124,39 @@ def test_the_inverse_zoom_is_written_onto_the_grips_that_read_it() -> None:
     assert 'setProperty("--wb-inv-zoom"' not in sync
     publish = code(function_text("wbPublishInvZoom"))
     assert "replaceSync(" in publish and "adoptedStyleSheets" in publish
+
+
+def test_the_zoom_level_keeps_its_width_so_a_zoom_does_not_restyle_the_board() -> None:
+    """Source text: library-lazy.css gives the zoom dock's typeable level a fixed width.
+
+    L-ui-modernisation-61, traced on a 200-topic map (mapperf.js's ctrl-wheel
+    zoom): the level is a `field-sizing: content` input, so "85%" drew it 42px
+    and "100%" 50px; the dock's ResizeObserver then wrote `--wb-w-zoom` on
+    `#library-view-whiteboard`, an inherited custom property, and the browser
+    restyled all 4,306 elements of the board: 192ms and 120ms, the zoom's two
+    worst frames (216.7ms). A level as wide as "400%" never resizes its dock.
+    """
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.whiteboard-floating-panel \.wb-zoom-level \.value-field-input \{([^}]*)\}", css)
+    assert rule, "the zoom level's input has no width rule"
+    assert "min-inline-size: 5ch" in rule.group(1)
+
+
+def test_a_map_topics_hidden_action_row_is_not_restyled_by_a_zoom() -> None:
+    """Source text: the inverse zoom reaches a topic's action row only while it shows.
+
+    mapcpu at 500 topics (4x): each publish re-styled all 500 `.wb-map-actions`
+    rows and their link buttons (a style rule change on 1,000 elements, the
+    zoom's 60 to 80ms task), though a row is `visibility: hidden` unless its
+    topic is pointed at, selected or focused. The rule names those states, so a
+    zoom re-styles the one row on screen; a hidden row keeps the root's 1.
+    """
+    rules = function_text("wbInvZoomRules")
+    assert "...WB_INV_ZOOM_SHOWN]" in rules
+    shown = re.search(r"const WB_INV_ZOOM_SHOWN = \[(.*?)\];", rules, re.S)
+    assert shown
+    names = shown.group(1)
+    for state in (":hover", ".wb-selected", ":focus-visible", ".wb-map-actions:focus-within"):
+        assert state in names
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"(?m)^\.wb-map-actions \{\n  visibility: hidden;", css)

@@ -1,4 +1,6 @@
-"""L295 and L302: the Ctrl+K chord waits for its second key, and the keybindings
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L295 and L302: the Ctrl+K chord waits for its second key, and the keybindings
 sheet shows the keys of where it was opened (F11 is Step into only while a
 debug session is paused)."""
 

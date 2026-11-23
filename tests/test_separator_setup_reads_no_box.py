@@ -1,4 +1,6 @@
-"""L-documents-106: a resize grip's setup must not read a box (a forced layout of
+"""Source text: a forced layout is a browser cost with no runner here, so the setup is read as text for box reads.
+
+L-documents-106: a resize grip's setup must not read a box (a forced layout of
 the whole page at the Documents reveal, 110 ms); the observer reports it."""
 from pathlib import Path
 

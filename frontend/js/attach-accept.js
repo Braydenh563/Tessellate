@@ -1,4 +1,5 @@
-// attach-accept.js: the one list of files a note or a chat message takes, a file of its own so the
+// attach-accept.js: the one list of files a note or a chat message takes, and the work of a file
+// pasted, dropped or picked into a note box (`handleFileUpload.run`), a file of its own so the
 // boot scripts do not carry it: the chat input reads it when the Chat tab is built (wiring.js) and the
 // capture card's staging reads it when the card opens (capture-card.js), in the app and on the desk.
 

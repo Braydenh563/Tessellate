@@ -27,8 +27,11 @@ def test_a_narrow_sidebar_sheds_the_word_then_folds_the_icons_into_a_kebab():
     assert "container: doc-sidebar / inline-size" in DOCK
     fold = DOCK.split("@container doc-sidebar (max-width: 16rem)", 1)[1].split("\n}\n", 1)[0]
     assert ".toolbar-word" in fold
-    assert "#doc-new-template" in fold and "#doc-new-diagram" in fold and ".doc-head-more" in fold
-    assert ".doc-sidebar .doc-head-more {\n  display: none;" in DOCK
+    assert "#doc-new-template" in fold and "#doc-new-diagram" in fold
+    # The kebab's own two rules moved to library-lazy.css (L-ui-modernisation-51), the fold in range syntax.
+    lazy_fold = LAZY.split("@container doc-sidebar (width <= 16rem)", 1)[1].split("\n}\n", 1)[0]
+    assert ".doc-sidebar .doc-head-more" in lazy_fold
+    assert ".doc-sidebar .doc-head-more {\n  display: none;" in LAZY
 
 
 def test_the_kebab_presses_the_real_buttons_and_is_built_in_js():

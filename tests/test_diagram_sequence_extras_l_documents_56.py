@@ -1,4 +1,6 @@
-"""L-documents-56: sequence autonumber, box, create and destroy, and a rect's colour are the builder's own."""
+"""Source text: the sequence builder is browser code with no runner here, so it is read as text.
+
+L-documents-56: sequence autonumber, box, create and destroy, and a rect's colour are the builder's own."""
 
 from __future__ import annotations
 

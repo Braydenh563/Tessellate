@@ -1,4 +1,6 @@
-"""L331: a document's "Translate this passage" goes to the offline translator when it is installed."""
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L331: a document's "Translate this passage" goes to the offline translator when it is installed."""
 from __future__ import annotations
 
 from pathlib import Path

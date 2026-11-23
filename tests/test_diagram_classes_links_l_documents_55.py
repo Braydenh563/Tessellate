@@ -1,4 +1,6 @@
-"""L-documents-55: classDef, class and click are the model's own (classes, n.cls, n.href); unsafe targets stay kept."""
+"""Source text: the parser runs in node where it can; the unsafe-target guard's wiring in the browser file is read as text.
+
+L-documents-55: classDef, class and click are the model's own (classes, n.cls, n.href); unsafe targets stay kept."""
 
 from __future__ import annotations
 

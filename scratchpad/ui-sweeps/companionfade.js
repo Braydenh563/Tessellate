@@ -12,7 +12,7 @@ const { boot } = require("./lib.js");
 
 (async () => {
   const { browser, page } = await boot({ viewport: { width: Number(process.env.W || 1440), height: 900 }, reducedMotion: "reduce" });
-  await page.evaluate((k) => {
+  await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
     const b = $("avatar-buddy");
     b.value = k;

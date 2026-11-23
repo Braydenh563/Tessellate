@@ -106,7 +106,7 @@ async function idleRun() {
     const { browser, page } = await boot({ viewport: { width: 1440, height: 900 }, reducedMotion: state === 'reduced' ? 'reduce' : undefined });
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Performance.enable');
-    await page.evaluate(([k, st]) => {
+    await page.evaluate(async ([k, st]) => {
       localStorage.removeItem('nm-buddy-spots');
       if (st === 'appreduce') { localStorage.setItem('motion', 'reduced'); document.documentElement.dataset.motion = 'reduced'; }
       if (st === 'animoff') { localStorage.setItem('avatar-motion', 'off'); document.documentElement.dataset.avatarMotion = 'off'; }

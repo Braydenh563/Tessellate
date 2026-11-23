@@ -10,7 +10,7 @@ a pill label drawing a second surface inside a container that already has one:
    (38, 45, 61) in the head against (35, 39, 56) in the card beside it. A
    sticky head needs a ground only while content passes under it, so it is bare
    at rest and takes an opaque ground when it is stuck
-   (`@container scroll-state(stuck: ...)`, one recipe in 08-consistency.css).
+   (`@container scroll-state(stuck: ...)`, one recipe in 07-whiteboard-misc.css).
 2. A bare `<button>` inside a pill keeps the base `button` rule's
    `box-shadow: var(--shadow-accent-glow)` when its class resets only the
    `background`. The minimised panel's "Settings x" pill: both buttons carried
@@ -23,15 +23,17 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
 
 #: Sticky elements that are allowed to paint the card's own ground. May only
-#: shrink: a table head's sticky cells are not a box the recipe has been
-#: measured on (a `container-type` on a table cell), so it keeps its composited
-#: ground until it is.
-FROZEN_STICKY_CARD_GROUND = {".timeline-table thead th"}
+#: shrink, and is empty: the timeline table head was the last, and the recipe
+#: was measured on its cells (L-ui-modernisation-28: `container-type:
+#: scroll-state` on a `th` at 1440 dark, bare at rest, the opaque ground
+#: (30, 30, 28) once `#timeline-scroll` scrolls 400px).
+FROZEN_STICKY_CARD_GROUND: set[str] = set()
 
 #: The sticky elements the recipe makes bare at rest (heads stick to the top,
 #: the two feet to the bottom).
@@ -42,6 +44,7 @@ BARE_STICKY = {
     ".note-edit-foot",
     "#capture .capture-commit-row",
     ".agent-monitor > .monitor-header",
+    ".timeline-table thead th",
 }
 
 
@@ -75,14 +78,14 @@ def test_a_sticky_element_never_paints_the_cards_own_ground() -> None:
     found -= NOT_INSIDE_A_CARD
     assert found <= FROZEN_STICKY_CARD_GROUND, (
         "a sticky head or foot paints --card inside a card that paints it; use the "
-        f"stuck-ground recipe in 08-consistency.css: {sorted(found - FROZEN_STICKY_CARD_GROUND)}"
+        f"stuck-ground recipe in 07-whiteboard-misc.css: {sorted(found - FROZEN_STICKY_CARD_GROUND)}"
     )
     # The freeze only shrinks: a name that no longer offends is deleted from it.
     assert found >= FROZEN_STICKY_CARD_GROUND, sorted(FROZEN_STICKY_CARD_GROUND - found)
 
 
 def test_the_stuck_ground_recipe_covers_every_bare_sticky_element() -> None:
-    text = _strip((ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8"))
+    text = _strip(sheets("06-timeline-dialogs.css", "07-whiteboard-misc.css"))
     start = text.index("@supports (container-type: scroll-state)")
     recipe = text[start : start + 4000]
     assert "container-type: scroll-state" in recipe

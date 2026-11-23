@@ -1,4 +1,6 @@
-"""WHITEBOARD_PLAN.md holds no open work: `scripts/open_scan.py` lists nothing in it, and the LEDGER's counts cell for the
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+WHITEBOARD_PLAN.md holds no open work: `scripts/open_scan.py` lists nothing in it, and the LEDGER's counts cell for the
 whiteboard plan ("Plan file open") says so (2026-11-14 re-ground; what is left is LEDGER rows and BACKLOG entries)."""
 
 import re

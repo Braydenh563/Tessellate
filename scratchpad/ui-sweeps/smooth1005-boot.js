@@ -9,7 +9,7 @@
 // GATE=1 exits 1 when the boot's visible layout shift is 0.02 or more, or
 // the companion's head changes size by more than 2% between two frames
 // after it first shows (or it never shows).
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8860';
 const fs = require('fs');
 (async () => {

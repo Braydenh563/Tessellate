@@ -1,4 +1,6 @@
-"""Describe it (no model) for Gantt, pie, state, class and ER (L-documents-101).
+"""Source text: the composer's rule path is driven; the browser's Describe wiring has no runner here, so it is read as text.
+
+Describe it (no model) for Gantt, pie, state, class and ER (L-documents-101).
 
 The composer's rule path (`composer_mermaid`) made only a flowchart, a timeline and a mind map; for the five newer kinds
 `want` was empty, so a person on a pie chart got a flowchart of their words. Each case here is drawn by rule and then

@@ -63,8 +63,8 @@ def test_building_a_prefix_expression_is_not_slow():
     """Cheap, but it runs on every keystroke in the finder, so it is measured
     rather than assumed."""
     terms = [f"term{n}" for n in range(20)]
-    started = time.perf_counter()
+    started = time.process_time()
     for _ in range(1000):
         _match_expression(terms, [], [], "prefix")
-    elapsed = time.perf_counter() - started
+    elapsed = time.process_time() - started
     assert elapsed < 1.0, f"1000 expressions took {elapsed:.3f}s"

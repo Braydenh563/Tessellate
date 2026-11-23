@@ -47,8 +47,10 @@ WAVE_FRAMES = tuple(f"wave{i}" for i in range(WAVE_COUNT))
 #: and swung (`dangle`, and `kick0` and `kick1` thrown forward and back), the hang with one hand let go (`hang_one`)
 #: and the long sit with the eyes shut (`meditate`). Optional like the wave's: a set without them draws `EXTRA_FALLBACK`
 #: (the sit, the hang), and a companion made from the person's own name has none (`capture.CAPTURED`).
-EXTRA_FRAMES = ("dangle", "kick0", "kick1", "hang_one", "meditate")
-EXTRA_FALLBACK = {"dangle": "sit", "kick0": "sit", "kick1": "sit", "hang_one": "hang", "meditate": "sit"}
+EXTRA_FRAMES = ("dangle", "kick0", "kick1", "hang_one", "meditate", "hang_sloth", "hang_feet", "lean", "back_float")
+#: `hang_sloth` is the hang asleep by one hand and `hang_feet` the hang flipped (L-ui-modernisation-10). `lean` is the stand against a
+#: side edge (a side peek) and `back_float` the floater on its back in the air (L-ui-modernisation-41).
+EXTRA_FALLBACK = {"dangle": "sit", "kick0": "sit", "kick1": "sit", "hang_one": "hang", "meditate": "sit", "hang_sloth": "hang", "hang_feet": "hang", "lean": "stand", "back_float": "idle0"}
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
 #: `walk11`; the others are what the engine's states draw. `card0` and `card1` are the
 #: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
@@ -86,9 +88,9 @@ SPUN_KEEP = 6
 #: The sat figure with its eyes shut (INBOX 1670, 16:40Z: a sit had no blink). Not a shipped file: derived at
 #: load from `sit` with closed lids drawn over its eyes, so the frame set and its byte budget do not move.
 #: Asleep the eyes are already shut. `LID_EYES` is each look's two eyes as one box in shipped px on `stand`;
-#: the sit is a few px off it, found by matching the box.
+#: the sit is a few px off it, found by matching the box (re-found on the pose-arranged stand, L-ui-modernisation-152).
 LID_FRAME = "sitblink"
-LID_EYES = {"masculine": (110, 109, 155, 125), "feminine": (112, 110, 157, 126)}
+LID_EYES = {"masculine": (107, 110, 152, 126), "feminine": (108, 110, 153, 126)}
 LID_REACH = 6
 LID_INK = (44, 42, 112)
 DERIVED_FRAMES = (*SPIN_FRAMES, LID_FRAME)
@@ -773,7 +775,15 @@ FLOW_FIELDS = 5
 TAIL_Q = 8.0  # `behaviour.TAIL_Q`: steps a px in a tail view
 FLOW_WAIST = 0.5
 FLOW_CORE = (0.3, 0.6)
-FLOW_RIBBON = 0.8
+#: Where the ribbon and the rise (the terms that act above the waist) start to take a corner: further out than the core,
+#: since a mesh cell is a strand wide and its bilinear pass spreads a free corner's move over the whole cell, so a corner
+#: at 0.43 of the half width (the feminine stand's, 25 px from the core's edge) moved a pixel inside the core by 20 of 255
+#: where the test allows 16 (L-ui-modernisation-200). Full by 0.70 so the outer strands keep their ribbon.
+FLOW_TORSO_CORE = (0.45, 0.70)
+#: The ribbon is a share of the strand's lead, so it was 0.8 at `FLOW_TIP` 2.2 and is 0.5 at 3.5: the same px, since above the
+#: waist it bends the torso's edge (test_flow_1683's torso check, 15 of 255 at 2.2, 24 at 3.5 with 0.8, 16 with 0.5;
+#: L-ui-modernisation-100).
+FLOW_RIBBON = 0.5
 FLOW_Q = 8.0
 FLOW_GLINT = 0.30
 
@@ -803,9 +813,9 @@ def flow_offsets(flow: tuple[int, ...], edges: list[float], rows: list[int], box
             near = [flow[k * FLOW_FIELDS:(k + 1) * FLOW_FIELDS] for k in (j - 1, j) if 0 <= k < bands]
             tip, middle, rise = (sum(n[f] for n in near) / len(near) / FLOW_Q * scale for f in range(3))
             lead, curve = 4 * middle - tip, 2 * tip - 4 * middle  # v(u) = lead u + curve u^2: 0, middle, tip at 0, 1/2, 1
-            free = _smooth((abs(x - mid) / half - FLOW_CORE[0]) / (FLOW_CORE[1] - FLOW_CORE[0]))
-            ribbon = FLOW_RIBBON * free * (1 - u) * (lead / 2 + curve / 4)
-            dy = rise * u + 0.3 * rise * free * (1 - u)
+            top_free = _smooth((abs(x - mid) / half - FLOW_TORSO_CORE[0]) / (FLOW_TORSO_CORE[1] - FLOW_TORSO_CORE[0]))
+            ribbon = FLOW_RIBBON * top_free * (1 - u) * (lead / 2 + curve / 4)
+            dy = rise * u + 0.3 * rise * top_free * (1 - u)
             dx = lead * u + curve * u * u + ribbon if below else ribbon
             if room is not None:
                 dx, dy = max(-room[0], min(room[1], dx)), min(dy, room[2])

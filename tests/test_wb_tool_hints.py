@@ -1,4 +1,6 @@
-"""L-whiteboard-10: the first time a board tool is held on this device, one line says what it does; the
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+L-whiteboard-10: the first time a board tool is held on this device, one line says what it does; the
 dismissal is remembered per tool in prefs (`wb-tool-hint-<tool>`). Runs the module in node."""
 
 from __future__ import annotations

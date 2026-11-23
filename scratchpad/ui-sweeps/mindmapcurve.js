@@ -200,8 +200,11 @@ const READ = `(childId) => {
     await page.waitForTimeout(150);
     //: What pointing at the line alone does, before the pointer goes on to the dot: zoomed out (a phone) the mid-line
     //: `+` is 24px wide and covers the dot, so the pointer leaves the line on the way and only a selection reaches it.
+    //: The grips are built on that first hover (L-ui-modernisation-61), so the
+    //: dot is aimed at from this reading, not the one taken at rest.
     const byLine = await read(id);
-    await page.mouse.move(at.box.x, at.box.y);
+    const aim = byLine.box || at.box;
+    await page.mouse.move(aim.x, aim.y);
     await page.waitForTimeout(150);
     // Read again, with the pointer on it: the first reading is what the line
     // looks like at rest, and the point of this helper is what it looks like
@@ -225,6 +228,8 @@ const READ = `(childId) => {
   // The hover route, which is the one that needs nothing selected.
   const hovered = await grab(built.curved);
   await park();
+  // At rest again, now that pointing at it has built the handle.
+  const rested = await read(built.curved);
   // And the selection route, which is what a keyboard selection reaches.
   await select(built.curved);
   const woken = await read(built.curved);
@@ -255,9 +260,11 @@ const READ = `(childId) => {
 
   const moved = (a, b) => +Math.hypot(b.mid[0] - a.mid[0], b.mid[1] - a.mid[1]).toFixed(2);
 
-  check("a line's handle is drawn but inert until the line is pointed at",
-    resting.opacity === 0 && resting.pointer === "none" && resting.cx !== null,
-    `opacity ${resting.opacity}, pointer-events ${resting.pointer}, at ${resting.cx},${resting.cy}`);
+  //: Not built at all until first pointed at (L-ui-modernisation-61), and
+  //: invisible and inert at rest once it has been.
+  check("a line's handle is neither shown nor pressable until the line is pointed at",
+    resting.cx === null && rested.opacity === 0 && rested.pointer === "none" && rested.cx !== null,
+    `before ${resting.cx === null ? "not built" : "built"}; after opacity ${rested.opacity}, pointer-events ${rested.pointer}, at ${rested.cx},${rested.cy}`);
   check("pointing at the line reveals it, with nothing selected",
     hovered.byLine.opacity === 1 && hovered.byLine.pointer === "auto" && hovered.box.w > 8,
     `opacity ${hovered.opacity}, ${hovered.box.w}x${hovered.box.h}px at ${hovered.box.x},${hovered.box.y}, top element ${hovered.onTop}`);
@@ -265,8 +272,8 @@ const READ = `(childId) => {
     woken.opacity === 1 && woken.pointer === "auto",
     `opacity ${woken.opacity}, pointer-events ${woken.pointer}`);
   check("the mid-line + sits beside the handle, not on it, and stays on the line",
-    resting.plusGap >= 19 && resting.plusGap <= 30 && resting.plusOffLine < 1.5,
-    `${resting.plusGap} board units apart, + is ${resting.plusOffLine} off the line`);
+    rested.plusGap >= 19 && rested.plusGap <= 30 && rested.plusOffLine < 1.5,
+    `${rested.plusGap} board units apart, + is ${rested.plusOffLine} off the line`);
 
   check("dragging the handle reshapes the curve",
     curve.after.d !== curve.before.d && moved(curve.before, curve.after) > 60,

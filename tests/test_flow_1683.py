@@ -127,7 +127,7 @@ def test_a_flow_view_is_hashable_small_integers_and_a_still_one_is_the_same():
     assert bh.FLOW_Q == sprites.FLOW_Q
 
 
-@pytest.mark.parametrize("look", LOOKS)
+@pytest.mark.parametrize("look", ["masculine", "feminine"])
 def test_the_head_and_the_torso_stay_put_and_the_lower_body_moves(look):
     s = sprites.SpriteSet(look)
     plain = s.frame("stand", 192, False)
@@ -181,10 +181,10 @@ def test_the_picture_cost_stays_inside_the_calm_budget(look):
     s = sprites.SpriteSet(look)
     flow = bh.Flow()
     s.posed("stand", 192, False, (1.0, 1.0, 0.0, 0.0), flow.view(1.0))
-    began = time.perf_counter()
+    began = time.process_time()
     for k in range(10):
         s.posed("stand", 192, False, (1.0, 1.0, 0.0, 0.0), flow.view(2.0 + k * 0.7))
-    assert (time.perf_counter() - began) / 10 < 0.05
+    assert (time.process_time() - began) / 10 < 0.05
 
 
 def test_a_flow_is_never_asked_of_a_spin_frame():

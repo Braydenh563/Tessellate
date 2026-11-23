@@ -57,7 +57,9 @@ def test_the_characters_are_not_boot_scripts():
     assert len(boot) > 20, "the boot scripts were not found: has index.html moved?"
     for file in CHARACTER_FILES:
         assert file not in boot, f"{file} is back in the boot scripts"
-    assert 'characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"]' in ENTRIES
+    # The bundle carries its own stylesheet first (UI plan 13b moved the
+    # characters' rules out of the boot CSS); the three scripts stay lazy.
+    assert 'characters: ["/css/characters-lazy.css", "/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"]' in ENTRIES
     assert (JS / "characters-ready.js").read_text(encoding="utf-8").strip() == "charactersArrived();"
 
 

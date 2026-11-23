@@ -24,6 +24,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._css_unwrap import unwrap_all
 
 ROOT = Path(__file__).resolve().parent.parent
 WHITEBOARD_JS = ROOT / "frontend" / "js" / "whiteboard.js"
@@ -150,9 +151,12 @@ def test_the_fill_is_offered_in_the_topic_strip_and_drawn_as_a_tint():
     assert '"fill"' in keys, "back to the branch has to drop the fill too"
     assert "wb-map-filled" in js
 
-    css = MAP_CSS.read_text(encoding="utf-8")
+    css = unwrap_all(MAP_CSS.read_text(encoding="utf-8") + (MAP_CSS.parent / "library-lazy.css").read_text(encoding="utf-8"))
     rule = re.search(r"\.wb-map-node\.wb-map-filled \{(.*?)\}", css, re.S)
     assert rule and "var(--wb-branch)" in rule.group(1)
     # A core node's full-colour ground wins over the tint: source order at
     # equal specificity, so the fill rule has to come first.
-    assert css.index(".wb-map-node.wb-map-filled {") < css.index(".wb-map-node.wb-map-core {")
+    # The fill rule moved to library-lazy.css (L-ui-modernisation-51), after the boot core rule, so it
+    # names the core rule in a zero-specificity guard instead: the intent (core wins) has not moved.
+    raw = MAP_CSS.read_text(encoding="utf-8") + (MAP_CSS.parent / "library-lazy.css").read_text(encoding="utf-8")
+    assert css.index(".wb-map-node.wb-map-filled {") < css.index(".wb-map-node.wb-map-core {") or ".wb-map-node.wb-map-filled:where(:not(.wb-map-core))" in raw

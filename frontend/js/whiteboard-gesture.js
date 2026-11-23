@@ -431,6 +431,20 @@
   }
 
   async function wbSaveBulkMove(origin) {
+    //: A link that travelled by its group's transform (`wbApplyBulkMove`) is
+    //: written where it landed, the `d` a full recompute gives, and the
+    //: transform cleared, before anything below reads or replaces the paths.
+    if (origin.rigidAt) {
+      for (const rigid of origin.rigidLinks || []) {
+        if (!rigid.path.isConnected) continue;
+        rigid.group.removeAttribute("transform");
+        if (!rigid.state) origin.compileRigid(rigid);
+        if (rigid.state === "bad") { wbUpdateLinkedSketches(null, [rigid.pair]); continue; }
+        rigid.path.setAttribute("d", rigid.at(...origin.rigidAt));
+        rigid.hit?.setAttribute("d", rigid.hitAt(...origin.rigidAt));
+      }
+      origin.rigidAt = null;
+    }
     //: **And is rebuilt where the items landed, before the save goes out.** The
     //: translate above is a view of the drag, not the truth: the items' own
     //: coordinates have moved, so the outline has to be recomputed from them or

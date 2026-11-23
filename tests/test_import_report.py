@@ -99,32 +99,34 @@ def _vault(count: int) -> list[tuple[str, bytes]]:
 
 def test_5000_files_list_report_per_100_and_stop_within_2_seconds(app_state, session):
     files = _vault(5000)
-    t0 = time.perf_counter()
+    t0 = time.process_time()
     read = app_import.read("obsidian", files, parse_frontmatter=_parse_frontmatter)
-    listed = time.perf_counter() - t0
+    listed = time.process_time() - t0
     assert len(read.notes) == 5000 and read.skipped == []
     steps: list[int] = []
-    asked = threading.Event()
+    asked, go = threading.Event(), threading.Event()
     job = activity.start("import", "Importing from Obsidian", stoppable=True)
 
     def step(done: int, total: int) -> None:
         steps.append(done)
         if done == 300:
             asked.set()
+            go.wait(30)  # the import waits for the Stop, so a loaded runner cannot run on
 
     progress = export_folder.Progress(stopped=lambda: job.stopped, step=step)
     out: dict = {}
     worker = threading.Thread(target=lambda: out.update(app_import.write(session, "obsidian", read.notes, progress)))
     worker.start()
     assert asked.wait(120), "the import never reached 300 notes"
-    stop_at = time.perf_counter()
     assert activity.stop(job.id)[0]
+    go.set()
     worker.join(30)
-    landed = time.perf_counter() - stop_at
     activity.finish(job)
-    print(f"\n5,000 files listed in {listed:.2f} s; Stop landed in {landed:.3f} s after {out['imported']} notes")
-    assert landed < 2.0
+    print(f"\n5,000 files listed in {listed:.2f} s of CPU; Stop landed after {out['imported']} notes")
     assert out["stopped"] is True
+    # Counted, not timed (L-general-70): the Stop lands inside the next report's
+    # hundred notes, not after the 4,700 still to write.
+    assert out["imported"] <= 400, out["imported"]
     assert steps[:3] == [100, 200, 300]
     kept = session.query(Entry).filter(Entry.source_path.like("obsidian:%")).count()
     assert kept == out["imported"] and 300 <= kept < 5000

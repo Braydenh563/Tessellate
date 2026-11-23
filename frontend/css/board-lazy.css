@@ -74,11 +74,16 @@
 .wb-shape-caret {
   margin-left: -2px;
 }
-/* A finger needs 44px, not the 10px glyph (L259): the padding grows the caret's own box to the touch minimum (the toggle
-   grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the desktop rail does not move. */
+/* A finger needs 44px, not the 10px glyph (L259): the caret's own box grows to the touch minimum with the glyph centred
+   in it (the toggle grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the
+   desktop rail does not move. A floor, not a px padding, so the spacing scale holds. */
 @media (pointer: coarse) {
   .wb-shape-caret {
-    box-sizing: content-box;
-    padding: calc((var(--target-min) - 10px) / 2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: var(--target-min);
+    min-height: var(--target-min);
   }
 }

@@ -1,4 +1,6 @@
-"""Menu rows and the connection pill's menu button (WORLD_CLASS_PLAN 403,
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+Menu rows and the connection pill's menu button (WORLD_CLASS_PLAN 403,
 L-world-class-107). Measured by scratchpad/ui-sweeps/menu-rows.js at 1440x900.
 
 With a mouse the pill's button is the pill's inner height, so any end margin
@@ -9,8 +11,9 @@ submenu row's words sat 0.9px left of every plain row's (37.8 against 38.7).
 
 import re
 from pathlib import Path
+from tests._css_paths import FORMER_08, sheets
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 
 
 def _rule(selector: str, text: str = CSS) -> str:
@@ -43,9 +46,10 @@ def test_a_dock_menu_switch_row_is_a_menu_row():
     # 33.2px against "Review some days" at 34.5. Measured after: every row in
     # both menus 34.5px, inset 12.8px (padding --space-2 --space-5, the recipe).
     # The recipe is one selector per row class since L342 (a list :is() at the
-    # right is a universal-bucket rule), so the row list is read off the
-    # selector group rather than off one :is().
-    recipe = re.search(r"\n(:is\(\n  \.action-menu,[^{]*)\{([^}]*)\}", CSS)
+    # right is a universal-bucket rule), so the row list is read off the selector
+    # group that starts with `.menu-item`; since 08 dissolved, the hover rule's
+    # selector (same shell list) comes first in the joined sheets.
+    recipe = re.search(r"\n(:is\(\n  \.action-menu,[^{]*?\) \.menu-item,[^{]*)\{([^}]*)\}", CSS)
     assert recipe, "the menu row recipe moved"
     assert ") .dock-menu-check {" in recipe.group(0), "a switch row takes the recipe's height and inset"
     assert "padding: var(--space-2) var(--space-5);" in recipe.group(2)

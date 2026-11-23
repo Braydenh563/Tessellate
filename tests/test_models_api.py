@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
+import pytest
+
 from sqlalchemy import select
 
 from tessellate.ai.embeddings import EmbeddingService
@@ -22,6 +24,30 @@ def _wait_for(client, check, timeout: float = 5.0) -> dict:
             return body
         time.sleep(0.05)
     raise AssertionError("timed out waiting for background job")
+
+
+@pytest.fixture()
+def route_waits(monkeypatch):
+    """The longest each wait in `routes_models` may last, from its own timeouts
+    (L-general-70): a poll's budget is the sum the code allows itself, not how
+    long a loaded runner took. The fakes behind them are held on events."""
+    import threading
+
+    from tessellate.api import routes_models
+
+    allowed: list[float] = []
+
+    class Event(threading.Event):
+        def wait(self, timeout=None):  # noqa: ANN001, ANN202
+            allowed.append(float("inf") if timeout is None else timeout)
+            return super().wait(timeout)
+
+    class Threading:
+        def __getattr__(self, name):  # noqa: ANN001, ANN204
+            return Event if name == "Event" else getattr(threading, name)
+
+    monkeypatch.setattr(routes_models, "threading", Threading())
+    return allowed
 
 
 def test_status_with_all_ai_down(client):
@@ -405,22 +431,22 @@ def test_status_never_waits_on_a_capability_probe(client, monkeypatch):
     asked = threading.Event()
     release = threading.Event()
 
+    shown = threading.Event()
+
     def slow_show(model):
         asked.set()
         # Blocks until the test lets it go (or a minute passes): a status
-        # call that waited on this probe would take the whole minute.
+        # call that waited on this probe returns only after the hold ends.
         release.wait(60)
+        shown.set()
         ollama._shown[model] = {"capabilities": ["vision"] if model == "model-2" else ["completion"]}
         return ollama._shown[model]
 
     monkeypatch.setattr(ollama, "show", slow_show)
-    started = time.monotonic()
     body = client.get("/models/status").json()
-    # The probe is still blocked here (released below), so any answer well
-    # inside its minute proves the poll did not wait on it. The margin is wide
-    # on purpose: CI once took 4.6s for this call under load (2026-09-26)
-    # against a 4s limit set beside a 5s probe, which measured the runner.
-    assert time.monotonic() - started < 30
+    # Held by an event, not timed (L-general-70): the probe had not finished
+    # when the poll answered, so the poll did not wait on it.
+    assert not shown.is_set()
     assert not release.is_set()
     assert body["ollama_running"] is True
     assert body["vision_model_resolved"] is None  # unknown yet, not waited for
@@ -478,7 +504,7 @@ def test_a_launch_with_a_stand_in_note_retries_its_filing(client, monkeypatch):
     assert queued == ["warm-filing", "file-entry"]
 
 
-def test_status_serves_the_last_answer_while_the_runner_is_slow(client, monkeypatch):
+def test_status_serves_the_last_answer_while_the_runner_is_slow(client, monkeypatch, route_waits):
     """`GET /models/status: signal timed out` again, with the capability probe
     already off the request path: what is left is the poll waiting on the
     runner's own model list (up to 5s on Ollama, two 5s tries on an
@@ -510,9 +536,9 @@ def test_status_serves_the_last_answer_while_the_runner_is_slow(client, monkeypa
     first = client.get("/models/status").json()
     assert [m["name"] for m in first["installed_models"]] == ["model-a"]  # nothing known yet: it waits
     answers[:] = [{"name": "model-b", "size": 1}]
-    started = time.monotonic()
+    before = len(route_waits)
     slow = client.get("/models/status").json()
-    assert time.monotonic() - started < 5  # the refresh is blocked for 30s
+    assert sum(route_waits[before:]) < 5  # the refresh is blocked for 30s
     assert not release.is_set()
     assert slow["ollama_running"] is True
     assert [m["name"] for m in slow["installed_models"]] == ["model-a"]  # what it last knew
@@ -578,13 +604,12 @@ def test_a_start_up_choice_is_said_with_its_reason_until_one_is_picked(client, m
     assert "sayChatModelChosen(modelStatus);" in js and '"Change"' in js.split("function sayChatModelChosen", 1)[1][:900]
 
 
-def test_suggested_shares_the_status_polls_model_list(client, monkeypatch):
+def test_suggested_shares_the_status_polls_model_list(client, monkeypatch, route_waits):
     """INBOX 1415: `/models/suggested` took 4.1s in the owner's lag log. It
     asked the runner for its model list inline, unbudgeted, while the status
     poll already keeps that answer: with one known, the shortlist serves it
     and leaves the refresh to finish on its own thread."""
     import threading
-    import time
 
     from tessellate.ai.ollama_client import OllamaClient
     from tessellate.api import routes_models
@@ -606,21 +631,20 @@ def test_suggested_shares_the_status_polls_model_list(client, monkeypatch):
 
     monkeypatch.setattr(ollama, "list_models", list_models)
     client.get("/models/suggested")  # nothing known yet: it waits, as the poll does
-    started = time.monotonic()
+    before = len(route_waits)
     body = client.get("/models/suggested").json()
-    assert time.monotonic() - started < 5  # the refresh is blocked for 30s
+    assert sum(route_waits[before:]) < 5 and not release.is_set()  # the refresh is blocked for 30s
     release.set()
     entry = next(m for models in body.values() for m in models if m["name"] == name)
     assert entry["size_source"] == "measured"
 
 
-def test_suggested_does_not_wait_for_a_busy_runner_even_on_the_first_call(client, monkeypatch):
+def test_suggested_does_not_wait_for_a_busy_runner_even_on_the_first_call(client, monkeypatch, route_waits):
     """INBOX 1419: /models/suggested took 4.1s on a runner busy loading. With
     no answer known yet it used to wait for the whole list call; the shortlist
     now answers from the shipped sizes within the budget, and the launch
     warm-up has usually filled the list before anyone opens Settings."""
     import threading
-    import time
 
     from tessellate.ai.ollama_client import OllamaClient
     from tessellate.api import routes_models
@@ -632,12 +656,11 @@ def test_suggested_does_not_wait_for_a_busy_runner_even_on_the_first_call(client
     release = threading.Event()
     monkeypatch.setattr(ollama, "list_models", lambda: release.wait(30) or [])
     monkeypatch.setattr(ollama, "loaded_models", lambda: release.wait(30) or [])
-    started = time.monotonic()
     body = client.get("/models/suggested")
-    elapsed = time.monotonic() - started
+    allowed = sum(route_waits)
     release.set()
     assert body.status_code == 200
-    assert elapsed < 5
+    assert allowed < 5
 
 
 def test_the_launch_warm_up_fills_the_list_the_first_poll_reads(client, monkeypatch):
@@ -661,13 +684,12 @@ def test_the_launch_warm_up_fills_the_list_the_first_poll_reads(client, monkeypa
     assert routes_models._flight_key(routes_models._CachedCapabilities(ollama)) == key
 
 
-def test_a_slow_runner_costs_each_poll_the_short_budget_not_two_and_a_half_seconds(client, monkeypatch):
+def test_a_slow_runner_costs_each_poll_the_short_budget_not_two_and_a_half_seconds(client, monkeypatch, route_waits):
     """INBOX 1426 L1: `/models/status` took 2.5s on every poll against a runner
     that answers in 5s, because each poll found no refresh in flight, started
     one and waited the old budget for it. The hot budget is a fraction of a
     second, so three polls against a stuck runner cost about a second."""
     import threading
-    import time
 
     from tessellate.ai.ollama_client import OllamaClient
     from tessellate.api import routes_models
@@ -687,16 +709,16 @@ def test_a_slow_runner_costs_each_poll_the_short_budget_not_two_and_a_half_secon
 
     monkeypatch.setattr(ollama, "list_models", list_models)
     client.get("/models/status")  # the first answer
-    started = time.monotonic()
+    before = len(route_waits)
     for _ in range(3):
         body = client.get("/models/status").json()
         assert [m["name"] for m in body["installed_models"]] == ["model-a"]
-    elapsed = time.monotonic() - started
+    allowed = sum(route_waits[before:])
     release.set()
-    assert elapsed < 2.0
+    assert allowed < 2.0
 
 
-def test_the_first_poll_against_a_busy_runner_says_checking_instead_of_waiting(client, monkeypatch):
+def test_the_first_poll_against_a_busy_runner_says_checking_instead_of_waiting(client, monkeypatch, route_waits):
     """INBOX 1426 L1: four polls in the first six seconds took 3.2 to 5.0s
     each while the runner loaded the filing model. With nothing known the poll
     waits the cold budget, then says `ollama_checking` (not "down"), and the
@@ -722,9 +744,9 @@ def test_the_first_poll_against_a_busy_runner_says_checking_instead_of_waiting(c
     routes_models._installed_known.pop(key, None)
     release = threading.Event()
     monkeypatch.setattr(ollama, "list_models", lambda: (release.wait(30), [{"name": "model-a", "size": 1}])[1])
-    started = time.monotonic()
+    before = len(route_waits)
     first = client.get("/models/status").json()
-    assert time.monotonic() - started < 3
+    assert sum(route_waits[before:]) < 3 and not release.is_set()
     assert first["ollama_checking"] is True and first["ollama_running"] is False
     release.set()
     deadline = time.monotonic() + 10
@@ -821,7 +843,7 @@ def test_an_answered_probe_is_believed_for_a_moment_and_a_failure_clears_it(monk
     ollama_client._down_until.clear()
 
 
-def test_polls_behind_a_silent_runner_do_not_each_wait_the_budget_again(client, monkeypatch):
+def test_polls_behind_a_silent_runner_do_not_each_wait_the_budget_again(client, monkeypatch, route_waits):
     """INBOX 1516: the refresh wait is counted from the request's start, so a
     runner silent for a while costs the polls behind it nothing (53 to 62 ms
     a poll measured against a runner that takes 5 s)."""

@@ -1,4 +1,6 @@
-"""Selection to a note (INBOX 1728): the owner asked to highlight a section of a document and turn it into,
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+Selection to a note (INBOX 1728): the owner asked to highlight a section of a document and turn it into,
 or append it to, a new or existing note. Text-level checks (the suite cannot see the DOM); the Playwright run
 measured the menu rows and the saved note."""
 

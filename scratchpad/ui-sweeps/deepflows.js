@@ -174,7 +174,7 @@ async function main() {
           await flows[name](env);
           await env.overflow('end');
         } catch (e) {
-          problem = `${stepAt ? `[${stepAt}] ` : ''}${String(e.message || e).split('\n')[0].slice(0, 240)}`;
+          problem = `${stepAt ? `[${stepAt}] ` : ''}${String(e.message || e).split('\n').slice(0, process.env.DF_FULL ? 12 : 1).join(' | ').slice(0, process.env.DF_FULL ? 1500 : 240)}`;
         }
         const errs = [...new Set(bag)];
         const failed = Boolean(problem) || errs.length > 0;

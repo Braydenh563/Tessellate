@@ -778,7 +778,10 @@ function wbCullNow(transform, size) {
   for (const el of layer.children) {
     const d = el.__data__;
     if (!d || typeof d.x !== "number") continue;
-    const tiny = (d.width || WB_CARD_DEFAULT_SIZE.w) * k < WB_TINY_SCREEN_W || (d.height || WB_CARD_DEFAULT_SIZE.h) * k < WB_TINY_SCREEN_H;
+    //: Never on a map topic: it has no resize grips (`wbBuildObjectHandles` skips
+    //: WB_MAP_KINDS), and a zoom past the size flipped the class on all 500
+    //: topics of a map in one frame, 110 to 122ms of restyle at 4x (mapcpu).
+    const tiny = !WB_MAP_KINDS.has(d.kind) && ((d.width || WB_CARD_DEFAULT_SIZE.w) * k < WB_TINY_SCREEN_W || (d.height || WB_CARD_DEFAULT_SIZE.h) * k < WB_TINY_SCREEN_H);
     if (el.classList.contains("wb-tiny") !== tiny) el.classList.toggle("wb-tiny", tiny);
     const keep =
       el.classList.contains("wb-selected") ||
@@ -944,7 +947,17 @@ function wbPublishInvZoom(el, inv, inst = wbInstances.page) {
 //: its most specific argument's weight (an id), so an embed's own scale wins
 //: over the page's inside it (L-whiteboard-56).
 function wbInvZoomRules() {
-  const grips = WB_INV_ZOOM_GRIPS.join(", ");
+  //: **A topic's action row takes it only while it shows** (mapcpu 500 at 4x):
+  //: every topic has one, `visibility: hidden` until the topic is pointed at,
+  //: selected or focused (library-lazy.css), and naming the bare row re-styled
+  //: all 500 rows and their buttons on each publish, the zoom's 60 to 80ms task.
+  //: Named by those states, a publish re-styles the row on screen; a hidden row
+  //: keeps the root's 1, which nothing sees.
+  const WB_INV_ZOOM_SHOWN = [
+    ".wb-map-node:is(:hover, .wb-selected, :focus-visible) .wb-map-actions",
+    ".wb-map-actions:focus-within",
+  ];
+  const grips = [...WB_INV_ZOOM_GRIPS.filter((sel) => !sel.endsWith(".wb-map-actions")), ...WB_INV_ZOOM_SHOWN].join(", ");
   return wbInstances.list.map((inst) => (inst.container
     ? `[data-wb-embed="${inst.key}"] :is(${grips}) { --wb-inv-zoom: ${inst.invZoom}; }`
     : `${grips} { --wb-inv-zoom: ${inst.invZoom}; }`)).join("\n");
@@ -3886,6 +3899,11 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbClearMapNodeSizeCache();
   Object.assign(wbBoardBgCache, { sig: "", pass: false });
   wbNavState.stale = true;
+  //: Asked now, before the settle, and answered during it (`fetchWhiteboardState`).
+  //: Not for the board already open: its unsaved nudge is written first.
+  const id = boardId ?? null;
+  const state = id === (window.currentBoardId ?? null) ? null : apiJson(id ? `/whiteboard/?board_id=${id}` : "/whiteboard/");
+  state?.catch(() => {});
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
   window.currentBoardId = boardId ?? null;
@@ -3895,7 +3913,8 @@ async function openWhiteboardBoard(boardId, opts = null) {
   // never empties, so without this a stray one followed you from board to
   // board and read as "a permanent selection box on my mindmap".
   wbClearSelectionOverlays();
-  await fetchWhiteboardState();
+  const listed = {};
+  await fetchWhiteboardState({ state, stateFor: id, list: listed });
   wbScheduleRender();
   await wbMigrateBackground();
   wbApplyBackground();
@@ -3912,6 +3931,7 @@ async function openWhiteboardBoard(boardId, opts = null) {
   //: its real size only exists once it is in the document).
   if (wbIsMap()) renderWhiteboardNow();
   wbRestoreOrFrameBoard(boardId ?? null, Boolean(opts?.restore));
+  await listed.wait;
   //: **A board is a place, so opening one is a navigation.** Asked as part of
   //: "is everythign wired to the nav history and universal undo/redo": it was
   //: not. `switchTab("library")` above records "library", and then opening

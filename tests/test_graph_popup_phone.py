@@ -12,10 +12,12 @@ room (Open, Focus, Pin, Link), two on a phone. DOM behaviour is measured by
 import re
 from pathlib import Path
 
+from tests._css_paths import FORMER_10, sheets
+
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
-RESPONSIVE = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+RESPONSIVE = sheets(*FORMER_10)
 
 
 def _body(name: str) -> str:

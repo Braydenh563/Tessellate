@@ -1,4 +1,6 @@
-"""The numeric waypoint list (WHITEBOARD_PLAN section 4, draw.io's `addEdgeWaypoints`): a connector's bends as one
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+The numeric waypoint list (WHITEBOARD_PLAN section 4, draw.io's `addEdgeWaypoints`): a connector's bends as one
 text field of "x, y" pairs in the Style tab. The parse and write functions are pure and run in node."""
 
 from __future__ import annotations

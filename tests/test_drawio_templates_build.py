@@ -1,4 +1,6 @@
-"""draw.io's templates as a library set (WHITEBOARD_PLAN section 8, row 980): the converter in
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+draw.io's templates as a library set (WHITEBOARD_PLAN section 8, row 980): the converter in
 `scripts/build_drawio_templates.py`, five source files kept as fixtures, and the shipped set.
 
 The converter runs the app's own cell planner in node, so a template here is what importing the

@@ -94,6 +94,6 @@ def test_a_paste_over_the_cap_is_left_alone():
 
 @pytest.mark.parametrize("text", ["sort:" + " b," * 6000, "sort:" + "\n" * 20000 + "x", "uppercase" + " " * 20000 + "x", "title case: " + "a " * 9000, "remove duplicates:" + "\n".join(str(i % 50) for i in range(6000)), "reverse " + " " * 20000])
 def test_a_20k_text_is_linear(text):
-    start = time.perf_counter()
+    start = time.process_time()
     composer_text.answer(ctx(text))
-    assert time.perf_counter() - start < 0.5
+    assert time.process_time() - start < 0.5

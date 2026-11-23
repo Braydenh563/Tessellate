@@ -1,4 +1,6 @@
-"""L288/L755: the inline AI edit is one entry on the app's undo stack (rule 1.8)."""
+"""Source text: the behaviour is front-end script that pytest cannot run without a browser, so these pin the code's text.
+
+L288/L755: the inline AI edit is one entry on the app's undo stack (rule 1.8)."""
 
 from __future__ import annotations
 

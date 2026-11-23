@@ -1,4 +1,6 @@
-"""Draw.io's Arrange > Layout for a board (flow, radial tree, organic, circle, org chart) and the stack layout on lanes.
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Draw.io's Arrange > Layout for a board (flow, radial tree, organic, circle, org chart) and the stack layout on lanes.
 
 `whiteboard-layouts-more.js` is run in node: the layout functions are pure (boxes and pairs of keys in, top-left
 corners out), so overlaps, rank order, crossings and repeatability are read back as numbers from fixed inputs."""

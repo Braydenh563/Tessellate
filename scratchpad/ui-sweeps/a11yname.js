@@ -17,7 +17,7 @@
 //          or a keyboard user cannot see where they are.
 //
 // Prints findings only, one line each, then a count per surface.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const TABS_N = Number(process.env.TABS || 40);

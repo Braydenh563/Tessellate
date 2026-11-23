@@ -1,4 +1,6 @@
-"""Board tables: merged cells, stripes, row heights and a line dragged to size one
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+Board tables: merged cells, stripes, row heights and a line dragged to size one
 (LEDGER L273; WHITEBOARD_PLAN section 12). The pure half (`table-core` in
 whiteboard-format.js) runs under node; the server keeps `merges`, `row_heights`
 and `stripes` and refuses a merge that does not fit. The browser half (spans,

@@ -1,4 +1,6 @@
-"""A 2-D map of the notes from their stored vectors (L-graph-2): PCA through
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+A 2-D map of the notes from their stored vectors (L-graph-2): PCA through
 numpy's SVD, so notes that mean alike sit near each other."""
 
 from __future__ import annotations
@@ -66,19 +68,30 @@ def test_past_the_cap_notes_are_sampled_evenly_not_the_oldest_first():
     assert set(proj.project(vectors, cap=10)) == set(picked)
 
 
-def test_the_projection_of_a_large_notebook_is_quick():
+def test_the_projection_of_a_large_notebook_is_quick(monkeypatch):
     """Review 5883476033 (3): float32 and the d x d covariance, not an SVD of
     the whole matrix. 5,000 notes of 384 floats, the cap and the default
-    model's width; it took 0.03 s here, so 3 s is room for a loaded runner."""
-    import time
-
+    model's width. Counted, not timed (L-general-70): it took 0.03 s alone, and
+    OpenBLAS's spinning threads made a loaded runner's clock read 4 s, so the
+    test asserts the cheap shape itself: one eigh of a 384 x 384 float32
+    matrix, and no decomposition of the 5,000-row one."""
     rng = np.random.default_rng(3)
     vectors = {i: row for i, row in enumerate(rng.normal(size=(proj.MAX_PROJECTED, 384)).astype("float32"))}
-    started = time.perf_counter()
+    shapes = []
+    real_eigh = np.linalg.eigh
+
+    def eigh(matrix, *args, **kwargs):
+        shapes.append((matrix.shape, matrix.dtype))
+        return real_eigh(matrix, *args, **kwargs)
+
+    def no_svd(*_args, **_kwargs):
+        raise AssertionError("the projection decomposed the whole matrix")
+
+    monkeypatch.setattr(np.linalg, "eigh", eigh)
+    monkeypatch.setattr(np.linalg, "svd", no_svd)
     pts = proj.project(vectors)
-    took = time.perf_counter() - started
     assert len(pts) == proj.MAX_PROJECTED
-    assert took < 3.0, took
+    assert shapes == [((384, 384), np.dtype("float32"))], shapes
 
 
 def test_the_projection_cache_follows_a_new_vector_with_no_note_edit(ai_client, session):

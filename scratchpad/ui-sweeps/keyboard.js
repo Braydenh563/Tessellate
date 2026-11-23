@@ -19,7 +19,7 @@
 // same tick as the key press and is fully visible 150ms later. Twenty
 // findings came from that one mistake. The wait below is what makes the
 // remaining findings real.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const PW = 'testpassword123';
 const TABS = ['dashboard', 'notes', 'library', 'chat', 'graph', 'timeline', 'reminders'];

@@ -16,6 +16,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import frontend_text
+from tests._css_unwrap import unwrap_all
 
 ROOT = Path(__file__).resolve().parents[1] / "frontend"
 
@@ -46,7 +47,8 @@ def test_the_bar_has_a_map_group_for_several_topics():
 def test_no_group_box_and_no_topic_grips_for_a_map_selection():
     handles = _body("whiteboard.js", "wbRenderMultiSelectionHandles")
     assert "if (wbMapMultiTopics()) return;" in handles
-    css = (ROOT / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    #: The rule moved to library-lazy.css with a zero-specificity guard (L-ui-modernisation-51): read both, guards removed.
+    css = unwrap_all("".join((ROOT / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css")))
     assert ".wb-map-node:is(:hover, .wb-selected):not(.wb-in-group) .wb-map-resize-grip" in css
 
 

@@ -1,4 +1,6 @@
-"""L-documents-96: every model-backed streaming route stops the model when the client goes.
+"""Source text: the routes are driven; the browser's format stream has no runner here, so its abort wiring is read as text.
+
+L-documents-96: every model-backed streaming route stops the model when the client goes.
 
 L889 fixed the drafts and the Guide; the document check and the weekly digest were still sync
 generators, which Starlette 1.10 never closes on disconnect (the model kept writing to the end).

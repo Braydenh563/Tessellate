@@ -21,8 +21,10 @@ const { boot } = require('./lib.js');
   let f = await faceMid();
   await page.mouse.move(f[0], f[1], { steps: 4 });
   await page.waitForTimeout(1400);
-  const pet = await page.evaluate(() => ({ act: nmb.act, expr: document.getElementById('nm-buddy').dataset.expr || '' }));
-  if (pet.act !== 'wiggle' || pet.expr !== 'happy') fails.push(`petted: ${JSON.stringify(pet)}`);
+  // A face drawn from a name wears `data-expr` happy; Atlas has no `data-expr` (its face is its mood, and
+  // a pet's happy is its mood, L-ui-modernisation-101), so its pet reads as the wiggle on the figure.
+  const pet = await page.evaluate(() => { const b = document.getElementById('nm-buddy'); return { act: nmb.act, wiggle: b.classList.contains('nmb-act-wiggle'), atlas: !!b.querySelector('.nm-atlas'), expr: b.dataset.expr || '' }; });
+  if (pet.act !== 'wiggle' || !pet.wiggle || (!pet.atlas && pet.expr !== 'happy')) fails.push(`petted: ${JSON.stringify(pet)}`);
   await page.mouse.move(100, 100);
   await page.waitForTimeout(1200);
   await page.mouse.move(f[0], f[1], { steps: 3 });
@@ -38,13 +40,17 @@ const { boot } = require('./lib.js');
   for (const dx of [-120, -60, 60, 120]) {
     await page.mouse.move(f[0] + dx, f[1] - 40, { steps: 2 });
     await page.waitForTimeout(160);
-    eyes.push(await page.evaluate(() => Number(getComputedStyle(document.getElementById('nm-buddy')).getPropertyValue('--nmb-ex')) || parseFloat(getComputedStyle(document.querySelector('#nm-buddy .nm-eyes, #nm-buddy .atl-iris')).translate) || 0));
+    // The look is written on the elements that read it (`nameMarkBuddyAim.readers`), not on #nm-buddy (avatars.js, 'The look is written on what reads it').
+    eyes.push(await page.evaluate(() => { const r = document.querySelector('#nm-buddy').querySelector(nameMarkBuddyAim.readers); return Number(r && r.style.getPropertyValue('--nmb-ex')) || 0; }));
   }
   const tracked = eyes[0] < 0 && eyes[3] > 0;
   if (!tracked) fails.push(`eyes near: ${eyes}`);
   await page.mouse.move(100, 100);
   await page.waitForTimeout(3000);
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'off'; nameMarkBuddyRelease(); nmb.target = null; nmb.lastMove = null; });
+  // Atlas's own glances (atlas-micro.js, the only caller of the global `nameMarkBuddyAim`) still look round with the
+  // setting off, never at the pointer (L-ui-modernisation-98): eyes on at the check count against it unless a micro look away from the pointer ran.
+  await page.evaluate(() => { const aim = window.nameMarkBuddyAim; window.__microLooks = []; window.nameMarkBuddyAim = Object.assign(function (point, ...rest) { window.__microLooks.push(!!point && !!nmb.pointer && point[0] === nmb.pointer[0] && point[1] === nmb.pointer[1]); return aim.call(this, point, ...rest); }, aim); });
   const off = [];
   // Slowly (a pointer passing, not a sudden flick, which still catches it).
   for (const dx of [-120, 120]) {
@@ -52,25 +58,34 @@ const { boot } = require('./lib.js');
     for (let i = 1; i <= 24; i += 1) { await page.mouse.move(f[0] + dx * (i / 24), f[1] - 40); await page.waitForTimeout(30); }
     await page.waitForTimeout(200);
     // Its eyes move only while it attends (the CSS keys the look on nmb-attend).
-    off.push(await page.evaluate(() => document.getElementById('nm-buddy').classList.contains('nmb-attend')));
+    off.push(await page.evaluate(() => { const looks = window.__microLooks.splice(0); return { attend: document.getElementById('nm-buddy').classList.contains('nmb-attend'), micro: looks.length, atPointer: looks.some(Boolean) }; }));
   }
-  if (off.some(Boolean)) fails.push(`eyes with the setting off: ${off}`);
+  if (off.some((o) => o.attend && (o.atPointer || !o.micro))) fails.push(`eyes with the setting off: ${JSON.stringify(off)}`);
   await page.evaluate(() => { document.documentElement.dataset.avatarFollow = 'on'; });
   await page.mouse.move(100, 100);
   // Tossed: a fast pull to the right and let go at speed.
+  // The throw is a lazy file fetched on the first carry, and a let-go before it arrives is a drop by design (companion-throw.js).
+  await page.evaluate(() => ensureModule('companionThrow'));
   await put(300, 420);
   f = await faceMid();
   await page.mouse.move(f[0], f[1]);
   await page.mouse.down();
-  for (let i = 1; i <= 6; i += 1) { await page.mouse.move(f[0] + i * 30, f[1] - i * 6); await page.waitForTimeout(12); }
-  await page.mouse.up();
+  // The pull and the let-go carry their own times, 12ms apart (L-ui-modernisation-98): Playwright sends a move only once the
+  // page has taken the last, so on a busy page the let-go was stamped over 100ms after the last move, which is a drop by
+  // design (avatars.js nameMarkBuddyReleaseVelocity). A hand's input is stamped when it happens, not when the page reads it.
+  const cdp = await page.context().newCDPSession(page);
+  const t0 = Date.now() / 1000;
+  for (let i = 1; i <= 6; i += 1) await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: f[0] + i * 30, y: f[1] - i * 6, button: 'left', buttons: 1, timestamp: t0 + i * 0.012 });
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: f[0] + 180, y: f[1] - 36, button: 'left', buttons: 0, clickCount: 1, timestamp: t0 + 0.076 });
+  await page.mouse.move(f[0] + 180, f[1] - 36);
   await page.waitForTimeout(150);
-  // The throw (companion-throw.js) keeps `nmb.thrown` (its `to` is set when it comes down) and `nmb.flight` while it flies.
-  const flying = await page.evaluate(() => ({ thrown: !!nmb.thrown, running: !!nmb.flight }));
+  const flying = await page.evaluate(() => ({ thrown: !!(nmb.thrown && nmb.thrown.v), running: !!nmb.flight }));
   if (process.env.SCRATCH) await page.screenshot({ path: `${process.env.SCRATCH}/toss-midflight.png`, clip: { x: 250, y: 200, width: 900, height: 450 } });
-  await page.waitForTimeout(1200);
-  const landed = await page.evaluate(() => ({ at: [Math.round(nmb.x), Math.round(nmb.y)], to: nmb.thrown?.to || null, perch: nmb.perch, pose: nmb.pose, spots: localStorage.getItem('nm-buddy-spots') }));
+  await page.waitForFunction(() => !nmb.flight, null, { timeout: 6000 }).catch(() => {});
+  await page.waitForTimeout(600);
+  const landed = await page.evaluate(() => ({ to: nmb.thrown && nmb.thrown.to ? nmb.thrown.to : null, at: [Math.round(nmb.x), Math.round(nmb.y)], perch: nmb.perch, pose: nmb.pose, spots: localStorage.getItem('nm-buddy-spots') }));
   const toss = { flying, landed };
+  // A throw's flight is `nmb.flight` and its plan `nmb.thrown` (companion-throw.js `nameMarkBuddyThrow`; `to` is set where it lands).
   const far = landed.to ? Math.hypot(landed.at[0] - landed.to[0], landed.at[1] - landed.to[1]) : Infinity;
   if (!flying.thrown || !flying.running || landed.at[0] <= 300 || far > 200 || !landed.spots || landed.spots === '{}') fails.push(`toss: ${JSON.stringify(toss)} far ${Math.round(far)}`);
   // A slow let-go is a drop, not a toss.
@@ -83,14 +98,14 @@ const { boot } = require('./lib.js');
   await page.waitForTimeout(250);
   await page.mouse.up();
   await page.waitForTimeout(900);
-  const slow = await page.evaluate(() => nmb.thrown || null);
+  const slow = await page.evaluate(() => nmb.thrown && nmb.thrown.v ? nmb.thrown.v : null);
   if (slow) fails.push('a slow let-go was tossed');
-  // Reduce motion: no petting. The companion reads MOTION.cause (theme-boot.js), not the attribute, so the switch goes through MOTION.apply.
+  // Still: no petting. `data-motion="reduced"` alone no longer stills it (avatars.js nameMarkBuddyMotion: its own setting decides), so use Avatar animation off.
   await page.mouse.move(100, 100);
-  await page.evaluate(() => { MOTION.apply('off'); nmb.pettedAt = 0; nameMarkBuddyAct(''); nmb.sweep.nameMarkBuddyPet(); });
+  await page.evaluate(() => { document.documentElement.dataset.avatarMotion = 'off'; nmb.pettedAt = 0; nameMarkBuddyAct(''); nmb.sweep.nameMarkBuddyPet(); });
   const stillPet = await page.evaluate(() => nmb.act);
-  await page.evaluate(() => { MOTION.apply('follow'); });
-  if (stillPet === 'wiggle') fails.push('petted under Reduce motion');
+  await page.evaluate(() => { delete document.documentElement.dataset.avatarMotion; });
+  if (stillPet === 'wiggle') fails.push('petted while still');
   console.log(JSON.stringify({ pet, again, eyes, off, toss: { ...toss, far: Math.round(far) }, slow }));
   await browser.close();
   for (const x of fails) console.log(x);

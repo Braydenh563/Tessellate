@@ -1,4 +1,6 @@
-"""L-documents-64: a Today button in the Library's Documents dock (DOCUMENTS_PLAN section 14).
+"""Source text: the dock button and its handler are markup and browser code with no runner here, so they are read as text.
+
+L-documents-64: a Today button in the Library's Documents dock (DOCUMENTS_PLAN section 14).
 
 It reuses the Daily template row (no second create-or-return endpoint) and adds no top-level name.
 Measured 2026-11-14 on a fresh data dir (scratchpad t646-today.js): two presses made one document titled

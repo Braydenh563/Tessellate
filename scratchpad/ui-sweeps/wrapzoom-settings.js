@@ -725,7 +725,7 @@ async function runViewport(spec, rows) {
 // devicePixelRatio is the zoom), unlocked and locked, plain and ?overlay.
 const DESK_SIZES = { rest: [112, 152], menu: [248, 312], context: [248, 268], note: [320, 500], search: [340, 440] };
 async function runDesk(rows) {
-  const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+  const { chromium } = require('playwright');
   const BASE = process.env.BASE || 'http://127.0.0.1:8781';
   const browser = await chromium.launch();
   for (const scale of [1, 1.25, 1.5, 2]) {

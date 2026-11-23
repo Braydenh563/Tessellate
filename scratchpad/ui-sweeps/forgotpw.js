@@ -19,7 +19,7 @@
 // touch pointer, 28px otherwise), horizontal overflow, and that the key
 // leaves the page when its dialog closes. Prints numbers; exits 1 on any
 // finding.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 
 const BASE = process.env.BASE || 'http://127.0.0.1:8811';
 const PW = 'testpassword123';

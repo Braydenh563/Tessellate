@@ -67,9 +67,9 @@ def _measure(client, path: str) -> tuple[int, float, int]:
     engine = deps.get_db().engine
     event.listen(engine, "before_cursor_execute", record)
     try:
-        began = time.perf_counter()
+        began = time.process_time()
         response = client.get(path)
-        elapsed = time.perf_counter() - began
+        elapsed = time.process_time() - began
     finally:
         event.remove(engine, "before_cursor_execute", record)
     return len(seen), elapsed, response.status_code

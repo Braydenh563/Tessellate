@@ -72,9 +72,9 @@ def test_a_single_day_is_not_recurring(said):
 
 def test_a_long_run_is_read_in_bounded_time():
     for text in ("Monday " * 25_000, "every " * 25_000, " " * 50_000 + "Friday"):
-        start = time.perf_counter()
+        start = time.process_time()
         recognise.recurring_schedule(text)
-        assert time.perf_counter() - start < 0.5
+        assert time.process_time() - start < 0.5
 
 
 def test_a_schedule_asked_for_is_not_denied_after_it_is_found(ask):

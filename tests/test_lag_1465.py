@@ -23,7 +23,7 @@ def test_a_key_typed_in_a_field_returns_before_any_layout_read():
 
 def test_the_overlay_test_waits_for_a_matching_bare_key():
     js = frontend_text("settings-wiring.js")
-    loop = _between(js, "if (!burst && singleKeys && !boardOwns) {", "e.preventDefault();")
+    loop = _between(js, "if (!burst && !boardOwns) {", "e.preventDefault();")
     assert loop.index("matchesShortcut(e, def.keys)") < loop.index("activeOverlay()")
     assert "dialog[open]" in loop and "break;" in loop
 

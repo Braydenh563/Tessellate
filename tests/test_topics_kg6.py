@@ -70,9 +70,9 @@ def test_cost_at_10k_notes():
         edges += [(rng.choice(group), rng.choice(group)) for _ in range(60)]
     edges += [(rng.randrange(1, 10001), rng.randrange(1, 10001)) for _ in range(800)]
     index = _index(10000, [(a, b) for a, b in edges if a != b])
-    started = time.perf_counter()
+    started = time.process_time()
     found = topics.build(index, {})
-    took = time.perf_counter() - started
+    took = time.process_time() - started
     print(f"topics n=10000: {took * 1000:.0f} ms, {len(found)} topics")
     assert took < 5.0
     assert len(found) > 100

@@ -1,4 +1,6 @@
-"""L365: a map exported as PNG or SVG draws each topic as the canvas does.
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+L365: a map exported as PNG or SVG draws each topic as the canvas does.
 
 Levels (size, weight, slant read off the drawn label), the cut shapes
 (diamond, hexagon, chevron as polygons, underline as a bar, plain as words

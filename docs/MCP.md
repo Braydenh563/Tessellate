@@ -130,6 +130,7 @@ Packaged app (the in-app snippet fills in the real executable path):
 
 - **Claude Desktop:** Settings, Developer, Edit config opens `claude_desktop_config.json`; merge the `mcpServers` entry in and restart Claude Desktop.
 - **Claude Code:** `claude mcp add tessellate -e TESSELLATE_DATA_DIR=/path/to/your/data -e TESSELLATE_MCP_TOKEN=<token> -- /path/to/python -m tessellate.mcp_server`, or put the same entry in a project `.mcp.json`.
+- **VS Code:** no extension is needed: VS Code runs MCP servers itself. Put the same command, arguments and environment in `.vscode/mcp.json` under `"servers": {"tessellate": {"type": "stdio", "command": ..., "args": [...], "env": {...}}}`, or run MCP: Add Server from the Command Palette, then pick the Tessellate tools in Copilot Chat's agent mode.
 - **Other clients:** any client that can launch a stdio server takes the same command, arguments and environment. The server speaks MCP protocol versions 2025-06-18, 2025-03-26 and 2024-11-05.
 
 ## Security model

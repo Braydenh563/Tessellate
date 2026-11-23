@@ -1,4 +1,6 @@
-"""Claim check (the features audit, Phase G): a document's sentences checked
+"""Source text: the route is exercised through the test client; the front-end half has no browser under pytest, so its script is read as text.
+
+Claim check (the features audit, Phase G): a document's sentences checked
 against the notebook. `POST /documents/{id}/claim-check` writes nothing and
 marks each claim supported, contradicted or not found, with the note behind the
 verdict. A model (a fake transport here) only judges, by number and letter, and

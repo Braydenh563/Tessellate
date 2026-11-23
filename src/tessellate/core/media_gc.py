@@ -22,11 +22,20 @@ from __future__ import annotations
 import json
 import re
 
-from sqlalchemy import or_, select
+from sqlalchemy import Text, or_, select, type_coerce
 from sqlalchemy.orm import Session
 
 from tessellate.core import reading_bin
-from tessellate.core.database import BoardLibraryItem, Conversation, Document, Entry, MediaUpload, WhiteboardObject
+from tessellate.core.database import (
+    BoardLibraryItem,
+    Conversation,
+    Document,
+    DocumentRevision,
+    Entry,
+    EntryRevision,
+    MediaUpload,
+    WhiteboardObject,
+)
 from tessellate.entry import manager_text
 
 # Same shape routes_whiteboard.py's own MEDIA_URL_RE validates on the way in, 
@@ -86,9 +95,8 @@ def _referenced_filenames(session: Session) -> tuple[set[str], bool]:
     #: A board's background image lives in its settings (WHITEBOARD_PLAN
     #: decision 24, FEAT-06): before this, setting one made the upload an
     #: orphan, and "clean up orphaned media" deleted it.
-    for entry in session.scalars(
-        select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.board_settings))  # noqa: E712
-    ):
+    #: A binned note counts (L-ui-modernisation-74): the bin restores it with its pictures.
+    for entry in session.scalars(select(Entry).where(_could_name_a_file(Entry.board_settings))):
         referenced.update(referenced_names(entry.board_settings or ""))
 
     #: A picture saved in the board library (decision 25), the bin's too: an
@@ -96,16 +104,31 @@ def _referenced_filenames(session: Session) -> tuple[set[str], bool]:
     for item in session.scalars(select(BoardLibraryItem)):
         referenced.update(referenced_names(json.dumps(item.payload or {})))
 
-    for doc in session.scalars(select(Document).where(_could_name_a_file(Document.content))):
-        referenced.update(referenced_names(doc.content))
-
-    for entry in session.scalars(
-        select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.content))  # noqa: E712
-    ):
+    for entry in session.scalars(select(Entry).where(_could_name_a_file(Entry.content))):
         if entry.is_private and crypto.is_encrypted(entry.content) and vault.key() is None:
             skipped_private = True
             continue
         referenced.update(referenced_names(manager_text.readable_content(entry)))
+
+    #: An older version of a note or document can be restored, picture and all
+    #: (L-ui-modernisation-74), so what a revision shows is in use too. Read as stored:
+    #: a sealed column reads "" while locked, which would pass for "no picture".
+    for column in (Document.content, DocumentRevision.content, EntryRevision.content):
+        raw = type_coerce(column, Text)
+        for (stored,) in session.execute(select(raw).where(_could_name_a_file(raw))):
+            if crypto.is_encrypted(stored):
+                key = vault.key()
+                if key is None:
+                    skipped_private = True
+                    continue
+                try:
+                    stored = crypto.decrypt(key, stored)
+                except crypto.DecryptionError:
+                    #: One revision sealed under another key aborted the whole
+                    #: cleanup; unreadable is treated as locked: skipped, and said.
+                    skipped_private = True
+                    continue
+            referenced.update(referenced_names(stored))
 
     return referenced, skipped_private
 
@@ -146,9 +169,8 @@ def _board_uses(session: Session, note) -> None:  # noqa: ANN001
         for name in referenced_names(obj.data):
             note(name, "board", obj.board_id, "Whiteboard")
 
-    for entry in session.scalars(
-        select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.board_settings))  # noqa: E712
-    ):
+    #: A binned note counts (L-ui-modernisation-74): the bin restores it with its pictures.
+    for entry in session.scalars(select(Entry).where(_could_name_a_file(Entry.board_settings))):
         for name in referenced_names(entry.board_settings or ""):
             note(name, "board", entry.id, "Board background")
 

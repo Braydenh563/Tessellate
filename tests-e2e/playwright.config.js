@@ -115,7 +115,7 @@ module.exports = defineConfig({
     },
     {
       name: "notebook",
-      // CI runs the budgets alone, after the flows (TESSELLATE_E2E_BUDGETS_APART):
+      // CI runs the budgets alone (budgets.spec.js after the flows; tab- and map-budgets in their own job) (TESSELLATE_E2E_BUDGETS_APART):
       // timed beside two other workers on a shared runner, a different budget
       // missed on each run while HEAD measured no slower (e2efix2, 2026-10-11).
       testIgnore: process.env.TESSELLATE_E2E_BUDGETS_APART

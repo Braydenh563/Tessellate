@@ -31,9 +31,20 @@ def test_arrange_is_six_named_submenus_holding_every_row() -> None:
     block = _arrange()
     sections = re.findall(r'<div class="wb-menu-section" data-wb-submenu="ph:([a-z-]+) ([^"]+)"', block)
     assert [name for _, name in sections] == ["Order", "Align", "Distribute, size and flip", "Layout", "Tidy and connect", "Group and lock"]
-    #: 35 since L-whiteboard-48 added Rack to the Layout submenu (a new row, so the count's intent moved).
-    assert len(re.findall(r'data-wb-cmd="', block)) == 35
+    #: 35 since L-whiteboard-48 added Rack to the Layout submenu; 36 since L439 added "Loop on the shape" to
+    #: "Tidy and connect" (new rows, so the count's intent moved).
+    assert len(re.findall(r'data-wb-cmd="', block)) == 36
     assert "wb-panel-group-label" not in block, "the trigger names the group; a label over it says it twice"
+
+
+def test_the_arrange_row_the_guide_names_is_in_the_menu() -> None:
+    """Source text: the Guide and the Format panel's help say "Arrange, Loop on the shape"; the sweep that presses the
+    menu (scratchpad/ui-sweeps/helpaudit.js, L439) found no such row, only the Ctrl+K command. The row is in the
+    "Tidy and connect" flyout, named as the command's own `menu` word."""
+    block = _arrange()
+    assert re.search(r'data-wb-cmd="loop"[^>]*>.*?<span>Loop on the shape</span>', block)
+    assert block.index('data-wb-cmd="loop"') > block.index("Tidy and connect")
+    assert block.index('data-wb-cmd="loop"') < block.index("Group and lock")
 
 
 def test_every_arrange_row_keeps_its_keycap() -> None:

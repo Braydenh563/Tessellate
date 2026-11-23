@@ -327,6 +327,61 @@
     };
   }
 
+  // A rod with round ends, the microbes' bacillus outline, rotated by hand (`c`, `s`: the heading's cosine and sine).
+  function bgBacillusPath(g, x, y, c, s, r) {
+    const len = r * 1.4, wid = r * 0.62, th = Math.atan2(s, c);
+    const ax = x + c * len, ay = y + s * len, bx = x - c * len, by = y - s * len;
+    g.moveTo(bx + s * wid, by - c * wid);
+    g.lineTo(ax + s * wid, ay - c * wid);
+    g.arc(ax, ay, wid, th - Math.PI / 2, th + Math.PI / 2);
+    g.lineTo(bx - s * wid, by + c * wid);
+    g.arc(bx, by, wid, th + Math.PI / 2, th + Math.PI * 1.5);
+    g.closePath();
+  }
+
+  // One mycelium colony's traits, read off its strain's genome (`ink` is the stroke lightness, `forms` the growth forms).
+  function bgMyceliumColony(strain, index, ctx, ink, forms) {
+    const gene = bgArtGenome(strain);
+    const form = gene.pick(forms, 7, 31);
+    const hue = ctx.baseHue + gene.span(5, 61, -55, 55);
+    return {
+      index, strain, form, hue,
+      branch: gene.span(19, 101, 0.025, 0.055) * (form === "rhizome" ? 0.6 : 1),
+      angle: gene.span(29, 97, 0.35, 0.95),
+      curl: gene.span(31, 83, 0.03, 0.12),
+      step: gene.span(11, 71, 0.8, 1.4),
+      weight: gene.span(13, 59, 0.8, 1.5) * (form === "rhizome" ? 1.35 : 1),
+      seed: (gene.sum % 997) / 10,
+      stroke: bgHsla(hue, 58, ink, ctx.dark ? 0.55 : 0.5),
+      node: bgHsla(hue, 65, ink, ctx.dark ? 0.6 : 0.55),
+    };
+  }
+
+  // The aurora ray's profile: transparent at the
+  // top, a faint cool veil, the band's colour, a bright lower edge, then a
+  // quick fade below it. Premultiplied, so bands add or layer directly.
+  function bgAuroraProfile(hue, steps, light, sat, dark) {
+    const stops = [
+      [0, hue + 46, light, 0],
+      [0.4, hue + 30, light, 0.3],
+      [0.78, hue + 8, light + 4, 0.8],
+      [0.9, hue, light + (dark ? 14 : 2), 1],
+      [1, hue - 6, light, 0],
+    ];
+    const lut = new Float32Array(steps * 4);
+    for (let k = 0; k < steps; k++) {
+      const u = k / (steps - 1);
+      let s = 0;
+      while (s < stops.length - 2 && u > stops[s + 1][0]) s++;
+      const [u0, h0, l0, a0] = stops[s], [u1, h1, l1, a1] = stops[s + 1];
+      const f = (u - u0) / (u1 - u0);
+      const [r, g, b] = bgHslToRgb(h0 + (h1 - h0) * f, sat, l0 + (l1 - l0) * f);
+      const a = a0 + (a1 - a0) * f;
+      lut[k * 4] = r * a; lut[k * 4 + 1] = g * a; lut[k * 4 + 2] = b * a; lut[k * 4 + 3] = a;
+    }
+    return lut;
+  }
+
   // --- genomes: species traits from the letters of a name ----------------------------
   //
   // Adapted from helixlabs (Braydenh563, MIT licence; `generateDNAProfile` in
@@ -447,36 +502,18 @@
       const moteFill = [];
       const light = ctx.dark ? 68 : 50;
       const sat = ctx.dark ? 85 : 72;
-      // The ray's profile: transparent at the
-      // top, a faint cool veil, the band's colour, a bright lower edge, then a
-      // quick fade below it. Premultiplied, so bands add or layer directly.
-      const profile = (hue) => {
-        const stops = [
-          [0, hue + 46, light, 0],
-          [0.4, hue + 30, light, 0.3],
-          [0.78, hue + 8, light + 4, 0.8],
-          [0.9, hue, light + (ctx.dark ? 14 : 2), 1],
-          [1, hue - 6, light, 0],
-        ];
-        const lut = new Float32Array(LUT * 4);
-        for (let k = 0; k < LUT; k++) {
-          const u = k / (LUT - 1);
-          let s = 0;
-          while (s < stops.length - 2 && u > stops[s + 1][0]) s++;
-          const [u0, h0, l0, a0] = stops[s], [u1, h1, l1, a1] = stops[s + 1];
-          const f = (u - u0) / (u1 - u0);
-          const [r, g, b] = bgHslToRgb(h0 + (h1 - h0) * f, sat, l0 + (l1 - l0) * f);
-          const a = a0 + (a1 - a0) * f;
-          lut[k * 4] = r * a; lut[k * 4 + 1] = g * a; lut[k * 4 + 2] = b * a; lut[k * 4 + 3] = a;
-        }
-        return lut;
-      };
+      const profile = (hue) => bgAuroraProfile(hue, LUT, light, sat, ctx.dark);
       return {
         background: "clear",
         pixelDensity: PD,
         pixelDensityY: PDY,
         darkCap: 0.1,
         lightFloor: 0.35,
+        // The curtain's noise and the motes (0.12 to 0.37 px a frame) move
+        // slowly: 15 frames a second show the same sky at half the per-pixel
+        // loops (L-ui-modernisation-20). `k` is how many of the old frames one
+        // draw stands for, so the clock and the motes keep their speed.
+        fps: 15,
         init() {
           W = p.width; H = p.height;
           const canvas = p.drawingContext.canvas;
@@ -507,6 +544,8 @@
         },
         frame(t) {
           const g = p.drawingContext;
+          const k = Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+          t *= k;
           // Only the rows written last frame hold anything to clear.
           if (prevBottom >= prevTop) acc.fill(0, prevTop * bw * 4, (prevBottom + 1) * bw * 4);
           let rowTop = bh, rowBottom = -1;
@@ -574,8 +613,8 @@
           let lastHue = -1;
           for (let i = 0; i < n; i++) {
             const z = mz[i];
-            my[i] -= 0.12 + z * 0.25;
-            mx[i] += (bgFlow(mx[i] * 0.004 + t * 0.2, my[i] * 0.004) - 0.5) * 0.8;
+            my[i] -= (0.12 + z * 0.25) * k;
+            mx[i] += (bgFlow(mx[i] * 0.004 + t * 0.2, my[i] * 0.004) - 0.5) * 0.8 * k;
             if (my[i] < -8) { my[i] = H + 8; mx[i] = p.random(W); }
             if (mx[i] < -8) mx[i] = W + 8;
             else if (mx[i] > W + 8) mx[i] = -8;
@@ -1122,7 +1161,7 @@
       const TRAILS = ["none", "dots", "wake"];
       const HL = 7; // wake points kept per organism
       const CELL = 80;
-      let W = 0, H = 0, cap = 0, n = 0, frameNo = 0;
+      let W = 0, H = 0, cap = 0, n = 0, frameNo = 0, owe = 0;
       const species = [];
       let X, Y, VX, VY, ANG, SPIN, AGE, NEXT, LIFE, DIV, BORN, DYING, SEED, OFF, ORBR, ORBD, SP;
       let HX, HY, HN, HH, AQ, FIELDS, grid;
@@ -1162,17 +1201,9 @@
       const PHASE_RATE = { vibrio: 0.3, flagellate: 0.22, amoeba: 0.05 };
       const outline = (g, sp, x, y, c, s, r, ph) => {
         switch (sp.form) {
-          case "bacillus": {
-            const len = r * 1.4, wid = r * 0.62, th = Math.atan2(s, c);
-            const ax = x + c * len, ay = y + s * len, bx = x - c * len, by = y - s * len;
-            g.moveTo(bx + s * wid, by - c * wid);
-            g.lineTo(ax + s * wid, ay - c * wid);
-            g.arc(ax, ay, wid, th - Math.PI / 2, th + Math.PI / 2);
-            g.lineTo(bx - s * wid, by + c * wid);
-            g.arc(bx, by, wid, th + Math.PI / 2, th + Math.PI * 1.5);
-            g.closePath();
+          case "bacillus":
+            bgBacillusPath(g, x, y, c, s, r);
             break;
-          }
           case "vibrio": {
             const th = Math.atan2(s, c);
             const cx = x - s * r * 0.5, cy = y + c * r * 0.5;
@@ -1545,8 +1576,13 @@
         settle() {
           for (let i = 0; i < 90; i++) step();
         },
+        // The physics runs as many steps as the old frames one draw stands
+        // for, so the swimming is the same; only the picture is drawn half as
+        // often (L-ui-modernisation-20). `owe` carries the fraction at 20 fps.
+        fps: 15,
         frame() {
-          step();
+          owe += Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+          for (; owe >= 1; owe--) step();
           const g = p.drawingContext;
           // Motes in three strengths, one path each.
           g.fillStyle = moteFill;
@@ -1700,7 +1736,7 @@
       let TX, TY, TA, TW, TL, TG, TC, TD;
       let SEG, SEGN, NODE, NODEC, nNodes = 0;
       const colonies = [];
-      let phase = "grow", phaseFrame = 0, growFrame = 0;
+      let phase = "grow", phaseFrame = 0, growFrame = 0, owe = 0;
       let tipFill = "";
       const ink = ctx.dark ? 68 : 40;
       // The two canvases a moving mycelium alternates between, and the
@@ -1844,22 +1880,7 @@
           W = p.width; H = p.height;
           const seed = bgArtSeedOf(ctx.seedText);
           const strains = bgArtStrains(seed, bgArtStrainCount(seed));
-          strains.forEach((strain, i) => {
-            const gene = bgArtGenome(strain);
-            const form = gene.pick(FORMS, 7, 31);
-            const hue = ctx.baseHue + gene.span(5, 61, -55, 55);
-            colonies.push({
-              index: i, strain, form, hue,
-              branch: gene.span(19, 101, 0.025, 0.055) * (form === "rhizome" ? 0.6 : 1),
-              angle: gene.span(29, 97, 0.35, 0.95),
-              curl: gene.span(31, 83, 0.03, 0.12),
-              step: gene.span(11, 71, 0.8, 1.4),
-              weight: gene.span(13, 59, 0.8, 1.5) * (form === "rhizome" ? 1.35 : 1),
-              seed: (gene.sum % 997) / 10,
-              stroke: bgHsla(hue, 58, ink, ctx.dark ? 0.55 : 0.5),
-              node: bgHsla(hue, 65, ink, ctx.dark ? 0.6 : 0.55),
-            });
-          });
+          strains.forEach((strain, i) => colonies.push(bgMyceliumColony(strain, i, ctx, ink, FORMS)));
           tipFill = bgHsla(ctx.baseHue, 70, ctx.dark ? 80 : 45, 0.35);
           maxTips = bgClamp(Math.round(180 * ctx.density), 70, 240);
           TX = new Float32Array(maxTips); TY = new Float32Array(maxTips);
@@ -1880,7 +1901,15 @@
           const g = p.drawingContext;
           for (let i = 0; i < 420 && n; i++) grow(g);
         },
+        // The growth runs as many steps as the old frames one draw stands
+        // for, onto the canvas it keeps, so a colony grows the same; the
+        // canvas is uploaded half as often (L-ui-modernisation-20).
+        fps: 15,
         frame() {
+          owe += Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+          for (; owe >= 1; owe--) this.tick();
+        },
+        tick() {
           const layer = layers[cur];
           const g = layer.g;
           phaseFrame++;

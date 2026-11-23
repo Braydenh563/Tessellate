@@ -7777,6 +7777,6 @@
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   //: The sweeps' hands on its own names (scratchpad/ui-sweeps/graphlinkpeek), on a name already shared so
   //: the shared scope does not grow (test_global_scope_ratchet). Nothing in the app reads it.
-  renderGraphCanvas.sweep = { curvedLinks: gcCurvedLinks, bowPoint: gcBowPoint, peekKinds: GC_PEEK_KINDS, edgeAtWorld: gcEdgeAtWorld, nodeAtWorld: gcNodeAtWorld };
+  renderGraphCanvas.sweep = { curvedLinks: gcCurvedLinks, bowPoint: gcBowPoint, peekKinds: GC_PEEK_KINDS, edgeAtWorld: gcEdgeAtWorld, nodeAtWorld: gcNodeAtWorld, selectionChanged: gcSelectionChanged, worldPoint: gcWorldPoint };
   Object.assign(window, { gcAutoFitTurnedOn, gcCat, gcExportPng, gcFitInsets, gcOpenTopic, gcPost, gcRenameTopicInline, gcRequestDraw, gcReshuffle, gcStill, gcStop, gcTab, gcTogglePin, gcTokens, gcTopicMembers, gcTopicSummaries, gcTreeFrameNodes, gcVisibleAtTime, gcWorkerParams, graphPaneRerender, renderGraphCanvas });
 })();

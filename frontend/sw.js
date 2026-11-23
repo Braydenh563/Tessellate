@@ -116,8 +116,51 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// A share from the phone's share sheet (manifest.webmanifest `share_target`,
+// the POST form, so a picture from the camera roll can come in). The worker
+// is the only thing that can take it: the page may be locked, and the API
+// needs the session's token. So the files wait in their own cache, never the
+// asset cache, and the page is opened at `/` with the text in the query and
+// `share_files` naming how many wait; shared-intake.js takes them into
+// Capture after the unlock and empties the cache.
+const SHARE_CACHE = "tessellate-share-inbox";
+const SHARE_PATH = "/share-target";
+const SHARE_FILE_LIMIT = 10;
+
+async function takeShare(request) {
+  const form = await request.formData();
+  const query = new URLSearchParams();
+  for (const key of ["share_title", "share_text", "share_url"]) {
+    const value = String(form.get(key) || "").trim();
+    if (value) query.set(key, value);
+  }
+  const files = form.getAll("share_files").filter((file) => file && typeof file !== "string" && file.size);
+  await caches.delete(SHARE_CACHE);
+  if (files.length) {
+    const cache = await caches.open(SHARE_CACHE);
+    const kept = files.slice(0, SHARE_FILE_LIMIT);
+    await Promise.all(
+      kept.map((file, index) =>
+        cache.put(
+          `/share-inbox/${index}`,
+          new Response(file, {
+            headers: { "Content-Type": file.type || "application/octet-stream", "X-Share-Name": encodeURIComponent(file.name || `shared-${index}`) },
+          })
+        )
+      )
+    );
+    query.set("share_files", String(kept.length));
+  }
+  if (![...query.keys()].length) query.set("share_text", "");
+  return Response.redirect(`/?${query.toString()}`, 303);
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+  if (request.method === "POST" && new URL(request.url).pathname === SHARE_PATH && new URL(request.url).origin === self.location.origin) {
+    event.respondWith(takeShare(request).catch(() => Response.redirect("/", 303)));
+    return;
+  }
   if (request.method !== "GET") return;
 
   // A top-level page load: network-first. If the server answers, the worker

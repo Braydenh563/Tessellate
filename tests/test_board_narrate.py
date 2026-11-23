@@ -1,4 +1,6 @@
-"""`POST /whiteboard/history/{event_id}/narrate` (L-whiteboard-11): what changed
+"""Source text: the routes run through the test client; the page half runs only in a browser (no DOM here), so it is checked as source text.
+
+`POST /whiteboard/history/{event_id}/narrate` (L-whiteboard-11): what changed
 between two board versions, in words. The composer writes it from the diff; a
 running model rewrites it on a job thread with a timeout. Fake transport only
 (the standing caveat): no real model has worded one of these.

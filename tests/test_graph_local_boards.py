@@ -1,4 +1,6 @@
-"""L-graph-8: `/graph/local` walks boards only with the Maps switch on, as `/graph` does.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+L-graph-8: `/graph/local` walks boards only with the Maps switch on, as `/graph` does.
 
 Before, focus mode and the note pane walked every board as a note, so a board
 holding two notes joined them in a neighbourhood the map itself drew apart.

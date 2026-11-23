@@ -154,6 +154,26 @@
     });
   }
 
+  //: A reminder to the bin, and its Undo restores rather than recreating (row 30).
+  loadReminders.binOne = async function (reminder) {
+    await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
+    loadReminders();
+    const restore = async () => {
+      await apiJson(`/reminders/${reminder.id}/restore`, { method: "POST" });
+      loadReminders();
+    };
+    const rebin = async () => {
+      await apiJson(`/reminders/${reminder.id}`, { method: "DELETE" });
+      loadReminders();
+    };
+    const action = pushUndo("Moved a reminder to the bin", restore, rebin);
+    toastAction(`Moved ${toastName(reminder.text, "the reminder")} to the bin.`, "Undo", async () => {
+      settleUndoFromToast(action);
+      await restore().catch((e) => toast(e.message, true));
+      toast(`Restored ${toastName(reminder.text, "the reminder")}.`);
+    });
+  };
+
   //: The new-reminder form as a sheet below 1100 (wiring.js `openReminderCompose` fetches this file first).
   function reminderComposeOpen() {
     const form = $("reminder-compose");

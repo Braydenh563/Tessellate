@@ -520,7 +520,7 @@
   function atlasTailFrame(tail, now) {
     tail.raf = 0;
     const { box, spec } = tail;
-    if (!box.isConnected) return;
+    if (!box.isConnected || tail.held) return;
     //: `data-atlas-hidden`: a hidden window, or the app locked (atlas.js).
     const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !document.documentElement.hasAttribute("data-atlas-hidden");
     //: The rings' and the planets' loops run and rest with it (`atlasRingLoops`).
@@ -528,6 +528,12 @@
     //: (atlas-lazy.css, B87a): drawn every frame then, each one restyles.
     //: And in the lite set (`atlasFrameBudget`), where they are not played at all.
     const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");
+    //: While the page scrolls the companion's tail stops where it is (`atlasTailCalm.scroll`, whose end wakes it); its clock
+    //: starts again from a frame's step, so the sway takes up where it stood.
+    if (live && atlasTailCalm.scroll.on && box.closest("#nm-buddy")) {
+      tail.at = 0;
+      return;
+    }
     if (live) atlasFrameBudget(now);
     //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this
     //: beat's own writes, the loops' play and pause and the breath's scale,
@@ -559,7 +565,8 @@
       for (const anim of box.atlasLoops || []) anim.updatePlaybackRate(pace);
       box.atlasPace = pace !== 1;
     }
-    if (!atlasTailCalm.resting(box, tail.state) && (box.atlasLoopsOn !== loops || now - (box.atlasLoopsAt || 0) > 1000)) {
+    //: Nor while the page scrolls (`atlasTailCalm.scroll` holds them and plays them back).
+    if (!atlasTailCalm.resting(box, tail.state) && !atlasTailCalm.scroll.on && (box.atlasLoopsOn !== loops || now - (box.atlasLoopsAt || 0) > 1000)) {
       box.atlasLoopsOn = loops;
       box.atlasLoopsAt = now;
       for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
@@ -635,6 +642,21 @@
     } else if (live) tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
     else tail.at = 0;
   }
+  //: **The desk frames hold the tail at one moment** (L-ui-modernisation-151, scripts/render_desk_frames.js): drawn at
+  //: phase `w` of one beat of the sway act, the loop held from then on (two captures of a frame were 2,340 to 3,823 px
+  //: apart below the waist), the rest's sway and the breath cancelled. Returns the breath's swell for the capture's own.
+  atlasTailFrame.hold = (tail, w) => {
+    tail.held = true;
+    clearTimeout(tail.raf);
+    cancelAnimationFrame(tail.raf);
+    tail.raf = 0;
+    for (const a of tail.svg?.getAnimations?.() || []) a.cancel();
+    tail.sway = null;
+    tail.resting = false;
+    atlasBreathFrame(tail.box, false);
+    atlasTailDraw(tail, (s) => atlasTailBend(s, ATLAS_TAIL_ACTS.sway, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+    return ATLAS_BREATH_SWELL;
+  };
   const ATLAS_TAIL_CALM_MS = 66;
   function atlasTailCalm(tail, box) {
     return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
@@ -701,6 +723,51 @@
       if (was) setTimeout(() => r.wake.forEach((fn) => fn()), 0);
     }, { passive: true, capture: true });
   }
+  //: **Held while the page scrolls** (L-ui-modernisation-202): every scroll frame restyled the figure's running loops
+  //: (companioncpu.js: 10 to 11 ms a wheel step more with Atlas shown). A wheel or a touch drag pauses every loop that
+  //: never ends (`pause()`: each keeps its phase, so nothing jumps) and the morph draws nothing. After `quiet` ms
+  //: with no scroll since the last `scrollend` (or input, where it never fires) it plays back the ones it paused and no other. A scroll with no wheel
+  //: or touch (the chat following a streamed answer) holds nothing. Collected a task after the input, so a loop the
+  //: rest's wake plays (`atlasTailCalm.rest.wake`) is held too. `atlasRigFrame.held` is the rig's copy (atlas-motion.js loads alone too).
+  atlasTailCalm.scroll = { on: false, held: null, timer: 0, quiet: 200 };
+  atlasTailCalm.scroll.start = () => {
+    const s = atlasTailCalm.scroll;
+    clearTimeout(s.timer);
+    s.timer = setTimeout(s.end, s.quiet);
+    if (s.on) return;
+    const buddy = document.getElementById("nm-buddy");
+    if (!buddy) return;
+    s.on = true;
+    atlasRigFrame.held = true;
+    s.held = buddy.getAnimations({ subtree: true }).filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations === Infinity);
+    for (const a of s.held) a.pause();
+  };
+  atlasTailCalm.scroll.end = () => {
+    const s = atlasTailCalm.scroll;
+    clearTimeout(s.timer);
+    for (const a of s.held || []) if (a.playState === "paused") a.play();
+    s.on = false;
+    s.held = null;
+    //: The tail's and the rig's frames stopped where they stood (`atlasTailFrame`, `atlasRigFrame`); they take up from there.
+    atlasRigFrame.held = false;
+    for (const box of document.getElementById("nm-buddy")?.querySelectorAll(".atl-figure-box") || []) atlasRigWake(box);
+  };
+  for (const type of typeof document.addEventListener === "function" ? ["wheel", "touchmove", "scroll", "scrollend"] : []) {
+    document.addEventListener(type, () => {
+      const s = atlasTailCalm.scroll;
+      //: Not at once: a discrete wheel ends a scroll at every step (companioncpu.js: 66 in 72 steps), and ending the hold
+      //: there paused and played every loop again on each one; the quiet spell ends it, re-armed here.
+      if (type === "scrollend") {
+        if (!s.on) return;
+        clearTimeout(s.timer);
+        s.timer = setTimeout(s.end, s.quiet);
+        return;
+      }
+      if (type === "scroll") return s.on && s.start();
+      setTimeout(s.start, 0);
+    }, { passive: true, capture: true });
+  }
+  //: End of the scroll hold.
   //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
   atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad", "hang", "coil", "ripple_calm", "pool", "heavy"]);
   //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
@@ -933,11 +1000,11 @@
     if (box.atlasBreath?.look === look) return;
     //: Not under the entrance fade: started while `#nm-buddy` is opacity 0 the
     //: torso counts as an empty box and the compositor refuses it for good
-    //: (Chromium status bit 17; both torsos on the reload path, none when
+    //: (Chromium status bit 17; the torso boxes on the reload path, none when
     //: started a beat later). One style read, only at a start or a retune.
     const faded = box.closest?.("#nm-buddy");
     if (faded && +getComputedStyle(faded).opacity === 0) return;
-    box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
+    box.atlasTorsos ||= [...box.querySelectorAll(".atl-lw-torso")];
     if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
     box.atlasBreath?.rise?.updatePlaybackRate?.(1);
     //: The rise's clock is read here only, at a start or a retune (`getAnimations`
@@ -1003,8 +1070,9 @@
     startle: { ms: 260, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
     //: Asleep (INBOX 1680, the owner: "even when it is sleeping, it still sticks
     //: up"): the lower body curls and droops, a slow ease, shorter and wider
-    //: than a lie, the tail wrapped round (a turn well past a lie's).
-    curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
+    //: than a lie, the tail wrapped round (a turn well past a lie's). The first row shears 3.2 degrees, not the join's whole
+    //: 4: the desk's sleeping frames bake it, and at 4 the streams could not lean toward it at all (L-ui-modernisation-150).
+    curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[3, 1.1, 0.74, -5, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
     //: INBOX 1681 (the owner: "crouching down ... lounging ... gliding ... hanging"): a squat folds the
     //: lower body short and wide, a lounge lays it out to one side, a glide trails it long and thin behind
     //: the lean, a drift lets it hang loose and slow, a hang lets it swing from the hips. The act's own
@@ -1028,7 +1096,9 @@
     //: cross-legged, a slow ripple root to hem in a calm spell, a quick flutter when excited, spread flat after a
     //: long sit, a playful kick of the hem when glad, a spiral that unwinds after a twirl, and heavy when tired.
     billow: { ms: 380, ease: "cubic-bezier(0.25, 1.7, 0.5, 1)", v: [[-3, 0.92, 1.1, 9, -30], [-2, 0.9, 1.14, 11, -38], [-3.5, 0.94, 1.08, 7, -26]] },
-    coil: { ms: 800, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -2, 20], [-2, 1.16, 0.68, 2, -18], [1.5, 1.12, 0.72, -3, 26]] },
+    //: The first row keeps the tail up off the seat: reduced motion and the desk's meditate frame draw it, and a tail turned
+    //: down 20 degrees hung 5 to 9 px under the floor the figure sits on (L-ui-modernisation-152).
+    coil: { ms: 800, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[-2, 1.16, 0.68, 2, -18], [2, 1.14, 0.7, -2, 20], [1.5, 1.12, 0.72, -3, 26]] },
     ripple_calm: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.55, 1)", v: [[1.5, 1, 1.03, -3, 8], [-2, 1.02, 1.01, 3, -10], [2.5, 1, 1.04, -2, 12]] },
     flutter: { ms: 300, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-3, 1.03, 0.97, 6, -16], [3, 1.03, 0.96, -6, 18], [-2, 1.04, 0.97, 4, -12]] },
     pool: { ms: 1200, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3, 1.18, 0.62, -3, 30], [-3, 1.2, 0.6, 3, -28], [2, 1.16, 0.64, -2, 24]] },
@@ -1172,8 +1242,11 @@
     stream: 1,
     sway: 1.7,
     breath: 0.03,
+    px: 0.5,
     cmd: /([MCLQZA])|(-?\d*\.?\d+(?:e-?\d+)?)/gi,
   };
+  //: The wave's steepest slope (`at` per clock second): pi times the sum of each octave's weight over its period.
+  atlasRigLower.morph.slope = Math.PI * atlasRigLower.morph.weights.reduce((a, w, h) => a + w / atlasRigLower.morph.periods[h], 0);
   //: A path's points and the letters between them, or null for a path with relative steps. An arc (`A`, a ribbon's round end)
   //: keeps its radii and flags (`pre`) and moves its end point.
   atlasRigLower.morph.parse = (d) => {
@@ -1285,13 +1358,16 @@
     for (const t of targets) M.prep(t);
     return targets;
   };
-  //: A target's delays, from where each point sits: a ribbon one (down its length), the band two, the dress three.
+  //: A target's delays, from where each point sits: a ribbon one (down its length), the band two, the dress three. And
+  //: `reach`, the furthest a point can be from where it was drawn per unit of gain (each `at` is within 1), for `due`.
   atlasRigLower.morph.prep = (t) => {
     const M = atlasRigLower.morph;
     const g = t.group;
+    t.dc = null;
     if (t.kind === "cloud") {
       t.ks = [M.delays([0.2 * t.cy]), M.delays([0.2 * t.cx])];
       t.w = [];
+      t.reach = M.stream * Math.SQRT2;
       return;
     }
     const p = t.pts;
@@ -1302,17 +1378,60 @@
       t.ks = [M.delays(dist.map((d) => 3.2 * (d / g.far)))];
       t.perp = Float32Array.from(dist.flatMap((d, i) => [(-(p[i * 2 + 1] - g.ry) / d), (p[i * 2] - g.rx) / d]));
       t.w = Float32Array.from(dist.map((d) => Math.pow(Math.min(1, d / g.far), 1.4)));
-    } else if (t.kind === "field") t.ks = [M.delays(at((x, y) => 0.16 * y + 0.1 * x)), M.delays(at((x, y) => 0.16 * x - 0.1 * y))];
-    else {
+      t.reach = M.tip * Math.max(...t.w);
+    } else if (t.kind === "field") {
+      t.ks = [M.delays(at((x, y) => 0.16 * y + 0.1 * x)), M.delays(at((x, y) => 0.16 * x - 0.1 * y))];
+      t.reach = M.stream * Math.hypot(1, 0.7);
+    } else {
       t.ks = [M.delays(at((x, y) => 0.12 * y)), M.delays(at((x, y) => 0.05 * y)), M.delays(at((x, y) => 0.1 * x))];
       t.w = Float32Array.from(at((x, y) => Math.pow(Math.min(1, Math.max(0, (y - g.y0) / Math.max(1, g.y1 - g.y0))), 1.5)));
+      t.reach = Math.max(...at((x, y) => Math.hypot(M.sway + Math.abs(x - g.cx) * M.breath, 0.3)).map((r, i) => r * t.w[i]));
     }
+  };
+  //: **How far a target can have moved since it was drawn** (L-ui-modernisation-201: the tick was 3.6 ms of script, 34 ms
+  //: a second traced): at most `slope` times its reach a clock second at the gain, plus its reach times the gain's own
+  //: change. Infinite before its first draw.
+  atlasRigLower.morph.due = (t, m) => (t.dc === null ? Infinity : m.gain * t.reach * atlasRigLower.morph.slope * Math.abs(m.clock - t.dc) + t.reach * Math.abs(m.gain - t.dg));
+  //: **A tick draws only what can have moved half a device pixel** (`px`; `limit` is that in the drawing's units): a
+  //: target held back is never further than that from the shape a draw on every tick would show. Fixed-clock captures
+  //: against that shape (5 clocks): 2 to 24 levels of 255 at most, none over 32, as the old rule's alternate ticks (6
+  //: to 19); a whole pixel was 19 to 49. A slow band waits a few ticks. Returns how many it drew.
+  atlasRigLower.morph.pass = (m, limit) => {
+    const M = atlasRigLower.morph;
+    let n = 0;
+    for (const t of m.targets) {
+      if (M.due(t, m) < limit) continue;
+      M.draw(t, m.clock, m.gain, m.ang);
+      t.dc = m.clock;
+      t.dg = m.gain;
+      n += 1;
+    }
+    return n;
+  };
+  //: Device pixels per unit of the drawing (its screen matrix and the screen's ratio), read once in five seconds, in the
+  //: tick's timer before it writes anything; the large view is larger, so it draws more often.
+  atlasRigLower.morph.scale = (box, m, now) => {
+    if (m.scaleAt && now - m.scaleAt < 5000) return m.scale;
+    m.scaleAt = now;
+    const c = box.querySelector("svg")?.getScreenCTM?.();
+    m.scale = Math.max(0.25, (c ? Math.hypot(c.a, c.b) : 1) * (globalThis.devicePixelRatio || 1));
+    return m.scale;
+  };
+  //: **A point's text from a table** (L-ui-modernisation-201): a full draw prints about 6,000 numbers (69 paths), 3 of its
+  //: 8 ms of script. The strings of every hundredth from -50 to 150, made once, are `String(atlasFix(v))` to the digit,
+  //: so the drawn paths are the same; a point outside them is printed as before.
+  atlasRigLower.morph.num = (v) => {
+    const M = atlasRigLower.morph;
+    if (!M.texts) M.texts = Array.from({ length: 20001 }, (_, i) => String((i - 5000) / 100));
+    const n = Math.round(v * 100);
+    return n >= -5000 && n <= 15000 ? M.texts[n + 5000] : String(n / 100);
   };
   atlasRigLower.morph.draw = (t, clock, gain, ang) => {
     const M = atlasRigLower.morph;
     const p = t.pts;
     const o = t.out;
     const f = atlasFix;
+    const num = M.num;
     const A = (phase, k) => M.angles(clock, phase, ang[k]);
     if (t.kind === "cloud") {
       t.cloud.setAttribute("cx", f(t.cx + M.stream * gain * M.at(A(t.phase, 0), t.ks[0], 0)));
@@ -1340,8 +1459,8 @@
         dx = w * (M.sway * gain * M.at(a0, t.ks[0], n) + (x - g.cx) * M.breath * gain * M.at(a1, t.ks[1], n));
         dy = w * 0.3 * gain * M.at(a2, t.ks[2], n);
       }
-      o[i] = f(x + dx);
-      o[i + 1] = f(y + dy);
+      o[i] = num(x + dx);
+      o[i + 1] = num(y + dy);
     }
     let d = "";
     for (let i = 0, n = 0; i < o.length; i += 2, n += 1) d += `${t.lead[n] || " "}${t.pre[n]}${o[i]} ${o[i + 1]}`;
@@ -1354,6 +1473,7 @@
         t.cloud.setAttribute("cx", t.cx);
         t.cloud.setAttribute("cy", t.cy);
       } else t.el.setAttribute("d", t.d0);
+      t.dc = null;
     }
     if (low.morph) low.morph.moved = false;
   };
@@ -1361,7 +1481,7 @@
   atlasRigLower.morph.run = (rig, buddy) => {
     const M = atlasRigLower.morph;
     const low = rig.lower;
-    const m = (low.morph ||= { ang: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], targets: null, clock: Math.random() * 40, gain: 1, speed: 1, n: 0, at: 0, moved: false, timer: 0 });
+    const m = (low.morph ||= { ang: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], targets: null, clock: Math.random() * 40, gain: 1, speed: 1, at: 0, moved: false, timer: 0, scale: 1, scaleAt: 0 });
     const step = () => {
       clearTimeout(m.timer);
       const box = rig.box;
@@ -1370,6 +1490,7 @@
       const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !root.hasAttribute("data-atlas-hidden") && !root.hasAttribute("data-atlas-lite") && !box.closest("#nm-buddy.nm-buddy-dragging");
       if (!live) {
         if (m.moved) M.rest(low);
+        if (buddy) atlasBlink.saccade.pace(false);
         m.at = 0;
         m.timer = setTimeout(step, 1000);
         return;
@@ -1377,8 +1498,15 @@
       const now = performance.now();
       //: At rest the paths keep the shape they have; the first input starts them again (`atlasTailCalm.rest`).
       if (atlasTailCalm.rest.sync(box, low.state)) {
+        if (buddy) atlasBlink.saccade.pace(false);
         m.at = 0;
         m.timer = setTimeout(step, 1000);
+        return;
+      }
+      //: While the page scrolls the shapes hold (`atlasTailCalm.scroll`); the clock stops with them, so they take up where they were.
+      if (atlasTailCalm.scroll.on) {
+        m.at = 0;
+        m.timer = setTimeout(step, M.tick);
         return;
       }
       m.targets ||= M.build(low);
@@ -1389,11 +1517,10 @@
       m.gain += (reach ** 0.6 - m.gain) * ease;
       m.speed += (1 / rate - m.speed) * ease;
       m.clock += dt * m.speed;
-      //: The ribbons every tick (a tip travels furthest); the band, the dress and the glints, which move a pixel, on alternate ticks.
-      m.n += 1;
-      m.targets.forEach((t, i) => {
-        if (t.kind === "ribbon" || (m.n + i) % 2) M.draw(t, m.clock, m.gain, m.ang);
-      });
+      //: Only the targets that can have moved half a device pixel since their last draw (`pass`).
+      M.pass(m, M.px / M.scale(box, m, now));
+      //: And the irises' step (`atlasBlink.saccade.pace`), the companion's only.
+      if (buddy) atlasBlink.saccade.pace(!box.closest(".nm-viewer-figure"));
       m.moved = true;
       m.timer = setTimeout(step, M.tick);
     };
@@ -1495,6 +1622,8 @@
     const next = () => {
       if (!rig.box.isConnected) return;
       if (document.hidden || rig.box.classList.contains("atl-off")) low.timer = setTimeout(next, 4000);
+      //: Nor while the page scrolls under the companion (`atlasTailCalm.scroll`): a new variant started five endless flow loops the hold never paused.
+      else if (buddy && atlasTailCalm.scroll.on) low.timer = setTimeout(next, atlasTailCalm.scroll.quiet);
       else atlasRigLower(rig, performance.now(), atlasMotionOK(rig.box), buddy);
     };
     if (live && atlasRigLower.rests.has(state)) low.timer = setTimeout(next, low.at - now + 10);

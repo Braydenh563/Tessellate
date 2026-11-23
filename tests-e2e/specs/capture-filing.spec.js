@@ -177,7 +177,7 @@ test.describe("other ways in", () => {
     await openTab(page, "dashboard");
     const bar = page.locator(".dash-widget .capture-bar");
     await expect(bar.locator(".capture-bar-input")).toBeVisible();
-    await bar.locator(".capture-bar-todo").click();
+    await bar.locator(".capture-bar-list").click();
     const card = bar.locator("#capture-card");
     await expect(card).toBeVisible();
     await expect(card.locator('[data-cc="draw"]')).toBeVisible();

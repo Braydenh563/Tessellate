@@ -1,4 +1,6 @@
-"""L-whiteboard-46: rich text in a drawn shape's label (WHITEBOARD_PLAN section 2, formatted text).
+"""Source text: reads the board's script files to lift functions into node, because the page code needs a browser; the asserts are on what that lifted code returns.
+
+L-whiteboard-46: rich text in a drawn shape's label (WHITEBOARD_PLAN section 2, formatted text).
 
 `whiteboard-label-rich.js` draws a label whose data says `label_md: true` through the board's own markdown renderer
 and makes the result inert. The pure link rule runs in node; the rendering runs in a real browser (playwright,

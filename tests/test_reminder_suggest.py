@@ -152,7 +152,7 @@ def test_a_long_blank_run_is_tidied_in_linear_time():
 
     from tessellate.ai.reminder_suggest import _tidy
 
-    started = time.perf_counter()
+    started = time.process_time()
     assert _tidy("x" + "\t" * 50000 + "y").endswith("y")
-    assert time.perf_counter() - started < 0.05
+    assert time.process_time() - started < 0.05
     assert _tidy("pay rent, by") == "pay rent" and _tidy("online") == "online"

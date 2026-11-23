@@ -720,7 +720,7 @@ function showLockScreen(setupMode) {
     if (setupMode) note.textContent = note.dataset.text;
     note.classList.toggle("hidden", !setupMode);
   }
-  $("lock-submit").textContent = setupMode ? "Set password & start" : "Unlock";
+  $("lock-submit").textContent = setupMode ? "Set password and start" : "Unlock";
   $("lock-overlay").dataset.mode = setupMode ? "setup" : "unlock";
   lockFieldForPin(setupMode ? false : pinHere);
   // One field in two modes (no separate setup form), autocomplete has to
@@ -1267,6 +1267,9 @@ function confirmVerb(message) {
 
 // One confirm at a time (HR20): a second ask waits for the first to close, so
 // each takes focus and Esc answers the one the person can see.
+//: `host`: inside the open modal `<dialog>` (top layer, makes the rest inert), else the page: a confirm on <body> sat beneath it (L453). A property, not a global (the scope ratchet).
+confirmDialog.host = () => [...document.querySelectorAll("dialog:modal")].pop() || document.body;
+
 function confirmDialog(message, options = {}) {
   confirmDialog.n = confirmDialog.n || 0;
   const {
@@ -1352,7 +1355,7 @@ function confirmDialog(message, options = {}) {
     // Clicking the backdrop cancels, the way every other overlay here behaves.
     wireBackdropClose(overlay, () => close());
     document.addEventListener("keydown", onKey, true);
-    document.body.appendChild(overlay);
+    confirmDialog.host().appendChild(overlay);
     // Cancel takes focus, not the dangerous one: a stray Enter or Space
     // arriving with the dialog must not be the thing that deletes the notes.
     cancel.focus();
@@ -1478,7 +1481,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     overlay.appendChild(card);
     wireBackdropClose(overlay, () => close(""));
     document.addEventListener("keydown", onKey, true);
-    document.body.appendChild(overlay);
+    confirmDialog.host().appendChild(overlay);
     // The text, selected: a rename usually replaces the name rather than
     // editing it, and a caret at position 0 makes you clear it by hand first.
     input.focus();
@@ -1760,14 +1763,23 @@ function lazyScript(file) {
   return lazyFileLoads.get(file);
 }
 
+//: Bundles whose every file has run. A bundle's real functions replace their stand-ins file by file,
+//: so a caller in the gap between can reach one whose neighbours have not run yet (the edit form's
+//: `mountGutterFor` before `docGutterPref`, note-edit-panels.js).
 function ensureModule(name) {
   const files = LAZY_MODULES[name];
   if (!files) return Promise.resolve(false);
   if (!lazyModuleLoads.has(name)) {
-    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => results.every(Boolean) || !lazyModuleLoads.delete(name)));
+    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => {
+      const ok = results.every(Boolean);
+      if (ok) ensureModule.ready.add(name);
+      else lazyModuleLoads.delete(name);
+      return ok;
+    }));
   }
   return lazyModuleLoads.get(name);
 }
+ensureModule.ready = new Set();
 
 //: **The note editor's door, kept at boot.** The rendering editor every note box gets (documents.js's `NOTE_SURFACES` table and `mountNoteSurface`) mounts on the box's first focus through a listener *in documents.js*, which is in the Library bundle now. So on a fresh boot the capture box, the edit form, the draft and the graph's popup all stayed bare textareas until the Library tab had been visited once (the owner: "the graph popup panels no longer auto render the md and images"). This listener is the half that has to live in the file that is always loaded: it fetches the bundle on the first focus of a note box and hands the mount over. Once the bundle is in, its own listener runs on every later focus and this one steps aside. `NOTE_SURFACE_IDS` mirrors the table's keys, and `tests/test_note_surface.py` fails when the two drift.
 const NOTE_SURFACE_IDS = new Set([
@@ -1860,7 +1872,7 @@ const LAZY_ENTRY_POINTS = {
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
-  settingsControls: ["refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
+  settingsControls: ["ensureSettingsFoldAll", "refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
@@ -1953,4 +1965,5 @@ installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
 //: The library bundle is warmed after the first touch (lazy-entries.js), not here.
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments"].forEach(ensureModule), 3000);
+//: The bell's panel too: on a slow link its first press waited 3s with nothing drawn (L409).
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments", "notifications"].forEach(ensureModule), 3000);

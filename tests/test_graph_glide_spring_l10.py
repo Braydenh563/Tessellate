@@ -1,4 +1,6 @@
-"""A camera glide cut off by another continues at the speed it had (LEDGER L10).
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+A camera glide cut off by another continues at the speed it had (LEDGER L10).
 
 Before, the second glide began from rest on d3's cubic ease, so the view
 stalled at the join: a pan of 400 px over 220 ms interrupted at its peak

@@ -10,7 +10,7 @@
 // *what* to fix rather than only that something is wrong.
 //
 //   BASE=http://127.0.0.1:8802 WIDTHS=390,1024 node chrome.js
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const WIDTHS = (process.env.WIDTHS || '390').split(',').map(Number);

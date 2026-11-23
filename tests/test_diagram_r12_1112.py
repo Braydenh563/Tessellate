@@ -1,4 +1,6 @@
-"""R11/R12 leftovers (owner 2026-11-12): the sheet of existing diagrams, the Embed row's picker, the first branch off a decision,
+"""Source text: the behaviour is CSS and front-end script that only a browser renders, and pytest has none, so these pin the rules' text.
+
+R11/R12 leftovers (owner 2026-11-12): the sheet of existing diagrams, the Embed row's picker, the first branch off a decision,
 key hints on touch, and a diagram's list and chat words. Source reads; the numbers are in the Playwright sweep named in HISTORY."""
 
 from __future__ import annotations

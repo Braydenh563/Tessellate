@@ -36,6 +36,7 @@ class HangingModel:
         self.holding = threading.Event()
         self.client_closed = threading.Event()
         self._stop = False
+        self._held: list[socket.socket] = []
         threading.Thread(target=self._accept, daemon=True).start()
 
     def _accept(self) -> None:
@@ -61,6 +62,10 @@ class HangingModel:
                 return
             self.held += 1
             self.holding.set()
+            #: Held until the client closes it, however long (L-general-70): a fake
+            #: that let go after its own 10 s would end an uncut call inside the guard.
+            conn.settimeout(None)
+            self._held.append(conn)
             while True:
                 chunk = conn.recv(65536)  # the rest of the body, then silence
                 if not chunk:
@@ -76,6 +81,11 @@ class HangingModel:
     def close(self) -> None:
         self._stop = True
         self.server.close()
+        for conn in self._held:
+            try:
+                conn.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass  # the client already hung up, so nothing is left to wake
 
 
 @pytest.fixture()
@@ -85,9 +95,21 @@ def hanging():
     model.close()
 
 
-#: Only a guard against a hung test, never a speed claim: the timed claims
-#: are the `took` and `started` asserts, unchanged.
+#: Only a guard against a hung test, never a speed claim (L-general-70): the
+#: model is held until the client lets go, and an uncut call waits its read
+#: timeout (60 s for chat, 600 s otherwise), past the guard, so a call that ends
+#: inside it was cut by its stop or its deadline.
 HANG_GUARD = 30.0
+
+
+def _answered(call):  # noqa: ANN001, ANN202
+    """The call's result, from a thread that must finish inside the guard."""
+    out: list = []
+    worker = threading.Thread(target=lambda: out.append(call()), daemon=True)
+    worker.start()
+    worker.join(HANG_GUARD)
+    assert out, "the call waited on the held model"
+    return out[0]
 
 
 def _seen(event: threading.Event) -> bool:
@@ -98,10 +120,9 @@ def test_stop_cuts_a_call_still_waiting_for_the_first_byte(hanging):
     event = activity.StopEvent()
     job = activity.Job("generation", "t", None, True, None, event)
     threading.Timer(0.3, event.set).start()
-    started = time.monotonic()
-    with activity.bind(job), pytest.raises(provider_http.RequestException):
+    # Cancelled, not the read timeout's error: the stop cut the call (L-general-70).
+    with activity.bind(job), pytest.raises(provider_http.Cancelled):
         provider_http.post(f"{hanging.url}/api/chat", json={"x": 1}, stream=True, timeout=(3, 60))
-    assert time.monotonic() - started < 2.0
     assert _seen(hanging.client_closed) and hanging.closed_by_client == 1
 
 
@@ -125,11 +146,8 @@ def test_a_utility_route_answers_within_its_deadline_and_cuts_the_model(app_stat
     deps.override_ai(ollama=ollama_client.OllamaClient(base_url=hanging.url))
     api = TestClient(create_app())
     api.get("/health")  # the app's first request pays its own warm-up; time the route alone
-    started = time.monotonic()
-    response = api.post("/drafts/title", json={"draft": "A draft about the garden and the spring plan."})
-    took = time.monotonic() - started
+    response = _answered(lambda: api.post("/drafts/title", json={"draft": "A draft about the garden and the spring plan."}))
     assert response.status_code == 200 and response.json()["title"] == ""
-    assert took < 4.0
     assert hanging.held >= 1 and _seen(hanging.client_closed)
 
 
@@ -209,10 +227,6 @@ def silent():
     model.close()
 
 
-def _timed(api, path):
-    started = time.monotonic()
-    response = api.get(path)
-    return response, time.monotonic() - started
 
 
 #: The provider calls that reach the runner. A decorating route may only ask
@@ -319,9 +333,9 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     # The app's first request pays its own start-up; on a loaded CI runner that
     # alone was 2.3 s, so it is paid before the timed one (any route will do).
     api.get("/health")
-    first, took = _timed(api, "/websearch/searxng/status")
-    # Far under the 10 s hang, with room for a loaded runner (-n auto).
-    assert first.status_code == 503 and took < 2.0
+    first = api.get("/websearch/searxng/status")
+    # Held, not timed (L-general-70): it answered while the docker probe still hung.
+    assert first.status_code == 503 and not answered.is_set()
     release.set()
     assert _seen(answered)
     # The probe has answered; its result is stored a moment after it returns.
@@ -331,8 +345,11 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
         time.sleep(0.05)
     else:
         pytest.fail("the stored probe answer never reached the route")
-    second, took = _timed(api, "/websearch/searxng/status")
-    assert second.status_code == 200 and took < 1.0
+    release.clear()  # docker hangs again: any probe this request asks stays held
+    second = api.get("/websearch/searxng/status")
+    # Held, not timed (L-general-70): the stored answer, while docker hung again.
+    assert second.status_code == 200 and not release.is_set()
+    release.set()
 
 
 def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(app_state, hanging, monkeypatch):
@@ -344,9 +361,6 @@ def test_the_non_streaming_chat_answers_after_its_deadline_and_cuts_the_model(ap
     deps.override_ai(ollama=ollama_client.OllamaClient(base_url=hanging.url))
     api = TestClient(create_app(), raise_server_exceptions=False)
     api.post("/entries", json={"content": "The sourdough starter needs feeding every morning."})
-    started = time.monotonic()
-    response = api.post("/chat", json={"question": "what did I write about the starter", "use_tools": False})
-    took = time.monotonic() - started
+    response = _answered(lambda: api.post("/chat", json={"question": "what did I write about the starter", "use_tools": False}))
     assert response.status_code in (200, 504), response.text[:200]
-    assert took < 5.0
     assert hanging.held >= 1 and _seen(hanging.client_closed)

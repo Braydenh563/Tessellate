@@ -425,6 +425,53 @@ def _rapidocr_reader():
     raise ImportError("no RapidOCR package is installed")
 
 
+def _rapidocr_prepared(image_path: Path) -> tuple[Path | None, float]:
+    """A copy of the page RapidOCR reads better (L703), and how much bigger it
+    is: light text on a dark ground turned dark on light, and text too small
+    for its detector scaled up, as `ocr_prep` does for Tesseract. Not the
+    Otsu contrast stretch: RapidOCR's own detector reads colour and grey, and
+    a photo pushed to two tones loses edges it would have found. A page that
+    needs neither is read as it came (None), and so is one Pillow cannot
+    open: preparing must never cost the read."""
+    try:
+        import tempfile  # noqa: PLC0415
+
+        from PIL import Image, ImageOps  # noqa: PLC0415  # optional extra
+
+        with Image.open(image_path) as img:
+            grey = ocr_prep.to_grey(img)
+        dark = ocr_prep.is_dark_ground(grey.histogram())
+        if dark:
+            grey = ImageOps.invert(grey)
+        scale = ocr_prep.scale_factor(ocr_prep.estimate_text_height(grey), *grey.size)
+        if scale > 1.0:
+            size = (max(1, round(grey.width * scale)), max(1, round(grey.height * scale)))
+            grey = grey.resize(size, resample=Image.Resampling.LANCZOS)
+        if not dark and scale <= 1.0:
+            return None, 1.0
+        handle, name = tempfile.mkstemp(suffix=".png", prefix="ocr-prep-")
+        os.close(handle)
+        grey.save(name)
+        return Path(name), max(scale, 1.0)
+    except Exception:  # noqa: BLE001  # the plain read is the old behaviour
+        logger.info("RapidOCR preparation skipped for %s", image_path.name, exc_info=True)
+        return None, 1.0
+
+
+def _rapidocr_read(image_path: Path) -> tuple[object, float] | None:
+    """RapidOCR's raw answer for the page, read from the prepared copy when
+    there is one (removed after), and that copy's scale; None when it fails."""
+    prepared, scale = _rapidocr_prepared(image_path)
+    try:
+        return _rapidocr_reader()(str(prepared or image_path)), scale
+    except Exception:
+        logger.warning("RapidOCR failed for %s", image_path.name, exc_info=True)
+        return None
+    finally:
+        if prepared is not None:
+            prepared.unlink(missing_ok=True)
+
+
 def _rapidocr_lines(image_path: Path) -> list[tuple[list, str, float]] | None:
     """`(box, text, score)` per line RapidOCR found, in its reading order, or
     None when it cannot run. A box is four `[x, y]` corners; a score 0 to 1.
@@ -432,12 +479,10 @@ def _rapidocr_lines(image_path: Path) -> list[tuple[list, str, float]] | None:
     The 1.x call returns `(result, elapse)` with `result` a list of
     `[box, text, score]` or None for a page with no text; 2.x returns an
     object with `boxes`, `txts` and `scores`. Both are read."""
-    try:
-        reader = _rapidocr_reader()
-        out = reader(str(image_path))
-    except Exception:
-        logger.warning("RapidOCR failed for %s", image_path.name, exc_info=True)
+    read = _rapidocr_read(image_path)
+    if read is None:
         return None
+    out, scale = read
     if isinstance(out, tuple):
         out = out[0]
     if out is None:
@@ -455,7 +500,7 @@ def _rapidocr_lines(image_path: Path) -> list[tuple[list, str, float]] | None:
         if not text:
             continue
         try:
-            corners = [[float(x), float(y)] for x, y in box]
+            corners = [[float(x) / scale, float(y) / scale] for x, y in box]
         except (TypeError, ValueError):
             continue
         lines.append((corners, text, float(score)))

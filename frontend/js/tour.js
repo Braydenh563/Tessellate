@@ -274,6 +274,8 @@
           library: "library-view-documents",
           title: "Make something new",
           text: "Create starts a new note, document, board or mind map.",
+          or: "#library-empty-create",
+          orText: "With nothing here yet, Create starts your first note, document, board or mind map.",
         },
         {
           target: "#library-subtab-docs",

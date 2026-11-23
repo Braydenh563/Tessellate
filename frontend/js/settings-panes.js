@@ -277,7 +277,7 @@ function refitComposer() {
 //: it scroll"). Measured at 1440x720 with no model connected: the pane is
 //: 295px and the welcome 350px, so a new chat opened on a scrollbar. Below
 //: its own natural height the welcome drops the emblem and tightens its
-//: spacing (`.chat-empty.is-short`, 08-consistency.css), which is 110px back.
+//: spacing (`.chat-empty.is-short`, 07-whiteboard-misc.css), which is 110px back.
 //: The choice is made against the welcome's *full* height, and that is never
 //: read by taking the class off: doing so resized the pane whenever the pane's
 //: own height followed its content, the ResizeObserver fired on it, and the

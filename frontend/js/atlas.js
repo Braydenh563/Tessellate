@@ -103,7 +103,7 @@
 //:   moods, each a combination of all of these plus head tilt, body
 //:   squash, ear, hair, tail and ring lift and star brightness and one
 //:   small extra (sparkles, hearts, a thought, a tear). The combinations
-//:   are CSS (`[data-atlas-mood]` in 08-consistency.css); this file draws
+//:   are CSS (`[data-atlas-mood]` in 05-sidebars-themes.css); this file draws
 //:   the parts and says which mood.
 //: - **Life.** Breathing squash and stretch from the feet, blinks with an
 //:   occasional double blink, the tail swaying (wagging when pleased) with
@@ -2477,11 +2477,11 @@ function atlasBody(parent, id, props, look, route = null) {
   const tailAt = route ? pair(route.tail) : layers;
   const tipAt = route && route.tailTip ? pair(route.tailTip) : null;
   const lowerAt = route && route.lower ? pair(route.lower) : layers;
+  const torsoAt = route && route.torso ? pair(route.torso) : layers;
   const legAt = route && route.legs ? { l: pair(route.legs.l), r: pair(route.legs.r) } : null;
   const frontAt = route ? { fill: route.front } : layers;
   const arms = {};
-  //: The companion's glint layers (INBOX 550), each built as the wisps'
-  //: layer is, so the glints hold the same pose: [the dress's group, the top].
+  //: The companion's glint layers (INBOX 550), built as the wisps' layer is, so they hold its pose: [the dress's group, the top].
   const glintRoots = route && route.glints ? route.glints.map((rig) => {
     const top = atlasGroup(rig, "atl-astral");
     return [atlasGroup(atlasGroup(top, "atl-astral-hips", [31, 57]), "atl-lower", spec.lowerPivot), top];
@@ -2513,7 +2513,7 @@ function atlasBody(parent, id, props, look, route = null) {
     //: companion's leg groups stay, empty, so its behaviours find them.
     //: Its pivot is the ribbon's root at the hips (the first point of
     //: `spec.lower`). In the companion the sway is on the layer's root
-    //: (`.atl-layer-lower`, 08-consistency.css) with the same point as its
+    //: (`.atl-layer-lower`, 07-whiteboard-misc.css) with the same point as its
     //: origin, so the group's own pivot is for the lab and the avatar
     //: levels, where there is no layer; the same point in every layer
     //: keeps edge and fill as one.
@@ -2588,7 +2588,7 @@ function atlasBody(parent, id, props, look, route = null) {
       atlasMake("path", { class: edge ? "atl-edge" : "atl-skin", d }, hold);
       if (!edge) atlasMake("path", { class: "atl-overlay atl-rim-body", d }, hold);
     }
-    const torso = atlasGroup(layer, "nmb-torso");
+    const torso = atlasGroup(torsoAt[kind], "nmb-torso");
     //: The look that flows into a skirt has no hem: the torso fades out
     //: over the skirt's top (round 8, the `waist` mask).
     if (spec.lowers) torso.setAttribute("mask", `url(#${id}-waist)`);
@@ -3103,11 +3103,49 @@ function atlasAuraAt(spec) {
 //: Every layer carries the mood and look attributes, so the CSS variables
 //: agree across them, and the lids layer mirrors the head's tilt.
 const ATLAS_ROOT_BOXES = ["body", "tail", "lower", "leg-l", "leg-r", "neb", "neb-front", "wisps", "wisps-back", "glint-a", "glint-b"];
+//: Why the figure is built the way `atlasDrawFigure` builds it, moved out of the function so it stays under the size cap
+//: (js_size_seed.json); each note says which part of the loop or of the tail of the function it explains.
+//: In the layer loop, where each root is put in its box:
+//: **A `rotate` or `translate` loop goes on a box of its own.** The
+//: body's slow sway, the tail's and the nebula's flow, the skirt's and
+//: the legs' limb gestures (`nameMarkBuddyLimbs`, rotate and scale; a
+//: leg's step, kick and dangle are `transform`, which an svg root
+//: does run on the compositor): Chromium never runs those two
+//: properties on the compositor for an `<svg>` root, so each restyled
+//: the page every frame (140 to 500ms of every 2.6s). On a plain HTML
+//: box they do, so the root sits in one (`.atl-lw`).
+//: **The lids breathe and sway with the face** (INBOX 540). The body
+//: layer breathed on its own root and swayed on its box, and the lids
+//: layer did neither, so a blink landed up to a unit off the eye it
+//: covered (measured: 0.9px at 1x, the right eye's white showing past
+//: the lid). Now the body's box holds a breathing box of its own
+//: (`.atl-lw-breathe`, the loop moved there from the root) and both
+//: the body and the lids roots sit in it.
+//: **The hair, a layer of its own** (INBOX 554, 564: secondary motion
+//: on the compositor). The mane is drawn behind the head in a root of
+//: its own, under the body's, in a box (`.atl-lw-hair`) that sways it
+//: about its roots a beat behind the body's sway, so the hair trails
+//: the head; the box is inside the body's breathing box, so it breathes
+//: and sways with the figure as well.
+//: The tip half turns about the joint in a box of its own inside the
+//: tail's box (`.atl-lw-tip`), so the root's sway carries it and its
+//: own sway, a quarter behind, is the wave.
+//: After the loop, where the lower body is seated in the body's breathing box:
+//: **The lower body moves with the torso** (INBOX 615, the owner: "the
+//: atlas masculine main body and lower body are slightly misaligned").
+//: The body's box swayed about the feet and breathed, and the lower
+//: body's box did neither, so at the join, where the torso fades into it,
+//: the two outlines slid apart by up to 3.4px at 2.2x at rest, and further
+//: through a change of pose (atlas615-join.js). Its box now sits in the
+//: body's breathing box, first, under the hair and the body as before, so
+//: every sway and breath moves the two as one; what it does of its own
+//: (its wind, its pose for the state) turns about the join itself.
 function atlasDrawFigure(mood) {
   const look = atlasLook();
   const frag = document.createDocumentFragment();
   const layers = {};
   let hairBox = null;
+  let torsoBox = null;
   const spec = ATLAS_LOOKS[look] || ATLAS_LOOKS.masculine;
   //: The legs are two layers of their own, under the body as the drawing
   //: has them, and each root wears the companion's `nmb-leg-<side>` class:
@@ -3125,7 +3163,24 @@ function atlasDrawFigure(mood) {
   //: compositor, no layout and no paint (`.atl-layer-neb`, the CSS).
   //: `neb-front` (round 9) is the orbit's near half, over the rings, on
   //: the same drift so the two halves move as one ribbon.
-  const names = ["neb", "back", ...(spec.wisps ? ["wisps-back"] : []), "tail", ...(spec.tailWave ? ["tail-tip"] : []), ...(spec.lowers ? ["lower"] : []), ...(legs ? ["leg-l", "leg-r"] : []), "hair", "body", "lidf-1", "lidf-2", "lids", "front", "neb-front", ...(spec.wisps ? ["wisps", "glint-a", "glint-b"] : []), "fx-1", "fx-2"];
+  //: **A root's own loop runs on a box round it** (L-ui-modernisation-201):
+  //: the front's shimmer, the skirt's idle drift and the nebula's drift ran
+  //: on the `<svg>` roots, and Chromium composites no animation on an SVG
+  //: element, the outer `<svg>` included, so each restyled the figure every
+  //: frame. The box (`.atl-lw-root`, the same 64 by 92 at the same place)
+  //: runs the same keyframes on the compositor; the nebula's lean and pose
+  //: turn move to it with its drift, so they compose in the order they did.
+  //: Whole class names, not a template, so the unused-CSS lint can find them.
+  const loopBoxClass = { front: "atl-lw-root-front", lower: "atl-lw-root-lower", neb: "atl-lw-root-neb", "neb-front": "atl-lw-root-neb-front" };
+  const loopBox = (name, svg) => {
+    if (!Object.hasOwn(loopBoxClass, name)) return svg;
+    const box = document.createElement("span");
+    box.className = `atl-lw-root ${loopBoxClass[name]}`;
+    box.dataset.atlasLook = look;
+    box.appendChild(svg);
+    return box;
+  };
+  const names = ["neb", "back", ...(spec.wisps ? ["wisps-back"] : []), "tail", ...(spec.tailWave ? ["tail-tip"] : []), ...(spec.lowers ? ["lower"] : []), ...(legs ? ["leg-l", "leg-r"] : []), "hair", "torso", "body", "head", "lidf-1", "lidf-2", "lids", "front", "neb-front", ...(spec.wisps ? ["wisps", "glint-a", "glint-b"] : []), "fx-1", "fx-2"];
   for (const name of names) {
     const legSide = name.startsWith("leg-") ? name.slice(4) : "";
     //: Her tail's tip half (`tailWave`) is a tail layer too, so every
@@ -3140,30 +3195,6 @@ function atlasDrawFigure(mood) {
     const pose = atlasGroup(svg, "atl-pose", ATLAS_GEO.feet);
     const rig = atlasGroup(atlasGroup(pose, "atl-mood", ATLAS_GEO.feet), "atl-rig", ATLAS_GEO.feet);
     layers[name] = { svg, pose, rig };
-    //: **A `rotate` or `translate` loop goes on a box of its own.** The
-    //: body's slow sway, the tail's and the nebula's flow, the skirt's and
-    //: the legs' limb gestures (`nameMarkBuddyLimbs`, rotate and scale; a
-    //: leg's step, kick and dangle are `transform`, which an svg root
-    //: does run on the compositor): Chromium never runs those two
-    //: properties on the compositor for an `<svg>` root, so each restyled
-    //: the page every frame (140 to 500ms of every 2.6s). On a plain HTML
-    //: box they do, so the root sits in one (`.atl-lw`).
-    //: **The lids breathe and sway with the face** (INBOX 540). The body
-    //: layer breathed on its own root and swayed on its box, and the lids
-    //: layer did neither, so a blink landed up to a unit off the eye it
-    //: covered (measured: 0.9px at 1x, the right eye's white showing past
-    //: the lid). Now the body's box holds a breathing box of its own
-    //: (`.atl-lw-breathe`, the loop moved there from the root) and both
-    //: the body and the lids roots sit in it.
-    //: **The hair, a layer of its own** (INBOX 554, 564: secondary motion
-    //: on the compositor). The mane is drawn behind the head in a root of
-    //: its own, under the body's, in a box (`.atl-lw-hair`) that sways it
-    //: about its roots a beat behind the body's sway, so the hair trails
-    //: the head; the box is inside the body's breathing box, so it breathes
-    //: and sways with the figure as well.
-    //: The tip half turns about the joint in a box of its own inside the
-    //: tail's box (`.atl-lw-tip`), so the root's sway carries it and its
-    //: own sway, a quarter behind, is the wave.
     if (name === "tail-tip" && frag.querySelector(".atl-lw-tail")) {
       const tip = document.createElement("span");
       tip.className = "atl-lw atl-lw-tip";
@@ -3173,16 +3204,13 @@ function atlasDrawFigure(mood) {
       tip.appendChild(svg);
       frag.querySelector(".atl-lw-pose-tail").appendChild(tip);
     } else if (name === "hair") {
-      hairBox = document.createElement("span");
-      hairBox.className = "atl-lw atl-lw-hair";
-      hairBox.dataset.atlasLook = look;
       //: The hair's pose for what it is doing (INBOX 575, the rig).
-      const pose = document.createElement("span");
-      pose.className = "atl-lw-pose atl-lw-pose-hair";
+      const pose = atlasDrawFigure.box("atl-lw-pose atl-lw-pose-hair", look, svg);
       pose.style.transformOrigin = "32px 15px";
-      pose.appendChild(svg);
-      hairBox.appendChild(pose);
-    } else if (name.startsWith("lid") && frag.querySelector(".atl-lw-breathe")) frag.querySelector(".atl-lw-breathe").appendChild(svg);
+      hairBox = atlasDrawFigure.box("atl-lw atl-lw-hair", look, pose);
+    } else if (name === "torso") torsoBox = atlasDrawFigure.box("atl-lw-torso", look, svg);
+    else if (name === "head" && frag.querySelector(".atl-lw-breathe")) frag.querySelector(".atl-lw-breathe").appendChild(atlasDrawFigure.box("atl-lw-head", look, svg));
+    else if (name.startsWith("lid") && frag.querySelector(".atl-lw-head")) frag.querySelector(".atl-lw-head").appendChild(svg);
     else if (ATLAS_ROOT_BOXES.includes(name)) {
       const box = document.createElement("span");
       box.className = `atl-lw atl-lw-${name}`;
@@ -3195,6 +3223,7 @@ function atlasDrawFigure(mood) {
         into.className = "atl-lw-breathe";
         box.appendChild(into);
         if (hairBox) into.appendChild(hairBox);
+        if (torsoBox) into.appendChild(torsoBox);
       }
       //: The lower body's and the tail's pose for what it is doing (INBOX
       //: 575, `atlasLowerState`): a box inside each one's loop box, turned,
@@ -3208,20 +3237,20 @@ function atlasDrawFigure(mood) {
         const [ox, oy] = name === "tail" ? spec.tailSegsNow[0].slice(0, 2) : name.startsWith("neb") ? [31, 52] : spec.lowerPivot || [31, 55.5];
         into.style.transformOrigin = `${ox}px ${oy}px`;
         box.appendChild(into);
+        //: **Her wisps' own drift and curl run on an HTML box** (L-ui-modernisation-95): on the `<svg>` itself a
+        //: `translate` or `rotate` loop runs on the main thread (Chromium composites no independent transform on an
+        //: SVG target), and those eight loops asked for a frame every vsync, each restyling the whole figure.
+        if (["wisps", "wisps-back", "glint-a", "glint-b"].includes(name)) {
+          const drift = document.createElement("span");
+          drift.className = "atl-lw-drift";
+          into.appendChild(drift);
+          into = drift;
+        }
       }
-      into.appendChild(svg);
+      into.appendChild(loopBox(name, svg));
       frag.appendChild(box);
-    } else frag.appendChild(svg);
+    } else frag.appendChild(loopBox(name, svg));
   }
-  //: **The lower body moves with the torso** (INBOX 615, the owner: "the
-  //: atlas masculine main body and lower body are slightly misaligned").
-  //: The body's box swayed about the feet and breathed, and the lower
-  //: body's box did neither, so at the join, where the torso fades into it,
-  //: the two outlines slid apart by up to 3.4px at 2.2x at rest, and further
-  //: through a change of pose (atlas615-join.js). Its box now sits in the
-  //: body's breathing box, first, under the hair and the body as before, so
-  //: every sway and breath moves the two as one; what it does of its own
-  //: (its wind, its pose for the state) turns about the join itself.
   const lowerBox = [...frag.children].find((el) => el.classList.contains("atl-lw-lower"));
   const breathe = frag.querySelector(".atl-lw-breathe");
   if (lowerBox && breathe) {
@@ -3233,11 +3262,11 @@ function atlasDrawFigure(mood) {
   atlasMake("ellipse", { class: "atl-aura", ...atlasAuraAt(spec) }, layers.back.pose);
   //: The rings, in boxes of their own over and under the figure (`atlasRings`).
   layers.back.svg.after(atlasRings(look, false));
-  atlasBody(layers.body.rig, id, true, look, { neb: layers.neb.rig, back: layers.back.rig, tail: layers.tail.rig, tailTip: layers["tail-tip"]?.rig, lower: layers.lower?.rig, wisps: layers.wisps?.rig, wispsBack: layers["wisps-back"]?.rig, glints: spec.wisps ? [layers["glint-a"].rig, layers["glint-b"].rig] : null, legs: legs ? { l: layers["leg-l"].rig, r: layers["leg-r"].rig } : null, front: layers.front.rig });
+  atlasBody(layers.body.rig, id, true, look, { neb: layers.neb.rig, back: layers.back.rig, torso: layers.torso.rig, tail: layers.tail.rig, tailTip: layers["tail-tip"]?.rig, lower: layers.lower?.rig, wisps: layers.wisps?.rig, wispsBack: layers["wisps-back"]?.rig, glints: spec.wisps ? [layers["glint-a"].rig, layers["glint-b"].rig] : null, legs: legs ? { l: layers["leg-l"].rig, r: layers["leg-r"].rig } : null, front: layers.front.rig });
   //: `atl-head-lag` (the rig, INBOX 564): the head's lag behind a change of
   //: pose, a turn of its own inside every rule that turns the head.
   const headChain = (rig) => atlasGroup(atlasGroup(atlasGroup(rig, "nm-buddy-head", ATLAS_GEO.neck), "atl-head-lag", ATLAS_GEO.neck), "name-mark atl-face");
-  const host = headChain(layers.body.rig);
+  const host = headChain(layers.head.rig);
   //: The hair layer turns as the head does: the same chain of groups, so
   //: every rule that turns, tilts or nods the head moves its hair.
   const hairAt = atlasGroup(atlasGroup(headChain(layers.hair.rig), "atl-head", ATLAS_GEO.neck), "atl-sway", ATLAS_GEO.neck);
@@ -3247,12 +3276,12 @@ function atlasDrawFigure(mood) {
   //: the way down (`atlasBlink`).
   atlasLids(layers["lidf-1"].rig, look, 0.38);
   atlasLids(layers["lidf-2"].rig, look, 0.72);
-  layers.front.svg.after(atlasRings(look, true));
+  layers.front.svg.parentElement.after(atlasRings(look, true));
   atlasBand(layers["neb-front"].rig, id, "front", look);
   //: The head drew its extras in the body layer; the two that rise (the
   //: Zs, the hearts) move to their roots, each pair under the wrappers the
   //: mood shows and hides (`.atl-fx-hearts`, `.atl-fx-zz`).
-  const extras = layers.body.rig.querySelector(".atl-fx");
+  const extras = layers.head.rig.querySelector(".atl-fx");
   if (extras) {
     for (const [name, late] of [["fx-1", false], ["fx-2", true]]) {
       const fx = atlasGroup(layers[name].rig, "atl-fx");
@@ -3269,6 +3298,17 @@ function atlasDrawFigure(mood) {
   frag.appendChild(atlasOrbits());
   return frag;
 }
+//: A layer's HTML box holding `child`. The torso's (`atl-lw-torso`) and the head's (`atl-lw-head`, with the lids in it) are
+//: boxes of their own inside the breath box (L-ui-modernisation-201), so the chest's swell (`atlasBreathFrame`) and the
+//: micro habits' tilt and hum (atlas-micro.js) are a `transform` on an HTML box the compositor runs, not a change on an
+//: SVG group the main thread lays out and repaints every frame (about 80 ms/s while a tilt ran).
+atlasDrawFigure.box = (className, look, child) => {
+  const box = document.createElement("span");
+  box.className = className;
+  box.dataset.atlasLook = look;
+  box.appendChild(child);
+  return box;
+};
 
 //: **The planets go round their rings** (round 7, INBOX 430, the owner:
 //: "the bodies on them slowly orbit, cheaply"). A planet drawn in a layer's
@@ -3481,8 +3521,13 @@ function atlasDraw(size = 20, mood = atlasMoodNow, level = atlasLevelFor(size)) 
   const rig = atlasGroup(moodLoop, "atl-rig", anchor);
   if (spec.body) {
     ATLAS_GEO.rings.forEach((ring, k) => atlasRing(rig, id, ring, k, false));
-    atlasBody(rig, id, figure, look);
   }
+  //: **The mane under the body** (L461): drawn with the head, after the
+  //: body, its locks covered her right arm held out at the full size. It
+  //: takes the layered figure's order, its own `atl-head` and `atl-sway`
+  //: chain under the body, so every rule that turns the head turns it too.
+  const hairAt = spec.body && !figure ? atlasGroup(atlasGroup(rig, "atl-head", ATLAS_GEO.neck), "atl-sway", ATLAS_GEO.neck) : null;
+  if (spec.body) atlasBody(rig, id, figure, look);
   //: The companion turns the head where it sits on the body
   //: (`.nm-buddy-head`) and looks for its face (`.name-mark`, with
   //: `.nm-eyes` and `.nm-blinks` in it).
@@ -3491,7 +3536,7 @@ function atlasDraw(size = 20, mood = atlasMoodNow, level = atlasLevelFor(size)) 
     host = atlasGroup(rig, "nm-buddy-head", ATLAS_GEO.neck);
     host = atlasGroup(host, "name-mark atl-face");
   }
-  atlasHead(host, id, level, look);
+  atlasHead(host, id, level, look, hairAt);
   if (spec.body) {
     ATLAS_GEO.rings.forEach((ring, k) => atlasRing(rig, id, ring, k, true));
     atlasBand(rig, id, "front", look);
@@ -3536,7 +3581,7 @@ function atlasTailWake(box) {
 //: the rig's next wake (a class change on the companion, the away class coming
 //: off: `atlasRigWake`) looks again, and while it fades looks every three frames.
 //: The boot sheet keeps every animation name off the box until `go` adds
-//: `atl-lit` (08-consistency.css).
+//: `atl-lit` (07-whiteboard-misc.css).
 function atlasWhenShown(box, go) {
   if (box.classList.contains("atl-lit")) return;
   const buddy = box.closest("#nm-buddy");
@@ -3631,7 +3676,7 @@ function atlasApply(svg, mood) {
   //: Written only on a change: a same-value write still restyles ancestors' :has() (INBOX 1726).
   if (svg.dataset.atlasMood !== next) svg.dataset.atlasMood = next;
   //: The layered figure's box carries the mood too: a mood's body move
-  //: (08-consistency.css, `.atl-figure-box[data-atlas-mood]`) runs on the
+  //: (characters-lazy.css, `.atl-figure-box[data-atlas-mood]`) runs on the
   //: box, one element on the compositor moving every layer together, not
   //: on the `.atl-mood` group inside each layer's svg.
   const box = svg.classList.contains("atl-layer") ? svg.closest(".atl-figure-box") : null;
@@ -3969,6 +4014,12 @@ function atlasPlay(name, ms = 900) {
   const cls = `atl-play-${name}`;
   for (const svg of marks) svg.classList.remove(cls);
   if (!marks.length || document.hidden) return;
+  //: Not while the page scrolls under the companion (`atlasRigFrame.held`, atlas-motion.js): a nod on the SVG head re-laid
+  //: out its skin, edge and hair paths on every scroll frame; it plays once the hold has ended.
+  if (globalThis.atlasRigFrame?.held && marks.some((svg) => svg.closest("#nm-buddy"))) {
+    setTimeout(() => atlasPlay(name, ms), 250);
+    return;
+  }
   const turns = (atlasPlay.turns ||= {});
   const turn = (turns[name] = (turns[name] || 0) + 1);
   afterFrames(() => {

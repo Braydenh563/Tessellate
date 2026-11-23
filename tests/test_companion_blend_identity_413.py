@@ -1,4 +1,6 @@
-"""A transform in a transition's delay is not a move (L-world-class-413, companionacts.js).
+"""Source text: the page code under test (script or stylesheet) runs only in a browser and there is no DOM here, so this asserts on its source.
+
+A transform in a transition's delay is not a move (L-world-class-413, companionacts.js).
 
 Lying down has a 240ms transition delay, during which the browser reads the figure's
 transform as the identity matrix where it read "none" before. The hand-over between acts

@@ -98,3 +98,32 @@ test("document: 50,000 words open", async ({ page }) => {
   await openApp(page);
   await inside("document", () => measure.documentOpen(page, ids.document, 3));
 });
+
+// The tab_cpu budgets (L-ui-modernisation-54) are specs/tab-budgets.spec.js, in
+// CI's own budgets job beside the map's: together they did not fit this job's 15 minutes.
+
+// L-ui-modernisation-95, in CPU time: Atlas idle may cost at most 120 ms a
+// second of main thread over the page with the companion off. Medians on
+// 2026-11-21: off 3.7, me 15.9, atlas 479.8 ms/s. After the 8 s settle CI read it
+// under the cap on both tries (0b73bded, 2026-11-22), so the expected-failure
+// marker is off; a desktop here reads +120 to +185 (BACKLOG L-ui-modernisation-201:
+// the rest that would stop it is off on mains power, owner decision 55). Never widen the cap.
+const ATLAS_IDLE_CPU_CAP_MS = 120;
+test("companion_idle_cpu: Atlas idle costs at most 120 ms/s of main-thread CPU over off", async ({ page, browser }) => {
+  await openApp(page);
+  // The full figure on every runner (L-ui-modernisation-201): a slow one would otherwise switch to the lite set.
+  await measure.pinFullFigure(page);
+  const idle = async (kind) => {
+    await page.evaluate(async (k) => { localStorage.removeItem("nm-buddy-spots"); prefs.set("avatar-buddy", k); await ensureModule("characters"); syncNameMarkBuddy(); }, kind);
+    await page.evaluate(() => revealTab("dashboard"));
+    // 8 s to settle, then 3 s read (L-ui-modernisation-95, the hub's call 2026-11-22): the
+    // budget is idle at rest, and the first 3 s after a build are the build and its
+    // entrance (625 and 465 ms/s in its first two seconds, then 50 to 240), not idle.
+    await page.waitForTimeout(8000);
+    return measure.idleCpuPerSecond(browser, page, 3000);
+  };
+  const runs = [];
+  for (let i = 0; i < 3; i++) runs.push((await idle("atlas")) - (await idle("off")));
+  const delta = measure.p50(runs);
+  expect(delta, `atlas idle over off: ${runs.map(Math.round).join(", ")} ms/s; the cap is ${ATLAS_IDLE_CPU_CAP_MS}`).toBeLessThanOrEqual(ATLAS_IDLE_CPU_CAP_MS);
+});
