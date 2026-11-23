@@ -292,7 +292,9 @@ async function buildMain() {
         const el = document.querySelector(sel);
         return Boolean(el && getComputedStyle(el).display !== "none" && el.getBoundingClientRect().width > 0);
       };
-      const title = document.getElementById("wb-present-count").textContent;
+      // The caption is a typeable page number then the picker's "of N: title" (INBOX 1694 b).
+      const num = document.querySelector(".wb-present-page input")?.value ?? "";
+      const title = `${num} ${document.querySelector("#wb-present-pick .wb-present-pick-title")?.textContent ?? ""}`.replace(/\s+/g, " ");
       const name = title.split(": ")[1];
       const frame = wbState.objects.find((o) => o.kind === "frame" && o.data.content === name);
       const fr = frame ? document.querySelector(`.wb-object[data-id="${frame.id}"]`).getBoundingClientRect() : null;

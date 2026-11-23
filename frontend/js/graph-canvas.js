@@ -7667,7 +7667,7 @@
         toggle.title = collapsed ? "Hide the local map" : "Show the local map";
         toggle.setAttribute("aria-label", toggle.title);
         const icon = toggle.querySelector("i");
-        if (icon) icon.className = collapsed ? "ph ph-caret-up" : "ph ph-caret-down";
+        if (icon) icon.className = collapsed ? "ph ph-caret-down" : "ph ph-caret-right";
         //: The box had no size while it was collapsed, so the canvas has to be
         //: measured again on the way back or it paints into the dimensions it
         //: last had.

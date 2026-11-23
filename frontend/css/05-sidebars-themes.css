@@ -2517,6 +2517,16 @@ body.resizing-sidebar {
   text-align: center;
   justify-content: center;
 }
+/* The icons and the words spaced by the token, centred on one line (owner bug on #257: the icon
+   leaned on the text by a 0.35em margin, not a gap). */
+.conv-browse-all {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.conv-browse-all > .ph {
+  margin-inline: 0;
+}
 #conversation-list li {
   gap: 0.4rem;
   align-items: center;

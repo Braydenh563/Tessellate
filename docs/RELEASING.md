@@ -23,15 +23,13 @@ For when you have done this before and need the commands:
 #    frontend/index.html, capture.html and clip.html, and the README's
 #    "Version 0.x.y." line
 
-# 2. Rename the changelog header (both copies)
-#    CHANGELOG.md and docs/CHANGELOG.md:
+# 2. Rename the changelog header in CHANGELOG.md:
 #    "## [Unreleased]"  ->  "## [0.4.0] - 2026-10-20"
-cp CHANGELOG.md docs/CHANGELOG.md
 
 # 3. Commit
 git add src/tessellate/__init__.py pyproject.toml README.md \
   frontend/index.html frontend/capture.html frontend/clip.html \
-  CHANGELOG.md docs/CHANGELOG.md
+  CHANGELOG.md
 git commit -m "Release 0.4.0" && git push
 
 # 4. Tag and push the tag: this is what triggers the release
@@ -102,21 +100,23 @@ Then add a fresh, empty `## [Unreleased]` above it for the next round of work:
 ...
 ```
 
-**Do this in `docs/CHANGELOG.md` too.** It is a byte-for-byte mirror of the root
-file, because GitHub Pages only serves `/docs`, and
-`tests/test_docs_site.py` fails the build if the two ever differ:
-
-```
-cp CHANGELOG.md docs/CHANGELOG.md
-```
-
 This matters beyond bookkeeping. The `github-release` job searches
 `CHANGELOG.md` for a header that matches the tag's version and uses that section
 as the release description. Skip the rename and the match comes back empty. The
 release is still created, with GitHub's generic list of commits in place of your
 changelog entry.
 
-### 3. CI is already green
+### 3. The extras' hashed locks are current
+
+Each pip extra installs from a hashed lock in `src/tessellate/data/extras_locks/`
+(`pip install --require-hashes --no-deps`, SECURITY.md T23). Regenerate them when
+requirements.txt or `EXTRA_BOUNDS` (`core/extras.py`) moves, or to take newer
+releases: `pip install uv` into any scratch venv, then
+`PYTHONPATH=src .venv/bin/python scripts/extras_lock.py` (needs PyPI). Review the
+diff like code, and run `pytest tests/test_extras_lock_691.py`: a lock never pins
+a base package, and two locks never pin one distribution differently.
+
+### 4. CI is already green
 
 Push only from a state where CI passes on the branch you are releasing from. The
 release workflow does not run the test suite: it trusts that the tagged code

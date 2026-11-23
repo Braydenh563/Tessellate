@@ -160,3 +160,43 @@ def test_a_readable_private_note_is_not_imported_open_while_locked(client, sessi
     assert vault.open_with(session, "test-passphrase")
     imported = client.post("/import/app?source=memorymap", **sent)
     assert imported.status_code == 201
+
+
+#: L-world-class-22: "Export this space" names the download after the space.
+def test_a_space_folder_export_is_named_after_the_space(client, two_spaces):
+    named = client.get("/export/folder", headers={"X-Workspace-ID": two_spaces})
+    assert 'filename="tessellate-client-work.zip"' in named.headers["content-disposition"]
+    for scope in ("all", None):
+        headers = {"X-Workspace-ID": scope} if scope else {}
+        whole = client.get("/export/folder", headers=headers)
+        assert 'filename="tessellate-notebook.zip"' in whole.headers["content-disposition"]
+
+
+def test_a_space_name_with_odd_characters_makes_a_safe_file_name(client):
+    odd = client.post("/spaces", json={"name": "../Café \"Q3\"; plans/é"}).json()["id"]
+    got = client.get("/export/folder", headers={"X-Workspace-ID": odd})
+    assert got.status_code == 200
+    name = got.headers["content-disposition"].split('filename="', 1)[1].split('"', 1)[0]
+    assert name == "tessellate-caf-q3-plans.zip" or name.startswith("tessellate-") and name.endswith(".zip")
+    assert "/" not in name and ".." not in name and '"' not in name
+
+
+def test_a_locked_private_space_refuses_its_folder_export(client):
+    from tessellate.core import spacelock
+
+    spacelock.close_all()
+    token = client.post("/auth/setup", json={"password": "first-pass"}).json()["token"]
+    client.headers.update({"X-Auth-Token": token})
+    space = client.post("/spaces", json={"name": "Vault", "is_private": True}).json()["id"]
+    client.post("/private-spaces/lock")
+    refused = client.get("/export/folder", headers={"X-Workspace-ID": space})
+    assert refused.status_code == 423 and "Unlock" in refused.json()["detail"]
+    spacelock.close_all()
+
+
+def test_the_space_menu_has_an_export_this_space_item():
+    from tests._app_js import app_js_text
+
+    app = app_js_text()
+    assert "Export ${name}" in app or "Export this space" in app
+    assert "include_private_spaces=1" in app and "exportSpaceFolder" in app

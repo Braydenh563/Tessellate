@@ -514,7 +514,11 @@
       help: settingRowIsTopic(row),
       label: `ph:${settingRowIsTopic(row) ? "book-open-text" : "gear"} ${row.text}`,
       about: `In Settings, ${row.sectionLabel}${row.where ? `, under ${row.where}` : ""}.`,
-      keywords: row.haystack,
+      //: Its other words are its keys, find words and synonyms; its element's
+      //: text is `body`, the loose match (L499: "Last backup" said "newest"
+      //: and ranked above New note for "new").
+      keywords: `${row.keys} ${row.find || ""} ${(row.synonyms || []).join(" ")}`,
+      body: row.haystack,
       run: paletteLater(async () => {
         await openSettingsModal(row.section);
         openSettingRow(row);
@@ -544,7 +548,7 @@
     const named = `${label} ${paletteText(row.keywords)} ${PALETTE_ALIASES[paletteTarget(row)] || ""}`;
     if (named.includes(phrase) || words.every((w) => named.includes(w))) return 2;
     if (things && meaningHolds(things, named)) return 2;
-    const about = `${named} ${paletteText(row.about)}`;
+    const about = `${named} ${paletteText(row.about)} ${paletteText(row.body)}`;
     if (words.every((w) => about.includes(w)) || (things && meaningHolds(things, about))) return 1;
     //: All but one of two or more things in its name ("what the ai remembers
     //: about me" is What it remembers): loose, so three at most, last.

@@ -16,6 +16,8 @@ hidden: the structural checks catch an eager file read exactly.
 
 from __future__ import annotations
 
+import re
+
 import json
 import statistics
 import subprocess
@@ -66,7 +68,8 @@ def test_tables_are_read_on_first_use_and_once() -> None:
 
 def test_every_data_file_is_packaged() -> None:
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    assert '"tessellate.data" = ["*.json"]' in pyproject
+    #: The extras lock files ride in the same entry; what matters here is that the JSON goes.
+    assert re.search(r'"tessellate\.data" = \[[^\]]*"\*\.json"', pyproject)
     for spec in ("linux", "windows"):
         text = (ROOT / "packaging" / spec / "tessellate.spec").read_text(encoding="utf-8")
         assert '"tessellate" / "data"), "tessellate/data"' in text, spec

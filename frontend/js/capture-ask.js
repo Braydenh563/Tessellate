@@ -439,19 +439,38 @@ const NOTE_TEMPLATE_CURSOR = "{{cursor}}";
 //: app uses everywhere else ("Oct 31, 2026"), not the numeric "10/31/2026".
 const stampDate = (when) => when.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 
-function noteTemplateText(raw, clipboard = "[clipboard]") {
+//: **More variables, and fields** (L-world-class-22). `{{title}}` is the
+//: Capture title field's text, `{{weekday}}` the day's name, `{{space}}` the
+//: space the window is in (empty under All spaces). `${Label}` is a prompted
+//: field, the documents' `${Name}` (`docSectionFill`) for a note: asked for
+//: once and filled at every place it stands (`noteTemplateForUse`).
+function noteTemplateText(raw, clipboard = "[clipboard]", fields = {}) {
   const now = new Date();
   return String(raw || "")
     .replace(/\{\{?date\}\}?/g, stampDate(now))
     .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...clockOptions() }))
-    .replaceAll("{{clipboard}}", clipboard);
+    .replaceAll("{{weekday}}", now.toLocaleDateString(undefined, { weekday: "long" }))
+    .replaceAll("{{title}}", document.getElementById("entry-title")?.value.trim() || "")
+    .replaceAll("{{space}}", activeSpaceId() === SPACE_ALL ? "" : (spacesCache.find((space) => space.id === activeSpaceId())?.name || ""))
+    .replaceAll("{{clipboard}}", clipboard)
+    //: Last, so an answer is text and never a variable.
+    .replace(/\$\{([^}]+)\}/g, (whole, label) => (Object.hasOwn(fields, label.trim()) ? fields[label.trim()] : whole));
 }
 
 //: The text and the caret for Use this template: the clipboard read only
 //: when the template asks for it, an unreadable one (refused, empty, no
-//: permission) filled as nothing and said once.
+//: permission) filled as nothing and said once. A field is asked through
+//: `promptDialog`; cancelling (or leaving empty) any one cancels the use (null).
 async function noteTemplateForUse(template) {
   const raw = String(template?.content || "");
+  const fields = {};
+  //: Each label once, in the order it first appears: `${Who}` twice is one question.
+  const labels = [...new Set([...raw.matchAll(/\$\{([^}]+)\}/g)].map((hit) => hit[1].trim()).filter(Boolean))];
+  for (const label of labels) {
+    const answer = await promptDialog(label, "", { confirmLabel: "Use" });
+    if (!answer) return null; // the dialog answers "" for Cancel, so an empty answer is a cancel too
+    fields[label] = answer;
+  }
   let clipboard = "";
   if (raw.includes("{{clipboard}}")) {
     try {
@@ -460,7 +479,7 @@ async function noteTemplateForUse(template) {
       toast(voiceLine("failed", { what: "read the clipboard", why: "that part of the template is empty" }), "info");
     }
   }
-  const full = noteTemplateText(raw, clipboard);
+  const full = noteTemplateText(raw, clipboard, fields);
   const caret = full.indexOf(NOTE_TEMPLATE_CURSOR);
   return { text: full.replaceAll(NOTE_TEMPLATE_CURSOR, ""), caret };
 }

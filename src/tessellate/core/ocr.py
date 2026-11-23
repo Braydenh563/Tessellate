@@ -39,7 +39,7 @@ import threading
 import time
 from pathlib import Path
 
-from tessellate.core import jobs, ocr_prep, parse_guard
+from tessellate.core import jobs, ocr_prep, parse_guard, sealed_files, spacelock, vault
 from tessellate.core.subproc import NO_WINDOW
 
 logger = logging.getLogger("tessellate.ocr")
@@ -1172,6 +1172,72 @@ def extract_in_background(upload_id: int, image_path: Path) -> None:
         "ocr", extract_and_store, upload_id, image_path, _hand_set_count(upload_id),
         name=image_path.name, dedupe_key=("ocr", upload_id),
     )
+
+
+#: A private space's picture is read by Tesseract as the session that filed it
+#: (L-world-class-671, SECURITY.md T28). Upload id to (session token, space id),
+#: in memory only: the queued job carries the id alone, so a restart reads
+#: nothing, and the entry goes when the read ends, when that session locks its
+#: spaces or when it signs out. Only Tesseract borrows it: captioning and the
+#: vision reader stay off, because the AI reads a private space only from a
+#: chat opened inside it (T10).
+_HANDED: dict[int, tuple[str, str]] = {}
+
+
+def forget_sessions(tokens: list[str] | None = None) -> None:
+    """Drop what these sessions handed over (None: every session's)."""
+    for uid, (token, _space) in list(_HANDED.items()):
+        if tokens is None or token in tokens:
+            _HANDED.pop(uid, None)
+
+
+vault.ended_hooks.append(forget_sessions)
+spacelock.shut_hooks.append(forget_sessions)
+
+
+def extract_private_in_background(upload_id: int, image_path: Path, workspace_id: str | None) -> bool:
+    """Queue a sealed picture's Tesseract read as the requesting session.
+    False (nothing queued, nothing remembered) when this request holds no
+    granted session: the picture then waits as it always did."""
+    token = vault.requester()
+    if token is None or not workspace_id:
+        return False
+    _HANDED[upload_id] = (token, workspace_id)
+    jobs.enqueue(
+        "ocr", extract_private_and_store, upload_id, image_path, name=image_path.name, dedupe_key=("ocr", upload_id)
+    )
+    return True
+
+
+def extract_private_and_store(upload_id: int, image_path: Path) -> None:
+    """Tesseract (or RapidOCR) on a plain copy of a sealed picture, as the
+    session that filed it. The text is written through the ORM (so the
+    sealing hook encrypts it) only after the door is checked again; a lock
+    mid-run keeps nothing and `for_background` removes the plain copy."""
+    deps = importlib.import_module("tessellate.core.deps")
+    from tessellate.core.database import MediaUpload
+
+    handed = _HANDED.pop(upload_id, None)
+    if handed is None:
+        return
+    token, space = handed
+    try:
+        with deps.get_db().session() as session:
+            row = session.get(MediaUpload, upload_id)
+            if row is None or row.workspace_id != space or row.ocr_text:
+                return
+        with sealed_files.for_background(image_path, token) as (copy, check):
+            text = extract_text(copy)
+            if not text:
+                return
+            with deps.get_db().session() as session:
+                row = session.get(MediaUpload, upload_id)
+                if row is not None and not row.ocr_text:
+                    row.ocr_text = text
+                    check()  # immediately before the commit, after the refresh
+                    session.commit()
+    except sealed_files.SealedError:
+        logger.info("a private space's picture was left unread: the space closed")
 
 
 #: Per platform, the first package manager found on PATH gets tried. Every

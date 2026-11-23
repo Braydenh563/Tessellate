@@ -54,13 +54,11 @@ def _save(session: captions.Session, db: DbSession) -> dict:
 
 
 def _seal_if_private(db: DbSession, row: Recording, dest) -> None:  # noqa: ANN001
-    """A private space's kept audio is sealed as it is saved (L-world-class-52);
-    without the key here, the next unlock seals it."""
-    try:
-        if sealed_files.wanted(db, row.workspace_id):
-            sealed_files.seal(dest)
-    except sealed_files.SealedError:
-        pass
+    """A private space's kept audio is sealed as it is saved (L-world-class-52).
+    Without the key it raises: a shut door leaves no plain WAV (SECURITY.md
+    T23, L-world-class-843); the caller removes the file and keeps the note."""
+    if sealed_files.wanted(db, row.workspace_id):
+        sealed_files.seal(dest)
 
 
 def _keep_audio(session: captions.Session, db: DbSession, entry_id: int, stamp: str) -> int | None:
@@ -87,9 +85,9 @@ def _keep_audio(session: captions.Session, db: DbSession, entry_id: int, stamp: 
             entry_id=entry_id,
             state="saved",
         )
+        _seal_if_private(db, row, dest)  # before the row exists: a shut door leaves neither
         db.add(row)
         db.flush()
-        _seal_if_private(db, row, dest)
         log_action(db, "created", "recording", row.id, detail="live captions")
         return row.id
     except Exception:  # noqa: BLE001 - the note is the record; the audio is the extra
@@ -109,7 +107,8 @@ def start(body: StartBody | None = None, db: DbSession = Depends(get_session)) -
     for stale in captions.expired():  # an abandoned run is saved, not lost
         _save(stale, db)
     try:
-        session = captions.begin(keep_audio=bool(body and body.keep_audio))
+        keep = bool(body and body.keep_audio)
+        session = captions.begin(keep_audio=keep, sealed=keep and sealed_files.wanted(db, None))
     except captions.CaptionsError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     return {
@@ -132,6 +131,8 @@ async def audio(session_id: str, request: Request, db: DbSession = Depends(get_s
         raise HTTPException(status_code=413, detail="That audio chunk is too large.")
     try:
         return await run_in_threadpool(session.feed, chunk[: len(chunk) // 2 * 2])
+    except sealed_files.SealedLocked as exc:  # the door shut mid-run: nothing was written plain (T23)
+        raise HTTPException(status_code=423, detail=str(exc)) from exc
     except captions.CaptionsError as exc:
         # The helper failed several times running: end the run, keep the text.
         captions.end(session_id)

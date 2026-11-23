@@ -348,13 +348,10 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
       wbShowBoardsLanding();
       return;
     }
-    //: **The tab you are on, pressed again, goes to the top of its page**
-    //: (INBOX 1314): a phone's convention, and on a long list the bar is
-    //: the one control always under the thumb.
+    //: **The tab you are on, pressed again, goes to the top of its page** (INBOX 1314): on a long list the bar is always under the thumb.
     const again = button.classList.contains("active") && matchMedia(PHONE_TABS).matches;
-    //: A press on Notes paints the page first and draws a list that went stale behind another
-    //: tab after it (INBOX 1516: the draw was inside the press, 650 ms at 4x before the page showed).
-    if (button.dataset.tab === "notes" && $("entry-list").dataset.stale) {
+    //: A press on Notes paints first, then draws a list gone stale behind another tab (INBOX 1516: 650 ms at 4x).
+    if (button.dataset.tab === "notes" && ($("entry-list").dataset.stale || renderSidebar.owed)) {
       $("entry-list").dataset.stale = "";
       afterFrames(renderEntries);
     }
@@ -1653,6 +1650,7 @@ customElements.define("sheet-host", class extends HTMLElement {
       },
       onClose: () => {
         this._close = null;
+        this.removeAttribute("open");
         this.dispatchEvent(new Event("close"));
       },
       onGone: () => {
@@ -1660,6 +1658,8 @@ customElements.define("sheet-host", class extends HTMLElement {
         this._home.append(this);
       },
     });
+    //: The attribute too, as a dialog sets it: `[open]` selectors read it (L529).
+    this.toggleAttribute("open", true);
   }
   close() {
     this._close?.();

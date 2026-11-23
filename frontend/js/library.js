@@ -793,10 +793,10 @@ function renderLibrary(options) {
     // Title *and* preview, for the same reason the conversation search reads
     // message text: you remember what a thing was about far more often than
     // what it ended up being called.
-    const wordMatch = (i) =>
-      i.serverMatch === query ||
-      (i.title || "").toLowerCase().includes(query) ||
-      (i.preview || "").toLowerCase().includes(query);
+    //: L628: by meaning too (meaning.js, in this bundle): an ending, a synonym, a slip, the request's own words dropped.
+    const lowered = (i) => `${i.title || ""} ${i.preview || ""}`.toLowerCase();
+    const things = typeof meaningAlts === "function" && meaningAlts(query, new Set(items.flatMap((i) => lowered(i).match(/[a-z0-9]+/g) || [])));
+    const wordMatch = (i) => i.serverMatch === query || lowered(i).includes(query) || (!!things && meaningHolds(things, lowered(i)));
     // With Semantic on, a note also matches if the meaning search returned it,
     // even when it shares no words with the query. Everything else is
     // unchanged: see `librarySemanticIds`.
@@ -2122,6 +2122,10 @@ onSurface("library", () => {
     syncLibraryFilterButton();
     runLibrarySearch();
   });
+});
+//: The meaning tables land after the first key (meaning.js asks once): the box is read again with them.
+document.addEventListener("meaning-ready", () => {
+  if (($("library-search")?.value || "").trim()) renderLibrary();
 });
 onSurface("library", () => {
   $("library-search").addEventListener("input", () => {
@@ -7344,6 +7348,10 @@ function ocrSyncCanRead() {
 function ocrRefusedPress(button) {
   if (button?.getAttribute("aria-disabled") !== "true") return false;
   toast(button.title, "info");
+  //: On the page as well as in the toast: a PDF page's Read came here and left
+  //: the message line empty while a picture's press filled it (L529).
+  $("ocr-message").textContent = button.title;
+  $("ocr-message").classList.remove("hidden");
   const menu = $("ocr-reader-menu");
   //: After this press has bubbled to the document: navigation.js closes every
   //: `details.dock-menu` the press landed outside of, which shut this one the

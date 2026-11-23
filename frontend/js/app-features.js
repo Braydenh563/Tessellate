@@ -29,7 +29,7 @@ function paletteKeys(match) {
 //: describe one control two ways); then the shortcut registry's label.
 function paletteAbouts() {
   const abouts = new Map();
-  const catalog = typeof featureCatalog === "function" ? featureCatalog() : [];
+  const catalog = featureCatalog();
   for (const group of catalog) {
     for (const item of group.items || []) {
       if (item.reveal && item.desc && !abouts.has(item.reveal)) abouts.set(item.reveal, item.desc);

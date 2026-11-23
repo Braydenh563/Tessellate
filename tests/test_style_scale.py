@@ -873,15 +873,15 @@ COLOUR_HOMES = {"00-tokens-shell.css", "05-sidebars-themes.css"}
 #: The literals still outside them, per file, as Brief 57 left them: a ratchet
 #: that only goes down. A file not named here may hold none.
 COLOUR_LITERALS_LEFT = {
-    "02-chat-graph.css": 45,
+    "02-chat-graph.css": 33,
     #: 2026-11-21 (L-world-class-364): 51 of 08's 63 are the Atlas and companion's own colours, now in characters-lazy.css. The total did not move.
-    "08-consistency.css": 12,
+    "08-consistency.css": 7,
     "characters-lazy.css": 51,
     "library-lazy.css": 31,
-    "06-timeline-dialogs.css": 23,
+    "06-timeline-dialogs.css": 9,
     "03-dashboard-widgets.css": 6,
     "10-responsive.css": 9,
-    "09-editor.css": 6,
+    "09-editor.css": 4,
     "04-chat-dock-appearance.css": 4,
     #: Moved from 07-whiteboard-misc.css with the lightbox CSS (4668f1456): the
     #: HTML preview's white page ground, on purpose.
@@ -894,7 +894,8 @@ COLOUR_LITERAL = re.compile(r"#[0-9a-fA-F]{3,8}\b(?![\w-])|\b(?:rgba?|hsla?)\(")
 def test_colour_literals_live_in_the_two_colour_files():
     """240 hex and rgb literals sat in component files, where a theme or a
     palette cannot reach them. The accent presets moved to the themes file
-    (42); the 198 left are counted here and may only fall."""
+    (42); the 198 left are counted here and may only fall. Recounted 2026-11-22
+    (L533): 156, each file's cap set to its count."""
     from tests._css_paths import CSS_FILES
 
     counts = {}

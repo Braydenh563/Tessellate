@@ -75,6 +75,17 @@ def _read_marker(text: str | None) -> str | None:
     return None if text is None else "read"
 
 
+def _read_sealed(upload: MediaUpload, path: Path, ocr, read_text: bool) -> None:  # noqa: ANN001
+    """The one reader a private space's picture gets: Tesseract, as the session
+    that filed it (L-world-class-671)."""
+    if not read_text or Path(upload.filename).suffix.lower() not in ocr.OCR_SUFFIXES:
+        return
+    if upload.ocr_text or (upload.id, "ocr") in _ASKED:
+        return
+    if ocr.extract_private_in_background(upload.id, path, upload.workspace_id):
+        _ASKED.add((upload.id, "ocr"))
+
+
 def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
     """Fire the three background readers for one upload that just became
     permanent. Never raises: a missing file or an unsupported suffix for
@@ -107,7 +118,11 @@ def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
     path = media_dir / upload.filename
     # The readers run in the background, which has no vault key: a private
     # space's sealed picture would be read as ciphertext (L-world-class-52).
+    # Only Tesseract borrows the filing session's grant (L-world-class-671);
+    # captioning and the vision readers never start for it, because the AI
+    # reads a private space only from a chat opened inside it (SECURITY.md T10).
     if sealed_files.is_sealed(path):
+        _read_sealed(upload, path, ocr, read_text)
         return
     suffix = Path(upload.filename).suffix.lower()
     if read_text and suffix in ocr.OCR_SUFFIXES and _due(upload, "ocr", upload.ocr_text):

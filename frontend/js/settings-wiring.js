@@ -324,10 +324,19 @@ async function submitLockForm() {
   const errorLine = $("lock-error");
   errorLine.textContent = "";
   const mode = $("lock-overlay").dataset.mode;
-  //: A new password needs 8 (SEC-17); one set before that still unlocks.
-  const floor = mode === "setup" ? 8 : 4;
-  if (password.length < floor) {
-    lockFail(`Use at least ${floor} characters.`);
+  //: A new password needs 8 (SEC-17); one set before that still unlocks, so
+  //: a shorter one cannot be right. The length rule is setup's words only: an
+  //: unlock with nothing typed asks for the password (L529).
+  if (mode === "setup" && password.length < 8) {
+    lockFail("Use at least 8 characters.");
+    return;
+  }
+  if (mode !== "setup" && !password) {
+    lockFail("Type your password.");
+    return;
+  }
+  if (mode !== "setup" && password.length < 4) {
+    lockFail("That password is wrong.");
     return;
   }
   if (mode === "prompt") {

@@ -1114,6 +1114,7 @@ function editorCommands(context) {
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
         const filled = await noteTemplateForUse(template);
+        if (!filled) return;
         const at = filled.caret >= 0 ? filled.caret : filled.text.length;
         editorSplice(textarea, start, end, filled.text, { from: at, to: at });
       },

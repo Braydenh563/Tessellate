@@ -7599,6 +7599,7 @@ header#top-bar button.space-switcher-btn:focus-visible {
   .contents-heading,
   .timeline-bucket-head,
   .note-edit-foot,
+  .ocr-card .ocr-regions-foot,
   #capture .capture-commit-row,
   .agent-monitor > .monitor-header {
     container-type: scroll-state;
@@ -7608,6 +7609,7 @@ header#top-bar button.space-switcher-btn:focus-visible {
     .contents-heading::before,
     .timeline-bucket-head::before,
     .note-edit-foot::before,
+    .ocr-card .ocr-regions-foot::before,
     #capture .capture-commit-row::before,
     .agent-monitor > .monitor-header::before {
       content: "";
@@ -7627,6 +7629,7 @@ header#top-bar button.space-switcher-btn:focus-visible {
   .contents-heading,
   .timeline-bucket-head,
   .note-edit-foot,
+  .ocr-card .ocr-regions-foot,
   #capture .capture-commit-row,
   .agent-monitor > .monitor-header {
     background: var(--card);

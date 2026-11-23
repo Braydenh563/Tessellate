@@ -503,6 +503,39 @@ const dashLineDraw = () => Math.floor(Date.now() / DASH_LINE_MS);
 async function renderDashSubmessage() {
   const el = $("dash-submessage");
   if (!el) return;
+  //: **The space line** (L-world-class-22): in a named space the sub line leads
+  //: with its name, its note count and the note last edited in it, which opens
+  //: on a press. Nothing in the default space or All spaces (no line to say).
+  //: The count is the stats the line already fetched; the note is the newest
+  //: `updated_at` of the entries already loaded, so no route is added.
+  //: Nested, not global: the shared scope is capped (tests/test_global_scope_ratchet.py).
+  function dashSpaceFact(entries, count) {
+    const id = activeSpaceId();
+    if (!id || id === "default" || id === SPACE_ALL) return null;
+    const space = spacesCache.find((s) => s.id === id);
+    if (!space) return null;
+    const stamp = (e) => new Date(e.updated_at || e.created_at || 0).getTime() || 0;
+    const last = (entries || []).filter((e) => !e.is_draft && !e.map_topic).sort((a, b) => stamp(b) - stamp(a))[0] || null;
+    return { name: space.name, count, last };
+  }
+
+  function dashSpaceBit(bit, fact) {
+    const words = `${fact.name}: ${nounCount(fact.count, "note")}`;
+    if (!fact.last) {
+      bit.textContent = words;
+      return;
+    }
+    const link = bit.appendChild(document.createElement("a"));
+    link.href = "#";
+    link.className = "dash-space-open";
+    const title = noteNamePlain(fact.last.content || "", 36) || "Untitled note";
+    link.textContent = `${words}, last edited ${title} ${relativeTime(fact.last.updated_at || fact.last.created_at)}`.trim();
+    link.title = "Open the note last edited in this space";
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      flashEntry(fact.last.id);
+    });
+  }
   dashLine.bucket = dashLineDraw();
   const [stats, reminders, patterns, composed] = await Promise.all([
     fetchDashStats().catch(() => null),
@@ -517,6 +550,8 @@ async function renderDashSubmessage() {
     dashTodayLine(dashLine.bucket).catch(() => ""),
   ]);
   const bits = [];
+  //: A failed read is no fact (null), not an empty space: dashSpaceFact reads null as nothing to say.
+  const spaceFact = stats ? dashSpaceFact(await dashEntries().catch(() => null), stats.total_entries || 0) : null;
   if (composed) bits.push(["notes", composed]);
   else if (stats) {
     const n = stats.total_entries;
@@ -541,6 +576,7 @@ async function renderDashSubmessage() {
   const found = patterns?.patterns || [];
   const pattern = found[Math.floor(Date.now() / 86400000) % (found.length || 1)];
   if (pattern) bits.push(["patterns", "Pattern: ", pattern.text]);
+  if (spaceFact) bits.unshift(["space", ""]);
   //: One span per fact, its separator inside it, so a view can fold one fact
   //: away whole: the Focused hero's glance says what is due (INBOX 675), and
   //: hides the reminders fact here rather than saying it twice.
@@ -549,6 +585,10 @@ async function renderDashSubmessage() {
       const bit = document.createElement("span");
       bit.className = "dash-sub-bit";
       bit.dataset.bit = kind;
+      if (kind === "space") {
+        dashSpaceBit(bit, spaceFact);
+        return bit;
+      }
       bit.textContent = i ? ` · ${text}` : text;
       if (whole) bit.title = whole;
       //: B84: its words open its notes; its ⋯ asks if it is right (dash-day.js).

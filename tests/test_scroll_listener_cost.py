@@ -43,6 +43,7 @@ def _body(name: str, head: str) -> str:
 
 
 def test_the_settings_scroller_is_found_once_per_pane_and_width():
+    #: L-world-class-355: kept on the panes' shared parent (`host`), so a pane's first show reuses it too.
     body = _body("settings.js", "function settingsScroller(name) {")
     # A remembered answer, checked cheaply (still an ancestor, same width),
     # before any computed-style walk.
@@ -50,7 +51,7 @@ def test_the_settings_scroller_is_found_once_per_pane_and_width():
     walk = body.index("getComputedStyle")
     assert hit < walk
     assert "innerWidth" in body
-    assert re.search(r"_scroller\??\.contains\(box\)", body)
+    assert re.search(r"_scroller\??\.contains\(host\)", body)
 
 
 def test_the_sidebar_scroller_the_marker_follows_is_found_once():

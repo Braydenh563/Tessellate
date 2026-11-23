@@ -2001,6 +2001,13 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   padding-inline: 1rem;
 }
 
+/* A group after a list, a status line or a tab strip kept no gap (owner bug on #257, Settings, What
+   it remembers: Confirmed patterns sat flush under the list, 0px; the same in Skills, Tasks and What
+   it learned). The gap a group already keeps below itself, given above it too. */
+.settings-section > :not(.settings-group) + .settings-group {
+  margin-top: var(--space-6);
+}
+
 .settings-group>h3:first-child {
   margin-top: 0;
 }
@@ -3902,9 +3909,14 @@ span > .chip {
   padding-right: 0;
   margin-top: var(--ring-room);
 }
+/* New keeps its plus at every width and gives up only its word (owner bug on #257: the plus was
+   hidden everywhere and the word below 16rem, so at the default 260 New was a blank 26px box). */
 @container doc-sidebar (max-width: 16rem) {
   .doc-sidebar .doc-new-split .toolbar-word {
     display: none;
+  }
+  .doc-sidebar .doc-new-split #doc-new .ph-lead {
+    margin-inline-end: 0;
   }
   #doc-sidebar-list .doc-head-tools > :where(.graph-help-toggle):is(.graph-help-toggle, #doc-new-template),
   #doc-sidebar-list .doc-head-tools > #doc-new-template,

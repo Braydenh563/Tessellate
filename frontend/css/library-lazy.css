@@ -1037,8 +1037,14 @@
   white-space: nowrap;
 }
 
+/* One line like the title above it: at the 136px floor "Document · 3 min ago" wrapped and the card grew
+   55 to 73px (owner 2026-11-22 on #257). */
 .doc-item-meta {
   font-size: var(--text-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .doc-item-type {
@@ -9232,9 +9238,7 @@ input[type="color"].wb-mixed {
   border-style: dashed;
 }
 .ocr-region-list {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
+  flex: none;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -10761,11 +10765,6 @@ input[type="color"].wb-mixed {
 .menu-item .doc-type-check {
   margin-inline-start: auto;
 }
-/* New's split button gives up its plus glyph: with the caret and the template
-   button beside it the sidebar head (240px) squeezed "Recent" to "Rec...". */
-.doc-new-split #doc-new .ph-lead {
-  display: none;
-}
 /* Board grips on a touch screen (audit 1031 BD6): drawn at 10px, grabbed at 24+. */
 @media (pointer: coarse) {
   .wb-resize-handle,
@@ -12245,11 +12244,23 @@ input[type="color"].wb-mixed {
 /* A heading reads differently, so it is drawn differently, the one place
    the "kind" is more than a label. */
 
+/* **The column scrolls as one** (L806). The section list used to be the
+   column's only shrinkable child, so a long description, the status line and
+   a second reading above it crushed it to 0 px at 1366x768 (84 px at
+   1440x900). Now the column is the scroller, the list keeps its height, and
+   the reading's actions stick to the column's foot. */
 .ocr-regions {
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.ocr-card .ocr-regions-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
 }
 .ocr-region:hover {
   border-color: var(--accent);

@@ -144,6 +144,10 @@ class SpaceRestore(BaseModel):
     move_to: str | None = None
     moved: dict[str, list[int]] = Field(default_factory=dict)
     merged: list[dict] = Field(default_factory=list)
+    #: Notes the space itself had sealed, so Undo marks them so again (L-world-class-842).
+    sealed_notes: list[int] = Field(default_factory=list)
+    #: The same for its documents (L-world-class-892).
+    sealed_documents: list[int] = Field(default_factory=list)
 
 
 def _refuse_locked_private(private: bool, token: str | None) -> None:
@@ -177,7 +181,7 @@ def restore_space(
     if body.move_to:
         _move_back(session, body, sid)
     if body.space.is_private:
-        _seal_restored(session, sid)
+        _seal_restored(session, sid, body.sealed_notes, body.sealed_documents)
     session.commit()
     if body.space.is_private:
         from tessellate.entry import manager_private
@@ -197,13 +201,14 @@ def _move_back(session: Session, body: SpaceRestore, sid: str) -> None:
     lexical_filing.forget_corpus()
 
 
-def _seal_restored(session: Session, sid: str) -> None:
+def _seal_restored(session: Session, sid: str, sealed_notes: list[int] | None = None, sealed_documents: list[int] | None = None) -> None:
     """Whatever came back into a private space is sealed again, a note made
     ordinary since the delete included: a restore never lands one in the clear."""
     from tessellate.entry import private_space
 
     session.expire_all()  # moved back by statement: read them as they are now
     private_space.seal_space_members(session, sid)
+    private_space.mark_sealed_by_space(session, sid, sealed_notes or [], sealed_documents or [])
 
 
 class SpaceDeleted(SpaceResponse):
@@ -217,8 +222,15 @@ def _delete_space_moving(session: Session, space: Space, move_to: str) -> SpaceD
     space_id = space.id
     if move_to == space_id:
         raise HTTPException(400, "Pick a different space to move its contents to.")
-    deps.get_or_404(session, Space, move_to, "The space to move to could not be found.")
+    target = deps.get_or_404(session, Space, move_to, "The space to move to could not be found.")
     response = SpaceResponse.model_validate(space)
+    forgotten: list[int] = []
+    forgotten_documents: list[int] = []
+    if space.is_private and not target.is_private:
+        from tessellate.entry import private_space
+
+        private_space.unseal_space_files(session, space_id)
+        forgotten, forgotten_documents = private_space.forget_sealed_by_space(session, space_id)
     manifest = _move_space_contents(session, space_id, move_to)
     session.delete(space)
     session.commit()
@@ -229,7 +241,7 @@ def _delete_space_moving(session: Session, space: Space, move_to: str) -> SpaceD
     session.commit()
     return SpaceDeleted(
         **response.model_dump(),
-        restore={"space": response.model_dump(), "move_to": move_to, **manifest},
+        restore={"space": response.model_dump(), "move_to": move_to, **manifest, "sealed_notes": forgotten, "sealed_documents": forgotten_documents},
     )
 
 
@@ -328,6 +340,8 @@ class MoveNotesBody(BaseModel):
     #: Out of a private space (INBOX 1727): "Keep it private" (the default)
     #: or "Make it ordinary".
     keep_private: bool = True
+    #: Count the links the move would hide and move nothing (the screen asks first).
+    preview: bool = False
 
 
 @router.post("/spaces/{space_id}/move-notes")
@@ -355,6 +369,8 @@ def move_notes_to_space(space_id: str, body: MoveNotesBody, session: Session = D
     # A locked private space's notes are out of this read, so only the target can be locked here.
     if target.is_private and session.info.get("sealed_workspaces"):
         raise HTTPException(status_code=423, detail="Unlock your private spaces first.")
+    if body.preview:
+        return {"moved": 0, **moving.hidden_links(session, space_id, body.ids)}
     leaving = private_space.leaving_ids(session, space_id, body.ids)
     moved = moving.to_space(session, space_id, body.ids)
     if leaving:

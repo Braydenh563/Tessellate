@@ -43,7 +43,7 @@ from dataclasses import dataclass, field
 from collections.abc import Callable
 from pathlib import Path
 
-from tessellate.core import extra_downloads, jobs, languagetool_files, ocr, parse_guard
+from tessellate.core import extra_downloads, extras_lock, jobs, languagetool_files, ocr, parse_guard
 from tessellate.core.extra_downloads import Download
 from tessellate.core.subproc import NO_WINDOW
 
@@ -1836,7 +1836,7 @@ def _requirements_path() -> Path:
 #: the next major, or the next minor for a 0.x project, as requirements.txt
 #: caps its own; fastembed's bound is requirements.txt's. A constraint, not
 #: a requirement, so it bounds the package wherever it is pulled in and the
-#: extra's `packages` stay names. Hashes are L-world-class-691.
+#: extra's `packages` stay names; scripts/extras_lock.py resolves the hashed locks within them.
 EXTRA_BOUNDS = (
     "pypdfium2>=5.15,<6",
     "Pillow>=13.0,<14",
@@ -1983,6 +1983,49 @@ def _install_cleanup(extra: Extra, pip_tmp: Path, before, constraints_copy: Path
         constraints_copy.unlink(missing_ok=True)
 
 
+def _installed_version(name: str) -> str | None:
+    """The version of `name` the running interpreter has, or None."""
+    from importlib import metadata
+
+    try:
+        return metadata.version(name)
+    except metadata.PackageNotFoundError:
+        return None
+
+
+def _left_alone(entry: extras_lock.Entry) -> bool:
+    """A lock entry installed here at another version (fastembed's onnxruntime): kept, and logged."""
+    if not extras_lock.marker_applies(entry.marker):
+        return False
+    installed = _installed_version(entry.name)
+    if installed is None or installed == entry.version:
+        return False
+    _state.log.append(f"Kept {entry.name} {installed} (the lock has {entry.version}).")
+    return True
+
+
+def _lock_selection(extra: Extra, folder: Path) -> tuple[Path | None, str]:
+    """The hashed requirements pip installs `extra` from, or why not (L-world-class-691, SECURITY.md T23).
+    A packaged build's `--target` takes the whole lock; a source install must already have every base
+    package the lock was resolved against (`--no-deps` installs none) and keeps what it has."""
+    lock = extras_lock.read(extra.id)
+    if lock is None:
+        return None, f"No checked package list for {extra.label} ships with this version, so it stays uninstalled."
+    entries = lock.entries
+    if frozen_extras_dir() is None:
+        applying = [e for e in lock.base if extras_lock.marker_applies(e.marker)]
+        missing = sorted({e.name for e in applying if _installed_version(e.name) is None})
+        if missing:
+            return None, (
+                f"{extra.label} needs {', '.join(missing)}, which this install does not have. "
+                "Run pip install -r requirements.txt, then try again."
+            )
+        entries = [e for e in entries if not _left_alone(e)]
+    path = folder / f"{extra.id}-lock.txt"
+    path.write_text("".join(e.text() for e in entries), encoding="utf-8")
+    return path, ""
+
+
 def _run_install(extra: Extra, reinstall: bool = False) -> None:
     """pip, in a worker thread, with its output kept for the panel."""
     constraints_copy: Path | None = None
@@ -1998,6 +2041,11 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         if pip_base is None:
             _state.outcome = "failed"
             _state.step = NO_PYTHON_FOUND_MESSAGE
+            return
+        lock_file, refusal = _lock_selection(extra, pip_tmp)
+        if lock_file is None:
+            _state.outcome = "failed"
+            _state.step = refusal
             return
         # Constrain every extra install against requirements.txt so an optional
         # package's own dependency resolution can't drag a base package (e.g.
@@ -2022,7 +2070,9 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
             # 2 GB), kept after a finished install and after a stopped one.
             "--no-cache-dir",
             *_frozen_target_args(),
-            *extra.packages,
+            # Only what the lock pins, only with its hashes: nothing PyPI
+            # serves goes in unchecked, and nothing is resolved here.
+            "--require-hashes", "--no-deps", "-r", str(lock_file),
             *constraint,
         ]
         _state.step = f"pip install {' '.join(extra.packages)}"

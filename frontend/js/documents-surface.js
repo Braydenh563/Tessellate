@@ -907,7 +907,7 @@
     docAfterFirstPaint(seq, () => {
       renderDocOutline();
     }, () => {
-      renderDocTools();
+      renderDocTools(() => seq === docOpenSeq); //: the prose pass waits for idle (L-world-class-40: 251 to 240 ms)
     }, () => {
       renderDocNotes();
       renderDocBacklinks();

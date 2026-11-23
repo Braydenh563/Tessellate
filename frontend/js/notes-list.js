@@ -2247,7 +2247,7 @@ function rememberNoteFilter(words) {
 
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
-  if (!$("tab-notes").classList.contains("hidden") && $("entry-list").dataset.stale) renderSidebar();
+  if (!$("tab-notes").classList.contains("hidden") && ($("entry-list").dataset.stale || renderSidebar.owed)) renderSidebar();
   //: A card is drawn by `entryItem` (entry-card.js: lazy, for the boot gzip ratchet), fetched
   //: when the app goes idle. A draw asked before it is in waits for it and happens once, whole,
   //: and the promise this returns settles after it (false when the file never came): a caller that
@@ -2463,8 +2463,12 @@ function renderSidebar() {
   if ($("tab-notes").classList.contains("hidden")) {
     const list = document.getElementById("entry-list");
     if (list) list.dataset.stale = "1";
+    //: The sidebar's own debt: the tab press clears `data-stale` first (INBOX 1516), and with no list yet to
+    //: mark, the categories were never drawn and had no fold caret (owner bug 4 on #257).
+    renderSidebar.owed = true;
     return;
   }
+  renderSidebar.owed = false;
   // Categories + counts are derived from the loaded entries, the
   // simplest thing that works; no extra endpoint needed yet.
   // Drafts only belong in the Drafts row (user-reported: they were still

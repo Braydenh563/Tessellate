@@ -28,7 +28,7 @@ from fastapi.responses import FileResponse
 from fastapi.routing import APIRoute
 from sqlalchemy.orm import Session
 
-from tessellate.core import activity, deps, jobruns
+from tessellate.core import activity, deps, jobruns, paths
 from tessellate.core.deps import get_session
 from tessellate.entry import app_import, export_folder, import_report, manager
 
@@ -275,12 +275,31 @@ def import_report_page(report_id: str) -> dict:
     return found
 
 
+def _folder_export_name(session: Session) -> str:
+    """The download's name: after the space when the export is scoped to one
+    (`tessellate-<slug>.zip`, an ASCII slug so a header never carries a stray
+    character), else the whole notebook's. A private space that is still
+    sealed refuses (423), the wording the spaces routes use."""
+    from tessellate.repo import spaces as space_repo
+
+    scope = session.info.get("workspace_id")
+    if not scope or scope == "all":
+        return "tessellate-notebook.zip"
+    space = space_repo.find(session, scope)
+    if space is None:
+        return "tessellate-notebook.zip"
+    if scope in (session.info.get("sealed_workspaces") or ()):
+        raise HTTPException(status_code=423, detail="Unlock your private spaces first.")
+    return f"tessellate-{paths.slug(space.name, 40, ascii_only=True, fallback='space')}.zip"
+
+
 @router.get("/export/folder")
 def export_notebook_folder(background_tasks: BackgroundTasks, session: Session = Depends(get_session)) -> FileResponse:
     """The whole notebook as a markdown folder in a zip (WORLD_CLASS 25b):
     every note with its sidecar and attachments, documents, boards and an
     `index.json`. Written to a temporary file, not memory, because the
     attachments can be large; the file is removed once it is sent."""
+    filename = _folder_export_name(session)
     handle, tmp_path = tempfile.mkstemp(suffix=".zip", prefix="memorymap_folder_")
     os.close(handle)
     background_tasks.add_task(lambda: Path(tmp_path).unlink(missing_ok=True))
@@ -292,4 +311,4 @@ def export_notebook_folder(background_tasks: BackgroundTasks, session: Session =
             f", {counts['missing']} attachment files missing" if counts["missing"] else "")
     manager.log_action(session, "exported", "data", detail="folder")
     session.commit()
-    return FileResponse(tmp_path, media_type="application/zip", filename="tessellate-notebook.zip", background=background_tasks)
+    return FileResponse(tmp_path, media_type="application/zip", filename=filename, background=background_tasks)

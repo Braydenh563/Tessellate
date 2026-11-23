@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.ai import natural_voice, studio
-from tessellate.core import activity, jobs, recording_make
+from tessellate.core import activity, jobs, recording_make, sealed_files, vault
 from tessellate.core.deps import get_session
 from tessellate.repo import visible_notes
 
@@ -66,7 +66,9 @@ def _set(job_id: str, **fields: object) -> None:
             _runs.popitem(last=False)
 
 
-def _make(job: activity.Job, lines: list[str], title: str, derived: str, workspace: str | None) -> None:
+def _make(
+    job: activity.Job, lines: list[str], title: str, derived: str, workspace: str | None, token: str | None = None
+) -> None:
     state, error, recording_id = "done", "", None
     try:
         wav, segments = natural_voice.render(
@@ -77,10 +79,14 @@ def _make(job: activity.Job, lines: list[str], title: str, derived: str, workspa
                 _set(job.id, progress=round(done / total, 3)),
             ),
         )
-        recording_id = recording_make.save_generated(title, wav, segments, derived=derived, workspace=workspace)
+        recording_id = recording_make.save_generated(title, wav, segments, derived=derived, workspace=workspace, token=token)
         job.result = "saved a recording"
     except natural_voice.Stopped:
         state = "stopped"
+    except sealed_files.SealedLocked as exc:  # the private space shut: nothing was written
+        state, error = "failed", str(exc)
+        if job.run is not None:
+            job.run.fail(error)
     except Exception:  # noqa: BLE001  # a bad voice is a run that says so, never a dead thread
         logger.warning("studio overview failed", exc_info=True)
         sentence = "Couldn't make that overview. Check the Natural voice package in Settings, Packages."
@@ -102,7 +108,7 @@ def make_overview(body: OverviewIn, session: Session = Depends(get_session)) -> 
     title = _title(body)
     job = activity.start("studio", f"Making “{title}”", stoppable=True)
     _set(job.id, state="running", progress=0.0, error="", recording_id=None, title=title, script=lines)
-    work = (job, lines, title, "brief" if body.brief else "overview", session.info.get("workspace_id"))
+    work = (job, lines, title, "brief" if body.brief else "overview", session.info.get("workspace_id"), vault.requester())
     jobs.thread(f"studio-{job.id}", lambda: _make(*work))
     return {"id": job.id, "title": title, "script": lines}
 
